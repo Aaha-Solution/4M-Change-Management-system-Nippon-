@@ -6,6 +6,20 @@
 -- Drop tables if they already exist (for clean initialization)
 DROP TABLE IF EXISTS change_requests;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS departments;
+
+-- Roles Table
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- Departments Table
+CREATE TABLE departments (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL
+);
 
 -- 1. Users Table
 CREATE TABLE users (
@@ -13,7 +27,7 @@ CREATE TABLE users (
     name VARCHAR(255) NOT NULL DEFAULT '',
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL, -- In production, this should be a hashed password (e.g. bcrypt)
-    role VARCHAR(50) NOT NULL CHECK (role IN ('Admin', 'HOD', 'Operator', 'QA Team', 'Administrator', 'Change Manager', 'Requester')),
+    role VARCHAR(50) NOT NULL,
     department VARCHAR(255) NOT NULL DEFAULT '',
     status VARCHAR(50) NOT NULL DEFAULT 'Active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -41,15 +55,24 @@ CREATE INDEX idx_change_requests_requester ON change_requests(requester);
 -- Seed Data
 -- -------------------------------------------------------------
 
+-- Seed Roles
+INSERT INTO roles (name) VALUES
+('Admin'),
+('User');
+
+-- Seed Departments
+INSERT INTO departments (name) VALUES
+('General');
+
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES
-('ramanan.p@plant.com', 'ramanan123', 'Admin', 'Ramanan Prabakaran', 'Management', 'Active'),
-('priya.v@plant.com', 'priya123', 'HOD', 'Priya Venkat', 'PED Team', 'Active'),
-('kumar.s@plant.com', 'kumar123', 'Operator', 'Kumar Selvam', 'Assembly', 'Active'),
-('ravi.qa@plant.com', 'ravi123', 'QA Team', 'Ravi QA', 'Quality', 'Active'),
-('admin@cms.com', 'admin123', 'Administrator', 'Admin User', 'Management', 'Active'),
-('manager@cms.com', 'manager123', 'Change Manager', 'Manager User', 'Engineering', 'Active'),
-('requester@cms.com', 'requester123', 'Requester', 'Requester User', 'Operations', 'Active');
+('ramanan.p@plant.com', 'ramanan123', 'Admin', 'Ramanan Prabakaran', 'General', 'Active'),
+('priya.v@plant.com', 'priya123', 'User', 'Priya Venkat', 'General', 'Active'),
+('kumar.s@plant.com', 'kumar123', 'User', 'Kumar Selvam', 'General', 'Active'),
+('ravi.qa@plant.com', 'ravi123', 'User', 'Ravi QA', 'General', 'Active'),
+('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active'),
+('manager@cms.com', 'manager123', 'User', 'Manager User', 'General', 'Active'),
+('requester@cms.com', 'requester123', 'User', 'Requester User', 'General', 'Active');
 
 -- Seed change requests
 INSERT INTO change_requests (id, title, requester, date, priority, status) VALUES

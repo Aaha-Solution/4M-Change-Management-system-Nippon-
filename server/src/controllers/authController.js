@@ -101,8 +101,7 @@ export const signup = async (req, res) => {
   }
 
   const assignedRole = role || 'Requester';
-  const allowedRoles = ['Admin', 'HOD', 'Operator', 'QA Team', 'Administrator', 'Change Manager', 'Requester'];
-  if (!allowedRoles.includes(assignedRole)) {
+  if (!assignedRole || typeof assignedRole !== 'string' || !assignedRole.trim()) {
     return res.status(400).json({ error: 'Invalid role specified.' });
   }
 

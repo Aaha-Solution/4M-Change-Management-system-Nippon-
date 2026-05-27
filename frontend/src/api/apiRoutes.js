@@ -58,4 +58,36 @@ export const deleteUser = (id) => {
   return axiosInstance.delete(`/users/${id}`);
 };
 
+export const getRoles = () => {
+  return axiosInstance.get('/roles');
+};
+
+export const addRole = (name) => {
+  return axiosInstance.post('/roles', { name }, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const deleteRole = (name) => {
+  return axiosInstance.delete(`/roles/${encodeURIComponent(name)}`);
+};
+
+export const getDepartments = () => {
+  return axiosInstance.get('/departments');
+};
+
+export const addDepartment = (name) => {
+  return axiosInstance.post('/departments', { name }, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const deleteDepartment = (name) => {
+  return axiosInstance.delete(`/departments/${encodeURIComponent(name)}`);
+};
+
 

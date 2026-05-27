@@ -1,3 +1,4 @@
+/* global process */
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
@@ -10,7 +11,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
-    headless: true, // Run in headless mode for server/agent execution
+    headless: false, // Run in headed mode so the browser window is visible
   },
   projects: [
     {

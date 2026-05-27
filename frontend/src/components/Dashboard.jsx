@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/purity */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getChanges, getUsers, createChange, updateChangeStatus, deleteUser, signup } from '../api/apiRoutes';
+import { getChanges, getUsers, createChange, updateChangeStatus, deleteUser, signup, getRoles, addRole, deleteRole, getDepartments, addDepartment, deleteDepartment } from '../api/apiRoutes';
 import {
   LogOut,
   GitPullRequest,
@@ -8,12 +9,10 @@ import {
   Clock,
   TrendingUp,
   Plus,
-  ChevronRight,
   ShieldCheck,
   Zap,
   Loader2,
   Users,
-  FileText,
   LayoutGrid,
   FilePlus,
   ClipboardList,
@@ -26,7 +25,9 @@ import {
   Trash2,
   AlertTriangle,
   RefreshCw,
-  Info
+  Info,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
@@ -168,10 +169,18 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('All');
   
-  const [customRoles, setCustomRoles] = useState(['Admin', 'HOD', 'Operator', 'QA Team', 'Administrator', 'Change Manager', 'Requester']);
-  const [customDepts, setCustomDepts] = useState(['Management', 'PED Team', 'Assembly', 'Quality', 'Engineering', 'Operations']);
+  const [customRoles, setCustomRoles] = useState([]);
+  const [customDepts, setCustomDepts] = useState([]);
   const [visiblePasswords, setVisiblePasswords] = useState({});
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+
+  // Modal states for Custom Role, Custom Department, and Delete Confirmation
+  const [showAddRoleModal, setShowAddRoleModal] = useState(false);
+  const [newCustomRoleInput, setNewCustomRoleInput] = useState('');
+  const [showAddDeptModal, setShowAddDeptModal] = useState(false);
+  const [newCustomDeptInput, setNewCustomDeptInput] = useState('');
+  const [userToDelete, setUserToDelete] = useState(null);
+
 
   // Create a new user account
   const handleCreateUser = async (e) => {
@@ -212,12 +221,18 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   };
 
   // Delete user account
-  const handleDeleteUser = async (id, email, name) => {
-    if (!window.confirm(`Are you sure you want to delete user "${name || email}"?`)) return;
+  const handleDeleteUser = (id, email, name) => {
+    setUserToDelete({ id, email, name });
+  };
+
+  const executeDeleteUser = async () => {
+    if (!userToDelete) return;
+    const { id, email, name } = userToDelete;
     try {
       await deleteUser(id);
       setToastMsg('User deleted successfully.');
       logAction('User Deleted', `Removed account for ${name || email} (${email}).`);
+      setUserToDelete(null);
       fetchUsers();
     } catch (err) {
       console.error(err);
@@ -233,29 +248,98 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     }));
   };
 
-  // Add custom Role
+  // Open Custom Role Modal
   const handleAddCustomRole = () => {
-    const roleName = window.prompt("Enter new custom role name:");
-    if (roleName && roleName.trim()) {
-      const trimmed = roleName.trim();
-      if (!customRoles.includes(trimmed)) {
-        setCustomRoles([...customRoles, trimmed]);
-      }
-      setCreateUserRole(trimmed);
+    setShowAddRoleModal(true);
+    setNewCustomRoleInput('');
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const response = await getRoles();
+      setCustomRoles(response.data);
+    } catch (error) {
+      console.error('Error loading roles:', error);
     }
   };
 
-  // Add custom Department
-  const handleAddCustomDept = () => {
-    const deptName = window.prompt("Enter new custom department name:");
-    if (deptName && deptName.trim()) {
-      const trimmed = deptName.trim();
-      if (!customDepts.includes(trimmed)) {
-        setCustomDepts([...customDepts, trimmed]);
-      }
-      setCreateUserDept(trimmed);
+  const fetchDepartments = async () => {
+    try {
+      const response = await getDepartments();
+      setCustomDepts(response.data);
+    } catch (error) {
+      console.error('Error loading departments:', error);
     }
   };
+
+  const executeAddCustomRole = async (e) => {
+    e.preventDefault();
+    if (newCustomRoleInput && newCustomRoleInput.trim()) {
+      const trimmed = newCustomRoleInput.trim();
+      try {
+        await addRole(trimmed);
+        setCreateUserRole(trimmed);
+        fetchRoles();
+      } catch (err) {
+        console.error(err);
+        setToastMsg(err.response?.data?.error || 'Error saving custom role.');
+      }
+    }
+    setShowAddRoleModal(false);
+    setNewCustomRoleInput('');
+  };
+
+  // Open Custom Department Modal
+  const handleAddCustomDept = () => {
+    setShowAddDeptModal(true);
+    setNewCustomDeptInput('');
+  };
+
+  const executeAddCustomDept = async (e) => {
+    e.preventDefault();
+    if (newCustomDeptInput && newCustomDeptInput.trim()) {
+      const trimmed = newCustomDeptInput.trim();
+      try {
+        await addDepartment(trimmed);
+        setCreateUserDept(trimmed);
+        fetchDepartments();
+      } catch (err) {
+        console.error(err);
+        setToastMsg(err.response?.data?.error || 'Error saving custom department.');
+      }
+    }
+    setShowAddDeptModal(false);
+    setNewCustomDeptInput('');
+  };
+
+  // Delete custom role from selection list
+  const handleDeleteCustomRole = async (roleToDelete) => {
+    try {
+      await deleteRole(roleToDelete);
+      if (createUserRole === roleToDelete) {
+        setCreateUserRole('');
+      }
+      fetchRoles();
+    } catch (err) {
+      console.error(err);
+      setToastMsg('Error deleting role option.');
+    }
+  };
+
+  // Delete custom department from selection list
+  const handleDeleteCustomDept = async (deptToDelete) => {
+    try {
+      await deleteDepartment(deptToDelete);
+      if (createUserDept === deptToDelete) {
+        setCreateUserDept('');
+      }
+      fetchDepartments();
+    } catch (err) {
+      console.error(err);
+      setToastMsg('Error deleting department option.');
+    }
+  };
+
 
 
   // Helper to log audit actions
@@ -316,6 +400,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     if (token) {
       fetchChanges();
       fetchUsers();
+      fetchRoles();
+      fetchDepartments();
       // Log session start once
       logAction('Session Started', `User initialized session with role: ${userRole}`);
     } else {
@@ -724,7 +810,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-grow p-4 sm:p-6 lg:p-8 max-w-[1200px] w-full mx-auto">
+        <main className="flex-grow p-4 sm:p-6 lg:p-8 w-full max-w-none">
           
           {/* TAB: DASHBOARD OVERVIEW */}
           {activeTab === 'dashboard' && (
@@ -1668,7 +1754,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                           onClick={() => setShowFormPassword(!showFormPassword)}
                           className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-650 cursor-pointer"
                         >
-                          <Zap size={14} className={showFormPassword ? "text-[#0066cc] fill-[#0066cc]" : ""} />
+                          {showFormPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                         </button>
                       </div>
                     </div>
@@ -1689,13 +1775,15 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                             <option key={role} value={role}>{role}</option>
                           ))}
                         </select>
-                        <button
-                          type="button"
-                          onClick={handleAddCustomRole}
-                          className="px-3 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-sm font-bold cursor-pointer"
-                        >
-                          +
-                        </button>
+                        {userRole && userRole.toLowerCase().includes('admin') && (
+                          <button
+                            type="button"
+                            onClick={handleAddCustomRole}
+                            className="px-3 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-sm font-bold cursor-pointer"
+                          >
+                            +
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -1715,13 +1803,15 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                             <option key={dept} value={dept}>{dept}</option>
                           ))}
                         </select>
-                        <button
-                          type="button"
-                          onClick={handleAddCustomDept}
-                          className="px-3 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-sm font-bold cursor-pointer"
-                        >
-                          +
-                        </button>
+                        {userRole && userRole.toLowerCase().includes('admin') && (
+                          <button
+                            type="button"
+                            onClick={handleAddCustomDept}
+                            className="px-3 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-sm font-bold cursor-pointer"
+                          >
+                            +
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -1883,7 +1973,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                                           className="text-slate-400 hover:text-slate-650 cursor-pointer"
                                           title={isPasswordVisible ? "Hide Password" : "Show Password"}
                                         >
-                                          <Zap size={11} className={isPasswordVisible ? "text-[#0066cc]" : ""} />
+                                          {isPasswordVisible ? <EyeOff size={11} /> : <Eye size={11} />}
                                         </button>
                                       </div>
                                     </td>
@@ -1988,6 +2078,181 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
         <div className="fixed bottom-6 right-6 bg-slate-900 text-white rounded-xl px-4 py-3 flex items-center gap-2 shadow-xl z-50 animate-slide-in-right text-xs sm:text-sm font-medium">
           <CheckCircle size={16} className="text-emerald-400" />
           <span>{toastMsg}</span>
+        </div>
+      )}
+
+      {/* Custom Role Modal */}
+      {showAddRoleModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-sm w-full mx-auto animate-scale-in relative">
+            <button
+              onClick={() => setShowAddRoleModal(false)}
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-650 cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+            <h4 className="font-heading text-lg font-bold text-slate-900 mb-2">Create Custom Role</h4>
+            <p className="text-slate-500 text-xs mb-4">Enter a name for the new custom role to register in the system.</p>
+            <form onSubmit={executeAddCustomRole} className="space-y-4">
+              <div>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  placeholder="e.g. Lead Engineer"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                  value={newCustomRoleInput}
+                  onChange={(e) => setNewCustomRoleInput(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowAddRoleModal(false)}
+                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
+                >
+                  Add Role
+                </button>
+              </div>
+            </form>
+
+            {/* List of current roles */}
+            <div className="mt-4 border-t border-slate-100 pt-3">
+              <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Existing Roles (Selectable)</h5>
+              <div className="max-h-[140px] overflow-y-auto space-y-1 pr-1 scrollbar-thin">
+                {customRoles.map(role => {
+                  const isDefault = ['Admin', 'User'].includes(role);
+                  return (
+                    <div key={role} className="flex items-center justify-between bg-slate-50 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100">
+                      <span>{role}</span>
+                      {!isDefault && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCustomRole(role)}
+                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                          title="Remove role option"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Department Modal */}
+      {showAddDeptModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-sm w-full mx-auto animate-scale-in relative">
+            <button
+              onClick={() => setShowAddDeptModal(false)}
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-650 cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+            <h4 className="font-heading text-lg font-bold text-slate-900 mb-2">Create Custom Department</h4>
+            <p className="text-slate-500 text-xs mb-4">Enter a name for the new department to register in the system.</p>
+            <form onSubmit={executeAddCustomDept} className="space-y-4">
+              <div>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  placeholder="e.g. DevOps Team"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                  value={newCustomDeptInput}
+                  onChange={(e) => setNewCustomDeptInput(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowAddDeptModal(false)}
+                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
+                >
+                  Add Department
+                </button>
+              </div>
+            </form>
+
+            {/* List of current departments */}
+            <div className="mt-4 border-t border-slate-100 pt-3">
+              <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Existing Departments (Selectable)</h5>
+              <div className="max-h-[140px] overflow-y-auto space-y-1 pr-1 scrollbar-thin">
+                {customDepts.map(dept => {
+                  const isDefault = ['General'].includes(dept);
+                  return (
+                    <div key={dept} className="flex items-center justify-between bg-slate-50 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100">
+                      <span>{dept}</span>
+                      {!isDefault && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCustomDept(dept)}
+                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                          title="Remove department option"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Confirmation Modal */}
+      {userToDelete && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-sm w-full mx-auto animate-scale-in relative">
+            <button
+              onClick={() => setUserToDelete(null)}
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-650 cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+            <div className="flex items-center gap-3 text-rose-600 mb-2">
+              <AlertTriangle size={24} />
+              <h4 className="font-heading text-lg font-bold text-slate-900">Delete Account</h4>
+            </div>
+            <p className="text-slate-500 text-xs mb-4">
+              Are you sure you want to delete the user account for <strong>{userToDelete.name || userToDelete.email}</strong> ({userToDelete.email})? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setUserToDelete(null)}
+                className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-bold transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={executeDeleteUser}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                Delete User
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
