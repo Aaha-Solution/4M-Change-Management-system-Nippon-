@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, signup, forgotPassword, getUsers, deleteUser } from '../controllers/authController.js';
+import { login, signup, forgotPassword, getUsers, deleteUser, updateUser } from '../controllers/authController.js';
 import { getAllChanges, createChange, updateChangeStatus } from '../controllers/changeController.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
 import {
@@ -18,12 +18,9 @@ router.post('/auth/login', login);
 router.post('/auth/signup', signup);
 router.post('/auth/forgot-password', forgotPassword);
 
-// Legacy/root auth routes (for backwards compatibility)
-router.post('/login', login);
-router.post('/forgot-password', forgotPassword);
-
 // Protected routes
 router.get('/users', verifyToken, getUsers);
+router.put('/users/:id', verifyToken, updateUser);
 router.delete('/users/:id', verifyToken, deleteUser);
 router.get('/changes', verifyToken, getAllChanges);
 router.post('/changes', verifyToken, createChange);

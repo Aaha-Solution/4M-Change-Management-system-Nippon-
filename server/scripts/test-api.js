@@ -54,13 +54,13 @@ async function runTests() {
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     assert.strictEqual(data.email, 'admin@cms.com');
-    assert.strictEqual(data.role, 'Administrator');
+    assert.strictEqual(data.role, 'Admin');
     assert.ok(data.token);
     adminToken = data.token;
   });
 
-  // 4. Successful Change Manager Login
-  await test('Change Manager login returns 200 and a JWT token', async () => {
+  // 4. Successful Manager User Login
+  await test('Manager User login returns 200 and a JWT token', async () => {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -69,12 +69,12 @@ async function runTests() {
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     assert.strictEqual(data.email, 'manager@cms.com');
-    assert.strictEqual(data.role, 'Change Manager');
+    assert.strictEqual(data.role, 'User');
     assert.ok(data.token);
   });
 
-  // 5. Successful Requester Login
-  await test('Requester login returns 200 and a JWT token', async () => {
+  // 5. Successful Requester User Login
+  await test('Requester User login returns 200 and a JWT token', async () => {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -83,7 +83,7 @@ async function runTests() {
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     assert.strictEqual(data.email, 'requester@cms.com');
-    assert.strictEqual(data.role, 'Requester');
+    assert.strictEqual(data.role, 'User');
     assert.ok(data.token);
   });
 

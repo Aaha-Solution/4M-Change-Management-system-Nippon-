@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect, react-hooks/purity */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getChanges, getUsers, createChange, updateChangeStatus, deleteUser, signup, getRoles, addRole, deleteRole, getDepartments, addDepartment, deleteDepartment } from '../api/apiRoutes';
+import { getChanges, getUsers, createChange, updateChangeStatus, deleteUser, signup, getRoles, addRole, deleteRole, getDepartments, addDepartment, deleteDepartment, updateUser } from '../api/apiRoutes';
 import {
   LogOut,
   GitPullRequest,
@@ -27,7 +27,8 @@ import {
   RefreshCw,
   Info,
   Eye,
-  EyeOff
+  EyeOff,
+  Edit
 } from 'lucide-react';
 
 export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
@@ -181,6 +182,16 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const [newCustomDeptInput, setNewCustomDeptInput] = useState('');
   const [userToDelete, setUserToDelete] = useState(null);
 
+  // States for Edit User Modal
+  const [userToEdit, setUserToEdit] = useState(null);
+  const [editUserFullName, setEditUserFullName] = useState('');
+  const [editUserEmail, setEditUserEmail] = useState('');
+  const [editUserPassword, setEditUserPassword] = useState('');
+  const [editUserRole, setEditUserRole] = useState('');
+  const [editUserDept, setEditUserDept] = useState('');
+  const [editUserStatus, setEditUserStatus] = useState('Active');
+  const [showEditFormPassword, setShowEditFormPassword] = useState(false);
+
 
   // Create a new user account
   const handleCreateUser = async (e) => {
@@ -237,6 +248,43 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     } catch (err) {
       console.error(err);
       setToastMsg('Error deleting user.');
+    }
+  };
+
+  // Edit user account
+  const handleStartEditUser = (u) => {
+    setUserToEdit(u);
+    setEditUserFullName(u.name || '');
+    setEditUserEmail(u.email || '');
+    setEditUserPassword(''); // Blank initially (only updated if filled)
+    setEditUserRole(u.role || '');
+    setEditUserDept(u.department || '');
+    setEditUserStatus(u.status || 'Active');
+    setShowEditFormPassword(false);
+  };
+
+  const executeEditUser = async (e) => {
+    e.preventDefault();
+    if (!userToEdit) return;
+    try {
+      const payload = {
+        name: editUserFullName.trim(),
+        email: editUserEmail.trim(),
+        role: editUserRole,
+        department: editUserDept,
+        status: editUserStatus
+      };
+      if (editUserPassword.trim()) {
+        payload.password = editUserPassword.trim();
+      }
+      await updateUser(userToEdit.id, payload);
+      setToastMsg('User updated successfully.');
+      logAction('User Updated', `Modified account for ${editUserFullName.trim()} (${editUserEmail.trim()}).`);
+      setUserToEdit(null);
+      fetchUsers();
+    } catch (err) {
+      console.error(err);
+      setToastMsg(err.response?.data?.error || 'Error updating user.');
     }
   };
 
@@ -1985,23 +2033,36 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                                     </td>
                                     {/* Department */}
                                     <td className="p-3 text-slate-600 font-semibold">{u.department || '-'}</td>
-                                    {/* Status (Active) */}
+                                    {/* Status */}
                                     <td className="p-3">
-                                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 border border-emerald-150 text-emerald-700">
+                                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                        (u.status || 'Active') === 'Active'
+                                          ? 'bg-emerald-50 border border-emerald-150 text-emerald-700'
+                                          : 'bg-rose-50 border border-rose-150 text-rose-700'
+                                      }`}>
                                         {u.status || 'Active'}
                                       </span>
                                     </td>
                                     {/* Actions */}
                                     <td className="p-3 text-center">
-                                      {u.email !== userEmail && (
+                                      <div className="flex items-center justify-center gap-1">
                                         <button
-                                          onClick={() => handleDeleteUser(u.id, u.email, u.name)}
-                                          className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors cursor-pointer"
-                                          title="Delete Account"
+                                          onClick={() => handleStartEditUser(u)}
+                                          className="p-1 text-slate-400 hover:text-sky-600 rounded hover:bg-sky-50 transition-colors cursor-pointer"
+                                          title="Edit Account"
                                         >
-                                          <Trash2 size={13} />
+                                          <Edit size={13} />
                                         </button>
-                                      )}
+                                        {u.email !== userEmail && (
+                                          <button
+                                            onClick={() => handleDeleteUser(u.id, u.email, u.name)}
+                                            className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                                            title="Delete Account"
+                                          >
+                                            <Trash2 size={13} />
+                                          </button>
+                                        )}
+                                      </div>
                                     </td>
                                   </tr>
                                 );
@@ -2215,6 +2276,155 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                 })}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Account Modal */}
+      {userToEdit && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-md w-full mx-auto animate-scale-in relative">
+            <div className="absolute inset-x-0 top-0 h-1 bg-[#0066cc] rounded-t-xl" />
+            <button
+              onClick={() => setUserToEdit(null)}
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-650 cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+            <h4 className="font-heading text-lg font-bold text-slate-900 mb-2">Edit User Account</h4>
+            <p className="text-slate-500 text-xs mb-4">Modify account details, change role/department, or reset password.</p>
+            <form onSubmit={executeEditUser} className="space-y-4">
+              {/* Full Name */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. John Doe"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                  value={editUserFullName}
+                  onChange={(e) => setEditUserFullName(e.target.value)}
+                />
+              </div>
+
+              {/* Email Address */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g. john.doe@plant.com"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                  value={editUserEmail}
+                  onChange={(e) => setEditUserEmail(e.target.value)}
+                />
+              </div>
+
+              {/* Password */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Password (Optional)</label>
+                <div className="relative">
+                  <input
+                    type={showEditFormPassword ? 'text' : 'password'}
+                    placeholder="Leave blank to keep current password"
+                    className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                    value={editUserPassword}
+                    onChange={(e) => setEditUserPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowEditFormPassword(!showEditFormPassword)}
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-650 cursor-pointer"
+                  >
+                    {showEditFormPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Role Selection */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Role *</label>
+                <div className="flex gap-2">
+                  <select
+                    required
+                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                    value={editUserRole}
+                    onChange={(e) => setEditUserRole(e.target.value)}
+                  >
+                    <option value="">Select Role</option>
+                    {customRoles.map(role => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
+                  {userRole && userRole.toLowerCase().includes('admin') && (
+                    <button
+                      type="button"
+                      onClick={handleAddCustomRole}
+                      className="px-3 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-sm font-bold cursor-pointer"
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Department Selection */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department *</label>
+                <div className="flex gap-2">
+                  <select
+                    required
+                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                    value={editUserDept}
+                    onChange={(e) => setEditUserDept(e.target.value)}
+                  >
+                    <option value="">Select Department</option>
+                    {customDepts.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                  {userRole && userRole.toLowerCase().includes('admin') && (
+                    <button
+                      type="button"
+                      onClick={handleAddCustomDept}
+                      className="px-3 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-sm font-bold cursor-pointer"
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="space-y-1">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status *</label>
+                <select
+                  required
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                  value={editUserStatus}
+                  onChange={(e) => setEditUserStatus(e.target.value)}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setUserToEdit(null)}
+                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

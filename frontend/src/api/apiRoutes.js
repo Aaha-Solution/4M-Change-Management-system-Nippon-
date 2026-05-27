@@ -90,4 +90,12 @@ export const deleteDepartment = (name) => {
   return axiosInstance.delete(`/departments/${encodeURIComponent(name)}`);
 };
 
+export const updateUser = (id, data) => {
+  return axiosInstance.put(`/users/${id}`, data, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
 

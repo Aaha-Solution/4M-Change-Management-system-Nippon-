@@ -148,4 +148,38 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+export const updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, password, role, department, status } = req.body;
+
+  if (!email || !role) {
+    return res.status(400).json({ error: 'Email and role are required.' });
+  }
+
+  try {
+    // Check if email already exists on another user
+    const [existing] = await pool.query('SELECT id FROM users WHERE email = ? AND id != ?', [email, id]);
+    if (existing.length > 0) {
+      return res.status(409).json({ error: 'Email is already in use by another account.' });
+    }
+
+    if (password && password.trim()) {
+      await pool.query(
+        'UPDATE users SET name = ?, email = ?, password = ?, role = ?, department = ?, status = ? WHERE id = ?',
+        [name || '', email, password, role, department || '', status || 'Active', id]
+      );
+    } else {
+      await pool.query(
+        'UPDATE users SET name = ?, email = ?, role = ?, department = ?, status = ? WHERE id = ?',
+        [name || '', email, role, department || '', status || 'Active', id]
+      );
+    }
+
+    return res.status(200).json({ message: 'User updated successfully.' });
+  } catch (error) {
+    console.error('Error in updateUser controller:', error);
+    return res.status(500).json({ error: 'Failed to update user.' });
+  }
+};
+
 

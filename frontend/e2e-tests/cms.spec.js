@@ -110,4 +110,48 @@ test.describe('Change Management System E2E Flow', () => {
     await expect(page.locator('#rememberMe')).not.toBeChecked();
   });
 
+  test('should edit user details successfully as Admin', async ({ page }) => {
+    // 1. Log in
+    await page.fill('#email', 'admin@cms.com');
+    await page.fill('#password', 'admin123');
+    await page.click('button[type="submit"]');
+
+    // Verify redirection to dashboard
+    await expect(page).toHaveURL(/\/dashboard/);
+
+    // 2. Navigate to "Users" tab
+    await page.click('button:has-text("Users")');
+    await expect(page.locator('h3', { hasText: 'User Management' })).toBeVisible();
+
+    // 3. Find the user row for Priya Venkat (priya.v@plant.com)
+    const row = page.locator('tr', { hasText: 'priya.v@plant.com' });
+    await expect(row).toBeVisible();
+
+    // Click the edit button inside this row (Edit Account title button)
+    await row.locator('button[title="Edit Account"]').click();
+
+    // 4. Verify the Edit User Modal is visible
+    const modal = page.locator('div.fixed.inset-0').filter({ hasText: 'Edit User Account' });
+    await expect(modal).toBeVisible();
+
+    // 5. Change Full Name, Department, and Status
+    await modal.locator('label:has-text("Full Name") + input').fill('Priya Venkat Edited');
+    await modal.locator('label:has-text("Status") + select').selectOption('Inactive');
+
+    // Save changes
+    await modal.locator('button:has-text("Save Changes")').click();
+
+    // 6. Verify success toast and table updates
+    await expect(page.locator('text=User updated successfully.')).toBeVisible();
+    await expect(row).toContainText('Priya Venkat Edited');
+    await expect(row).toContainText('Inactive');
+
+    // 7. Clean up: Re-edit to active state
+    await row.locator('button[title="Edit Account"]').click();
+    await modal.locator('label:has-text("Full Name") + input').fill('Priya Venkat');
+    await modal.locator('label:has-text("Status") + select').selectOption('Active');
+    await modal.locator('button:has-text("Save Changes")').click();
+    await expect(page.locator('text=User updated successfully.')).toBeVisible();
+  });
+
 });
