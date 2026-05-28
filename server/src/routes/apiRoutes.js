@@ -10,6 +10,14 @@ import {
   addDepartment,
   deleteDepartment
 } from '../controllers/optionController.js';
+import {
+  getLogs,
+  createLog,
+  updateLog,
+  deleteLog,
+  getAttachmentFile,
+  resetLogs
+} from '../controllers/effectivenessController.js';
 
 const router = Router();
 
@@ -25,6 +33,14 @@ router.delete('/users/:id', verifyToken, deleteUser);
 router.get('/changes', verifyToken, getAllChanges);
 router.post('/changes', verifyToken, createChange);
 router.put('/changes/:id/status', verifyToken, updateChangeStatus);
+
+// Post-Implementation Effectiveness Monitoring endpoints
+router.get('/effectiveness', verifyToken, getLogs);
+router.post('/effectiveness', verifyToken, createLog);
+router.put('/effectiveness/:id', verifyToken, updateLog);
+router.delete('/effectiveness/:id', verifyToken, deleteLog);
+router.get('/effectiveness/attachment/:logId/:fileName', verifyToken, getAttachmentFile);
+router.post('/effectiveness/reset', verifyToken, resetLogs);
 
 // Roles option endpoints
 router.get('/roles', verifyToken, getRoles);

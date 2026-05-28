@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect, react-hooks/purity */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getChanges, updateChangeStatus } from '../api/apiRoutes';
+import { getChanges, updateChangeStatus, getEffectivenessLogs } from '../api/apiRoutes';
 import {
   LogOut,
   GitPullRequest,
@@ -89,51 +89,9 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     return defaultAudit;
   });
 
-  // Effectiveness Monitoring State (using localStorage with seed data)
-  const [effectivenessLogs, setEffectivenessLogs] = useState(() => {
-    const stored = localStorage.getItem('cms_effectiveness');
-    if (stored) return JSON.parse(stored);
-    const defaultEff = [
-      {
-        id: 'EFF-001',
-        changeNo: 'CHG-8902',
-        reqDate: '2026-05-20',
-        context: 'Upgrade database cluster to PG 16',
-        startDate: '2026-05-22',
-        monthWise: '2026-05',
-        remarks: 'Database performance improved. Read latency reduced by 25%. Replication is stable.',
-        attachment: 'db-perf-report.pdf',
-        status: 'Effectiveness Ok',
-        qaApproval: 'Approved'
-      },
-      {
-        id: 'EFF-002',
-        changeNo: 'CHG-8901',
-        reqDate: '2026-05-19',
-        context: 'Integrate Auth0 SSO provider',
-        startDate: '2026-05-20',
-        monthWise: '2026-05',
-        remarks: 'SSO configuration complete. Active Directory synced successfully. All tests passed.',
-        attachment: 'auth0-signoff.png',
-        status: 'Effectiveness Ok',
-        qaApproval: 'Approved'
-      },
-      {
-        id: 'EFF-003',
-        changeNo: 'CHG-8899',
-        reqDate: '2026-05-18',
-        context: 'Modify API Gateway route rules',
-        startDate: '2026-05-19',
-        monthWise: '2026-05',
-        remarks: 'Response latency slightly increased. Cache hit ratio below expectations.',
-        attachment: 'api-gateway-logs.txt',
-        status: 'Effectiveness Not Ok',
-        qaApproval: 'Rejected'
-      }
-    ];
-    localStorage.setItem('cms_effectiveness', JSON.stringify(defaultEff));
-    return defaultEff;
-  });
+  // Effectiveness Monitoring State (loaded from backend API)
+  const [effectivenessLogs, setEffectivenessLogs] = useState([]);
+  const [isFetchingEffectiveness, setIsFetchingEffectiveness] = useState(false);
 
   // Helper to log audit actions
   const logAction = (action, details) => {
@@ -170,10 +128,25 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   };
 
   // Fetch initial data
+  // Fetch effectiveness logs from backend
+  const fetchEffectiveness = async () => {
+    setIsFetchingEffectiveness(true);
+    try {
+      const response = await getEffectivenessLogs();
+      setEffectivenessLogs(response.data);
+    } catch (error) {
+      console.error(error);
+      setToastMsg('Error loading effectiveness logs from server.');
+    } finally {
+      setIsFetchingEffectiveness(false);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('cms_token') || sessionStorage.getItem('cms_token');
     if (token) {
       fetchChanges();
+      fetchEffectiveness();
       logAction('Session Started', `User initialized session with role: ${userRole}`);
     } else {
       navigate('/', { replace: true });
