@@ -1,0 +1,500 @@
+import { useState } from 'react';
+import { AlertTriangle, RefreshCw, Search, Trash2, X } from 'lucide-react';
+
+export const Effectiveness = ({
+  changes,
+  effectivenessLogs,
+  setEffectivenessLogs,
+  logAction,
+  setToastMsg
+}) => {
+  // Effectiveness Monitoring Form States
+  const [effChangeNo, setEffChangeNo] = useState('');
+  const [effMonthWise, setEffMonthWise] = useState('2026-05');
+  const [effRemarks, setEffRemarks] = useState('');
+  const [effAttachment, setEffAttachment] = useState('');
+  const [effStatus, setEffStatus] = useState('Effectiveness Ok');
+  const [effQaApproval, setEffQaApproval] = useState('Approved');
+  const [editingEffLogId, setEditingEffLogId] = useState(null);
+  const [deleteEffLogId, setDeleteEffLogId] = useState(null);
+
+  // Search & Filter States
+  const [effSearch, setEffSearch] = useState('');
+  const [effFilterStatus, setEffFilterStatus] = useState('All');
+  const [effFilterMonth, setEffFilterMonth] = useState('All');
+
+  // Format month names (e.g. "2026-05" -> "May 2026")
+  const formatMonthWise = (val) => {
+    if (!val) return "-";
+    const parts = val.split("-");
+    if (parts.length === 2) {
+      const year = parts[0];
+      const month = parseInt(parts[1], 10);
+      const date = new Date(year, month - 1, 1);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      }
+    }
+    return val;
+  };
+
+  // Formatted date (e.g., "2026-05-20" -> "20 May")
+  const formatDateShort = (dateStr) => {
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-GB", { day: 'numeric', month: 'short' });
+  };
+
+  // Add or Edit Effectiveness Log
+  const handleAddOrEditEff = (e) => {
+    e.preventDefault();
+    if (!effChangeNo) {
+      setToastMsg('Please select a Change Request.');
+      return;
+    }
+
+    const selectedChange = changes.find(c => c.id === effChangeNo);
+    const context = selectedChange ? selectedChange.title : 'External Assessment';
+    const reqDate = selectedChange ? selectedChange.date : new Date().toLocaleDateString();
+    
+    if (editingEffLogId) {
+      // Edit mode
+      setEffectivenessLogs(prev => {
+        const updated = prev.map(log => {
+          if (log.id === editingEffLogId) {
+            return {
+              ...log,
+              monthWise: effMonthWise,
+              remarks: effRemarks,
+              attachment: effAttachment,
+              status: effStatus,
+              qaApproval: effQaApproval
+            };
+          }
+          return log;
+        });
+        localStorage.setItem('cms_effectiveness', JSON.stringify(updated));
+        return updated;
+      });
+      logAction('Effectiveness Log Updated', `Modified monitoring metrics for ${effChangeNo}.`);
+      setToastMsg(`Updated observations for ${effChangeNo}`);
+      handleCancelEditing();
+    } else {
+      // Create mode
+      const newLog = {
+        id: `EFF-${Date.now().toString().substring(7)}`,
+        changeNo: effChangeNo,
+        reqDate: reqDate,
+        context: context,
+        startDate: new Date().toISOString().split('T')[0],
+        monthWise: effMonthWise,
+        remarks: effRemarks,
+        attachment: effAttachment,
+        status: effStatus,
+        qaApproval: effQaApproval
+      };
+      setEffectivenessLogs(prev => {
+        const updated = [newLog, ...prev];
+        localStorage.setItem('cms_effectiveness', JSON.stringify(updated));
+        return updated;
+      });
+      logAction('Effectiveness Log Created', `Created monitoring observations for change ${effChangeNo}.`);
+      setToastMsg(`Log entry added for ${effChangeNo}`);
+      
+      // Reset form
+      setEffChangeNo('');
+      setEffRemarks('');
+      setEffAttachment('');
+    }
+  };
+
+  // Edit action
+  const handleSelectRowForEdit = (log) => {
+    setEditingEffLogId(log.id);
+    setEffChangeNo(log.changeNo);
+    setEffMonthWise(log.monthWise);
+    setEffRemarks(log.remarks);
+    setEffAttachment(log.attachment || '');
+    setEffStatus(log.status);
+    setEffQaApproval(log.qaApproval);
+  };
+
+  // Cancel edit
+  const handleCancelEditing = () => {
+    setEditingEffLogId(null);
+    setEffChangeNo('');
+    setEffMonthWise('2026-05');
+    setEffRemarks('');
+    setEffAttachment('');
+    setEffStatus('Effectiveness Ok');
+    setEffQaApproval('Approved');
+  };
+
+  // Delete effectiveness record
+  const handleDeleteEff = () => {
+    if (!deleteEffLogId) return;
+    setEffectivenessLogs(prev => {
+      const updated = prev.filter(log => log.id !== deleteEffLogId);
+      localStorage.setItem('cms_effectiveness', JSON.stringify(updated));
+      return updated;
+    });
+    logAction('Effectiveness Log Deleted', `Removed observations record ${deleteEffLogId}`);
+    setToastMsg(`Deleted entry ${deleteEffLogId}`);
+    setDeleteEffLogId(null);
+  };
+
+  // Reset to default logs
+  const handleResetEffToDefaults = () => {
+    localStorage.removeItem('cms_effectiveness');
+    const defaultEff = [
+      {
+        id: 'EFF-001',
+        changeNo: 'CHG-8902',
+        reqDate: '2026-05-20',
+        context: 'Upgrade database cluster to PG 16',
+        startDate: '2026-05-22',
+        monthWise: '2026-05',
+        remarks: 'Database performance improved. Read latency reduced by 25%. Replication is stable.',
+        attachment: 'db-perf-report.pdf',
+        status: 'Effectiveness Ok',
+        qaApproval: 'Approved'
+      },
+      {
+        id: 'EFF-002',
+        changeNo: 'CHG-8901',
+        reqDate: '2026-05-19',
+        context: 'Integrate Auth0 SSO provider',
+        startDate: '2026-05-20',
+        monthWise: '2026-05',
+        remarks: 'SSO configuration complete. Active Directory synced successfully. All tests passed.',
+        attachment: 'auth0-signoff.png',
+        status: 'Effectiveness Ok',
+        qaApproval: 'Approved'
+      },
+      {
+        id: 'EFF-003',
+        changeNo: 'CHG-8899',
+        reqDate: '2026-05-18',
+        context: 'Modify API Gateway route rules',
+        startDate: '2026-05-19',
+        monthWise: '2026-05',
+        remarks: 'Response latency slightly increased. Cache hit ratio below expectations.',
+        attachment: 'api-gateway-logs.txt',
+        status: 'Effectiveness Not Ok',
+        qaApproval: 'Rejected'
+      }
+    ];
+    setEffectivenessLogs(defaultEff);
+    localStorage.setItem('cms_effectiveness', JSON.stringify(defaultEff));
+    setToastMsg('Effectiveness logs restored to default.');
+    logAction('Effectiveness Restored', 'Restored default monitoring records.');
+  };
+
+  // Extract unique months for filter
+  const uniqueMonths = Array.from(new Set(effectivenessLogs.map(l => formatMonthWise(l.monthWise)))).filter(Boolean);
+
+  const filteredLogs = effectivenessLogs.filter(log => {
+    const query = effSearch.toLowerCase();
+    const matchesSearch = log.changeNo.toLowerCase().includes(query) ||
+      log.context.toLowerCase().includes(query) ||
+      log.remarks.toLowerCase().includes(query);
+    const matchesStatus = effFilterStatus === 'All' || log.status === effFilterStatus;
+    const matchesMonth = effFilterMonth === 'All' || formatMonthWise(log.monthWise) === effFilterMonth;
+    return matchesSearch && matchesStatus && matchesMonth;
+  });
+
+  return (
+    <div className="space-y-6 animate-fade-in-up">
+      <div>
+        <h3 className="font-heading text-2xl font-bold text-slate-900">Effectiveness Monitoring</h3>
+        <p className="text-slate-500 text-sm">Add observations and track 3-month post-implementation effectiveness logs.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* Form column */}
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 relative">
+          <div className="absolute inset-x-0 top-0 h-1 bg-[#0066cc] rounded-t-xl" />
+          
+          <h4 className="font-heading text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">
+            {editingEffLogId ? 'Edit Monitoring Log' : 'Add Monitoring Log'}
+          </h4>
+
+          <form onSubmit={handleAddOrEditEff} className="space-y-4">
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase">4M Change No *</label>
+              {editingEffLogId ? (
+                <input
+                  type="text"
+                  disabled
+                  className="w-full bg-slate-100 border border-slate-200 rounded-lg py-2 px-3 text-sm text-slate-500 cursor-not-allowed"
+                  value={effChangeNo}
+                />
+              ) : (
+                <select
+                  required
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                  value={effChangeNo}
+                  onChange={(e) => setEffChangeNo(e.target.value)}
+                >
+                  <option value="">Select Approved Change</option>
+                  {changes.filter(c => c.status === 'Approved' || c.status === 'Completed').map(c => (
+                    <option key={c.id} value={c.id}>{c.id} - {c.title.substring(0, 30)}...</option>
+                  ))}
+                  {changes.filter(c => c.status === 'Approved' || c.status === 'Completed').length === 0 && (
+                    <option value="CHG-DEMO">No Approved Changes (Create DEMO)</option>
+                  )}
+                </select>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase">Month Wise *</label>
+              <input
+                type="month"
+                required
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc]"
+                value={effMonthWise}
+                onChange={(e) => setEffMonthWise(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase">Observation Remarks *</label>
+              <textarea
+                required
+                rows={3}
+                placeholder="Enter evaluation remarks/results..."
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc]"
+                value={effRemarks}
+                onChange={(e) => setEffRemarks(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase">Attachment Filename</label>
+              <input
+                type="text"
+                placeholder="e.g. proof-log.pdf"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc]"
+                value={effAttachment}
+                onChange={(e) => setEffAttachment(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase">Effectiveness Status *</label>
+              <select
+                required
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                value={effStatus}
+                onChange={(e) => setEffStatus(e.target.value)}
+              >
+                <option value="Effectiveness Ok">Effectiveness Ok</option>
+                <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase">QA Approval Decision *</label>
+              <select
+                required
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                value={effQaApproval}
+                onChange={(e) => setEffQaApproval(e.target.value)}
+              >
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+
+            <div className="pt-2 flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+              >
+                {editingEffLogId ? 'Save Changes' : 'Add Log Entry'}
+              </button>
+              {editingEffLogId && (
+                <button
+                  type="button"
+                  onClick={handleCancelEditing}
+                  className="px-3 py-2 border border-slate-200 text-slate-500 hover:bg-slate-50 text-xs font-semibold rounded-lg cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* Table column */}
+        <div className="lg:col-span-8 space-y-4">
+          {/* Search and filters */}
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-wrap gap-3 items-center">
+            <div className="flex-1 min-w-[200px] relative">
+              <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
+              <input
+                type="text"
+                placeholder="Search logs..."
+                className="w-full pl-8 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
+                value={effSearch}
+                onChange={(e) => setEffSearch(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <select
+                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none"
+                value={effFilterStatus}
+                onChange={(e) => setEffFilterStatus(e.target.value)}
+              >
+                <option value="All">All Statuses</option>
+                <option value="Effectiveness Ok">Effectiveness Ok</option>
+                <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
+              </select>
+            </div>
+
+            <div>
+              <select
+                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none"
+                value={effFilterMonth}
+                onChange={(e) => setEffFilterMonth(e.target.value)}
+              >
+                <option value="All">All Months</option>
+                {uniqueMonths.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={handleResetEffToDefaults}
+              className="px-3 py-1.5 border border-slate-200 text-slate-650 hover:bg-slate-50 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
+            >
+              <RefreshCw size={12} /> Reset
+            </button>
+          </div>
+
+          {/* Logs Table Card */}
+          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-150">
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Change No</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Requested</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Context</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Month Wise</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">File</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">QA</th>
+                    <th className="p-3 w-10"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="text-center py-10 text-slate-400">
+                        No observations logs recorded.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredLogs.map(log => {
+                      const isEditing = editingEffLogId === log.id;
+                      return (
+                        <tr
+                          key={log.id}
+                          className={`hover:bg-slate-50/70 transition-colors cursor-pointer ${isEditing ? 'bg-sky-50/50' : ''}`}
+                          onClick={() => handleSelectRowForEdit(log)}
+                        >
+                          <td className="p-3 font-mono font-bold text-slate-650">{log.changeNo}</td>
+                          <td className="p-3 text-slate-500">{formatDateShort(log.reqDate)}</td>
+                          <td className="p-3 font-medium text-slate-800">{log.context}</td>
+                          <td className="p-3 font-medium">{formatMonthWise(log.monthWise)}</td>
+                          <td className="p-3 max-w-[200px] truncate text-slate-500" title={log.remarks}>{log.remarks}</td>
+                          <td className="p-3 font-mono text-teal-655">
+                            {log.attachment ? `📎 ${log.attachment}` : '-'}
+                          </td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              log.status === 'Effectiveness Ok'
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'bg-rose-50 text-rose-700'
+                            }`}>
+                              {log.status}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              log.qaApproval === 'Approved'
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'bg-rose-50 text-rose-700'
+                            }`}>
+                              {log.qaApproval}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => setDeleteEffLogId(log.id)}
+                              className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Delete Log"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Delete Modal */}
+      {deleteEffLogId && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-sm overflow-hidden animate-fade-in-up">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <h4 className="font-heading font-bold text-slate-900">Delete Observation Log</h4>
+              <button onClick={() => setDeleteEffLogId(null)} className="text-slate-400 hover:text-slate-655">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="p-5 flex gap-3.5 items-start">
+              <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle size={18} />
+              </div>
+              <div>
+                <h5 className="font-bold text-sm text-slate-950">Are you sure?</h5>
+                <p className="text-xs text-slate-500 mt-1 leading-normal">
+                  This action will permanently delete the monitoring entry for log ID <strong>{deleteEffLogId}</strong>. This cannot be undone.
+                </p>
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+              <button
+                onClick={() => setDeleteEffLogId(null)}
+                className="px-3.5 py-1.5 border border-slate-250 text-slate-500 hover:bg-slate-100 text-xs font-semibold rounded-lg cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteEff}
+                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+              >
+                Delete Log
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

@@ -154,4 +154,111 @@ test.describe('Change Management System E2E Flow', () => {
     await expect(page.locator('text=User updated successfully.')).toBeVisible();
   });
 
+  test('should perform full Admin workflow across all tabs', async ({ page }) => {
+    // 1. Log in as Admin
+    await page.fill('#email', 'admin@cms.com');
+    await page.fill('#password', 'admin123');
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/dashboard/);
+
+    // 2. Add a new change request
+    await page.locator('header').locator('text=Request Change').click();
+    await expect(page.locator('h2')).toContainText('Request New Change');
+
+    const uniqueTitle = `E2E Refactor Admin Workflow ${Date.now()}`;
+    await page.fill('#form-title', uniqueTitle);
+    await page.click('button:has-text("High")');
+    await page.click('button[type="submit"]');
+
+    // Confirm redirected to Dashboard Overview
+    await expect(page.locator('h2')).toContainText('Dashboard Overview');
+
+    // Get the change ID from the first row in the table
+    const tableRow = page.locator('tbody tr').first();
+    await expect(tableRow).toContainText(uniqueTitle);
+    const changeId = (await tableRow.locator('td').first().textContent()).trim();
+    console.log(`Created Change Request ID: ${changeId}`);
+
+    // 3. Go to Approvals and approve the request
+    await page.locator('nav button:has-text("Approvals")').click();
+    const approvalCard = page.locator('div.bg-white', { hasText: changeId });
+    await expect(approvalCard).toBeVisible();
+    await approvalCard.locator('button:has-text("Approve Change")').click();
+
+    // 4. Go to Effectiveness tab and log observation
+    await page.locator('nav button:has-text("Effectiveness")').click();
+    await expect(page.locator('h3', { hasText: 'Effectiveness Monitoring' })).toBeVisible();
+
+    // Fill out the observation form
+    await page.locator('div.space-y-1:has-text("4M Change No") select').selectOption(changeId);
+    await page.fill('input[type="month"]', '2026-05');
+    await page.fill('textarea[placeholder="Enter evaluation remarks/results..."]', 'Observed system performance. Response times normalized and DB replication is stable.');
+    await page.fill('input[placeholder="e.g. proof-log.pdf"]', 'db-perf-report.pdf');
+    await page.locator('div.space-y-1:has-text("Effectiveness Status") select').selectOption('Effectiveness Ok');
+    await page.locator('div.space-y-1:has-text("QA Approval Decision") select').selectOption('Approved');
+    await page.click('button:has-text("Add Log Entry")');
+
+    // Verify it is listed in the logs table
+    const logsTable = page.locator('tbody').last();
+    await expect(logsTable).toContainText(changeId);
+
+    // 5. Go to Reports tab
+    await page.locator('nav button:has-text("Reports")').click();
+    await expect(page.locator('h3', { hasText: 'Reporting Analytics' })).toBeVisible();
+    await expect(page.locator('h5:has-text("Total Logged Changes") + p')).toBeVisible();
+
+    // 6. Go to Users tab and add a custom role, department, and user
+    await page.locator('nav button:has-text("Users")').click();
+    await expect(page.locator('h3', { hasText: 'User Management' })).toBeVisible();
+
+    // Add role
+    await page.locator('button:has-text("+")').nth(0).click();
+    const roleModal = page.locator('div.fixed').filter({ hasText: 'Create Custom Role' });
+    await roleModal.locator('input').fill('Support Specialist');
+    await roleModal.locator('button:has-text("Add Role")').click();
+
+    // Add department
+    await page.locator('button:has-text("+")').nth(1).click();
+    const deptModal = page.locator('div.fixed').filter({ hasText: 'Create Custom Department' });
+    await deptModal.locator('input').fill('Customer Support');
+    await deptModal.locator('button:has-text("Add Department")').click();
+
+    // Create user account
+    await page.locator('div.space-y-1:has-text("Full Name *") input').fill('Workflow Test User');
+    await page.locator('div.space-y-1:has-text("Email Address *") input').fill('wf.test.user@cms.com');
+    await page.locator('div.space-y-1:has-text("Password *") input').fill('password123');
+    await page.locator('div.space-y-1:has-text("Role *") select').selectOption('Support Specialist');
+    await page.locator('div.space-y-1:has-text("Department *") select').selectOption('Customer Support');
+    await page.click('button:has-text("Create Account")');
+
+    // Verify user is in list
+    const userRow = page.locator('tr', { hasText: 'wf.test.user@cms.com' });
+    await expect(userRow).toBeVisible();
+
+    // Clean up user
+    await userRow.locator('button[title="Delete Account"]').click();
+    await page.click('button:has-text("Delete User")');
+
+    // Clean up role
+    await page.locator('button:has-text("+")').nth(0).click();
+    const roleRow = page.locator('div:has-text("Support Specialist")').last();
+    await roleRow.locator('button[title="Remove role option"]').click();
+    await page.click('button:has-text("Cancel")');
+
+    // Clean up department
+    await page.locator('button:has-text("+")').nth(1).click();
+    const deptRow = page.locator('div:has-text("Customer Support")').last();
+    await deptRow.locator('button[title="Remove department option"]').click();
+    await page.click('button:has-text("Cancel")');
+
+    // 7. Go to Settings tab
+    await page.locator('nav button:has-text("Settings")').click();
+    await expect(page.locator('h3', { hasText: 'System Settings' })).toBeVisible();
+    await expect(page.locator('main span:has-text("admin@cms.com")')).toBeVisible();
+
+    // 8. Log out
+    await page.click('button:has-text("Sign Out")');
+    await expect(page).toHaveURL(/\/$/);
+  });
+
 });
