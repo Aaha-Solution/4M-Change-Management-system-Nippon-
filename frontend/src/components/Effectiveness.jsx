@@ -204,6 +204,24 @@ export const Effectiveness = ({
     return matchesSearch && matchesStatus && matchesMonth;
   });
 
+  const selectedChange = changes.find(c => c.id === effChangeNo);
+  const currentLog = effectivenessLogs.find(l => l.id === editingEffLogId);
+
+  // Derive values for requested date, context, start date
+  let displayReqDate = '';
+  let displayContext = '';
+  let displayStartDate = '';
+
+  if (editingEffLogId && currentLog) {
+    displayReqDate = formatDateShort(currentLog.reqDate);
+    displayContext = currentLog.context;
+    displayStartDate = formatDateShort(currentLog.startDate);
+  } else if (selectedChange) {
+    displayReqDate = formatDateShort(selectedChange.date);
+    displayContext = selectedChange.title;
+    displayStartDate = formatDateShort(selectedChange.date);
+  }
+
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div>
@@ -224,7 +242,7 @@ export const Effectiveness = ({
           <form onSubmit={handleAddOrEditEff} className="space-y-4">
             <div className="space-y-1">
               <label className="block text-[11px] font-bold text-slate-400 uppercase">4M Change No *</label>
-              {editingEffLogId ? (
+              {editingEffLogId || effChangeNo ? (
                 <input
                   type="text"
                   disabled
@@ -249,12 +267,49 @@ export const Effectiveness = ({
               )}
             </div>
 
+            {/* Requested Date (Read Only) */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase">Requested Date *</label>
+              <input
+                type="text"
+                disabled
+                placeholder="e.g. 16 May"
+                className="w-full bg-slate-100 border border-slate-200 rounded-lg py-2 px-3 text-sm text-slate-500 cursor-not-allowed"
+                value={displayReqDate}
+              />
+            </div>
+
+            {/* Context of Change (Read Only) */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase">Context of Change *</label>
+              <input
+                type="text"
+                disabled
+                placeholder="e.g. Gauge R&R Study"
+                className="w-full bg-slate-100 border border-slate-200 rounded-lg py-2 px-3 text-sm text-slate-500 cursor-not-allowed"
+                value={displayContext}
+              />
+            </div>
+
+            {/* Change Date Start (Read Only) */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-400 uppercase">Change Date Start *</label>
+              <input
+                type="text"
+                disabled
+                placeholder="e.g. 17 May"
+                className="w-full bg-slate-100 border border-slate-200 rounded-lg py-2 px-3 text-sm text-slate-500 cursor-not-allowed"
+                value={displayStartDate}
+              />
+            </div>
+
             <div className="space-y-1">
               <label className="block text-[11px] font-bold text-slate-400 uppercase">Month Wise *</label>
               <input
                 type="month"
                 required
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc]"
+                disabled={!effChangeNo}
+                className={`w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
                 value={effMonthWise}
                 onChange={(e) => setEffMonthWise(e.target.value)}
               />
@@ -264,9 +319,10 @@ export const Effectiveness = ({
               <label className="block text-[11px] font-bold text-slate-400 uppercase">Observation Remarks *</label>
               <textarea
                 required
+                disabled={!effChangeNo}
                 rows={3}
                 placeholder="Enter evaluation remarks/results..."
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc]"
+                className={`w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
                 value={effRemarks}
                 onChange={(e) => setEffRemarks(e.target.value)}
               />
@@ -276,8 +332,9 @@ export const Effectiveness = ({
               <label className="block text-[11px] font-bold text-slate-400 uppercase">Attachment Filename</label>
               <input
                 type="text"
+                disabled={!effChangeNo}
                 placeholder="e.g. proof-log.pdf"
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc]"
+                className={`w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
                 value={effAttachment}
                 onChange={(e) => setEffAttachment(e.target.value)}
               />
@@ -287,7 +344,8 @@ export const Effectiveness = ({
               <label className="block text-[11px] font-bold text-slate-400 uppercase">Effectiveness Status *</label>
               <select
                 required
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                disabled={!effChangeNo}
+                className={`w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
                 value={effStatus}
                 onChange={(e) => setEffStatus(e.target.value)}
               >
@@ -300,7 +358,8 @@ export const Effectiveness = ({
               <label className="block text-[11px] font-bold text-slate-400 uppercase">QA Approval Decision *</label>
               <select
                 required
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                disabled={!effChangeNo}
+                className={`w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
                 value={effQaApproval}
                 onChange={(e) => setEffQaApproval(e.target.value)}
               >
@@ -312,11 +371,12 @@ export const Effectiveness = ({
             <div className="pt-2 flex gap-2">
               <button
                 type="submit"
-                className="flex-1 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                disabled={!effChangeNo}
+                className={`flex-1 py-2 text-white text-xs font-bold rounded-lg transition-colors ${!effChangeNo ? 'bg-[#0066cc]/50 cursor-not-allowed' : 'bg-[#0066cc] hover:bg-[#0052a3] cursor-pointer'}`}
               >
                 {editingEffLogId ? 'Save Changes' : 'Add Log Entry'}
               </button>
-              {editingEffLogId && (
+              {(editingEffLogId || effChangeNo) && (
                 <button
                   type="button"
                   onClick={handleCancelEditing}
