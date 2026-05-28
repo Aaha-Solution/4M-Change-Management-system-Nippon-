@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, RefreshCw, Search, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Paperclip, RefreshCw, Search, Trash2, X } from 'lucide-react';
 
 export const Effectiveness = ({
   changes,
@@ -13,10 +13,56 @@ export const Effectiveness = ({
   const [effMonthWise, setEffMonthWise] = useState('2026-05');
   const [effRemarks, setEffRemarks] = useState('');
   const [effAttachment, setEffAttachment] = useState('');
-  const [effStatus, setEffStatus] = useState('Effectiveness Ok');
-  const [effQaApproval, setEffQaApproval] = useState('Approved');
+  const [effStatus, setEffStatus] = useState('');
+  const [effQaApproval, setEffQaApproval] = useState('');
   const [editingEffLogId, setEditingEffLogId] = useState(null);
   const [deleteEffLogId, setDeleteEffLogId] = useState(null);
+  const [fileUrls, setFileUrls] = useState({});
+
+  const handleViewAttachment = (filename) => {
+    if (!filename) return;
+    const url = fileUrls[filename];
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>Preview - ${filename}</title>
+              <script src="https://cdn.tailwindcss.com"></script>
+              <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+              <style>
+                body { font-family: 'Inter', sans-serif; }
+              </style>
+            </head>
+            <body class="bg-slate-50 flex flex-col items-center justify-center min-h-screen p-6">
+              <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-xl max-w-md w-full text-center space-y-6">
+                <div class="w-20 h-20 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mx-auto text-4xl">
+                  📄
+                </div>
+                <div>
+                  <h2 class="text-xl font-bold text-slate-800">${filename}</h2>
+                  <p class="text-sm text-slate-500 mt-1">Mock Attachment Document</p>
+                </div>
+                <div class="border-t border-b border-slate-100 py-4 text-left text-xs text-slate-500 space-y-2">
+                  <div class="flex justify-between"><span class="font-semibold text-slate-600">File Type:</span> <span>${filename.split('.').pop().toUpperCase()} File</span></div>
+                  <div class="flex justify-between"><span class="font-semibold text-slate-600">Storage:</span> <span>Local Mock System</span></div>
+                  <div class="flex justify-between"><span class="font-semibold text-slate-600">Verification Status:</span> <span class="text-emerald-600 font-bold">Verified</span></div>
+                </div>
+                <p class="text-xs text-slate-400 italic">This is a mock visualization of the uploaded evidence log file for demonstration purposes.</p>
+                <button onclick="window.close()" class="w-full py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
+                  Close Preview
+                </button>
+              </div>
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      }
+    }
+  };
 
   // Search & Filter States
   const [effSearch, setEffSearch] = useState('');
@@ -51,6 +97,14 @@ export const Effectiveness = ({
     e.preventDefault();
     if (!effChangeNo) {
       setToastMsg('Please select a Change Request.');
+      return;
+    }
+    if (!effStatus) {
+      setToastMsg('Please select Effectiveness Status.');
+      return;
+    }
+    if (!effQaApproval) {
+      setToastMsg('Please select QA Approval Decision.');
       return;
     }
 
@@ -106,6 +160,8 @@ export const Effectiveness = ({
       setEffChangeNo('');
       setEffRemarks('');
       setEffAttachment('');
+      setEffStatus('');
+      setEffQaApproval('');
     }
   };
 
@@ -127,8 +183,17 @@ export const Effectiveness = ({
     setEffMonthWise('2026-05');
     setEffRemarks('');
     setEffAttachment('');
-    setEffStatus('Effectiveness Ok');
-    setEffQaApproval('Approved');
+    setEffStatus('');
+    setEffQaApproval('');
+  };
+
+  const handleSelectChangeNo = (val) => {
+    setEffChangeNo(val);
+    setEffMonthWise('2026-05');
+    setEffRemarks('');
+    setEffAttachment('');
+    setEffStatus('');
+    setEffQaApproval('');
   };
 
   // Delete effectiveness record
@@ -254,7 +319,7 @@ export const Effectiveness = ({
                   required
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
                   value={effChangeNo}
-                  onChange={(e) => setEffChangeNo(e.target.value)}
+                  onChange={(e) => handleSelectChangeNo(e.target.value)}
                 >
                   <option value="">Select Approved Change</option>
                   {changes.filter(c => c.status === 'Approved' || c.status === 'Completed').map(c => (
@@ -329,15 +394,85 @@ export const Effectiveness = ({
             </div>
 
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase">Attachment Filename</label>
-              <input
-                type="text"
-                disabled={!effChangeNo}
-                placeholder="e.g. proof-log.pdf"
-                className={`w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
-                value={effAttachment}
-                onChange={(e) => setEffAttachment(e.target.value)}
-              />
+              <label className="block text-[11px] font-bold text-slate-400 uppercase">Attachments</label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    disabled={!effChangeNo}
+                    placeholder="e.g. proof-log.pdf"
+                    className={`w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] pr-8 ${!effChangeNo ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
+                    value={effAttachment}
+                    onChange={(e) => setEffAttachment(e.target.value)}
+                  />
+                  {effAttachment && (
+                    <button
+                      type="button"
+                      disabled={!effChangeNo}
+                      onClick={() => setEffAttachment('')}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                      title="Clear all attachments"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+                <label className={`flex items-center justify-center gap-1.5 px-3 py-2 border border-slate-200 rounded-lg text-xs font-bold transition-all cursor-pointer ${!effChangeNo ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'}`}>
+                  <Paperclip size={14} />
+                  <span>Upload</span>
+                  <input
+                    type="file"
+                    multiple
+                    disabled={!effChangeNo}
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        const names = Array.from(e.target.files).map(f => f.name);
+                        
+                        // Store object URLs for preview
+                        const newUrls = {};
+                        Array.from(e.target.files).forEach(file => {
+                          newUrls[file.name] = URL.createObjectURL(file);
+                        });
+                        setFileUrls(prev => ({ ...prev, ...newUrls }));
+
+                        const existing = effAttachment ? effAttachment.split(',').map(s => s.trim()).filter(Boolean) : [];
+                        const updated = Array.from(new Set([...existing, ...names])).join(', ');
+                        setEffAttachment(updated);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              {/* Render Selected File Pills */}
+              {effAttachment && (
+                <div className="flex flex-wrap gap-1.5 pt-1.5">
+                  {effAttachment.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-[11px] font-medium text-slate-700 px-2 py-0.5 rounded-full select-none">
+                      <span 
+                        onClick={() => handleViewAttachment(file)}
+                        className="truncate max-w-[150px] cursor-pointer hover:underline text-teal-700 font-semibold" 
+                        title="Click to view file"
+                      >
+                        📎 {file}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={!effChangeNo}
+                        onClick={() => {
+                          const existing = effAttachment.split(',').map(s => s.trim()).filter(Boolean);
+                          const updated = existing.filter(f => f !== file).join(', ');
+                          setEffAttachment(updated);
+                        }}
+                        className="text-slate-400 hover:text-rose-650 font-bold ml-0.5 cursor-pointer text-xs"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -349,6 +484,7 @@ export const Effectiveness = ({
                 value={effStatus}
                 onChange={(e) => setEffStatus(e.target.value)}
               >
+                <option value="">Select Status</option>
                 <option value="Effectiveness Ok">Effectiveness Ok</option>
                 <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
               </select>
@@ -363,6 +499,7 @@ export const Effectiveness = ({
                 value={effQaApproval}
                 onChange={(e) => setEffQaApproval(e.target.value)}
               >
+                <option value="">Select QA Decision</option>
                 <option value="Approved">Approved</option>
                 <option value="Rejected">Rejected</option>
               </select>
@@ -476,7 +613,23 @@ export const Effectiveness = ({
                           <td className="p-3 font-medium">{formatMonthWise(log.monthWise)}</td>
                           <td className="p-3 max-w-[200px] truncate text-slate-500" title={log.remarks}>{log.remarks}</td>
                           <td className="p-3 font-mono text-teal-655">
-                            {log.attachment ? `📎 ${log.attachment}` : '-'}
+                            {log.attachment ? (
+                              <div className="flex flex-col gap-1">
+                                {log.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                                  <span 
+                                    key={idx} 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleViewAttachment(file);
+                                    }}
+                                    className="inline-flex items-center gap-1 bg-slate-50 border border-slate-150 text-[10px] font-medium text-slate-700 px-1.5 py-0.5 rounded-full w-max max-w-[120px] truncate hover:bg-slate-100 hover:border-teal-500 hover:text-teal-700 cursor-pointer" 
+                                    title="Click to view file"
+                                  >
+                                    📎 {file}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : '-'}
                           </td>
                           <td className="p-3">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
