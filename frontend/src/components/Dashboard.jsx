@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect, react-hooks/purity */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getChanges, updateChangeStatus, getEffectivenessLogs } from '../api/apiRoutes';
+import { getChanges, updateChangeStatus, getEffectivenessLogs, getNotifications } from '../api/apiRoutes';
 import {
   LogOut,
   GitPullRequest,
@@ -20,7 +20,12 @@ import {
   BarChart3,
   Settings as SettingsIcon,
   Menu,
-  X
+  X,
+  CheckCheck,
+  ListTodo,
+  Bell,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 import { DashboardOverview } from './DashboardOverview';
@@ -32,11 +37,15 @@ import { Reports } from './Reports';
 import { AuditLog } from './AuditLog';
 import { Users } from './Users';
 import { Settings } from './Settings';
+import { Notifications } from './Notifications';
 
 export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'new-request' | 'all-requests' | 'approvals' | 'effectiveness' | 'reports' | 'audit-log' | 'users' | 'settings'
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'new-request' | 'all-requests' | 'approvals' | 'effectiveness' | 'reports' | 'audit-log' | 'users' | 'settings' | 'notifications'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [levelOpen, setLevelOpen] = useState(true);
+  const [notifications, setNotifications] = useState([]);
+  const [isFetchingNotifications, setIsFetchingNotifications] = useState(false);
   
   const handleLocalSignOut = () => {
     logAction('Sign Out', 'User logged out of the system.');
@@ -142,11 +151,26 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     }
   };
 
+  // Fetch notifications from backend
+  const fetchNotifications = async () => {
+    setIsFetchingNotifications(true);
+    try {
+      const response = await getNotifications();
+      setNotifications(response.data);
+    } catch (error) {
+      console.error(error);
+      setToastMsg('Error loading notifications from server.');
+    } finally {
+      setIsFetchingNotifications(false);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('cms_token') || sessionStorage.getItem('cms_token');
     if (token) {
       fetchChanges();
       fetchEffectiveness();
+      fetchNotifications();
       logAction('Session Started', `User initialized session with role: ${userRole}`);
     } else {
       navigate('/', { replace: true });
@@ -236,40 +260,156 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
           </div>
 
           {/* Navigation Links Group */}
-          <nav className="p-4 space-y-6 overflow-y-auto max-h-[calc(100vh-160px)]">
-            {navigationItems.map((group) => (
-              <div key={group.group} className="space-y-1">
-                <h3 className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest">{group.group}</h3>
-                <ul className="space-y-0.5">
-                  {group.items.map((item) => {
-                    const IconComponent = item.icon;
-                    const isActive = activeTab === item.id;
-                    return (
-                      <li key={item.id}>
-                        <button
-                          onClick={() => handleTabChange(item.id)}
-                          className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${
-                            isActive
-                              ? 'bg-sky-50 text-[#0066cc] rounded-lg'
-                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <IconComponent size={18} className={isActive ? 'text-[#0066cc]' : 'text-slate-400'} />
-                            <span>{item.label}</span>
-                          </div>
-                          {item.badge !== undefined && item.badge > 0 && (
-                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-[#0066cc]/10 text-[#0066cc]' : 'bg-slate-100 text-slate-600'}`}>
-                              {item.badge}
-                            </span>
-                          )}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+          <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-160px)]">
+            
+            {/* Dashboard */}
+            <button
+              onClick={() => handleTabChange('dashboard')}
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
+                activeTab === 'dashboard'
+                  ? 'bg-sky-50 text-[#0066cc]'
+                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <LayoutGrid size={18} className={activeTab === 'dashboard' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                <span>Dashboard</span>
               </div>
-            ))}
+            </button>
+
+            {/* All Requests */}
+            <button
+              onClick={() => handleTabChange('all-requests')}
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
+                activeTab === 'all-requests'
+                  ? 'bg-sky-50 text-[#0066cc]'
+                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <ClipboardList size={18} className={activeTab === 'all-requests' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                <span>All Requests</span>
+              </div>
+            </button>
+
+            {/* Level Expandable */}
+            <div className="space-y-0.5">
+              <button
+                onClick={() => setLevelOpen(!levelOpen)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
+                  (activeTab === 'l1' || activeTab === 'approvals' || activeTab === 'new-request')
+                    ? 'bg-sky-50 text-[#0066cc]'
+                    : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <FilePlus size={18} className={(activeTab === 'l1' || activeTab === 'approvals' || activeTab === 'new-request') ? 'text-[#0066cc]' : 'text-slate-400'} />
+                  <span>Level</span>
+                </div>
+                {levelOpen ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
+              </button>
+
+              {/* L1, L2 and L3 Sub-menu */}
+              {levelOpen && (
+                <div className="pl-6 space-y-0.5 border-l border-slate-100 ml-5 py-1">
+                  {/* L1 */}
+                  <button
+                    onClick={() => handleTabChange('l1')}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${
+                      activeTab === 'l1'
+                        ? 'bg-sky-50/70 text-[#0066cc]'
+                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <CheckCircle size={14} className={activeTab === 'l1' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                      <span>L1</span>
+                    </div>
+                  </button>
+
+                  {/* L2 */}
+                  <button
+                    onClick={() => handleTabChange('approvals')}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${
+                      activeTab === 'approvals'
+                        ? 'bg-sky-50/70 text-[#0066cc]'
+                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <CheckCheck size={14} className={activeTab === 'approvals' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                      <span>L2</span>
+                    </div>
+                  </button>
+
+                  {/* L3 */}
+                  <button
+                    onClick={() => handleTabChange('new-request')}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${
+                      activeTab === 'new-request'
+                        ? 'bg-sky-50/70 text-[#0066cc]'
+                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ListTodo size={14} className={activeTab === 'new-request' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                      <span>L3</span>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Effectiveness */}
+            <button
+              onClick={() => handleTabChange('effectiveness')}
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
+                activeTab === 'effectiveness'
+                  ? 'bg-sky-50 text-[#0066cc]'
+                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <TrendingUp size={18} className={activeTab === 'effectiveness' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                <span>Effectiveness</span>
+              </div>
+            </button>
+
+            {/* Notifications */}
+            <button
+              onClick={() => handleTabChange('notifications')}
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
+                activeTab === 'notifications'
+                  ? 'bg-sky-50 text-[#0066cc]'
+                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Bell size={18} className={activeTab === 'notifications' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                <span>Notifications</span>
+              </div>
+              {notifications.filter(n => !n.isRead).length > 0 && (
+                <span className="w-5 h-5 flex items-center justify-center bg-rose-600 text-white font-bold text-[10px] rounded-full">
+                  {notifications.filter(n => !n.isRead).length}
+                </span>
+              )}
+            </button>
+
+            {/* Users */}
+            <button
+              onClick={() => handleTabChange('users')}
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
+                activeTab === 'users'
+                  ? 'bg-sky-50 text-[#0066cc]'
+                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <UsersIcon size={18} className={activeTab === 'users' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                <span>Users</span>
+              </div>
+            </button>
+
           </nav>
         </div>
 
@@ -316,7 +456,12 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             </button>
             <div>
               <h2 className="font-heading text-lg sm:text-xl font-bold text-slate-900">
-                {activeTab === 'dashboard' ? 'Dashboard Overview' : activeTab === 'new-request' ? 'Request New Change' : activeTab.replace('-', ' ')}
+                {activeTab === 'dashboard' ? 'Dashboard Overview' : 
+                 activeTab === 'new-request' ? 'Request New Change' : 
+                 activeTab === 'approvals' ? 'L2 Approvals' : 
+                 activeTab === 'notifications' ? 'Notifications Feed' : 
+                 activeTab === 'l1' ? 'L1 Approvals' :
+                 activeTab.replace('-', ' ')}
               </h2>
             </div>
           </div>
@@ -375,8 +520,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             />
           )}
 
-          {/* TAB: APPROVALS */}
-          {activeTab === 'approvals' && (
+          {/* TAB: APPROVALS & L1 */}
+          {(activeTab === 'approvals' || activeTab === 'l1') && (
             <Approvals
               userRole={userRole}
               changes={changes}
@@ -400,6 +545,16 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <Reports
               changes={changes}
               effectivenessLogs={effectivenessLogs}
+            />
+          )}
+
+          {/* TAB: NOTIFICATIONS */}
+          {activeTab === 'notifications' && (
+            <Notifications
+              setToastMsg={setToastMsg}
+              notifications={notifications}
+              setNotifications={setNotifications}
+              fetchNotifications={fetchNotifications}
             />
           )}
 

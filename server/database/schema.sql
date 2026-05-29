@@ -4,6 +4,7 @@
 -- -------------------------------------------------------------
 
 -- Drop tables if they already exist (for clean initialization)
+DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS effectiveness_attachments;
 DROP TABLE IF EXISTS effectiveness_logs;
 DROP TABLE IF EXISTS change_requests;
@@ -75,7 +76,12 @@ INSERT INTO users (email, password, role, name, department, status) VALUES
 ('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active'),
 ('manager@cms.com', 'manager123', 'User', 'Manager User', 'General', 'Active'),
 ('requester@cms.com', 'requester123', 'User', 'Requester User', 'General', 'Active');
-
+-- Seed change requests
+INSERT INTO change_requests (id, title, requester, date, priority, status) VALUES
+('CHG-8902', 'Upgrade production database cluster to PostgreSQL 16', 'admin@cms.com', '2026-05-20', 'High', 'Approved'),
+('CHG-8901', 'Integrate Auth0 SSO provider for corporate domain', 'manager@cms.com', '2026-05-19', 'High', 'Approved'),
+('CHG-8899', 'Modify API Gateway route rules for caching layers', 'requester@cms.com', '2026-05-18', 'Medium', 'Evaluating'),
+('CHG-8895', 'Resolve security vulnerability CVE-2026-3392', 'admin@cms.com', '2026-05-15', 'High', 'Completed');
 
 
 -- 3. Effectiveness Logs Table
@@ -102,4 +108,29 @@ CREATE TABLE effectiveness_attachments (
     file_type VARCHAR(100) NOT NULL, -- e.g. 'application/pdf', 'image/png'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 5. Notifications Table
+CREATE TABLE notifications (
+    id VARCHAR(50) PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    details TEXT NOT NULL,
+    change_no VARCHAR(50) NOT NULL DEFAULT '',
+    category VARCHAR(50) NOT NULL DEFAULT '',
+    dept VARCHAR(100) NOT NULL DEFAULT '',
+    time_str VARCHAR(100) NOT NULL DEFAULT '',
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    type VARCHAR(100) NOT NULL DEFAULT '',
+    color VARCHAR(20) NOT NULL DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Seed notifications
+INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color) VALUES
+('ALR-001', 'L2 Setup Validation Awaiting', 'Change Request 4M-2026-248 (Machine change in Welding Line A) requires L2 PED validation setup checklist.', '4M-2026-248', 'MACHINE', 'PED', 'Just now', FALSE, 'Action Required', 'blue'),
+('ALR-002', 'Change Request Approved by HOD', 'Change Request 4M-2026-247 (Method calibration) has been approved by L3 HOD and forwarded to unit supervisor.', '4M-2026-247', 'METHOD', 'QAD', '2 hours ago', TRUE, 'System Logs', 'green'),
+('ALR-003', 'L3 Final Review Required', 'Change Request 4M-2026-246 (Material spec adjustment in Injection Moulding B) reached L3 review stages.', '4M-2026-246', 'MATERIAL', 'PRODUCTION', '5 hours ago', FALSE, 'Action Required', 'blue'),
+('ALR-004', 'Change Request Rejected', 'Change Request 4M-2026-244 (Man training syllabus update) was rejected by Unit Head. Comments: Needs syllabus validation.', '4M-2026-244', 'MAN', 'MAINTENANCE', 'Yesterday', TRUE, 'System Logs', 'red'),
+('ALR-005', 'Effectiveness Evaluation Due', 'The 3-Month QA post-implementation observation logs are now due for approved Request 4M-2026-231.', '4M-2026-231', 'SYSTEM', 'QA', '3 days ago', FALSE, 'Action Required', 'orange'),
+('ALR-006', 'SSO Certificate Re-signature Done', 'SSO provider Auth0 corporate domain certificate updated and verified.', '4M-2026-230', 'SYSTEM', 'IT', '4 days ago', TRUE, 'System Logs', 'green');
+
 

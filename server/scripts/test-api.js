@@ -211,6 +211,113 @@ async function runTests() {
     assert.strictEqual(data.error, 'Title and Requester are required fields.');
   });
 
+  // 12. Reset Notifications
+  await test('Reset notifications to defaults', async () => {
+    const res = await fetch(`${API_BASE}/notifications/reset`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.message, 'Notifications reset to defaults successfully.');
+  });
+
+  // 13. Get Notifications list
+  let testNotifId = '';
+  await test('Fetch notifications list', async () => {
+    const res = await fetch(`${API_BASE}/notifications`, {
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    assert.strictEqual(res.status, 200);
+    const list = await res.json();
+    assert.ok(Array.isArray(list));
+    assert.ok(list.length >= 6);
+    assert.ok(list[0].id);
+    assert.ok(list[0].title);
+    assert.ok(list[0].time); // Verify mapped field is "time" (from time_str)
+    assert.ok(list[0].changeNo);
+    testNotifId = list[0].id;
+  });
+
+  // 14. Toggle Notification read status
+  await test('Toggle notification read status', async () => {
+    const res = await fetch(`${API_BASE}/notifications/${testNotifId}/read`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    assert.strictEqual(res.status, 200);
+    const notif = await res.json();
+    assert.strictEqual(notif.id, testNotifId);
+    assert.ok('isRead' in notif);
+  });
+
+  // 15. Mark all read
+  await test('Mark all notifications as read', async () => {
+    const res = await fetch(`${API_BASE}/notifications/mark-all-read`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.message, 'All notifications marked as read.');
+    
+    // Verify all are indeed read
+    const checkRes = await fetch(`${API_BASE}/notifications`, {
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    const list = await checkRes.json();
+    assert.ok(list.every(n => n.isRead === true));
+  });
+
+  // 16. Clear read notifications
+  await test('Clear read notifications', async () => {
+    const res = await fetch(`${API_BASE}/notifications/clear-read`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.message, 'Read notifications cleared.');
+
+    // Verify notifications is now empty (since all were marked read and then cleared)
+    const checkRes = await fetch(`${API_BASE}/notifications`, {
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    const list = await checkRes.json();
+    assert.strictEqual(list.length, 0);
+  });
+
+  // 17. Restore defaults after clearing
+  await test('Restore notifications default seed', async () => {
+    await fetch(`${API_BASE}/notifications/reset`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    const res = await fetch(`${API_BASE}/notifications`, {
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    const list = await res.json();
+    assert.strictEqual(list.length, 6);
+  });
+
   console.log('\n=======================================');
   console.log(`📊 Test Execution Results:`);
   console.log(`   Passed: ${passedCount}`);

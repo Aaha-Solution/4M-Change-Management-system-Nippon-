@@ -13,10 +13,12 @@ export const login = async (req, res) => {
     return res.status(400).json({ error: 'Email and password are required.' });
   }
 
+  const normalizedEmail = email.trim().toLowerCase();
+
   try {
     const [rows] = await pool.query(
       'SELECT email, role, password FROM users WHERE email = ?',
-      [email]
+      [normalizedEmail]
     );
 
     if (rows.length === 0) {
@@ -73,8 +75,10 @@ export const forgotPassword = async (req, res) => {
     return res.status(400).json({ error: 'Please enter a valid email address.' });
   }
 
+  const normalizedEmail = email.trim().toLowerCase();
+
   try {
-    const [rows] = await pool.query('SELECT email FROM users WHERE email = ?', [email]);
+    const [rows] = await pool.query('SELECT email FROM users WHERE email = ?', [normalizedEmail]);
     if (rows.length === 0) {
       return res.status(404).json({ error: 'No user registered with this email address.' });
     }
@@ -108,15 +112,17 @@ export const signup = async (req, res) => {
   const assignedName = name || '';
   const assignedDept = department || '';
 
+  const normalizedEmail = email.trim().toLowerCase();
+
   try {
-    const [existing] = await pool.query('SELECT email FROM users WHERE email = ?', [email]);
+    const [existing] = await pool.query('SELECT email FROM users WHERE email = ?', [normalizedEmail]);
     if (existing.length > 0) {
       return res.status(409).json({ error: 'Email is already registered.' });
     }
 
     await pool.query(
       'INSERT INTO users (email, password, role, name, department) VALUES (?, ?, ?, ?, ?)',
-      [email, password, assignedRole, assignedName, assignedDept]
+      [normalizedEmail, password, assignedRole, assignedName, assignedDept]
     );
 
     const token = jwt.sign(
@@ -156,9 +162,11 @@ export const updateUser = async (req, res) => {
     return res.status(400).json({ error: 'Email and role are required.' });
   }
 
+  const normalizedEmail = email.trim().toLowerCase();
+
   try {
     // Check if email already exists on another user
-    const [existing] = await pool.query('SELECT id FROM users WHERE email = ? AND id != ?', [email, id]);
+    const [existing] = await pool.query('SELECT id FROM users WHERE email = ? AND id != ?', [normalizedEmail, id]);
     if (existing.length > 0) {
       return res.status(409).json({ error: 'Email is already in use by another account.' });
     }
@@ -166,12 +174,12 @@ export const updateUser = async (req, res) => {
     if (password && password.trim()) {
       await pool.query(
         'UPDATE users SET name = ?, email = ?, password = ?, role = ?, department = ?, status = ? WHERE id = ?',
-        [name || '', email, password, role, department || '', status || 'Active', id]
+        [name || '', normalizedEmail, password, role, department || '', status || 'Active', id]
       );
     } else {
       await pool.query(
         'UPDATE users SET name = ?, email = ?, role = ?, department = ?, status = ? WHERE id = ?',
-        [name || '', email, role, department || '', status || 'Active', id]
+        [name || '', normalizedEmail, role, department || '', status || 'Active', id]
       );
     }
 

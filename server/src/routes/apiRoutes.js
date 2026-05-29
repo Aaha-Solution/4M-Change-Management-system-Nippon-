@@ -18,6 +18,14 @@ import {
   getAttachmentFile,
   resetLogs
 } from '../controllers/effectivenessController.js';
+import {
+  getNotifications,
+  toggleRead,
+  markAllRead,
+  deleteNotification,
+  clearRead,
+  resetNotifications
+} from '../controllers/notificationController.js';
 
 const router = Router();
 
@@ -41,6 +49,14 @@ router.put('/effectiveness/:id', verifyToken, updateLog);
 router.delete('/effectiveness/:id', verifyToken, deleteLog);
 router.get('/effectiveness/attachment/:logId/:fileName', verifyToken, getAttachmentFile);
 router.post('/effectiveness/reset', verifyToken, resetLogs);
+
+// Notifications endpoints
+router.get('/notifications', verifyToken, getNotifications);
+router.put('/notifications/mark-all-read', verifyToken, markAllRead);
+router.put('/notifications/clear-read', verifyToken, clearRead);
+router.put('/notifications/:id/read', verifyToken, toggleRead);
+router.delete('/notifications/:id', verifyToken, deleteNotification);
+router.post('/notifications/reset', verifyToken, resetNotifications);
 
 // Roles option endpoints
 router.get('/roles', verifyToken, getRoles);

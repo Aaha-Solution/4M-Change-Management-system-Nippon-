@@ -57,7 +57,8 @@ export const Login = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      const response = await login({ email, password, rememberMe });
+      const normalizedEmail = email.trim().toLowerCase();
+      const response = await login({ email: normalizedEmail, password, rememberMe });
       const data = response.data;
 
       if (rememberMe) {
