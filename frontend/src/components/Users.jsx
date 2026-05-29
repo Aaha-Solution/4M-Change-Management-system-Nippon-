@@ -782,11 +782,9 @@ export const Users = ({
                 <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email Address *</label>
                 <input
                   type="email"
-                  required
-                  placeholder="e.g. john.doe@plant.com"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                  disabled
+                  className="w-full bg-slate-100 border border-slate-200 rounded-lg py-2 px-3 text-sm text-slate-500 cursor-not-allowed"
                   value={editUserEmail}
-                  onChange={(e) => setEditUserEmail(e.target.value)}
                 />
               </div>
 

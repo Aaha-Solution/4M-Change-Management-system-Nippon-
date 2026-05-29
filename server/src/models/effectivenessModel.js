@@ -1,5 +1,15 @@
 import pool from '../config/db.js';
 
+const parseToISODate = (dateStr) => {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const getLogs = async () => {
   const [rows] = await pool.query(
     `SELECT id, change_no as changeNo, DATE_FORMAT(req_date, '%Y-%m-%d') as reqDate, context, 
@@ -17,10 +27,13 @@ export const createLog = async (logData, attachments) => {
     
     const { id, changeNo, reqDate, context, startDate, monthWise, remarks, attachment, status, qaApproval } = logData;
     
+    const formattedReqDate = parseToISODate(reqDate) || reqDate;
+    const formattedStartDate = parseToISODate(startDate) || startDate;
+    
     await connection.query(
       `INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, changeNo, reqDate, context, startDate, monthWise, remarks, attachment || '', status, qaApproval]
+      [id, changeNo, formattedReqDate, context, formattedStartDate, monthWise, remarks, attachment || '', status, qaApproval]
     );
     
     if (attachments && attachments.length > 0) {
@@ -86,7 +99,15 @@ export const updateLog = async (id, logData, attachments) => {
     }
     
     await connection.commit();
-    return { id, ...logData };
+    
+    const [rows] = await connection.query(
+      `SELECT id, change_no as changeNo, DATE_FORMAT(req_date, '%Y-%m-%d') as reqDate, context, 
+       DATE_FORMAT(start_date, '%Y-%m-%d') as startDate, month_wise as monthWise, remarks, attachment, status, qa_approval as qaApproval 
+       FROM effectiveness_logs 
+       WHERE id = ?`,
+      [id]
+    );
+    return rows.length > 0 ? rows[0] : { id, ...logData };
   } catch (error) {
     await connection.rollback();
     throw error;

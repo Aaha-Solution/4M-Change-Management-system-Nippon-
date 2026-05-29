@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Paperclip, RefreshCw, Search, Trash2, X, Loader2 } from 'lucide-react';
+import { AlertTriangle, Paperclip, RefreshCw, Search, X } from 'lucide-react';
 import { 
   createEffectivenessLog, 
   updateEffectivenessLog, 
@@ -8,6 +8,8 @@ import {
   resetEffectivenessLogs,
   getEffectivenessLogs
 } from '../api/apiRoutes';
+
+const generateEffId = () => `EFF-${Date.now().toString().substring(7)}`;
 
 export const Effectiveness = ({
   changes,
@@ -27,9 +29,7 @@ export const Effectiveness = ({
   const [deleteEffLogId, setDeleteEffLogId] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
   const [previewFile, setPreviewFile] = useState(null);
-  const [previewLog, setPreviewLog] = useState(null);
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
-  const [loadingFile, setLoadingFile] = useState(false);
 
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -46,19 +46,15 @@ export const Effectiveness = ({
   const handleViewAttachment = async (filename, log = null) => {
     if (!filename) return;
     setPreviewFile(filename);
-    setPreviewLog(log);
 
     // If it's a file saved on the server and we don't have a local blob URL
     if (log && log.id && !fileUrls[filename]) {
       try {
-        setLoadingFile(true);
         const response = await getEffectivenessAttachment(log.id, filename);
         const blobUrl = URL.createObjectURL(response.data);
         setFileUrls(prev => ({ ...prev, [filename]: blobUrl }));
       } catch (err) {
         console.error("Error loading attachment from server:", err);
-      } finally {
-        setLoadingFile(false);
       }
     }
   };
@@ -122,7 +118,7 @@ export const Effectiveness = ({
       };
       try {
         const response = await updateEffectivenessLog(editingEffLogId, logData, uploadedFilesList);
-        setEffectivenessLogs(prev => prev.map(log => log.id === editingEffLogId ? response.data.log : log));
+        setEffectivenessLogs(prev => prev.map(log => log.id === editingEffLogId ? { ...log, ...response.data.log } : log));
         logAction('Effectiveness Log Updated', `Modified monitoring metrics for ${effChangeNo}.`);
         setToastMsg(`Updated observations for ${effChangeNo}`);
         handleCancelEditing();
@@ -132,7 +128,7 @@ export const Effectiveness = ({
       }
     } else {
       // Create mode
-      const newId = `EFF-${Date.now().toString().substring(7)}`;
+      const newId = generateEffId();
       const logData = {
         id: newId,
         changeNo: effChangeNo,
@@ -234,9 +230,9 @@ export const Effectiveness = ({
 
   const filteredLogs = effectivenessLogs.filter(log => {
     const query = effSearch.toLowerCase();
-    const matchesSearch = log.changeNo.toLowerCase().includes(query) ||
-      log.context.toLowerCase().includes(query) ||
-      log.remarks.toLowerCase().includes(query);
+    const matchesSearch = (log.changeNo || '').toLowerCase().includes(query) ||
+      (log.context || '').toLowerCase().includes(query) ||
+      (log.remarks || '').toLowerCase().includes(query);
     const matchesStatus = effFilterStatus === 'All' || log.status === effFilterStatus;
     const matchesMonth = effFilterMonth === 'All' || formatMonthWise(log.monthWise) === effFilterMonth;
     return matchesSearch && matchesStatus && matchesMonth;
@@ -372,11 +368,11 @@ export const Effectiveness = ({
                 <div className="relative flex-1">
                   <input
                     type="text"
+                    readOnly
                     disabled={!effChangeNo}
                     placeholder="e.g. proof-log.pdf"
                     className={`w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] pr-8 ${!effChangeNo ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white'}`}
                     value={effAttachment}
-                    onChange={(e) => setEffAttachment(e.target.value)}
                   />
                   {effAttachment && (
                     <button
@@ -576,13 +572,12 @@ export const Effectiveness = ({
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">File</th>
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Status</th>
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">QA</th>
-                    <th className="p-3 w-10"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="text-center py-10 text-slate-400">
+                      <td colSpan={8} className="text-center py-10 text-slate-400">
                         No observations logs recorded.
                       </td>
                     </tr>
@@ -636,15 +631,6 @@ export const Effectiveness = ({
                             }`}>
                               {log.qaApproval}
                             </span>
-                          </td>
-                          <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              onClick={() => setDeleteEffLogId(log.id)}
-                              className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors cursor-pointer"
-                              title="Delete Log"
-                            >
-                              <Trash2 size={13} />
-                            </button>
                           </td>
                         </tr>
                       );
