@@ -718,7 +718,7 @@ export const Effectiveness = ({
                   />
                 ) : previewFile.toLowerCase().endsWith('.pdf') ? (
                   <iframe 
-                    src={fileUrls[previewFile]} 
+                    src={`${fileUrls[previewFile]}#navpanes=0`} 
                     title={previewFile} 
                     className="w-full h-[60vh] rounded border border-slate-200 bg-white" 
                   />

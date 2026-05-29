@@ -76,12 +76,7 @@ INSERT INTO users (email, password, role, name, department, status) VALUES
 ('manager@cms.com', 'manager123', 'User', 'Manager User', 'General', 'Active'),
 ('requester@cms.com', 'requester123', 'User', 'Requester User', 'General', 'Active');
 
--- Seed change requests
-INSERT INTO change_requests (id, title, requester, date, priority, status) VALUES
-('CHG-8902', 'Upgrade production database cluster to PostgreSQL 16', 'admin@cms.com', '2026-05-20', 'High', 'Pending'),
-('CHG-8901', 'Integrate Auth0 SSO provider for corporate domain', 'manager@cms.com', '2026-05-19', 'High', 'Approved'),
-('CHG-8899', 'Modify API Gateway route rules for caching layers', 'requester@cms.com', '2026-05-18', 'Medium', 'Evaluating'),
-('CHG-8895', 'Resolve security vulnerability CVE-2026-3392', 'admin@cms.com', '2026-05-15', 'High', 'Completed');
+
 
 -- 3. Effectiveness Logs Table
 CREATE TABLE effectiveness_logs (
@@ -108,14 +103,3 @@ CREATE TABLE effectiveness_attachments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed effectiveness logs
-INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval) VALUES
-('EFF-001', 'CHG-8902', '2026-05-20', 'Upgrade production database cluster to PostgreSQL 16', '2026-05-22', '2026-05', 'Database performance improved. Read latency reduced by 25%. Replication is stable.', 'db-perf-report.pdf', 'Effectiveness Ok', 'Approved'),
-('EFF-002', 'CHG-8901', '2026-05-19', 'Integrate Auth0 SSO provider for corporate domain', '2026-05-20', '2026-05', 'SSO configuration complete. Active Directory synced successfully. All tests passed.', 'auth0-signoff.png', 'Effectiveness Ok', 'Approved'),
-('EFF-003', 'CHG-8899', '2026-05-18', 'Modify API Gateway route rules for caching layers', '2026-05-19', '2026-05', 'Response latency slightly increased. Cache hit ratio below expectations.', 'api-gateway-logs.txt', 'Effectiveness Not Ok', 'Rejected');
-
--- Seed effectiveness attachments
-INSERT INTO effectiveness_attachments (log_id, file_name, file_data, file_type) VALUES
-('EFF-001', 'db-perf-report.pdf', 'JVBERi0xLjQKMSAwIG9iagogIDw8IC9UeXBlIC9DYXRhbG9nCiAgICAgL1BhZ2VzIDIgMCBSCiAgPj4KZW5kb2JqCjIgMCBvYmogIDw8IC9UeXBlIC9QYWdlcwogICAgIC9LaWRzIFszIDAgUl0KICAgICAvQ291bnQgMQogID4+CmVuZG9iagozIDAgb2JqICA8PCAvVHlwZSAvUGFnZQogICAgIC9QYXJlbnQgMiAwIFIKICAgICAvTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQogICAgIC9Db250ZW50cyA0IDAgUgogID4+CmVuZG9iago0IDAgb2JqICA8PCAvTGVuZ3RoIDU2ID4+CnN0cmVhbQpCVAovRjEgMTIgVGYKNzIgNzEyIFRkCihOaXBwb24gUXVhbGl0eSBBc3N1cmFuY2UgLSBFZmZlY3RpdmVuZXNzIE9ic2VydmF0aW9uIExvZykgVGoKRVQKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgNQowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTkgMDAwMDAgbiAKMDAwMDAwMDA4MyAwMDAwMCBuIAowMDAwMDAwMTQ2IDAwMDAwIGggCjAwMDAwMDAyNTMgMDAwMDAgbiAKdHJhaWxlcgogIDw8IC9TaXplIDUKICAgICAvUm9vdCAxIDAgUgogID4+CnN0YXJ0eHJlZgogMzU4CiUlRU9G', 'application/pdf'),
-('EFF-002', 'auth0-signoff.png', 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'image/png'),
-('EFF-003', 'api-gateway-logs.txt', 'ZXN0IGRvY3VtZW50', 'text/plain');
