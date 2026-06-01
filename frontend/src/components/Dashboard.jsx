@@ -40,6 +40,7 @@ import { AuditLog } from './AuditLog';
 import { Users } from './Users';
 import { Settings } from './Settings';
 import { Notifications } from './Notifications';
+import nipponLogo from '../assets/Nippon Logo.png';
 
 export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const navigate = useNavigate();
@@ -493,6 +494,11 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                 </button>
               </>
             )}
+            
+            {/* Nippon Logo in assets */}
+            <div className="pl-[8px] border-l border-slate-200">
+              <img src={nipponLogo} alt="Nippon Logo" className="h-[32px] w-auto object-contain select-none" />
+            </div>
           </div>
         </header>
 
