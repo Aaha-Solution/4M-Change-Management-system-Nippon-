@@ -31,6 +31,7 @@ import {
 import { DashboardOverview } from './DashboardOverview';
 import { NewRequest } from './NewRequest';
 import { AllRequests } from './AllRequests';
+import { L1Request } from './L1Request';
 import { Approvals } from './Approvals';
 import { Effectiveness } from './Effectiveness';
 import { Reports } from './Reports';
@@ -535,12 +536,25 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             />
           )}
 
-          {/* TAB: APPROVALS & L1 */}
-          {(activeTab === 'approvals' || activeTab === 'l1') && (
+          {/* TAB: APPROVALS */}
+          {activeTab === 'approvals' && (
             <Approvals
               userRole={userRole}
               changes={changes}
               onStatusUpdate={handleStatusUpdate}
+            />
+          )}
+
+          {/* TAB: L1 REQUEST */}
+          {activeTab === 'l1' && (
+            <L1Request
+              userEmail={userEmail}
+              onTabChange={handleTabChange}
+              changes={changes}
+              setChanges={setChanges}
+              logAction={logAction}
+              setToastMsg={setToastMsg}
+              onLocalSignOut={handleLocalSignOut}
             />
           )}
 
