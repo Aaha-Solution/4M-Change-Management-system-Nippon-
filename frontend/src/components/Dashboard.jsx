@@ -450,7 +450,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               <h2 className="font-heading text-[22px] font-bold text-slate-900">
                 {activeTab === 'dashboard' ? 'Overview' :
                   activeTab === 'new-request' ? 'Request New Change' :
-                    activeTab === 'approvals' ? 'L2 Approvals' :
+                    activeTab === 'approvals' ? 'L2 Validation Workflow' :
                       activeTab === 'notifications' ? 'Notifications Feed' :
                         activeTab === 'l1' ? 'L1 Approvals' :
                           activeTab === 'all-requests' ? 'All Change Requests' :
