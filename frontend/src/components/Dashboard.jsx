@@ -390,6 +390,34 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               )}
             </button>
 
+            {/* Reports */}
+            <button
+              onClick={() => handleTabChange('reports')}
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'reports'
+                  ? 'bg-sky-50 text-[#0066cc]'
+                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+            >
+              <div className="flex items-center gap-3">
+                <BarChart3 size={18} className={activeTab === 'reports' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                <span>Reports</span>
+              </div>
+            </button>
+
+            {/* Audit Log */}
+            <button
+              onClick={() => handleTabChange('audit-log')}
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'audit-log'
+                  ? 'bg-sky-50 text-[#0066cc]'
+                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+            >
+              <div className="flex items-center gap-3">
+                <ShieldCheck size={18} className={activeTab === 'audit-log' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                <span>Audit Log</span>
+              </div>
+            </button>
+
             {/* Users */}
             <button
               onClick={() => handleTabChange('users')}
@@ -401,6 +429,20 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               <div className="flex items-center gap-3">
                 <UsersIcon size={18} className={activeTab === 'users' ? 'text-[#0066cc]' : 'text-slate-400'} />
                 <span>Users</span>
+              </div>
+            </button>
+
+            {/* Settings */}
+            <button
+              onClick={() => handleTabChange('settings')}
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'settings'
+                  ? 'bg-sky-50 text-[#0066cc]'
+                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+            >
+              <div className="flex items-center gap-3">
+                <SettingsIcon size={18} className={activeTab === 'settings' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                <span>Settings</span>
               </div>
             </button>
 
@@ -463,7 +505,22 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
           </div>
 
           <div className="flex items-center gap-[16px]">
-            {activeTab === 'dashboard' ? (
+            {/* Email always visible */}
+            <span className="text-[14px] font-medium text-slate-600 hidden sm:inline">{userEmail}</span>
+
+            {/* Request Change button - only on dashboard tab */}
+            {activeTab === 'dashboard' && (
+              <button
+                onClick={() => handleTabChange('new-request')}
+                className="hidden sm:flex items-center gap-[4px] bg-sky-50 border border-sky-100 hover:bg-sky-100 text-[#0066cc] px-[12px] py-[6px] rounded-[8px] text-[12px] font-bold transition-all cursor-pointer"
+              >
+                <Plus size={12} />
+                <span>Request Change</span>
+              </button>
+            )}
+
+            {/* Bell icon - only on dashboard tab */}
+            {activeTab === 'dashboard' && (
               <button
                 onClick={() => handleTabChange('notifications')}
                 className="relative p-[8px] text-slate-600 hover:text-[#0066cc] bg-slate-100 hover:bg-slate-200/50 rounded-full transition-colors cursor-pointer"
@@ -473,27 +530,17 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   1
                 </span>
               </button>
-            ) : (
-              <>
-                <span className="text-[14px] font-medium text-slate-600 hidden sm:inline">{userEmail}</span>
-                {activeTab === 'dashboard' && (
-                  <button
-                    onClick={() => handleTabChange('new-request')}
-                    className="hidden sm:flex items-center gap-[4px] bg-sky-50 border border-sky-100 hover:bg-sky-100 text-[#0066cc] px-[12px] py-[6px] rounded-[8px] text-[12px] font-bold transition-all cursor-pointer"
-                  >
-                    <Plus size={12} />
-                    <span>Request Change</span>
-                  </button>
-                )}
-                <button
-                  onClick={handleLocalSignOut}
-                  className="flex items-center gap-[6px] bg-white border border-slate-250 hover:bg-rose-50 hover:border-rose-500 hover:text-rose-600 text-slate-600 px-[14px] py-[6px] rounded-[8px] text-[12px] font-semibold cursor-pointer transition-colors"
-                >
-                  <LogOut size={12} />
-                  <span>Sign Out</span>
-                </button>
-              </>
             )}
+
+            {/* Sign Out button - always visible */}
+            <button
+              onClick={handleLocalSignOut}
+              title="Sign Out"
+              className="flex items-center gap-[6px] bg-white border border-slate-250 hover:bg-rose-50 hover:border-rose-500 hover:text-rose-600 text-slate-600 px-[14px] py-[6px] rounded-[8px] text-[12px] font-semibold cursor-pointer transition-colors"
+            >
+              <LogOut size={12} />
+              <span>Sign Out</span>
+            </button>
             
             {/* Nippon Logo in assets */}
             <div className="pl-[8px] border-l border-slate-200">
@@ -539,8 +586,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
           {activeTab === 'approvals' && (
             <L2Validation
               userRole={userRole}
-              changes={changes}
-              onStatusUpdate={handleStatusUpdate}
+              setToastMsg={setToastMsg}
+              fetchChanges={fetchChanges}
             />
           )}
 
@@ -561,9 +608,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
           {activeTab === 'l3' && (
             <L3RequestTracker
               userEmail={userEmail}
-              onTabChange={handleTabChange}
-              changes={changes}
-              setChanges={setChanges}
+              userRole={userRole}
               logAction={logAction}
               setToastMsg={setToastMsg}
             />

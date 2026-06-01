@@ -27,3 +27,28 @@ export const createL1Request = (l1Data) => {
     },
   });
 };
+
+export const getL2ValidationLogs = () => {
+  return axiosInstance.get('/changes/l2');
+};
+
+export const createL2ValidationLog = (logData) => {
+  return axiosInstance.post('/changes/l2', { logData }, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const getL3Approvals = () => {
+  return axiosInstance.get('/changes/l3');
+};
+
+export const createL3Approval = (logData) => {
+  return axiosInstance.post('/changes/l3', { logData }, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+

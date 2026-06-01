@@ -1,24 +1,20 @@
-import { useState } from 'react';
-import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2 } from 'lucide-react';
+import { getL2ValidationLogs, createL2ValidationLog } from '../api/apiRoutes';
 
 export const L2Validation = ({
   userRole,
-  changes,
-  onStatusUpdate
+  setToastMsg,
+  fetchChanges
 }) => {
   // Modal states
   const [selectedLog, setSelectedLog] = useState(null);
   const [validationError, setValidationError] = useState('');
 
-  // Mock validation log baseline
-  const [validationLogs, setValidationLogs] = useState([
-    { changeNo: '4M-2026-248', date: '20 May', requester: 'Kumar Selvam', weldTest: 'weld-test.png', qaTest: 'weld-test.png', status: 'Accepted', remarks: 'Zero alignment issues reported in shift logs. Production output exceeds threshold.' },
-    { changeNo: '4M-2026-247', date: '19 May', requester: 'Ravi QA', weldTest: 'calib-report.pdf', qaTest: 'calib-report.pdf', status: 'Accepted', remarks: 'Calibration setup validated. GR&R is within 5%.' },
-    { changeNo: '4M-2026-246', date: '18 May', requester: 'Kumar S.', weldTest: 'mock-run-logs.xls', qaTest: 'mock-run-logs.xls', status: 'Accepted', remarks: 'PED validation completed successfully on mock runs.' },
-    { changeNo: '4M-2026-244', date: '17 May', requester: 'John Doe', weldTest: 'training-log.pdf', qaTest: 'training-log.pdf', status: 'Rejected', remarks: 'Evidence of training incomplete for Operator B. Training records missing.' },
-    { changeNo: '4M-2026-243', date: '16 May', requester: 'Ravi QA', weldTest: 'gauge-rr-may20.pdf', qaTest: 'gauge-rr-may20.pdf', status: 'Accepted', remarks: 'Gauge repeatability improved by 14%. Zero repeat defects. Implementation consistent.' },
-    { changeNo: '4M-2026-241', date: '14 May', requester: 'Kumar S.', weldTest: 'coolant-spec.pdf', qaTest: 'coolant-spec.pdf', status: 'Accepted', remarks: 'Coolant viscosity specs match engineering standard.' }
-  ]);
+  // DB Logs states
+  const [validationLogs, setValidationLogs] = useState([]);
+  const [isFetchingLogs, setIsFetchingLogs] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form states
   const [formChangeNo, setFormChangeNo] = useState('');
@@ -33,7 +29,25 @@ export const L2Validation = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [decisionFilter, setDecisionFilter] = useState('All');
 
-  const handleSaveLog = (e) => {
+  const fetchLogs = async () => {
+    setIsFetchingLogs(true);
+    try {
+      const response = await getL2ValidationLogs();
+      setValidationLogs(response.data);
+    } catch (err) {
+      console.error(err);
+      if (setToastMsg) setToastMsg('Error loading L2 validation logs from backend.');
+    } finally {
+      setIsFetchingLogs(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSaveLog = async (e) => {
     e.preventDefault();
 
     if (!formChangeNo.trim() || !formDate.trim() || !formRequester.trim() || !formStatus || !formRemarks.trim()) {
@@ -41,7 +55,7 @@ export const L2Validation = ({
       return;
     }
 
-    const newLog = {
+    const logData = {
       changeNo: formChangeNo.trim(),
       date: formDate.trim(),
       requester: formRequester.trim(),
@@ -51,14 +65,31 @@ export const L2Validation = ({
       remarks: formRemarks.trim()
     };
 
-    setValidationLogs([newLog, ...validationLogs]);
+    setIsSubmitting(true);
+    try {
+      await createL2ValidationLog(logData);
+      
+      if (fetchChanges) await fetchChanges();
+      
+      if (setToastMsg) {
+        setToastMsg(`Successfully saved L2 validation log for ${formChangeNo}`);
+      }
 
-    // Reset Form Fields
-    setFormChangeNo('');
-    setFormDate('');
-    setFormRequester('');
-    setFormStatus('');
-    setFormRemarks('');
+      await fetchLogs();
+
+      // Reset Form Fields
+      setFormChangeNo('');
+      setFormDate('');
+      setFormRequester('');
+      setFormStatus('');
+      setFormRemarks('');
+    } catch (err) {
+      console.error(err);
+      const errMsg = err.response?.data?.error || 'Error saving L2 validation log to database.';
+      setValidationError(errMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleResetFilters = () => {
@@ -183,10 +214,20 @@ export const L2Validation = ({
           {/* Submit */}
           <button 
             type="submit" 
-            className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-60 border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
           >
-            <Save size={14} />
-            <span>Save Validation Log</span>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin" size={14} />
+                <span>Saving Validation Log...</span>
+              </>
+            ) : (
+              <>
+                <Save size={14} />
+                <span>Save Validation Log</span>
+              </>
+            )}
           </button>
         </form>
       </div>
@@ -242,7 +283,16 @@ export const L2Validation = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-[12px]">
-                {filteredLogs.length === 0 ? (
+                {isFetchingLogs ? (
+                  <tr>
+                    <td colSpan={8} className="text-center py-[48px] text-slate-400">
+                      <div className="flex flex-col items-center justify-center gap-[8px]">
+                        <Loader2 className="animate-spin text-[#0066cc]" size={20} />
+                        <span>Fetching validation logs...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredLogs.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="text-center py-[48px] text-slate-400">
                       No L2 validation records found.

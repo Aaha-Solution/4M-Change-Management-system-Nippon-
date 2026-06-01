@@ -318,6 +318,164 @@ async function runTests() {
     assert.strictEqual(list.length, 6);
   });
 
+  // 18. Create new L1 change request via API
+  await test('Create new L1 change request successfully via API', async () => {
+    const randomL1No = '4M-2026-' + Math.floor(1000 + Math.random() * 9000);
+    const payload = {
+      l1Data: {
+        changeNo: randomL1No,
+        unit: 'Unit 1',
+        requestedTime: '12:00',
+        changeIn: 'Machine, Method',
+        dept: 'PED',
+        requestBy: 'Kumar Selvam',
+        processName: 'Welding Line A',
+        processLine: 'Line 3 / Bay B',
+        machineNo: 'MFG-MC-1042',
+        context: 'L1 test context from API test script',
+        description: 'L1 test description from API test script which is more than twenty characters.',
+        improvementArea: 'Quality',
+        changeType: 'Temporary',
+        dateStart: '01/06/2026',
+        traceFrom: 'LOT-100: Initial batch of 100 parts trace.',
+        dateClose: '05/06/2026',
+        traceTo: 'LOT-110: Closure batch of 110 parts trace.',
+        riskAnalysis: 'Potential minor startup latency on line 5.',
+        sopUpdate: 'SOP and WI needs to be updated for line 5 operation.',
+        hodApproval: 'Approved by HOD Ramanan.',
+        customerApproval: 'No',
+        effectivenessMonitoring: 'Measured by cycle time checks over 3 days.'
+      }
+    };
+    
+    const res = await fetch(`${API_BASE}/changes/l1`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    assert.strictEqual(res.status, 201);
+    const data = await res.json();
+    assert.strictEqual(data.message, 'L1 Change request created successfully');
+    assert.strictEqual(data.change.id, randomL1No);
+    assert.strictEqual(data.change.status, 'Pending');
+  });
+
+  // 19. Create L2 validation log successfully via API
+  await test('Create L2 validation log successfully via API', async () => {
+    const randomChangeNo = '4M-2026-L2API-' + Math.floor(1000 + Math.random() * 9000);
+    const payload = {
+      logData: {
+        changeNo: randomChangeNo,
+        date: '01 June',
+        requester: 'Kumar Selvam',
+        weldTest: 'weld-test.png',
+        qaTest: 'weld-test.png',
+        status: 'Accepted',
+        remarks: 'API L2 test comments'
+      }
+    };
+
+    const res = await fetch(`${API_BASE}/changes/l2`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    assert.strictEqual(res.status, 201);
+    const data = await res.json();
+    assert.strictEqual(data.message, 'L2 Validation log created successfully');
+    assert.strictEqual(data.log.changeNo, randomChangeNo);
+    
+    // Check if we can fetch it back via GET
+    const getRes = await fetch(`${API_BASE}/changes/l2`, {
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    assert.strictEqual(getRes.status, 200);
+    const logs = await getRes.json();
+    const matches = logs.filter(l => l.changeNo === randomChangeNo);
+    assert.strictEqual(matches.length, 1);
+    assert.strictEqual(matches[0].remarks, 'API L2 test comments');
+  });
+
+  // 20. Create L3 approval log successfully via API
+  await test('Create L3 approval log successfully via API', async () => {
+    const randomChangeNo = '4M-2026-L3API-' + Math.floor(1000 + Math.random() * 9000);
+    
+    // First save L2 validation log so it's eligible for L3
+    const l2Payload = {
+      logData: {
+        changeNo: randomChangeNo,
+        date: '01 June',
+        requester: 'Kumar Selvam',
+        weldTest: 'weld-test.png',
+        qaTest: 'weld-test.png',
+        status: 'Accepted',
+        remarks: 'API L2 setup validation before L3'
+      }
+    };
+    await fetch(`${API_BASE}/changes/l2`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify(l2Payload)
+    });
+
+    const payload = {
+      logData: {
+        changeNo: randomChangeNo,
+        date: '01 June',
+        requester: 'Kumar Selvam',
+        ped: 'Accepted',
+        quality: 'Accepted',
+        production: 'Approved',
+        maintenance: 'Pending',
+        pcl: 'Pending',
+        materials: 'Pending',
+        marketing: 'Pending',
+        hrSafety: 'Pending',
+        unitHead: 'Approved'
+      }
+    };
+
+    const res = await fetch(`${API_BASE}/changes/l3`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    assert.strictEqual(res.status, 201);
+    const data = await res.json();
+    assert.strictEqual(data.message, 'L3 Approval log created/updated successfully');
+    assert.strictEqual(data.log.changeNo, randomChangeNo);
+    
+    // Check if we can fetch it back via GET
+    const getRes = await fetch(`${API_BASE}/changes/l3`, {
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+    assert.strictEqual(getRes.status, 200);
+    const logs = await getRes.json();
+    const matches = logs.filter(l => l.changeNo === randomChangeNo);
+    assert.strictEqual(matches.length, 1);
+    assert.strictEqual(matches[0].ped, 'Accepted');
+    assert.strictEqual(matches[0].unitHead, 'Approved');
+  });
+
   console.log('\n=======================================');
   console.log(`📊 Test Execution Results:`);
   console.log(`   Passed: ${passedCount}`);

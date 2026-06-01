@@ -15,8 +15,14 @@ test.describe('L1 Change Request E2E Flow', () => {
     // Redirection to dashboard
     await expect(page).toHaveURL(/\/dashboard/);
 
-    // 2. Click "L1" in the Level expandable menu
-    await page.locator('nav button:has-text("L1")').click();
+    // 2. Click "L1" in the Level expandable menu (expand Level first if needed)
+    const l1NavBtn = page.locator('nav button:has-text("L1")');
+    const isL1Visible = await l1NavBtn.isVisible();
+    if (!isL1Visible) {
+      await page.locator('nav button:has-text("Level")').click();
+    }
+    await expect(l1NavBtn).toBeVisible();
+    await l1NavBtn.click();
 
     // Verify L1 page is visible
     await expect(page.locator('h3')).toContainText('New L1 Change Request');

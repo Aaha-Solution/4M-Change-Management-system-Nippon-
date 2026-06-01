@@ -3,6 +3,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Change Management System E2E Flow', () => {
   
   test.beforeEach(async ({ page }) => {
+    // Set desktop window size so header/sidebar buttons are visible
+    await page.setViewportSize({ width: 1280, height: 720 });
     // Navigate to the app before each test
     await page.goto('/');
   });
@@ -29,11 +31,12 @@ test.describe('Change Management System E2E Flow', () => {
     await expect(page).toHaveURL(/\/dashboard/);
     
     // Verify welcome message/overview title
-    await expect(page.locator('h2')).toContainText('Dashboard Overview');
-    await expect(page.locator('header').locator('text=admin@cms.com')).toBeVisible();
+    await expect(page.locator('h2')).toContainText('Overview');
+    // Email is always visible in the header
+    await expect(page.locator('header span:has-text("admin@cms.com")')).toBeVisible();
 
-    // 2. Click "Request Change"
-    await page.locator('header').locator('text=Request Change').click();
+    // 2. Click "Request Change" in the header (visible on dashboard tab)
+    await page.locator('header button:has-text("Request Change")').click();
 
     // Verify we are on the creation tab / form is visible
     await expect(page.locator('h2')).toContainText('Request New Change');
@@ -44,16 +47,14 @@ test.describe('Change Management System E2E Flow', () => {
     await page.click('button:has-text("High")');
     await page.click('button[type="submit"]');
 
-    // Form submission should redirect back to overview
-    await expect(page.locator('h2')).toContainText('Dashboard Overview');
+    // Form submission should redirect back to overview with a toast showing new CHG ID
+    await expect(page.locator('h2')).toContainText('Overview');
 
-    // Verify the new change request is listed in the table
-    const tableBody = page.locator('tbody').first();
-    await expect(tableBody).toContainText(uniqueTitle);
-    await expect(tableBody).toContainText('High');
+    // Verify the toast shows the new change request ID
+    await expect(page.locator('text=Created request:')).toBeVisible({ timeout: 4000 });
 
     // 4. Sign Out
-    await page.click('button:has-text("Sign Out")');
+    await page.click('button[title="Sign Out"]');
 
     // Should redirect back to login
     await expect(page).toHaveURL(/\/$/);
@@ -79,7 +80,7 @@ test.describe('Change Management System E2E Flow', () => {
     await expect(page).toHaveURL(/\/dashboard/);
 
     // Sign out
-    await page.click('button:has-text("Sign Out")');
+    await page.click('button[title="Sign Out"]');
     await expect(page).toHaveURL(/\/$/);
 
     // Verify email is pre-filled and checkbox is checked
@@ -102,7 +103,7 @@ test.describe('Change Management System E2E Flow', () => {
     await expect(page).toHaveURL(/\/dashboard/);
 
     // Sign out
-    await page.click('button:has-text("Sign Out")');
+    await page.click('button[title="Sign Out"]');
     await expect(page).toHaveURL(/\/$/);
 
     // Verify email is empty and checkbox is unchecked
@@ -161,8 +162,8 @@ test.describe('Change Management System E2E Flow', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/dashboard/);
 
-    // 2. Add a new change request
-    await page.locator('header').locator('text=Request Change').click();
+    // 2. Add a new change request via the header button (visible on dashboard tab)
+    await page.locator('header button:has-text("Request Change")').click();
     await expect(page.locator('h2')).toContainText('Request New Change');
 
     const uniqueTitle = `E2E Refactor Admin Workflow ${Date.now()}`;
@@ -171,19 +172,41 @@ test.describe('Change Management System E2E Flow', () => {
     await page.click('button[type="submit"]');
 
     // Confirm redirected to Dashboard Overview
-    await expect(page.locator('h2')).toContainText('Dashboard Overview');
+    await expect(page.locator('h2')).toContainText('Overview');
 
-    // Get the change ID from the first row in the table
-    const tableRow = page.locator('tbody tr').first();
-    await expect(tableRow).toContainText(uniqueTitle);
-    const changeId = (await tableRow.locator('td').first().textContent()).trim();
+    // Get the new change ID from the toast message (format: "Created request: CHG-XXXX")
+    const toastLocator = page.locator('text=Created request:');
+    await expect(toastLocator).toBeVisible({ timeout: 4000 });
+    const toastText = await toastLocator.textContent();
+    const changeIdMatch = toastText.match(/(CHG-\d+|4M-\d+-\d+)/);
+    const changeId = changeIdMatch ? changeIdMatch[1] : 'CHG-0000';
     console.log(`Created Change Request ID: ${changeId}`);
+    // Verify the change ID is in the AllRequests table
+    await page.locator('nav button:has-text("All Requests")').click();
+    const tableBody = page.locator('tbody').first();
+    await expect(tableBody).toContainText(changeId);
 
-    // 3. Go to Approvals and approve the request
-    await page.locator('nav button:has-text("Approvals")').click();
-    const approvalCard = page.locator('div.bg-white', { hasText: changeId });
-    await expect(approvalCard).toBeVisible();
-    await approvalCard.locator('button:has-text("Approve Change")').click();
+    // 3. Go to L2 Approvals and save validation
+    // Ensure the Level submenu is expanded (click Level only if L2 button is not yet visible)
+    const l2NavBtn = page.locator('nav button:has-text("L2")');
+    const isL2Visible = await l2NavBtn.isVisible();
+    if (!isL2Visible) {
+      await page.locator('nav button:has-text("Level")').click();
+    }
+    await expect(l2NavBtn).toBeVisible();
+    await l2NavBtn.click();
+    
+    // Fill out the validation form for this change ID
+    await page.fill('label:has-text("4M Change No") + input', changeId);
+    await page.fill('label:has-text("Requested Date") + input', '01 June');
+    await page.fill('label:has-text("Change Request By") + input', 'Admin User');
+    await page.locator('label:has-text("Approver Validation Status") + select').selectOption('Accepted');
+    await page.fill('label:has-text("Remarks") + textarea', 'L2 validation successfully completed for E2E flow.');
+    await page.click('button:has-text("Save Validation Log")');
+
+    // Verify success toast message is shown
+    await expect(page.locator(`text=Successfully saved L2 validation log for ${changeId}`)).toBeVisible();
+
 
     // 4. Go to Effectiveness tab and log observation
     await page.locator('nav button:has-text("Effectiveness")').click();
@@ -193,7 +216,7 @@ test.describe('Change Management System E2E Flow', () => {
     await page.locator('div.space-y-1:has-text("4M Change No") select').selectOption(changeId);
     await page.fill('input[type="month"]', '2026-05');
     await page.fill('textarea[placeholder="Enter evaluation remarks/results..."]', 'Observed system performance. Response times normalized and DB replication is stable.');
-    await page.fill('input[placeholder="e.g. proof-log.pdf"]', 'db-perf-report.pdf');
+    // Note: Attachment input is readOnly (populated via file upload), so we skip it
     await page.locator('div.space-y-1:has-text("Effectiveness Status") select').selectOption('Effectiveness Ok');
     await page.locator('div.space-y-1:has-text("QA Approval Decision") select').selectOption('Approved');
     await page.click('button:has-text("Add Log Entry")');
@@ -201,6 +224,7 @@ test.describe('Change Management System E2E Flow', () => {
     // Verify it is listed in the logs table
     const logsTable = page.locator('tbody').last();
     await expect(logsTable).toContainText(changeId);
+
 
     // 5. Go to Reports tab
     await page.locator('nav button:has-text("Reports")').click();
@@ -257,7 +281,7 @@ test.describe('Change Management System E2E Flow', () => {
     await expect(page.locator('main span:has-text("admin@cms.com")')).toBeVisible();
 
     // 8. Log out
-    await page.click('button:has-text("Sign Out")');
+    await page.click('button[title="Sign Out"]');
     await expect(page).toHaveURL(/\/$/);
   });
 

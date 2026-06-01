@@ -7,6 +7,8 @@
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS effectiveness_attachments;
 DROP TABLE IF EXISTS effectiveness_logs;
+DROP TABLE IF EXISTS l3_approvals;
+DROP TABLE IF EXISTS l2_validation_logs;
 DROP TABLE IF EXISTS l1_requests;
 DROP TABLE IF EXISTS change_requests;
 DROP TABLE IF EXISTS users;
@@ -82,7 +84,13 @@ INSERT INTO change_requests (id, title, requester, date, priority, status) VALUE
 ('CHG-8902', 'Upgrade production database cluster to PostgreSQL 16', 'admin@cms.com', '2026-05-20', 'High', 'Approved'),
 ('CHG-8901', 'Integrate Auth0 SSO provider for corporate domain', 'manager@cms.com', '2026-05-19', 'High', 'Approved'),
 ('CHG-8899', 'Modify API Gateway route rules for caching layers', 'requester@cms.com', '2026-05-18', 'Medium', 'Evaluating'),
-('CHG-8895', 'Resolve security vulnerability CVE-2026-3392', 'admin@cms.com', '2026-05-15', 'High', 'Completed');
+('CHG-8895', 'Resolve security vulnerability CVE-2026-3392', 'admin@cms.com', '2026-05-15', 'High', 'Completed'),
+('4M-2026-248', 'Machine Change in Welding Line A', 'kumar.s@plant.com', '2026-05-20', 'High', 'Approved'),
+('4M-2026-247', 'Method Calibration Setup', 'ravi.qa@plant.com', '2026-05-19', 'High', 'Approved'),
+('4M-2026-246', 'Material Spec Adjustment in Injection Molding B', 'kumar.s@plant.com', '2026-05-18', 'Medium', 'Evaluating'),
+('4M-2026-244', 'Man Training Syllabus Update', 'requester@cms.com', '2026-05-17', 'Medium', 'Pending'),
+('4M-2026-243', 'Gauge Repeatability Check', 'ravi.qa@plant.com', '2026-05-16', 'Low', 'Approved'),
+('4M-2026-241', 'Coolant Viscosity Spec Match', 'kumar.s@plant.com', '2026-05-14', 'Medium', 'Approved');
 
 
 -- 3. Effectiveness Logs Table
@@ -169,5 +177,52 @@ CREATE TABLE l1_requests (
     effectiveness_monitoring TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 7. L2 Validation Logs Table
+CREATE TABLE l2_validation_logs (
+    change_no VARCHAR(50) PRIMARY KEY REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    validation_date VARCHAR(50) NOT NULL,
+    requester VARCHAR(255) NOT NULL,
+    weld_test VARCHAR(255) NOT NULL DEFAULT '',
+    qa_test VARCHAR(255) NOT NULL DEFAULT '',
+    status VARCHAR(50) NOT NULL,
+    remarks TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Seed L2 Validation Logs
+INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) VALUES
+('4M-2026-248', '20 May', 'Kumar Selvam', 'weld-test.png', 'weld-test.png', 'Accepted', 'Zero alignment issues reported in shift logs. Production output exceeds threshold.'),
+('4M-2026-247', '19 May', 'Ravi QA', 'calib-report.pdf', 'calib-report.pdf', 'Accepted', 'Calibration setup validated. GR&R is within 5%.'),
+('4M-2026-246', '18 May', 'Kumar S.', 'mock-run-logs.xls', 'mock-run-logs.xls', 'Accepted', 'PED validation completed successfully on mock runs.'),
+('4M-2026-244', '17 May', 'John Doe', 'training-log.pdf', 'training-log.pdf', 'Rejected', 'Evidence of training incomplete for Operator B. Training records missing.'),
+('4M-2026-243', '16 May', 'Ravi QA', 'gauge-rr-may20.pdf', 'gauge-rr-may20.pdf', 'Accepted', 'Gauge repeatability improved by 14%. Zero repeat defects. Implementation consistent.'),
+('4M-2026-241', '14 May', 'Kumar S.', 'coolant-spec.pdf', 'coolant-spec.pdf', 'Accepted', 'Coolant viscosity specs match engineering standard.');
+
+-- 8. L3 Approvals Table
+CREATE TABLE l3_approvals (
+    change_no VARCHAR(50) PRIMARY KEY REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    date VARCHAR(50) NOT NULL,
+    requester VARCHAR(255) NOT NULL,
+    ped VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    quality VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    production VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    maintenance VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    pcl VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    materials VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    marketing VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    hr_safety VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    unit_head VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Seed L3 Approvals
+INSERT INTO l3_approvals (change_no, date, requester, ped, quality, production, maintenance, pcl, materials, marketing, hr_safety, unit_head) VALUES
+('4M-2026-248', '20 May', 'Kumar Selvam', 'Accepted', 'Accepted', 'Approved', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Approved'),
+('4M-2026-247', '19 May', 'Ravi QA', 'Accepted', 'Accepted', 'Approved', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Approved'),
+('4M-2026-246', '18 May', 'Kumar S.', 'Accepted', 'Accepted', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending'),
+('4M-2026-244', '17 May', 'John Doe', 'Rejected', 'Rejected', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending'),
+('4M-2026-243', '16 May', 'Ravi QA', 'Accepted', 'Accepted', 'Approved', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Approved'),
+('4M-2026-241', '14 May', 'Kumar S.', 'Accepted', 'Accepted', 'Approved', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Approved');
 
 

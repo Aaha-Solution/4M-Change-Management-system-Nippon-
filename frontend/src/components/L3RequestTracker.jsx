@@ -1,26 +1,23 @@
-import { useState } from 'react';
-import { Save, Search, RotateCcw, Eye, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, Search, RotateCcw, Eye, X, Loader2, AlertTriangle } from 'lucide-react';
+import { getL3Approvals, createL3Approval } from '../api/apiRoutes';
 
 export const L3RequestTracker = ({
   userEmail,
-  onTabChange,
-  changes,
-  setChanges,
+  userRole,
   logAction,
   setToastMsg
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetchingLogs, setIsFetchingLogs] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
+  const [validationError, setValidationError] = useState('');
 
-  // Baseline data from L3 mockup
-  const [approvalLogs, setApprovalLogs] = useState([
-    { changeNo: '4M-2026-248', date: '20 May', requester: 'Kumar Selvam', ped: 'Accepted', quality: 'Accepted', production: 'Approved', maintenance: 'Pending', pcl: 'Pending', materials: 'Pending', marketing: 'Pending', hrSafety: 'Pending', unitHead: 'Approved' },
-    { changeNo: '4M-2026-247', date: '19 May', requester: 'Ravi QA', ped: 'Accepted', quality: 'Accepted', production: 'Approved', maintenance: 'Pending', pcl: 'Pending', materials: 'Pending', marketing: 'Pending', hrSafety: 'Pending', unitHead: 'Approved' },
-    { changeNo: '4M-2026-246', date: '18 May', requester: 'Kumar S.', ped: 'Accepted', quality: 'Accepted', production: 'Pending', maintenance: 'Pending', pcl: 'Pending', materials: 'Pending', marketing: 'Pending', hrSafety: 'Pending', unitHead: 'Pending' },
-    { changeNo: '4M-2026-244', date: '17 May', requester: 'John Doe', ped: 'Rejected', quality: 'Rejected', production: 'Pending', maintenance: 'Pending', pcl: 'Pending', materials: 'Pending', marketing: 'Pending', hrSafety: 'Pending', unitHead: 'Pending' },
-    { changeNo: '4M-2026-243', date: '16 May', requester: 'Ravi QA', ped: 'Accepted', quality: 'Accepted', production: 'Approved', maintenance: 'Pending', pcl: 'Pending', materials: 'Pending', marketing: 'Pending', hrSafety: 'Pending', unitHead: 'Approved' },
-    { changeNo: '4M-2026-241', date: '14 May', requester: 'Kumar S.', ped: 'Accepted', quality: 'Accepted', production: 'Approved', maintenance: 'Pending', pcl: 'Pending', materials: 'Pending', marketing: 'Pending', hrSafety: 'Pending', unitHead: 'Approved' }
-  ]);
+  // Database approval logs
+  const [approvalLogs, setApprovalLogs] = useState([]);
+
+  // Selected row for editing
+  const [selectedChangeId, setSelectedChangeId] = useState(null);
 
   // Form states
   const [formChangeNo, setFormChangeNo] = useState('');
@@ -28,45 +25,144 @@ export const L3RequestTracker = ({
   const [formRequester, setFormRequester] = useState('');
   const [formStatus, setFormStatus] = useState('');
 
+  // Acting Department mapping
+  const [actingDept, setActingDept] = useState('Quality');
+
   // Search & Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
 
-  const handleSaveApproval = (e) => {
-    e.preventDefault();
+  // Fetch L3 logs from database
+  const fetchLogs = async () => {
+    setIsFetchingLogs(true);
+    try {
+      const response = await getL3Approvals();
+      setApprovalLogs(response.data);
+    } catch (err) {
+      console.error(err);
+      if (setToastMsg) setToastMsg('Error loading L3 approvals from database.');
+    } finally {
+      setIsFetchingLogs(false);
+    }
+  };
 
-    if (!formChangeNo.trim() || !formDate.trim() || !formRequester.trim() || !formStatus) {
-      setToastMsg('Please fill out all required L3 approval log details.');
+  useEffect(() => {
+    fetchLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Map logged-in user email/role to initial acting department
+  useEffect(() => {
+    if (userEmail) {
+      const email = userEmail.toLowerCase();
+      if (email.includes('ravi.qa')) {
+        setActingDept('Quality');
+      } else if (email.includes('kumar.s')) {
+        setActingDept('Production');
+      } else if (email.includes('ped')) {
+        setActingDept('PED');
+      } else if (email.includes('manager')) {
+        setActingDept('Production');
+      } else {
+        setActingDept('Quality');
+      }
+    }
+  }, [userEmail]);
+
+  // Dynamic form status prefill based on selected change request and acting department
+  useEffect(() => {
+    if (selectedChangeId) {
+      const currentLog = approvalLogs.find(log => log.changeNo === selectedChangeId);
+      if (currentLog) {
+        let currentStatus = 'Pending';
+        if (actingDept === 'PED') currentStatus = currentLog.ped;
+        else if (actingDept === 'Quality') currentStatus = currentLog.quality;
+        else if (actingDept === 'Production') currentStatus = currentLog.production;
+        else if (actingDept === 'Maintenance') currentStatus = currentLog.maintenance;
+        else if (actingDept === 'PC & L') currentStatus = currentLog.pcl;
+        else if (actingDept === 'Materials') currentStatus = currentLog.materials;
+        else if (actingDept === 'Marketing') currentStatus = currentLog.marketing;
+        else if (actingDept === 'HR & Safety') currentStatus = currentLog.hrSafety;
+        else if (actingDept === 'Unit Head') currentStatus = currentLog.unitHead;
+        
+        setFormStatus(currentStatus || 'Pending');
+      }
+    }
+  }, [actingDept, selectedChangeId, approvalLogs]);
+
+  // Click row to select it
+  const handleSelectRow = (log) => {
+    if (log.l2Decision !== 'Accepted') {
+      setValidationError(`Error: Change Request ${log.changeNo} is awaiting L2 Validation before L3 Sign-off (Current L2 Status: ${log.l2Decision || 'Pending'}).`);
       return;
     }
 
-    setIsSubmitting(true);
+    setSelectedChangeId(log.changeNo);
+    setFormChangeNo(log.changeNo);
+    setFormDate(log.date);
+    setFormRequester(log.requester);
+  };
 
-    const newLog = {
-      changeNo: formChangeNo.trim(),
-      date: formDate.trim(),
-      requester: formRequester.trim(),
-      ped: formStatus === 'Approved' ? 'Accepted' : formStatus === 'Rejected' ? 'Rejected' : 'Pending',
-      quality: formStatus === 'Approved' ? 'Accepted' : formStatus === 'Rejected' ? 'Rejected' : 'Pending',
-      production: formStatus,
-      maintenance: 'Pending',
-      pcl: 'Pending',
-      materials: 'Pending',
-      marketing: 'Pending',
-      hrSafety: 'Pending',
-      unitHead: formStatus
-    };
-
-    setApprovalLogs([newLog, ...approvalLogs]);
-    setToastMsg(`Successfully saved L3 approval log for ${formChangeNo}`);
-    logAction('L3 Log Saved', `Successfully logged L3 approval status: "${formStatus}" for Change No: ${formChangeNo}`);
-
-    // Reset Form Fields
+  const handleCancelEdit = () => {
+    setSelectedChangeId(null);
     setFormChangeNo('');
     setFormDate('');
     setFormRequester('');
     setFormStatus('');
-    setIsSubmitting(false);
+  };
+
+  const handleSaveApproval = async (e) => {
+    e.preventDefault();
+
+    if (!selectedChangeId || !formChangeNo.trim() || !formStatus) {
+      setValidationError('Please select a change request and choose an approval status.');
+      return;
+    }
+
+    // Find the log in state
+    const currentLog = approvalLogs.find(log => log.changeNo === formChangeNo);
+    if (!currentLog) {
+      setValidationError('Selected change request was not found.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setValidationError('');
+
+    const updatedLog = {
+      changeNo: currentLog.changeNo,
+      date: currentLog.date,
+      requester: currentLog.requester,
+      ped: actingDept === 'PED' ? formStatus : currentLog.ped,
+      quality: actingDept === 'Quality' ? formStatus : currentLog.quality,
+      production: actingDept === 'Production' ? formStatus : currentLog.production,
+      maintenance: actingDept === 'Maintenance' ? formStatus : currentLog.maintenance,
+      pcl: actingDept === 'PC & L' ? formStatus : currentLog.pcl,
+      materials: actingDept === 'Materials' ? formStatus : currentLog.materials,
+      marketing: actingDept === 'Marketing' ? formStatus : currentLog.marketing,
+      hrSafety: actingDept === 'HR & Safety' ? formStatus : currentLog.hrSafety,
+      unitHead: actingDept === 'Unit Head' ? formStatus : currentLog.unitHead
+    };
+
+    try {
+      await createL3Approval(updatedLog);
+      
+      if (setToastMsg) {
+        setToastMsg(`Successfully saved ${actingDept} approval log for ${formChangeNo}`);
+      }
+      if (logAction) {
+        logAction('L3 Log Saved', `Successfully logged L3 approval status: "${formStatus}" for department: ${actingDept} and Change No: ${formChangeNo}`);
+      }
+
+      await fetchLogs();
+      handleCancelEdit();
+    } catch (err) {
+      console.error(err);
+      const errMsg = err.response?.data?.error || 'Error saving L3 approval log to database.';
+      setValidationError(errMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleResetFilters = () => {
@@ -88,6 +184,8 @@ export const L3RequestTracker = ({
     return matchesSearch && matchesStatus;
   });
 
+  const isAdmin = userRole === 'Admin' || userEmail === 'admin@cms.com';
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
       
@@ -99,47 +197,68 @@ export const L3RequestTracker = ({
         </div>
 
         <form onSubmit={handleSaveApproval} className="space-y-[14px]">
-          {/* LOGGED-IN USER ROLE */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Logged-in User Role</label>
-            <div className="w-full bg-slate-50 border border-slate-200 text-[#0066cc] font-bold rounded-[6px] py-[8px] px-[12px] text-[12px] select-none">
-              Quality Approver
+          {/* LOGGED-IN USER ROLE / ADMIN SELECTOR */}
+          {isAdmin ? (
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Acting Department (Admin)</label>
+              <select 
+                value={actingDept} 
+                onChange={(e) => setActingDept(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 text-[#0066cc] font-bold rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
+              >
+                <option value="PED">PED</option>
+                <option value="Quality">Quality</option>
+                <option value="Production">Production HOD</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="PC & L">PC & L</option>
+                <option value="Materials">Materials</option>
+                <option value="Marketing">Marketing</option>
+                <option value="HR & Safety">HR & Safety</option>
+                <option value="Unit Head">Plant Unit Head</option>
+              </select>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Logged-in User Role</label>
+              <div className="w-full bg-slate-50 border border-slate-200 text-[#0066cc] font-bold rounded-[6px] py-[8px] px-[12px] text-[12px] select-none">
+                {actingDept === 'Production' ? 'Production HOD' : actingDept === 'Unit Head' ? 'Plant Unit Head' : `${actingDept} Approver`}
+              </div>
+            </div>
+          )}
 
           {/* 4M CHANGE NO */}
           <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</label>
             <input 
               type="text" 
-              placeholder="e.g. 4M-2026-246"
+              placeholder="Click a row to select"
               value={formChangeNo}
-              onChange={(e) => setFormChangeNo(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+              disabled
+              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
             />
           </div>
 
           {/* REQUESTED DATE */}
           <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</label>
             <input 
               type="text" 
-              placeholder="e.g. 18 May"
+              placeholder="Click a row to select"
               value={formDate}
-              onChange={(e) => setFormDate(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+              disabled
+              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
             />
           </div>
 
           {/* CHANGE REQUEST BY */}
           <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By</label>
             <input 
               type="text" 
-              placeholder="e.g. Kumar Selvam"
+              placeholder="Click a row to select"
               value={formRequester}
-              onChange={(e) => setFormRequester(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+              disabled
+              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
             />
           </div>
 
@@ -148,8 +267,9 @@ export const L3RequestTracker = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approval Status <span className="text-rose-500">*</span></label>
             <select 
               value={formStatus} 
+              disabled={!selectedChangeId}
               onChange={(e) => setFormStatus(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+              className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
             >
               <option value="">Select Status</option>
               <option value="Approved">Approved</option>
@@ -158,15 +278,36 @@ export const L3RequestTracker = ({
             </select>
           </div>
 
-          {/* Submit */}
-          <button 
-            type="submit" 
-            disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
-          >
-            <Save size={14} />
-            <span>Save Approval Log</span>
-          </button>
+          {/* Submit / Cancel row */}
+          <div className="space-y-[8px] pt-[4px]">
+            <button 
+              type="submit" 
+              disabled={isSubmitting || !selectedChangeId}
+              className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="animate-spin" size={14} />
+                  <span>Saving Log...</span>
+                </>
+              ) : (
+                <>
+                  <Save size={14} />
+                  <span>Save Approval Log</span>
+                </>
+              )}
+            </button>
+
+            {selectedChangeId && (
+              <button 
+                type="button" 
+                onClick={handleCancelEdit}
+                className="w-full text-center py-[6px] text-slate-500 hover:text-slate-800 text-[11px] font-semibold cursor-pointer"
+              >
+                Cancel Selection
+              </button>
+            )}
+          </div>
         </form>
       </div>
 
@@ -178,7 +319,7 @@ export const L3RequestTracker = ({
             <Search className="absolute left-[10px] top-[10px] text-slate-400" size={14} />
             <input 
               type="text" 
-              placeholder="Search by change no or remarks..." 
+              placeholder="Search by change no or requester..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-[30px] pr-[12px] py-[8px] border border-slate-200 rounded-[6px] outline-none bg-white text-[12px] focus:border-[#0066cc]"
@@ -208,10 +349,10 @@ export const L3RequestTracker = ({
         {/* Table Matrix */}
         <div className="bg-white border border-slate-200 rounded-[12px] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse table-fixed min-w-[900px]">
+            <table className="w-full text-left border-collapse table-fixed min-w-[950px]">
               <thead>
                 <tr className="bg-[#fdfaf5] border-b border-slate-150 text-[10px]">
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[100px]">4M Change No</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[105px]">4M Change No</th>
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[90px]">Requested Date</th>
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Change Request By</th>
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[75px]">PED</th>
@@ -227,59 +368,77 @@ export const L3RequestTracker = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-[11px]">
-                {filteredLogs.length === 0 ? (
+                {isFetchingLogs ? (
+                  <tr>
+                    <td colSpan={13} className="text-center py-[48px] text-slate-400">
+                      <div className="flex flex-col items-center justify-center gap-[8px]">
+                        <Loader2 className="animate-spin text-[#0066cc]" size={20} />
+                        <span>Fetching approvals data...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredLogs.length === 0 ? (
                   <tr>
                     <td colSpan={13} className="text-center py-[48px] text-slate-400">
                       No L3 validation approval records found.
                     </td>
                   </tr>
                 ) : (
-                  filteredLogs.map((log, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/50">
-                      <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
-                      <td className="p-[8px] text-slate-500">{log.date}</td>
-                      <td className="p-[8px] font-medium text-slate-700 truncate" title={log.requester}>{log.requester}</td>
-                      
-                      {/* Department Badges */}
-                      {[
-                        { val: log.ped, type: 'ped' },
-                        { val: log.quality, type: 'quality' },
-                        { val: log.production, type: 'production' },
-                        { val: log.maintenance, type: 'maintenance' },
-                        { val: log.pcl, type: 'pcl' },
-                        { val: log.materials, type: 'materials' },
-                        { val: log.marketing, type: 'marketing' },
-                        { val: log.hrSafety, type: 'hrSafety' },
-                        { val: log.unitHead, type: 'unitHead' }
-                      ].map((cell, cIdx) => {
-                        const status = cell.val;
-                        const isAccepted = status === 'Accepted' || status === 'Approved';
-                        const isRejected = status === 'Rejected';
-                        return (
-                          <td key={cIdx} className="p-[8px] text-center">
-                            <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${
-                              isAccepted 
-                                ? 'bg-emerald-50 border-emerald-250 text-emerald-700' 
-                                : isRejected 
-                                ? 'bg-rose-50 border-rose-250 text-rose-700' 
-                                : 'bg-amber-50 border-amber-250 text-amber-700'
-                            }`}>
-                              {status}
-                            </span>
-                          </td>
-                        );
-                      })}
+                  filteredLogs.map((log, idx) => {
+                    const isSelected = selectedChangeId === log.changeNo;
+                    return (
+                      <tr 
+                        key={idx} 
+                        onClick={() => handleSelectRow(log)}
+                        className={`hover:bg-slate-50/50 cursor-pointer transition-colors ${
+                          isSelected ? 'bg-sky-50/60 hover:bg-sky-50/60 border-l-[3px] border-l-[#0066cc]' : ''
+                        }`}
+                      >
+                        <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
+                        <td className="p-[8px] text-slate-500">{log.date}</td>
+                        <td className="p-[8px] font-medium text-slate-700 truncate" title={log.requester}>{log.requester}</td>
+                        
+                        {/* Department Badges */}
+                        {[
+                          { val: log.ped, type: 'ped' },
+                          { val: log.quality, type: 'quality' },
+                          { val: log.production, type: 'production' },
+                          { val: log.maintenance, type: 'maintenance' },
+                          { val: log.pcl, type: 'pcl' },
+                          { val: log.materials, type: 'materials' },
+                          { val: log.marketing, type: 'marketing' },
+                          { val: log.hrSafety, type: 'hrSafety' },
+                          { val: log.unitHead, type: 'unitHead' }
+                        ].map((cell, cIdx) => {
+                          const status = cell.val;
+                          const isAccepted = status === 'Accepted' || status === 'Approved';
+                          const isRejected = status === 'Rejected';
+                          return (
+                            <td key={cIdx} className="p-[8px] text-center">
+                              <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${
+                                isAccepted 
+                                  ? 'bg-emerald-50 border-emerald-250 text-emerald-700' 
+                                  : isRejected 
+                                  ? 'bg-rose-50 border-rose-250 text-rose-700' 
+                                  : 'bg-amber-50 border-amber-250 text-amber-700'
+                              }`}>
+                                {status}
+                              </span>
+                            </td>
+                          );
+                        })}
 
-                      <td className="p-[8px] text-center">
-                        <button 
-                          onClick={() => setSelectedLog(log)}
-                          className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
-                        >
-                          <Eye size={12} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                        <td className="p-[8px] text-center" onClick={(e) => e.stopPropagation()}>
+                          <button 
+                            onClick={() => setSelectedLog(log)}
+                            className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
+                          >
+                            <Eye size={12} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -379,6 +538,26 @@ export const L3RequestTracker = ({
                 Close Matrix
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Validation Warning Modal */}
+      {validationError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
+          <div className="fixed inset-0 bg-slate-900/65 backdrop-blur-xs" onClick={() => setValidationError('')} />
+          <div className="relative bg-white w-full max-w-[400px] rounded-[12px] shadow-xl border border-slate-200 p-[20px] z-10 flex flex-col items-center text-center gap-[12px] animate-fade-in-up">
+            <div className="w-[48px] h-[48px] rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-500">
+              <AlertTriangle size={24} />
+            </div>
+            <h4 className="text-[14px] font-bold text-slate-950">Validation Warning</h4>
+            <p className="text-[12px] text-slate-500 leading-relaxed">{validationError}</p>
+            <button 
+              onClick={() => setValidationError('')} 
+              className="mt-[4px] w-full py-[8px] bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-[6px] text-[12px] transition-colors cursor-pointer"
+            >
+              Understand
+            </button>
           </div>
         </div>
       )}
