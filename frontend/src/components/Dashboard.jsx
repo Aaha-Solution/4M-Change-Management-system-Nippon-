@@ -47,17 +47,17 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const [levelOpen, setLevelOpen] = useState(true);
   const [notifications, setNotifications] = useState([]);
   const [isFetchingNotifications, setIsFetchingNotifications] = useState(false);
-  
+
   const handleLocalSignOut = () => {
     logAction('Sign Out', 'User logged out of the system.');
     onSignOut();
     navigate('/');
   };
-  
+
   // Database States
   const [changes, setChanges] = useState([]);
   const [isFetchingChanges, setIsFetchingChanges] = useState(false);
-  
+
   // Global Toast State
   const [toastMsg, setToastMsg] = useState(null);
 
@@ -240,10 +240,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
 
   return (
     <div className="flex min-h-screen bg-slate-50 text-slate-800 font-sans">
-      
+
       {/* 1. Sidebar Left Panel */}
       <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col justify-between transform transition-transform duration-300 md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        
+
         {/* Sidebar Header Logo */}
         <div>
           <div className="px-6 py-5 flex items-center justify-between border-b border-slate-200">
@@ -262,15 +262,14 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
 
           {/* Navigation Links Group */}
           <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-160px)]">
-            
+
             {/* Dashboard */}
             <button
               onClick={() => handleTabChange('dashboard')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
-                activeTab === 'dashboard'
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'dashboard'
                   ? 'bg-sky-50 text-[#0066cc]'
                   : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <LayoutGrid size={18} className={activeTab === 'dashboard' ? 'text-[#0066cc]' : 'text-slate-400'} />
@@ -281,11 +280,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             {/* All Requests */}
             <button
               onClick={() => handleTabChange('all-requests')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
-                activeTab === 'all-requests'
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'all-requests'
                   ? 'bg-sky-50 text-[#0066cc]'
                   : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <ClipboardList size={18} className={activeTab === 'all-requests' ? 'text-[#0066cc]' : 'text-slate-400'} />
@@ -297,11 +295,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <div className="space-y-0.5">
               <button
                 onClick={() => setLevelOpen(!levelOpen)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
-                  (activeTab === 'l1' || activeTab === 'approvals' || activeTab === 'new-request')
+                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${(activeTab === 'l1' || activeTab === 'approvals' || activeTab === 'new-request')
                     ? 'bg-sky-50 text-[#0066cc]'
                     : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <FilePlus size={18} className={(activeTab === 'l1' || activeTab === 'approvals' || activeTab === 'new-request') ? 'text-[#0066cc]' : 'text-slate-400'} />
@@ -316,11 +313,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   {/* L1 */}
                   <button
                     onClick={() => handleTabChange('l1')}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${
-                      activeTab === 'l1'
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'l1'
                         ? 'bg-sky-50/70 text-[#0066cc]'
                         : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2.5">
                       <CheckCircle size={14} className={activeTab === 'l1' ? 'text-[#0066cc]' : 'text-slate-400'} />
@@ -331,11 +327,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   {/* L2 */}
                   <button
                     onClick={() => handleTabChange('approvals')}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${
-                      activeTab === 'approvals'
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'approvals'
                         ? 'bg-sky-50/70 text-[#0066cc]'
                         : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2.5">
                       <CheckCheck size={14} className={activeTab === 'approvals' ? 'text-[#0066cc]' : 'text-slate-400'} />
@@ -346,11 +341,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   {/* L3 */}
                   <button
                     onClick={() => handleTabChange('new-request')}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${
-                      activeTab === 'new-request'
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'new-request'
                         ? 'bg-sky-50/70 text-[#0066cc]'
                         : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2.5">
                       <ListTodo size={14} className={activeTab === 'new-request' ? 'text-[#0066cc]' : 'text-slate-400'} />
@@ -364,11 +358,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             {/* Effectiveness */}
             <button
               onClick={() => handleTabChange('effectiveness')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
-                activeTab === 'effectiveness'
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'effectiveness'
                   ? 'bg-sky-50 text-[#0066cc]'
                   : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <TrendingUp size={18} className={activeTab === 'effectiveness' ? 'text-[#0066cc]' : 'text-slate-400'} />
@@ -379,11 +372,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             {/* Notifications */}
             <button
               onClick={() => handleTabChange('notifications')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
-                activeTab === 'notifications'
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'notifications'
                   ? 'bg-sky-50 text-[#0066cc]'
                   : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <Bell size={18} className={activeTab === 'notifications' ? 'text-[#0066cc]' : 'text-slate-400'} />
@@ -399,11 +391,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             {/* Users */}
             <button
               onClick={() => handleTabChange('users')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${
-                activeTab === 'users'
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'users'
                   ? 'bg-sky-50 text-[#0066cc]'
                   : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <UsersIcon size={18} className={activeTab === 'users' ? 'text-[#0066cc]' : 'text-slate-400'} />
@@ -444,7 +435,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
 
       {/* 2. Main Content Right Panel */}
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen">
-        
+
         {/* Top Header Bar */}
         <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-[24px] py-[16px] flex items-center justify-between">
           <div className="flex items-center gap-[12px]">
@@ -457,13 +448,13 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             </button>
             <div>
               <h2 className="font-heading text-[22px] font-bold text-slate-900">
-                {activeTab === 'dashboard' ? 'Overview' : 
-                 activeTab === 'new-request' ? 'Request New Change' : 
-                 activeTab === 'approvals' ? 'L2 Approvals' : 
-                 activeTab === 'notifications' ? 'Notifications Feed' : 
-                 activeTab === 'l1' ? 'L1 Approvals' :
-                 activeTab === 'all-requests' ? 'All Change Requests' :
-                 activeTab.replace('-', ' ')}
+                {activeTab === 'dashboard' ? 'Overview' :
+                  activeTab === 'new-request' ? 'Request New Change' :
+                    activeTab === 'approvals' ? 'L2 Approvals' :
+                      activeTab === 'notifications' ? 'Notifications Feed' :
+                        activeTab === 'l1' ? 'L1 Approvals' :
+                          activeTab === 'all-requests' ? 'All Change Requests' :
+                            activeTab.replace('-', ' ')}
               </h2>
             </div>
           </div>
@@ -505,7 +496,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
 
         {/* Main Content Area */}
         <main className="flex-grow p-4 sm:p-6 lg:p-8 w-full max-w-none">
-          
+
           {/* TAB: DASHBOARD OVERVIEW */}
           {activeTab === 'dashboard' && (
             <DashboardOverview
