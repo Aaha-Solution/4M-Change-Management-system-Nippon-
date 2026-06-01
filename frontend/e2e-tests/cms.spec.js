@@ -226,11 +226,6 @@ test.describe('Change Management System E2E Flow', () => {
     await expect(logsTable).toContainText(changeId);
 
 
-    // 5. Go to Reports tab
-    await page.locator('nav button:has-text("Reports")').click();
-    await expect(page.locator('h3', { hasText: 'Reporting Analytics' })).toBeVisible();
-    await expect(page.locator('h5:has-text("Total Logged Changes") + p')).toBeVisible();
-
     // 6. Go to Users tab and add a custom role, department, and user
     await page.locator('nav button:has-text("Users")').click();
     await expect(page.locator('h3', { hasText: 'User Management' })).toBeVisible();

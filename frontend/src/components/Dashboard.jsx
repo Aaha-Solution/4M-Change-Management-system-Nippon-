@@ -35,8 +35,6 @@ import { L1Request } from './L1Request';
 import { L3RequestTracker } from './L3RequestTracker';
 import { L2Validation } from './L2Validation';
 import { Effectiveness } from './Effectiveness';
-import { Reports } from './Reports';
-import { AuditLog } from './AuditLog';
 import { Users } from './Users';
 import { Settings } from './Settings';
 import { Notifications } from './Notifications';
@@ -220,9 +218,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     {
       group: 'MONITOR',
       items: [
-        { id: 'effectiveness', label: 'Effectiveness', icon: TrendingUp },
-        { id: 'reports', label: 'Reports', icon: BarChart3 },
-        { id: 'audit-log', label: 'Audit Log', icon: ShieldCheck }
+        { id: 'effectiveness', label: 'Effectiveness', icon: TrendingUp }
       ]
     },
     {
@@ -388,34 +384,6 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   {notifications.filter(n => !n.isRead).length}
                 </span>
               )}
-            </button>
-
-            {/* Reports */}
-            <button
-              onClick={() => handleTabChange('reports')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'reports'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-            >
-              <div className="flex items-center gap-3">
-                <BarChart3 size={18} className={activeTab === 'reports' ? 'text-[#0066cc]' : 'text-slate-400'} />
-                <span>Reports</span>
-              </div>
-            </button>
-
-            {/* Audit Log */}
-            <button
-              onClick={() => handleTabChange('audit-log')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'audit-log'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-            >
-              <div className="flex items-center gap-3">
-                <ShieldCheck size={18} className={activeTab === 'audit-log' ? 'text-[#0066cc]' : 'text-slate-400'} />
-                <span>Audit Log</span>
-              </div>
             </button>
 
             {/* Users */}
@@ -625,14 +593,6 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             />
           )}
 
-          {/* TAB: REPORTS */}
-          {activeTab === 'reports' && (
-            <Reports
-              changes={changes}
-              effectivenessLogs={effectivenessLogs}
-            />
-          )}
-
           {/* TAB: NOTIFICATIONS */}
           {activeTab === 'notifications' && (
             <Notifications
@@ -640,13 +600,6 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               notifications={notifications}
               setNotifications={setNotifications}
               fetchNotifications={fetchNotifications}
-            />
-          )}
-
-          {/* TAB: AUDIT LOG */}
-          {activeTab === 'audit-log' && (
-            <AuditLog
-              auditLogs={auditLogs}
             />
           )}
 
