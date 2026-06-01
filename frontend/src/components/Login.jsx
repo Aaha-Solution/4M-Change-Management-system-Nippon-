@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api/apiRoutes';
 import bgImage from '../assets/background-image.JPG';
+import nipponLogo from '../assets/Nippon Logo.png';
 import {
   Mail,
   Lock,
@@ -100,7 +101,7 @@ export const Login = ({ onLoginSuccess }) => {
 
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-[12px]">
-          <GitBranch className="text-[#06b6d4] animate-pulse-glow" size={28} />
+          <img src={nipponLogo} alt="Nippon Logo" className="h-[40px] w-auto object-contain select-none" />
           <span className="font-heading text-[24px] font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">4M·CMS</span>
         </div>
 
@@ -117,7 +118,7 @@ export const Login = ({ onLoginSuccess }) => {
         <div className="w-full max-w-[400px] animate-fade-in-up my-auto lg:my-0">
           {/* Logo on mobile/tablet */}
           <div className="flex lg:hidden items-center gap-[12px] mb-[24px] justify-center">
-            <GitBranch className="text-[#06b6d4] animate-pulse-glow" size={28} />
+            <img src={nipponLogo} alt="Nippon Logo" className="h-[36px] w-auto object-contain select-none" />
             <span className="font-heading text-[24px] font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">4M·CMS</span>
           </div>
 
