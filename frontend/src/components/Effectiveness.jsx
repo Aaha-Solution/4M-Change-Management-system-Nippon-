@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Paperclip, RefreshCw, Search, X } from 'lucide-react';
+import { AlertTriangle, Paperclip, RefreshCw, Search, X, Eye } from 'lucide-react';
 import { 
   createEffectivenessLog, 
   updateEffectivenessLog, 
@@ -27,6 +27,7 @@ export const Effectiveness = ({
   const [effQaApproval, setEffQaApproval] = useState('');
   const [editingEffLogId, setEditingEffLogId] = useState(null);
   const [deleteEffLogId, setDeleteEffLogId] = useState(null);
+  const [viewingLog, setViewingLog] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
   const [previewFile, setPreviewFile] = useState(null);
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
@@ -564,20 +565,22 @@ export const Effectiveness = ({
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-150">
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Change No</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Requested</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Context</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Context of Change</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Change Date Start</th>
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Month Wise</th>
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">File</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Attachment</th>
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">QA</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">QA Approval</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="text-center py-10 text-slate-400">
+                      <td colSpan={10} className="text-center py-10 text-slate-400">
                         No observations logs recorded.
                       </td>
                     </tr>
@@ -593,6 +596,7 @@ export const Effectiveness = ({
                           <td className="p-3 font-mono font-bold text-slate-650">{log.changeNo}</td>
                           <td className="p-3 text-slate-500">{formatDateShort(log.reqDate)}</td>
                           <td className="p-3 font-medium text-slate-800">{log.context}</td>
+                          <td className="p-3 text-slate-500">{formatDateShort(log.startDate)}</td>
                           <td className="p-3 font-medium">{formatMonthWise(log.monthWise)}</td>
                           <td className="p-3 max-w-[200px] truncate text-slate-500" title={log.remarks}>{log.remarks}</td>
                           <td className="p-3 font-mono text-teal-655">
@@ -632,6 +636,21 @@ export const Effectiveness = ({
                               {log.qaApproval}
                             </span>
                           </td>
+                          <td className="p-3 text-center">
+                            <div className="flex justify-center items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setViewingLog(log);
+                                }}
+                                className="p-1 text-slate-450 hover:text-[#0066cc] hover:bg-slate-100 rounded transition-colors cursor-pointer"
+                                title="View Details"
+                              >
+                                <Eye size={14} />
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       );
                     })
@@ -650,7 +669,7 @@ export const Effectiveness = ({
           <div className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-sm overflow-hidden animate-fade-in-up">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
               <h4 className="font-heading font-bold text-slate-900">Delete Observation Log</h4>
-              <button onClick={() => setDeleteEffLogId(null)} className="text-slate-400 hover:text-slate-655">
+              <button onClick={() => setDeleteEffLogId(null)} className="text-slate-450 hover:text-slate-655 cursor-pointer">
                 <X size={16} />
               </button>
             </div>
@@ -677,6 +696,130 @@ export const Effectiveness = ({
                 className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
               >
                 Delete Log
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Log Details Modal */}
+      {viewingLog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setViewingLog(null)}
+          />
+          
+          {/* Modal Container */}
+          <div className="relative bg-white w-full max-w-[500px] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
+            {/* Header */}
+            <div className="bg-slate-50 px-[24px] py-[18px] border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-[8px]">
+                <Eye size={16} className="text-[#0066cc]" />
+                <h4 className="font-heading text-[14px] font-bold text-slate-800">Effectiveness Log Details</h4>
+              </div>
+              <button 
+                onClick={() => setViewingLog(null)}
+                className="p-[4px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-[24px] space-y-[16px] text-[13px] text-slate-600">
+              <div className="grid grid-cols-2 gap-[16px]">
+                <div className="space-y-[4px]">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</span>
+                  <span className="font-bold text-[#0066cc] text-[13px]">{viewingLog.changeNo}</span>
+                </div>
+                <div className="space-y-[4px]">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                  <span className="font-medium text-slate-700">{formatDateShort(viewingLog.reqDate)}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-[16px] pt-[8px] border-t border-slate-100">
+                <div className="space-y-[4px]">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start</span>
+                  <span className="font-medium text-slate-700">{formatDateShort(viewingLog.startDate)}</span>
+                </div>
+                <div className="space-y-[4px]">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise</span>
+                  <span className="font-medium text-slate-700">{formatMonthWise(viewingLog.monthWise)}</span>
+                </div>
+              </div>
+
+              <div className="space-y-[4px] pt-[8px] border-t border-slate-100">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change</span>
+                <span className="font-medium text-slate-800">{viewingLog.context}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-[16px] pt-[8px] border-t border-slate-100">
+                <div className="space-y-[4px]">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Status</span>
+                  <div>
+                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
+                      viewingLog.status === 'Effectiveness Ok' 
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                        : 'bg-rose-50 border-rose-250 text-rose-700'
+                    }`}>
+                      {viewingLog.status}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-[4px]">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Approval</span>
+                  <div>
+                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
+                      viewingLog.qaApproval === 'Approved' 
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                        : 'bg-rose-50 border-rose-200 text-rose-700'
+                    }`}>
+                      {viewingLog.qaApproval}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-[6px] pt-[8px] border-t border-slate-100">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attachments</span>
+                {viewingLog.attachment ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {viewingLog.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                      <span 
+                        key={idx} 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewingLog(null);
+                          handleViewAttachment(file, viewingLog);
+                        }}
+                        className="inline-flex items-center gap-1 bg-slate-50 border border-slate-150 text-[11px] font-medium text-slate-700 px-2 py-0.5 rounded-full hover:bg-slate-100 hover:border-teal-500 hover:text-teal-700 cursor-pointer" 
+                        title="Click to view file"
+                      >
+                        📎 {file}
+                      </span>
+                    ))}
+                  </div>
+                ) : '-'}
+              </div>
+
+              <div className="space-y-[4px] pt-[8px] border-t border-slate-100">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remarks / Comments</span>
+                <div className="bg-slate-50 border border-slate-150 rounded-[8px] p-[12px] text-[12px] text-slate-600 leading-relaxed max-h-[120px] overflow-y-auto">
+                  {viewingLog.remarks}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => setViewingLog(null)}
+                className="px-[16px] py-[8px] bg-white border border-slate-200 rounded-[6px] text-slate-600 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
+              >
+                Close
               </button>
             </div>
           </div>
