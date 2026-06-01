@@ -19,3 +19,11 @@ export const updateChangeStatus = (id, status) => {
     },
   });
 };
+
+export const createL1Request = (l1Data) => {
+  return axiosInstance.post('/changes/l1', { l1Data }, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};

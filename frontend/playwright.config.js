@@ -11,7 +11,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
-    headless: false, // Run in headed mode so the browser window is visible
+    headless: true, // Run in headless mode for server/agent execution
   },
   projects: [
     {

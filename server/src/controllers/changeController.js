@@ -49,3 +49,23 @@ export const updateChangeStatus = async (req, res) => {
   }
 };
 
+export const createL1Request = async (req, res) => {
+  const { l1Data } = req.body;
+  const userEmail = req.user?.email || 'unknown@cms.com';
+
+  if (!l1Data || !l1Data.changeNo || !l1Data.unit || !l1Data.dept || !l1Data.context || !l1Data.description) {
+    return res.status(400).json({ error: 'Required L1 change request data fields are missing.' });
+  }
+
+  try {
+    const newChange = await changeModel.addL1Request(l1Data, userEmail);
+    res.status(201).json({
+      message: 'L1 Change request created successfully',
+      change: newChange
+    });
+  } catch (error) {
+    console.error('Error in createL1Request:', error);
+    res.status(500).json({ error: 'Failed to save L1 request to the database.' });
+  }
+};
+

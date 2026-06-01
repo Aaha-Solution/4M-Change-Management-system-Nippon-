@@ -7,6 +7,7 @@
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS effectiveness_attachments;
 DROP TABLE IF EXISTS effectiveness_logs;
+DROP TABLE IF EXISTS l1_requests;
 DROP TABLE IF EXISTS change_requests;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS roles;
@@ -142,5 +143,31 @@ INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, mo
 INSERT INTO effectiveness_attachments (log_id, file_name, file_data, file_type) VALUES
 ('EFF-8901', 'sso-verification-report.pdf', 'U1NPIFZlcmlmaWNhdGlvbiBSZXBvcnQgQ29udGVudHM=', 'application/pdf'),
 ('EFF-8895', 'cve-scan-results.txt', 'Q1ZFLTIwMjYtMzM5MiBQYXRjaGVkIGFuZCBWZXJpZmllZA==', 'text/plain');
+
+-- 6. L1 Requests Table
+CREATE TABLE l1_requests (
+    change_no VARCHAR(50) PRIMARY KEY REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    unit VARCHAR(100) NOT NULL,
+    requested_time VARCHAR(20) NOT NULL,
+    change_in VARCHAR(255) NOT NULL DEFAULT '',
+    dept VARCHAR(100) NOT NULL,
+    request_by VARCHAR(100) NOT NULL,
+    process_name VARCHAR(100) NOT NULL,
+    process_line VARCHAR(100) NOT NULL,
+    machine_no VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    improvement_area VARCHAR(100) NOT NULL,
+    change_type VARCHAR(100) NOT NULL,
+    date_start DATE,
+    trace_from VARCHAR(100) NOT NULL,
+    date_close DATE,
+    trace_to VARCHAR(100) NOT NULL,
+    risk_analysis TEXT NOT NULL,
+    sop_update VARCHAR(100) NOT NULL,
+    hod_approval VARCHAR(100) NOT NULL,
+    customer_approval VARCHAR(100) NOT NULL,
+    effectiveness_monitoring TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 

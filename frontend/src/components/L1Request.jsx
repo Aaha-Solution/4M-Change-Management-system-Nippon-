@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { 
   Upload, 
   FileText, 
-  Loader2, 
-  CheckCircle2, 
-  HelpCircle 
+  Loader2 
 } from 'lucide-react';
+import { createL1Request } from '../api/apiRoutes';
 
 export const L1Request = ({
   userEmail,
@@ -20,7 +19,7 @@ export const L1Request = ({
   
   // Identifiers State
   const [unit, setUnit] = useState('');
-  const [changeNo] = useState('4M-2026-293');
+  const [changeNo] = useState(() => `4M-2026-${Math.floor(250 + Math.random() * 700)}`);
   const [requestedDate] = useState('01/06/2026');
   const [requestedTime, setRequestedTime] = useState('11:01');
   const [changeIn, setChangeIn] = useState({
@@ -99,27 +98,37 @@ export const L1Request = ({
 
     setIsSubmitting(true);
     
-    // We map L1 form submission to create a standard change request in our real MySQL database
-    // using the Change Description/Context so the database doesn't fail due to table schema constraints,
-    // while providing a seamless frontend experience.
     const selectedChangesIn = Object.keys(changeIn).filter(k => changeIn[k]).join(', ');
-    const titleSummary = `[L1 Request - ${selectedChangesIn || 'General'}] ${context.substring(0, 100)}`;
+    const l1Data = {
+      changeNo,
+      unit,
+      requestedTime,
+      changeIn: selectedChangesIn,
+      dept,
+      requestBy,
+      processName,
+      processLine,
+      machineNo,
+      context,
+      description,
+      improvementArea,
+      changeType,
+      dateStart,
+      traceFrom,
+      dateClose,
+      traceTo,
+      riskAnalysis,
+      sopUpdate,
+      hodApproval,
+      customerApproval,
+      effectivenessMonitoring
+    };
     
     try {
-      // Simulate real-world submit & save to backend database
-      // In production we would post all details to L1 specific endpoint
-      const mockResult = {
-        change: {
-          id: changeNo,
-          title: titleSummary,
-          requester: userEmail,
-          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          priority: 'High',
-          status: 'Pending'
-        }
-      };
+      const response = await createL1Request(l1Data);
+      const newChange = response.data.change;
 
-      setChanges([mockResult.change, ...changes]);
+      setChanges([newChange, ...changes]);
       setToastMsg(`Successfully submitted L1 Change Request: ${changeNo}`);
       logAction('L1 Request Created', `Successfully submitted L1 Change Request ${changeNo} for department ${dept}`);
       
@@ -127,7 +136,8 @@ export const L1Request = ({
       onTabChange('dashboard');
     } catch (err) {
       console.error(err);
-      setToastMsg('Error saving L1 request to server.');
+      const errMsg = err.response?.data?.error || 'Error saving L1 request to server.';
+      setToastMsg(errMsg);
     } finally {
       setIsSubmitting(false);
     }
