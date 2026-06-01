@@ -225,4 +225,23 @@ INSERT INTO l3_approvals (change_no, date, requester, ped, quality, production, 
 ('4M-2026-243', '16 May', 'Ravi QA', 'Accepted', 'Accepted', 'Approved', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Approved'),
 ('4M-2026-241', '14 May', 'Kumar S.', 'Accepted', 'Accepted', 'Approved', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Approved');
 
+-- Seed L1 Requests matching the seeded change requests
+INSERT INTO l1_requests (
+    change_no, unit, requested_time, change_in, dept, request_by, 
+    process_name, process_line, machine_no, description, 
+    improvement_area, change_type, date_start, trace_from, 
+    date_close, trace_to, risk_analysis, sop_update, 
+    hod_approval, customer_approval, effectiveness_monitoring
+) VALUES
+('CHG-8902', 'Unit 1', '10:00', 'Method', 'PRODUCTION', 'Admin User', 'Gold Line', 'Line 1', 'MFG-MC-1042', 'Database cluster upgrade description...', 'Quality', 'Permanent', '2026-05-20', 'Trace from logic...', '2026-05-25', 'Trace to logic...', 'Low risk', 'SOP updated', 'Approved', 'No', '3-month tracking'),
+('CHG-8901', 'Unit 1', '11:00', 'Method', 'MATERIALS', 'Manager User', 'Gold Line', 'Line 2', 'MFG-MC-1042', 'Integrate Auth0 SSO provider...', 'Cost', 'Permanent', '2026-05-19', 'Trace from...', '2026-05-24', 'Trace to...', 'Medium risk', 'WI updated', 'Approved', 'No', 'SSO health monitoring'),
+('CHG-8899', 'Unit 2', '12:00', 'Method', 'PRODUCTION', 'Requester User', 'Gold Line', 'Line 3', 'MFG-MC-1042', 'Modify API Gateway route rules...', 'Quality', 'Permanent', '2026-05-18', 'Trace from...', '2026-05-23', 'Trace to...', 'Low risk', 'SOP updated', 'Approved', 'No', 'Gateway latency check'),
+('CHG-8895', 'Unit 1', '09:00', 'Method', 'PED', 'Admin User', 'Gold Line', 'Line 1', 'MFG-MC-1042', 'Resolve security vulnerability CVE-2026-3392...', 'Safety', 'Permanent', '2026-05-15', 'Trace from...', '2026-05-16', 'Trace to...', 'High risk', 'WI updated', 'Approved', 'No', 'Security scans'),
+('4M-2026-248', 'Unit 1', '14:30', 'Machine', 'PRODUCTION', 'Kumar Selvam', 'Welding Line A', 'Line A', 'MFG-MC-2011', 'Machine Change in Welding Line A...', 'Delivery', 'Permanent', '2026-05-20', 'Trace from...', '2026-05-22', 'Trace to...', 'Medium risk', 'FMEA updated', 'Approved', 'Yes', 'Welding strength tests'),
+('4M-2026-247', 'Unit 1', '08:45', 'Method', 'QUALITY', 'Ravi QA', 'Gold Line', 'Line C', 'MFG-MC-1033', 'Method Calibration Setup...', 'Quality', 'Permanent', '2026-05-19', 'Trace from...', '2026-05-20', 'Trace to...', 'Low risk', 'Calibration sheet updated', 'Approved', 'No', 'GR&R validation'),
+('4M-2026-246', 'Unit 3', '15:15', 'Material', 'PRODUCTION', 'Kumar Selvam', 'Injection Molding B', 'Line B', 'MFG-MC-1044', 'Material Spec Adjustment in Injection Molding B...', 'Quality', 'Temporary', '2026-05-18', 'Trace from...', '2026-05-28', 'Trace to...', 'High risk', 'Control plan updated', 'Approved', 'Yes', 'Molding defect rate monitoring'),
+('4M-2026-244', 'Unit 1', '11:00', 'Man', 'PRODUCTION', 'Requester User', 'Potting Line', 'Line 4', 'MFG-MC-1042', 'Man Training Syllabus Update...', 'Safety', 'Permanent', '2026-05-17', 'Trace from...', '2026-05-19', 'Trace to...', 'Low risk', 'Training record updated', 'Pending', 'No', 'Operator performance metrics'),
+('4M-2026-243', 'Unit 2', '10:30', 'Measurement', 'QUALITY', 'Ravi QA', 'Gauge Line', 'Line 5', 'MFG-MC-1045', 'Gauge Repeatability Check...', 'Quality', 'Permanent', '2026-05-16', 'Trace from...', '2026-05-17', 'Trace to...', 'Low risk', 'SOP updated', 'Approved', 'No', 'Repeatability records'),
+('4M-2026-241', 'Unit 1', '13:00', 'Material', 'PRODUCTION', 'Kumar Selvam', 'Welding Line A', 'Line A', 'MFG-MC-1046', 'Coolant Viscosity Spec Match...', 'Cost', 'Permanent', '2026-05-14', 'Trace from...', '2026-05-15', 'Trace to...', 'Low risk', 'Control plan updated', 'Approved', 'No', 'Viscosity periodic tests');
+
 

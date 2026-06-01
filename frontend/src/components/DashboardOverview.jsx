@@ -23,27 +23,14 @@ export const DashboardOverview = ({
   const [isGridView, setIsGridView] = useState(false);
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Department');
 
-  // Compile metrics dynamically based on DB + baseline mock data
-  const baseTotal = 6;
-  const baseApproved = 6;
-  const basePending = 0;
-  const baseRejected = 0;
-
   const dynamicApproved = changes.filter(c => c.status === 'Approved').length;
   const dynamicPending = changes.filter(c => c.status === 'Pending' || c.status === 'Evaluating').length;
   const dynamicRejected = changes.filter(c => c.status === 'Rejected').length;
 
-  const totalCount = changes.length + baseTotal;
-  const approvedCount = dynamicApproved + baseApproved;
-  const pendingCount = dynamicPending + basePending + 2; // to match pending count 2 from mockup
-  const rejectedCount = dynamicRejected + baseRejected;
-
-  const baseTableData = [
-    { slNo: 1, id: '4M-2026-248', machineNo: 'MFG-MC-1042', department: 'PED', date: '20/05/2026', status: 'Pending L2' },
-    { slNo: 2, id: '4M-2026-247', machineNo: 'MFG-MC-0882', department: 'QAD', date: '19/05/2026', status: 'Approved' },
-    { slNo: 4, id: '4M-2026-244', machineNo: 'MFG-MC-0015', department: 'MAINTENANCE', date: '17/05/2026', status: 'Rejected' },
-    { slNo: 5, id: '4M-2026-243', machineNo: 'MFG-MC-1042', department: 'PC & L', date: '16/05/2026', status: 'Closed' }
-  ];
+  const totalCount = changes.length;
+  const approvedCount = dynamicApproved;
+  const pendingCount = dynamicPending;
+  const rejectedCount = dynamicRejected;
 
   const formattedDbChanges = changes.map((c, idx) => {
     let displayDate = c.date;
@@ -62,16 +49,16 @@ export const DashboardOverview = ({
     if (c.status === 'Completed') displayStatus = 'Closed';
 
     return {
-      slNo: `NEW-${idx + 1}`,
+      slNo: idx + 1,
       id: c.id,
-      machineNo: 'MFG-MC-1042',
-      department: 'PRODUCTION',
+      machineNo: c.machineNo || 'MFG-MC-1042',
+      department: c.dept || c.department || 'PRODUCTION',
       date: displayDate,
       status: displayStatus
     };
   });
 
-  const allTableRows = [...formattedDbChanges, ...baseTableData];
+  const allTableRows = formattedDbChanges;
 
   // Helper filters render
   const renderFilters = () => (
@@ -138,21 +125,48 @@ export const DashboardOverview = ({
 
   // Reusable Chart Renderers
   const renderDepartmentChart = (height = 'h-[160px]') => {
-    const data = [
-      { label: 'PED', value: 9 },
-      { label: 'QAD', value: 7 },
-      { label: 'PRODUCTION', value: 8 },
-      { label: 'MAINTENANCE', value: 5 },
-      { label: 'PC & L', value: 11 },
-      { label: 'MATERIALS', value: 9 },
-      { label: 'MARKETING', value: 7 },
-      { label: 'HR', value: 10 },
-      { label: 'SAFETY', value: 9 }
-    ];
+    const counts = {
+      'PED': 0,
+      'QAD': 0,
+      'PRODUCTION': 0,
+      'MAINTENANCE': 0,
+      'PC & L': 0,
+      'MATERIALS': 0,
+      'MARKETING': 0,
+      'HR': 0,
+      'SAFETY': 0
+    };
+
+    changes.forEach(c => {
+      const rawDept = (c.dept || c.department || '').trim().toUpperCase();
+      let mapped = '';
+      if (rawDept.includes('PED')) mapped = 'PED';
+      else if (rawDept.includes('QA') || rawDept.includes('QUALITY')) mapped = 'QAD';
+      else if (rawDept.includes('PROD')) mapped = 'PRODUCTION';
+      else if (rawDept.includes('MAINT')) mapped = 'MAINTENANCE';
+      else if (rawDept.includes('PC')) mapped = 'PC & L';
+      else if (rawDept.includes('MATER')) mapped = 'MATERIALS';
+      else if (rawDept.includes('MARKET')) mapped = 'MARKETING';
+      else if (rawDept.includes('HR')) mapped = 'HR';
+      else if (rawDept.includes('SAFE')) mapped = 'SAFETY';
+      else mapped = 'PRODUCTION'; // fallback
+      
+      if (counts[mapped] !== undefined) {
+        counts[mapped]++;
+      }
+    });
+
+    const data = Object.keys(counts).map(key => ({
+      label: key,
+      value: counts[key]
+    }));
+
+    const maxVal = Math.max(...data.map(item => item.value), 5);
+
     return (
       <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px]`}>
         {data.map((item, idx) => {
-          const barHeight = (item.value / 12) * 100;
+          const barHeight = (item.value / maxVal) * 100;
           return (
             <div key={idx} className="flex flex-col items-center w-[9%] group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
@@ -171,17 +185,38 @@ export const DashboardOverview = ({
   };
 
   const renderProcessChart = (height = 'h-[160px]') => {
-    const data = [
-      { label: 'Wind', value: 10 },
-      { label: 'Gold', value: 10 },
-      { label: 'EOL', value: 7 },
-      { label: 'Pott', value: 14 },
-      { label: 'Load', value: 13 }
-    ];
+    const counts = {
+      'Wind': 0,
+      'Gold': 0,
+      'EOL': 0,
+      'Pott': 0,
+      'Load': 0
+    };
+
+    changes.forEach(c => {
+      const p = (c.processName || '').trim().toLowerCase();
+      let mapped = '';
+      if (p.includes('wind') || p.includes('weld')) mapped = 'Wind';
+      else if (p.includes('gold') || p.includes('calib')) mapped = 'Gold';
+      else if (p.includes('eol') || p.includes('mold') || p.includes('mould') || p.includes('inject')) mapped = 'EOL';
+      else if (p.includes('pott') || p.includes('train')) mapped = 'Pott';
+      else if (p.includes('load') || p.includes('gauge')) mapped = 'Load';
+      else mapped = 'Wind'; // fallback
+      
+      counts[mapped]++;
+    });
+
+    const data = Object.keys(counts).map(key => ({
+      label: key,
+      value: counts[key]
+    }));
+
+    const maxVal = Math.max(...data.map(item => item.value), 5);
+
     return (
       <div className={`flex justify-around items-end ${height} px-[10px] mt-[10px]`}>
         {data.map((item, idx) => {
-          const barHeight = (item.value / 16) * 100;
+          const barHeight = (item.value / maxVal) * 100;
           return (
             <div key={idx} className="flex flex-col items-center w-[12%] group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
@@ -200,18 +235,50 @@ export const DashboardOverview = ({
   };
 
   const renderCategoryChart = (height = 'h-[160px]') => {
-    const data = [
-      { label: 'Man', value: 7, color: '#1e60aa' },
-      { label: 'Mac', value: 16, color: '#673ab7' },
-      { label: 'Met', value: 11, color: '#795548' },
-      { label: 'Mat', value: 10, color: '#009688' },
-      { label: 'Mea', value: 6, color: '#8bc34a' },
-      { label: 'Mot', value: 18, color: '#d32f2f' }
-    ];
+    const counts = {
+      'Man': 0,
+      'Mac': 0,
+      'Met': 0,
+      'Mat': 0,
+      'Mea': 0,
+      'Mot': 0
+    };
+
+    changes.forEach(c => {
+      const catStr = (c.changeIn || c.title || c.id || '').trim().toLowerCase();
+      let mapped = '';
+      if (catStr.includes('man') || catStr.includes('train')) mapped = 'Man';
+      else if (catStr.includes('mac') || catStr.includes('machin') || catStr.includes('weld')) mapped = 'Mac';
+      else if (catStr.includes('met') || catStr.includes('calib') || catStr.includes('sso') || catStr.includes('db') || catStr.includes('api') || catStr.includes('vulner')) mapped = 'Met';
+      else if (catStr.includes('mat') || catStr.includes('spec') || catStr.includes('cool')) mapped = 'Mat';
+      else if (catStr.includes('mea') || catStr.includes('gauge') || catStr.includes('check') || catStr.includes('repeat')) mapped = 'Mea';
+      else if (catStr.includes('mot') || catStr.includes('nature') || catStr.includes('env')) mapped = 'Mot';
+      else mapped = 'Met'; // fallback
+      
+      counts[mapped]++;
+    });
+
+    const colors = {
+      'Man': '#1e60aa',
+      'Mac': '#673ab7',
+      'Met': '#795548',
+      'Mat': '#009688',
+      'Mea': '#8bc34a',
+      'Mot': '#d32f2f'
+    };
+
+    const data = Object.keys(counts).map(key => ({
+      label: key,
+      value: counts[key],
+      color: colors[key]
+    }));
+
+    const maxVal = Math.max(...data.map(item => item.value), 5);
+
     return (
       <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px]`}>
         {data.map((item, idx) => {
-          const barHeight = (item.value / 20) * 100;
+          const barHeight = (item.value / maxVal) * 100;
           return (
             <div key={idx} className="flex flex-col items-center w-[12%] group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
@@ -230,24 +297,31 @@ export const DashboardOverview = ({
   };
 
   const renderMonthlyChart = (height = 'h-[160px]') => {
-    const data = [
-      { label: 'Jan', value: 7 },
-      { label: 'Feb', value: 8 },
-      { label: 'Mar', value: 9 },
-      { label: 'Apr', value: 4 },
-      { label: 'May', value: 4 },
-      { label: 'Jun', value: 10 },
-      { label: 'Jul', value: 8 },
-      { label: 'Aug', value: 6 },
-      { label: 'Sep', value: 5 },
-      { label: 'Oct', value: 7 },
-      { label: 'Nov', value: 4 },
-      { label: 'Dec', value: 3 }
-    ];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const counts = Array(12).fill(0);
+
+    changes.forEach(c => {
+      if (!c.date) return;
+      try {
+        const d = new Date(c.date);
+        if (!isNaN(d.getTime())) {
+          const monthIdx = d.getMonth();
+          counts[monthIdx]++;
+        }
+      } catch (e) {}
+    });
+
+    const data = months.map((m, idx) => ({
+      label: m,
+      value: counts[idx]
+    }));
+
+    const maxVal = Math.max(...data.map(item => item.value), 5);
+
     return (
       <div className={`flex justify-between items-end ${height} px-[5px] mt-[10px]`}>
         {data.map((item, idx) => {
-          const barHeight = (item.value / 12) * 100;
+          const barHeight = (item.value / maxVal) * 100;
           return (
             <div key={idx} className="flex flex-col items-center w-[7%] group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
@@ -266,24 +340,35 @@ export const DashboardOverview = ({
   };
 
   const renderApprovalStatusChart = (height = 'h-[180px]') => {
-    const data = [
-      { label: 'Jan', appr: 6, rej: 1, pend: 1 },
-      { label: 'Feb', appr: 3, rej: 1, pend: 4 },
-      { label: 'Mar', appr: 5, rej: 2, pend: 2 },
-      { label: 'Apr', appr: 4, rej: 0, pend: 1 },
-      { label: 'May', appr: 2, rej: 2, pend: 0 },
-      { label: 'Jun', appr: 7, rej: 2, pend: 1 },
-      { label: 'Jul', appr: 3, rej: 2, pend: 1 },
-      { label: 'Aug', appr: 4, rej: 1, pend: 1 },
-      { label: 'Sep', appr: 2, rej: 2, pend: 2 },
-      { label: 'Oct', appr: 3, rej: 3, pend: 0 },
-      { label: 'Nov', appr: 1, rej: 2, pend: 0 },
-      { label: 'Dec', appr: 2, rej: 0, pend: 1 }
-    ];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dataMap = months.map(m => ({ label: m, appr: 0, rej: 0, pend: 0 }));
+
+    changes.forEach(c => {
+      if (!c.date) return;
+      try {
+        const d = new Date(c.date);
+        if (!isNaN(d.getTime())) {
+          const monthIdx = d.getMonth();
+          const status = c.status;
+          if (status === 'Approved') {
+            dataMap[monthIdx].appr++;
+          } else if (status === 'Rejected') {
+            dataMap[monthIdx].rej++;
+          } else {
+            dataMap[monthIdx].pend++;
+          }
+        }
+      } catch (e) {}
+    });
+
+    const maxVal = Math.max(
+      ...dataMap.map(item => Math.max(item.appr, item.rej, item.pend)),
+      5
+    );
+
     return (
       <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px]`}>
-        {data.map((item, idx) => {
-          const maxVal = 8;
+        {dataMap.map((item, idx) => {
           const hAppr = (item.appr / maxVal) * 100;
           const hRej = (item.rej / maxVal) * 100;
           const hPend = (item.pend / maxVal) * 100;

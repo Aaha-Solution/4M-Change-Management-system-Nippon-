@@ -2,9 +2,11 @@ import pool from '../config/db.js';
 
 export const getChanges = async () => {
   const [rows] = await pool.query(
-    `SELECT id, title, requester, DATE_FORMAT(date, '%b %d, %Y') as date, priority, status 
-     FROM change_requests 
-     ORDER BY created_at DESC`
+    `SELECT c.id, c.title, c.requester, DATE_FORMAT(c.date, '%b %d, %Y') as date, c.priority, c.status,
+            l1.dept, l1.process_name as processName, l1.machine_no as machineNo, l1.change_in as changeIn
+     FROM change_requests c
+     LEFT JOIN l1_requests l1 ON c.id = l1.change_no
+     ORDER BY c.created_at DESC`
   );
   return rows;
 };

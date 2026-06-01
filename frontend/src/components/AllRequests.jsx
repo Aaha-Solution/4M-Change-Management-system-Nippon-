@@ -11,29 +11,6 @@ export const AllRequests = ({
   const [selectedProcess, setSelectedProcess] = useState('All');
   const [selectedMachine, setSelectedMachine] = useState('All');
 
-  const defaultRequests = [
-    { id: '4M-2026-100', machineNo: 'MFG-MC-1042', department: 'PRODUCTION', date: '14/08/2026', status: 'Rejected', requester: 'kumar.s@plant.com' },
-    { id: '4M-2026-101', machineNo: 'MFG-MC-0882', department: 'PRODUCTION', date: '19/06/2026', status: 'Approved', requester: 'priya.v@plant.com' },
-    { id: '4M-2026-102', machineNo: 'MFG-MC-0015', department: 'MAINTENANCE', date: '09/04/2026', status: 'Approved', requester: 'ravi.qa@plant.com' },
-    { id: '4M-2026-103', machineNo: 'MFG-MC-1042', department: 'HR', date: '08/03/2026', status: 'Approved', requester: 'ramanan.p@plant.com' },
-    { id: '4M-2026-104', machineNo: 'MFG-MC-1042', department: 'QAD', date: '04/02/2026', status: 'Pending', requester: 'priya.v@plant.com' },
-    { id: '4M-2026-105', machineNo: 'MFG-MC-1042', department: 'MATERIALS', date: '20/12/2026', status: 'Pending', requester: 'kumar.s@plant.com' },
-    { id: '4M-2026-106', machineNo: 'MFG-MC-1042', department: 'HR', date: '03/11/2026', status: 'Rejected', requester: 'ramanan.p@plant.com' },
-    { id: '4M-2026-107', machineNo: 'MFG-MC-0882', department: 'SAFETY', date: '19/10/2026', status: 'Pending', requester: 'ravi.qa@plant.com' },
-    { id: '4M-2026-108', machineNo: 'MFG-MC-0002', department: 'HR', date: '06/01/2026', status: 'Approved', requester: 'kumar.s@plant.com' },
-    { id: '4M-2026-109', machineNo: 'MFG-MC-1042', department: 'MAINTENANCE', date: '05/02/2026', status: 'Pending', requester: 'priya.v@plant.com' },
-    { id: '4M-2026-110', machineNo: 'MFG-MC-0711', department: 'SAFETY', date: '08/05/2026', status: 'Approved', requester: 'ramanan.p@plant.com' },
-    { id: '4M-2026-111', machineNo: 'MFG-MC-0711', department: 'SAFETY', date: '24/09/2026', status: 'Rejected', requester: 'ravi.qa@plant.com' },
-    { id: '4M-2026-112', machineNo: 'MFG-MC-0711', department: 'HR', date: '13/10/2026', status: 'Approved', requester: 'kumar.s@plant.com' },
-    { id: '4M-2026-113', machineNo: 'MFG-MC-0711', department: 'MAINTENANCE', date: '01/03/2026', status: 'Approved', requester: 'priya.v@plant.com' },
-    { id: '4M-2026-114', machineNo: 'MFG-MC-0711', department: 'HR', date: '26/04/2026', status: 'Approved', requester: 'ramanan.p@plant.com' },
-    { id: '4M-2026-115', machineNo: 'MFG-MC-0015', department: 'SAFETY', date: '01/04/2026', status: 'Approved', requester: 'ravi.qa@plant.com' },
-    { id: '4M-2026-116', machineNo: 'MFG-MC-0015', department: 'SAFETY', date: '26/07/2026', status: 'Rejected', requester: 'kumar.s@plant.com' },
-    { id: '4M-2026-117', machineNo: 'MFG-MC-0882', department: 'QAD', date: '06/11/2026', status: 'Pending', requester: 'priya.v@plant.com' },
-    { id: '4M-2026-118', machineNo: 'MFG-MC-1042', department: 'PRODUCTION', date: '13/08/2026', status: 'Approved', requester: 'ramanan.p@plant.com' },
-    { id: '4M-2026-119', machineNo: 'MFG-MC-1042', department: 'PC & L', date: '03/01/2026', status: 'Approved', requester: 'ravi.qa@plant.com' }
-  ];
-
   const formattedDbChanges = changes.map((c) => {
     let displayDate = c.date;
     try {
@@ -51,8 +28,8 @@ export const AllRequests = ({
 
     return {
       id: c.id,
-      machineNo: 'MFG-MC-1042',
-      department: 'PRODUCTION',
+      machineNo: c.machineNo || 'MFG-MC-1042',
+      department: c.dept || c.department || 'PRODUCTION',
       date: displayDate,
       status: displayStatus,
       requester: c.requester,
@@ -60,7 +37,7 @@ export const AllRequests = ({
     };
   });
 
-  const combinedData = [...formattedDbChanges, ...defaultRequests];
+  const combinedData = formattedDbChanges;
 
   // Get unique filter options
   const uniquePersons = ['All', ...new Set(combinedData.map(i => i.requester).filter(Boolean))];
