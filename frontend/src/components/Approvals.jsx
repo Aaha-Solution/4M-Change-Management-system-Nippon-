@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { Save, Search, RotateCcw, Eye, Paperclip } from 'lucide-react';
+import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle } from 'lucide-react';
 
 export const Approvals = ({
   userRole,
   changes,
   onStatusUpdate
 }) => {
+  // Modal states
+  const [selectedLog, setSelectedLog] = useState(null);
+  const [validationError, setValidationError] = useState('');
+
   // Mock validation log baseline
   const [validationLogs, setValidationLogs] = useState([
     { changeNo: '4M-2026-248', date: '20 May', requester: 'Kumar Selvam', weldTest: 'weld-test.png', qaTest: 'weld-test.png', status: 'Accepted', remarks: 'Zero alignment issues reported in shift logs. Production output exceeds threshold.' },
@@ -33,7 +37,7 @@ export const Approvals = ({
     e.preventDefault();
 
     if (!formChangeNo.trim() || !formDate.trim() || !formRequester.trim() || !formStatus || !formRemarks.trim()) {
-      alert('Please fill out all required validation log details.');
+      setValidationError('Please fill out all required validation log details.');
       return;
     }
 
@@ -276,7 +280,7 @@ export const Approvals = ({
                       </td>
                       <td className="p-[12px] text-center">
                         <button 
-                          onClick={() => alert(`Log details for ${log.changeNo}:\n\nRequester: ${log.requester}\nDate: ${log.date}\nStatus: ${log.status}\nRemarks: ${log.remarks}`)}
+                          onClick={() => setSelectedLog(log)}
                           className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
                         >
                           <Eye size={14} />
@@ -290,6 +294,156 @@ export const Approvals = ({
           </div>
         </div>
       </div>
+
+      {/* Log Details Modal */}
+      {selectedLog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setSelectedLog(null)}
+          />
+          
+          {/* Modal Container */}
+          <div className="relative bg-white w-full max-w-[500px] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10">
+            {/* Header */}
+            <div className="bg-slate-50 px-[24px] py-[18px] border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-[8px]">
+                <Eye size={16} className="text-[#0066cc]" />
+                <h4 className="text-[14px] font-bold text-slate-800">Validation Log Details</h4>
+              </div>
+              <button 
+                onClick={() => setSelectedLog(null)}
+                className="p-[4px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-[24px] space-y-[16px] text-[13px] text-slate-600">
+              <div className="grid grid-cols-2 gap-[16px]">
+                <div className="space-y-[4px]">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</span>
+                  <span className="font-bold text-[#0066cc] text-[13px]">{selectedLog.changeNo}</span>
+                </div>
+                <div className="space-y-[4px]">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                  <span className="font-medium text-slate-700">{selectedLog.date}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-[16px] pt-[8px] border-t border-slate-100">
+                <div className="space-y-[4px]">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By</span>
+                  <span className="font-medium text-slate-700">{selectedLog.requester}</span>
+                </div>
+                <div className="space-y-[4px]">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
+                  <div>
+                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
+                      selectedLog.status === 'Accepted' 
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                        : 'bg-rose-50 border-rose-200 text-rose-700'
+                    }`}>
+                      {selectedLog.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-[6px] pt-[8px] border-t border-slate-100">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attachments</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px]">
+                  <div className="bg-slate-50 border border-slate-150 rounded-[8px] p-[10px] flex items-center justify-between">
+                    <div className="flex items-center gap-[6px] min-w-0">
+                      <Paperclip size={14} className="text-slate-400 flex-shrink-0" />
+                      <span className="text-[11px] font-medium text-slate-600 truncate" title={selectedLog.weldTest}>
+                        {selectedLog.weldTest}
+                      </span>
+                    </div>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase bg-slate-200/50 px-[4px] py-[2px] rounded">
+                      PED
+                    </span>
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-150 rounded-[8px] p-[10px] flex items-center justify-between">
+                    <div className="flex items-center gap-[6px] min-w-0">
+                      <Paperclip size={14} className="text-slate-400 flex-shrink-0" />
+                      <span className="text-[11px] font-medium text-slate-600 truncate" title={selectedLog.qaTest}>
+                        {selectedLog.qaTest}
+                      </span>
+                    </div>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase bg-slate-200/50 px-[4px] py-[2px] rounded">
+                      QA
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-[4px] pt-[8px] border-t border-slate-100">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remarks / Comments</span>
+                <div className="bg-slate-50 border border-slate-150 rounded-[8px] p-[12px] text-[12px] text-slate-600 leading-relaxed max-h-[120px] overflow-y-auto">
+                  {selectedLog.remarks}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => setSelectedLog(null)}
+                className="px-[16px] py-[8px] bg-white border border-slate-200 rounded-[6px] text-slate-600 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Validation Warning Modal */}
+      {validationError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setValidationError('')}
+          />
+          
+          {/* Modal Container */}
+          <div className="relative bg-white w-full max-w-[400px] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10">
+            {/* Header */}
+            <div className="bg-rose-50 px-[20px] py-[14px] border-b border-rose-100 flex items-center justify-between">
+              <div className="flex items-center gap-[8px] text-rose-800">
+                <AlertTriangle size={16} className="text-rose-600" />
+                <h4 className="text-[13px] font-bold">Validation Alert</h4>
+              </div>
+              <button 
+                onClick={() => setValidationError('')}
+                className="p-[4px] hover:bg-rose-100/60 rounded-full text-rose-400 hover:text-rose-600 transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-[20px] text-[12px] text-slate-600 leading-relaxed">
+              {validationError}
+            </div>
+
+            {/* Footer */}
+            <div className="px-[20px] py-[12px] bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => setValidationError('')}
+                className="px-[14px] py-[6px] bg-rose-600 hover:bg-rose-700 text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
+              >
+                Okay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

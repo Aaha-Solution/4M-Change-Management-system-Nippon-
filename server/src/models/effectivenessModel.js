@@ -137,6 +137,21 @@ export const resetLogsToDefaults = async () => {
     await connection.beginTransaction();
     await connection.query('DELETE FROM effectiveness_attachments');
     await connection.query('DELETE FROM effectiveness_logs');
+    
+    // Seed default logs
+    await connection.query(
+      `INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval) VALUES
+       ('EFF-8901', 'CHG-8901', '2026-05-19', 'Integrate Auth0 SSO provider for corporate domain', '2026-05-20', '2026-05', 'SSO integration successfully verified. Token refresh intervals and domain constraints are fully operational. Zero authentication latency observed.', 'sso-verification-report.pdf', 'Effectiveness Ok', 'Approved'),
+       ('EFF-8895', 'CHG-8895', '2026-05-15', 'Resolve security vulnerability CVE-2026-3392', '2026-05-16', '2026-05', 'Patch applied to all production instances. Vulnerability scan reports clean status. Compliance certification updated.', 'cve-scan-results.txt', 'Effectiveness Ok', 'Approved')`
+    );
+    
+    // Seed default attachments
+    await connection.query(
+      `INSERT INTO effectiveness_attachments (log_id, file_name, file_data, file_type) VALUES
+       ('EFF-8901', 'sso-verification-report.pdf', 'U1NPIFZlcmlmaWNhdGlvbiBSZXBvcnQgQ29udGVudHM=', 'application/pdf'),
+       ('EFF-8895', 'cve-scan-results.txt', 'Q1ZFLTIwMjYtMzM5MiBQYXRjaGVkIGFuZCBWZXJpZmllZA==', 'text/plain')`
+    );
+    
     await connection.commit();
   } catch (error) {
     await connection.rollback();

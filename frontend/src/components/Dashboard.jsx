@@ -32,6 +32,7 @@ import { DashboardOverview } from './DashboardOverview';
 import { NewRequest } from './NewRequest';
 import { AllRequests } from './AllRequests';
 import { L1Request } from './L1Request';
+import { L3RequestTracker } from './L3RequestTracker';
 import { Approvals } from './Approvals';
 import { Effectiveness } from './Effectiveness';
 import { Reports } from './Reports';
@@ -340,14 +341,14 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
 
                   {/* L3 */}
                   <button
-                    onClick={() => handleTabChange('new-request')}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'new-request'
+                    onClick={() => handleTabChange('l3')}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'l3'
                         ? 'bg-sky-50/70 text-[#0066cc]'
                         : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <ListTodo size={14} className={activeTab === 'new-request' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                      <ListTodo size={14} className={activeTab === 'l3' ? 'text-[#0066cc]' : 'text-slate-400'} />
                       <span>L3</span>
                     </div>
                   </button>
@@ -450,11 +451,12 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               <h2 className="font-heading text-[22px] font-bold text-slate-900">
                 {activeTab === 'dashboard' ? 'Overview' :
                   activeTab === 'new-request' ? 'Request New Change' :
-                    activeTab === 'approvals' ? 'L2 Validation Workflow' :
-                      activeTab === 'notifications' ? 'Notifications Feed' :
-                        activeTab === 'l1' ? 'L1 Approvals' :
-                          activeTab === 'all-requests' ? 'All Change Requests' :
-                            activeTab.replace('-', ' ')}
+                  activeTab === 'approvals' ? 'L2 Validation Workflow' :
+                  activeTab === 'notifications' ? 'Notifications Feed' :
+                  activeTab === 'l1' ? 'L1 Approvals' :
+                  activeTab === 'l3' ? 'L3 Request Tracker & Final Approval' :
+                  activeTab === 'all-requests' ? 'All Change Requests' :
+                  activeTab.replace('-', ' ')}
               </h2>
             </div>
           </div>
@@ -546,6 +548,18 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               logAction={logAction}
               setToastMsg={setToastMsg}
               onLocalSignOut={handleLocalSignOut}
+            />
+          )}
+
+          {/* TAB: L3 REQUEST TRACKER */}
+          {activeTab === 'l3' && (
+            <L3RequestTracker
+              userEmail={userEmail}
+              onTabChange={handleTabChange}
+              changes={changes}
+              setChanges={setChanges}
+              logAction={logAction}
+              setToastMsg={setToastMsg}
             />
           )}
 
