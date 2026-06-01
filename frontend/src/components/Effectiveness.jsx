@@ -109,7 +109,7 @@ export const Effectiveness = ({
     const reqDate = selectedChange ? selectedChange.date : new Date().toISOString().split('T')[0];
     
     if (editingEffLogId) {
-      // Edit mode
+      // Edit mode 123
       const logData = {
         monthWise: effMonthWise,
         remarks: effRemarks,
