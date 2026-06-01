@@ -495,7 +495,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-grow p-4 sm:p-6 lg:p-8 w-full max-w-none">
+        <main className="flex-grow py-[24px] px-[24px] w-full max-w-none">
 
           {/* TAB: DASHBOARD OVERVIEW */}
           {activeTab === 'dashboard' && (

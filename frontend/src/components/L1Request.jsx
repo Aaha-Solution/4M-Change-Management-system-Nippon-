@@ -134,7 +134,7 @@ export const L1Request = ({
   };
 
   return (
-    <div className="max-w-[1100px] mx-auto space-y-[24px] animate-fade-in-up pb-[40px] text-slate-800">
+    <div className="w-full space-y-[24px] animate-fade-in-up pb-[40px] text-slate-800">
       
       {/* Title */}
       <div>
