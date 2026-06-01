@@ -33,7 +33,7 @@ import { NewRequest } from './NewRequest';
 import { AllRequests } from './AllRequests';
 import { L1Request } from './L1Request';
 import { L3RequestTracker } from './L3RequestTracker';
-import { Approvals } from './Approvals';
+import { L2Validation } from './L2Validation';
 import { Effectiveness } from './Effectiveness';
 import { Reports } from './Reports';
 import { AuditLog } from './AuditLog';
@@ -537,7 +537,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
 
           {/* TAB: APPROVALS */}
           {activeTab === 'approvals' && (
-            <Approvals
+            <L2Validation
               userRole={userRole}
               changes={changes}
               onStatusUpdate={handleStatusUpdate}
