@@ -113,13 +113,13 @@ export const Login = ({ onLoginSuccess }) => {
       </div>
 
       {/* Right Panel: Form Side */}
-      <div className="relative flex items-center justify-center p-4 sm:p-8 z-10">
-        <div className="w-full max-w-[420px] animate-fade-in-up">
+      <div className="relative flex items-center justify-center lg:justify-end lg:pr-[105px] p-4 sm:p-8 z-10">
+        <div className="w-full max-w-[400px] animate-fade-in-up">
           <div className="mb-8 px-2 sm:px-0">
             <h2 className="font-heading text-3xl font-bold tracking-tight text-slate-900 mb-2">
               Welcome Back
             </h2>
-            <p className="text-slate-500 text-sm">
+            <p className="text-blue-800 text-sm">
               Enter your credentials to manage your requests
             </p>
           </div>
