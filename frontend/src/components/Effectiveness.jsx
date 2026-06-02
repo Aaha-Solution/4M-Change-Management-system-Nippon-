@@ -65,16 +65,18 @@ export const Effectiveness = ({
   const [effFilterStatus, setEffFilterStatus] = useState('All');
   const [effFilterMonth, setEffFilterMonth] = useState('All');
 
-  // Format month names (e.g. "2026-05" -> "May 2026")
+  // Format month names (e.g. "2026-05" -> "May-26")
   const formatMonthWise = (val) => {
     if (!val) return "-";
     const parts = val.split("-");
     if (parts.length === 2) {
-      const year = parts[0];
+      const year = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10);
       const date = new Date(year, month - 1, 1);
       if (!isNaN(date.getTime())) {
-        return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+        const monthName = date.toLocaleDateString("en-US", { month: "short" });
+        const yearShort = String(year).slice(-2);
+        return `${monthName}-${yearShort}`;
       }
     }
     return val;

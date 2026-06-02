@@ -3,6 +3,7 @@ import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2 } fr
 import { getL2ValidationLogs, createL2ValidationLog } from '../api/apiRoutes';
 
 export const L2Validation = ({
+  changes,
   setToastMsg,
   fetchChanges
 }) => {
@@ -123,23 +124,55 @@ export const L2Validation = ({
           {/* 4M CHANGE NO */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
-            <input 
-              type="text" 
-              placeholder="e.g. 4M-2026-248"
+            <select 
               value={formChangeNo}
-              onChange={(e) => setFormChangeNo(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
-            />
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormChangeNo(val);
+                const selectedChange = changes?.find(c => c.id === val);
+                if (selectedChange) {
+                  let formattedD = '';
+                  if (selectedChange.date) {
+                    const parts = selectedChange.date.split('/');
+                    if (parts.length === 3) {
+                      formattedD = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    } else {
+                      const parsed = new Date(selectedChange.date);
+                      if (!isNaN(parsed.getTime())) {
+                        formattedD = parsed.toISOString().split('T')[0];
+                      } else {
+                        formattedD = selectedChange.date;
+                      }
+                    }
+                  }
+                  setFormDate(formattedD || '');
+                  setFormRequester(selectedChange.requester || '');
+                } else {
+                  setFormDate('');
+                  setFormRequester('');
+                }
+              }}
+              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors cursor-pointer"
+            >
+              <option value="">Select Change Request</option>
+              {changes?.map(c => (
+                <option key={c.id} value={c.id}>{c.id} - {c.title}</option>
+              ))}
+              {formChangeNo && !changes?.some(c => c.id === formChangeNo) && (
+                <option value={formChangeNo}>{formChangeNo}</option>
+              )}
+            </select>
           </div>
 
           {/* REQUESTED DATE */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
             <input 
-              type="date" 
+              type="text" 
               value={formDate}
-              onChange={(e) => setFormDate(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors text-slate-500"
+              disabled
+              placeholder="Select Change Request to populate date"
+              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none cursor-not-allowed"
             />
           </div>
 
@@ -148,10 +181,10 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
             <input 
               type="text" 
-              placeholder="e.g. Kumar Selvam"
+              placeholder="Select Change Request to populate requester"
               value={formRequester}
-              onChange={(e) => setFormRequester(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+              disabled
+              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none cursor-not-allowed"
             />
           </div>
 

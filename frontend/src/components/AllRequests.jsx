@@ -7,9 +7,18 @@ export const AllRequests = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('All');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [selectedPerson, setSelectedPerson] = useState('All');
   const [selectedProcess, setSelectedProcess] = useState('All');
   const [selectedMachine, setSelectedMachine] = useState('All');
+
+  const monthsList = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  const currentYearShort = String(new Date().getFullYear()).slice(-2);
+  const monthOptions = monthsList.map(m => `${m}-${currentYearShort}`);
 
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isMachineModalOpen, setIsMachineModalOpen] = useState(false);
@@ -100,7 +109,8 @@ export const AllRequests = ({
       date: displayDate,
       status: displayStatus,
       requester: c.requester,
-      title: c.title
+      title: c.title,
+      rawDate: c.date
     };
   });
 
@@ -124,7 +134,40 @@ export const AllRequests = ({
     const matchesProcess = selectedProcess === 'All' || item.department === selectedProcess;
     const matchesMachine = selectedMachine === 'All' || item.machineNo === selectedMachine;
 
-    return matchesSearch && matchesPerson && matchesProcess && matchesMachine;
+    let matchesMonth = true;
+    if (selectedMonth !== 'All') {
+      try {
+        const [selMonthName, selYearShort] = selectedMonth.split('-');
+        const d = new Date(item.rawDate);
+        if (!isNaN(d.getTime())) {
+          const itemMonthName = d.toLocaleDateString('en-US', { month: 'short' });
+          const itemYearShort = String(d.getFullYear()).slice(-2);
+          matchesMonth = (itemMonthName === selMonthName && itemYearShort === selYearShort);
+        } else {
+          matchesMonth = false;
+        }
+      } catch {
+        matchesMonth = false;
+      }
+    }
+
+    let matchesFromDate = true;
+    if (fromDate) {
+      const fD = new Date(fromDate);
+      fD.setHours(0,0,0,0);
+      const itemD = new Date(item.rawDate);
+      matchesFromDate = !isNaN(itemD.getTime()) && itemD >= fD;
+    }
+
+    let matchesToDate = true;
+    if (toDate) {
+      const tD = new Date(toDate);
+      tD.setHours(23,59,59,999);
+      const itemD = new Date(item.rawDate);
+      matchesToDate = !isNaN(itemD.getTime()) && itemD <= tD;
+    }
+
+    return matchesSearch && matchesPerson && matchesProcess && matchesMachine && matchesMonth && matchesFromDate && matchesToDate;
   });
 
   return (
@@ -152,6 +195,9 @@ export const AllRequests = ({
             onChange={(e) => setSelectedMonth(e.target.value)}
           >
             <option value="All">All Months</option>
+            {monthOptions.map(m => (
+              <option key={m} value={m}>{m}</option>
+            ))}
           </select>
         </div>
 
@@ -161,6 +207,8 @@ export const AllRequests = ({
           <input 
             type="date" 
             className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-[11px] text-slate-500" 
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
           />
         </div>
 
@@ -170,6 +218,8 @@ export const AllRequests = ({
           <input 
             type="date" 
             className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-[11px] text-slate-500" 
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
           />
         </div>
 

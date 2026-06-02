@@ -553,6 +553,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
           {/* TAB: APPROVALS */}
           {activeTab === 'approvals' && (
             <L2Validation
+              changes={changes}
               userRole={userRole}
               setToastMsg={setToastMsg}
               fetchChanges={fetchChanges}

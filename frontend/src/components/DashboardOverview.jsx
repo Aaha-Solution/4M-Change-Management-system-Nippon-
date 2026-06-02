@@ -23,16 +23,77 @@ export const DashboardOverview = ({
   const [isGridView, setIsGridView] = useState(false);
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Department');
 
-  const dynamicApproved = changes.filter(c => c.status === 'Approved').length;
-  const dynamicPending = changes.filter(c => c.status === 'Pending' || c.status === 'Evaluating').length;
-  const dynamicRejected = changes.filter(c => c.status === 'Rejected').length;
+  const [filterMonth, setFilterMonth] = useState('All');
+  const [filterFromDate, setFilterFromDate] = useState('');
+  const [filterToDate, setFilterToDate] = useState('');
+  const [filterPerson, setFilterPerson] = useState('All');
+  const [filterProcess, setFilterProcess] = useState('All');
+  const [filterMachine, setFilterMachine] = useState('All');
+  const [filterStatus, setFilterStatus] = useState('All');
 
-  const totalCount = changes.length;
+  const monthsList = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  const currentYearShort = String(new Date().getFullYear()).slice(-2);
+  const monthOptions = monthsList.map(m => `${m}-${currentYearShort}`);
+
+  const uniquePersons = ['All', ...new Set(changes.map(c => c.requester).filter(Boolean))];
+  const uniqueProcesses = ['All', ...new Set(changes.map(c => c.dept || c.department).filter(Boolean))];
+  const uniqueMachines = ['All', ...new Set(changes.map(c => c.machineNo).filter(Boolean))];
+
+  const filteredChanges = changes.filter(c => {
+    let matchesMonth = true;
+    if (filterMonth !== 'All') {
+      try {
+        const [selMonthName, selYearShort] = filterMonth.split('-');
+        const d = new Date(c.date);
+        if (!isNaN(d.getTime())) {
+          const itemMonthName = d.toLocaleDateString('en-US', { month: 'short' });
+          const itemYearShort = String(d.getFullYear()).slice(-2);
+          matchesMonth = (itemMonthName === selMonthName && itemYearShort === selYearShort);
+        } else {
+          matchesMonth = false;
+        }
+      } catch {
+        matchesMonth = false;
+      }
+    }
+
+    let matchesFromDate = true;
+    if (filterFromDate) {
+      const fD = new Date(filterFromDate);
+      fD.setHours(0,0,0,0);
+      const itemD = new Date(c.date);
+      matchesFromDate = !isNaN(itemD.getTime()) && itemD >= fD;
+    }
+
+    let matchesToDate = true;
+    if (filterToDate) {
+      const tD = new Date(filterToDate);
+      tD.setHours(23,59,59,999);
+      const itemD = new Date(c.date);
+      matchesToDate = !isNaN(itemD.getTime()) && itemD <= tD;
+    }
+
+    const matchesPerson = filterPerson === 'All' || c.requester === filterPerson;
+    const matchesProcess = filterProcess === 'All' || (c.dept || c.department) === filterProcess;
+    const matchesMachine = filterMachine === 'All' || c.machineNo === filterMachine;
+    const matchesStatus = filterStatus === 'All' || c.status === filterStatus;
+
+    return matchesMonth && matchesFromDate && matchesToDate && matchesPerson && matchesProcess && matchesMachine && matchesStatus;
+  });
+
+  const dynamicApproved = filteredChanges.filter(c => c.status === 'Approved').length;
+  const dynamicPending = filteredChanges.filter(c => c.status === 'Pending' || c.status === 'Evaluating').length;
+  const dynamicRejected = filteredChanges.filter(c => c.status === 'Rejected').length;
+
+  const totalCount = filteredChanges.length;
   const approvedCount = dynamicApproved;
   const pendingCount = dynamicPending;
   const rejectedCount = dynamicRejected;
 
-  const formattedDbChanges = changes.map((c, idx) => {
+  const formattedDbChanges = filteredChanges.map((c, idx) => {
     let displayDate = c.date;
     try {
       const d = new Date(c.date);
@@ -65,34 +126,69 @@ export const DashboardOverview = ({
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-[8px] p-[12px] bg-slate-50/50 border-y border-slate-100 text-[10px]">
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Month</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Months</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterMonth}
+          onChange={(e) => setFilterMonth(e.target.value)}
+        >
+          <option value="All">All Months</option>
+          {monthOptions.map(m => (
+            <option key={m} value={m}>{m}</option>
+          ))}
         </select>
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
-        <input type="date" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" />
+        <input 
+          type="date" 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" 
+          value={filterFromDate}
+          onChange={(e) => setFilterFromDate(e.target.value)}
+        />
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <input type="date" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" />
+        <input 
+          type="date" 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" 
+          value={filterToDate}
+          onChange={(e) => setFilterToDate(e.target.value)}
+        />
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Person</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Persons</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterPerson}
+          onChange={(e) => setFilterPerson(e.target.value)}
+        >
+          {uniquePersons.map(p => (
+            <option key={p} value={p}>{p === 'All' ? 'All Persons' : p.split('@')[0]}</option>
+          ))}
         </select>
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Process</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Processes</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterProcess}
+          onChange={(e) => setFilterProcess(e.target.value)}
+        >
+          {uniqueProcesses.map(p => (
+            <option key={p} value={p}>{p === 'All' ? 'All Processes' : p}</option>
+          ))}
         </select>
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By M/C No</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Machines</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterMachine}
+          onChange={(e) => setFilterMachine(e.target.value)}
+        >
+          {uniqueMachines.map(m => (
+            <option key={m} value={m}>{m === 'All' ? 'All Machines' : m}</option>
+          ))}
         </select>
       </div>
     </div>
@@ -102,22 +198,48 @@ export const DashboardOverview = ({
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-[8px] p-[12px] bg-slate-50/50 border-y border-slate-100 text-[10px]">
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Month</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Months</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterMonth}
+          onChange={(e) => setFilterMonth(e.target.value)}
+        >
+          <option value="All">All Months</option>
+          {monthOptions.map(m => (
+            <option key={m} value={m}>{m}</option>
+          ))}
         </select>
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
-        <input type="date" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" />
+        <input 
+          type="date" 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" 
+          value={filterFromDate}
+          onChange={(e) => setFilterFromDate(e.target.value)}
+        />
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <input type="date" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" />
+        <input 
+          type="date" 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" 
+          value={filterToDate}
+          onChange={(e) => setFilterToDate(e.target.value)}
+        />
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Statuses</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
+          <option value="All">All Statuses</option>
+          <option value="Approved">Approved</option>
+          <option value="Pending">Pending</option>
+          <option value="Evaluating">Evaluating</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Completed">Completed</option>
         </select>
       </div>
     </div>
@@ -137,7 +259,7 @@ export const DashboardOverview = ({
       'SAFETY': 0
     };
 
-    changes.forEach(c => {
+    filteredChanges.forEach(c => {
       const rawDept = (c.dept || c.department || '').trim().toUpperCase();
       let mapped = '';
       if (rawDept.includes('PED')) mapped = 'PED';
@@ -193,7 +315,7 @@ export const DashboardOverview = ({
       'Load': 0
     };
 
-    changes.forEach(c => {
+    filteredChanges.forEach(c => {
       const p = (c.processName || '').trim().toLowerCase();
       let mapped = '';
       if (p.includes('wind') || p.includes('weld')) mapped = 'Wind';
@@ -244,7 +366,7 @@ export const DashboardOverview = ({
       'Mot': 0
     };
 
-    changes.forEach(c => {
+    filteredChanges.forEach(c => {
       const catStr = (c.changeIn || c.title || c.id || '').trim().toLowerCase();
       let mapped = '';
       if (catStr.includes('man') || catStr.includes('train')) mapped = 'Man';
@@ -300,7 +422,7 @@ export const DashboardOverview = ({
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const counts = Array(12).fill(0);
 
-    changes.forEach(c => {
+    filteredChanges.forEach(c => {
       if (!c.date) return;
       try {
         const d = new Date(c.date);
@@ -343,7 +465,7 @@ export const DashboardOverview = ({
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const dataMap = months.map(m => ({ label: m, appr: 0, rej: 0, pend: 0 }));
 
-    changes.forEach(c => {
+    filteredChanges.forEach(c => {
       if (!c.date) return;
       try {
         const d = new Date(c.date);
