@@ -71,11 +71,11 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
-        <input type="text" placeholder="dd/mm/yyyy" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300" />
+        <input type="date" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" />
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <input type="text" placeholder="dd/mm/yyyy" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300" />
+        <input type="date" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" />
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Person</label>
@@ -108,11 +108,11 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
-        <input type="text" placeholder="dd/mm/yyyy" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300" />
+        <input type="date" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" />
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <input type="text" placeholder="dd/mm/yyyy" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300" />
+        <input type="date" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" />
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>

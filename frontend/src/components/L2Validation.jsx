@@ -137,11 +137,10 @@ export const L2Validation = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
             <input 
-              type="text" 
-              placeholder="e.g. 20 May"
+              type="date" 
               value={formDate}
               onChange={(e) => setFormDate(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors text-slate-500"
             />
           </div>
 
