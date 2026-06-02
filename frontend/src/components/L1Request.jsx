@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { 
   Upload, 
   FileText, 
-  Loader2 
+  Loader2,
+  Plus,
+  X
 } from 'lucide-react';
 import { createL1Request } from '../api/apiRoutes';
 
@@ -16,6 +18,13 @@ export const L1Request = ({
   onLocalSignOut
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
+  const [isMachineModalOpen, setIsMachineModalOpen] = useState(false);
+  const [tempProcessName, setTempProcessName] = useState('');
+  const [tempMachineNo, setTempMachineNo] = useState('');
+
+  const uniqueProcesses = [...new Set(changes.map(c => c.processName).filter(Boolean))];
+  const uniqueMachines = [...new Set(changes.map(c => c.machineNo).filter(Boolean))];
   
   // Identifiers State
   const [unit, setUnit] = useState('');
@@ -291,13 +300,29 @@ export const L1Request = ({
             {/* PROCESS NAME */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name <span className="text-rose-500">*</span></label>
-              <input 
-                type="text" 
-                placeholder="e.g. Welding Line A" 
-                value={processName}
-                onChange={(e) => setProcessName(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
-              />
+              <div className="flex gap-[8px]">
+                <select
+                  value={processName}
+                  onChange={(e) => setProcessName(e.target.value)}
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                >
+                  <option value="">— Select Process —</option>
+                  {[...new Set([...uniqueProcesses, processName])].filter(Boolean).map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setTempProcessName('');
+                    setIsProcessModalOpen(true);
+                  }}
+                  className="flex items-center justify-center w-[36px] bg-slate-50 border border-slate-200 rounded-[6px] text-slate-500 hover:bg-slate-100 hover:text-[#0066cc] transition-colors"
+                  title="View DB & Add Process"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
             </div>
 
             {/* PROCESS LINE */}
@@ -315,13 +340,29 @@ export const L1Request = ({
             {/* MACHINE NO */}
             <div className="space-y-[4px] md:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No <span className="text-rose-500">*</span></label>
-              <input 
-                type="text" 
-                placeholder="e.g. MFG-MC-1042" 
-                value={machineNo}
-                onChange={(e) => setMachineNo(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors md:max-w-[49%]"
-              />
+              <div className="flex gap-[8px] md:max-w-[49%]">
+                <select
+                  value={machineNo}
+                  onChange={(e) => setMachineNo(e.target.value)}
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                >
+                  <option value="">— Select Machine —</option>
+                  {[...new Set([...uniqueMachines, machineNo])].filter(Boolean).map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setTempMachineNo('');
+                    setIsMachineModalOpen(true);
+                  }}
+                  className="flex items-center justify-center w-[36px] bg-slate-50 border border-slate-200 rounded-[6px] text-slate-500 hover:bg-slate-100 hover:text-[#0066cc] transition-colors"
+                  title="View DB & Add Machine"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -632,6 +673,130 @@ export const L1Request = ({
           </button>
         </div>
       </form>
+
+      {/* Process Modal */}
+      {isProcessModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsProcessModalOpen(false)} />
+          <div className="relative bg-white w-full max-w-[400px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 max-h-[80vh]">
+            <div className="bg-slate-50 px-[20px] py-[14px] border-b border-slate-100 flex items-center justify-between rounded-t-[16px]">
+              <h4 className="text-[14px] font-bold text-slate-800">Process Names in DB</h4>
+              <button onClick={() => setIsProcessModalOpen(false)} className="p-[4px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="p-[20px] overflow-y-auto space-y-[16px]">
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Add New Process</label>
+                <div className="flex gap-[8px]">
+                  <input 
+                    type="text" 
+                    placeholder="Enter new process name..." 
+                    value={tempProcessName}
+                    onChange={(e) => setTempProcessName(e.target.value)}
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc]"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if(tempProcessName.trim()) {
+                        setProcessName(tempProcessName.trim());
+                        setIsProcessModalOpen(false);
+                      }
+                    }}
+                    className="bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] rounded-[6px] text-[12px] font-bold transition-colors cursor-pointer"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-[8px] pt-[8px] border-t border-slate-100">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Existing Processes</label>
+                {uniqueProcesses.length > 0 ? (
+                  <ul className="space-y-[4px]">
+                    {uniqueProcesses.map(p => (
+                      <li 
+                        key={p} 
+                        onClick={() => {
+                          setProcessName(p);
+                          setIsProcessModalOpen(false);
+                        }}
+                        className="bg-slate-50 hover:bg-[#e6f0fa] hover:text-[#0066cc] cursor-pointer px-[12px] py-[8px] rounded-[6px] text-[12px] text-slate-600 font-medium transition-colors border border-transparent hover:border-[#b2d1f0]"
+                      >
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-[12px] text-slate-400">No existing processes found in DB.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Machine Modal */}
+      {isMachineModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMachineModalOpen(false)} />
+          <div className="relative bg-white w-full max-w-[400px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 max-h-[80vh]">
+            <div className="bg-slate-50 px-[20px] py-[14px] border-b border-slate-100 flex items-center justify-between rounded-t-[16px]">
+              <h4 className="text-[14px] font-bold text-slate-800">Machine Nos in DB</h4>
+              <button onClick={() => setIsMachineModalOpen(false)} className="p-[4px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="p-[20px] overflow-y-auto space-y-[16px]">
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Add New Machine No</label>
+                <div className="flex gap-[8px]">
+                  <input 
+                    type="text" 
+                    placeholder="Enter new machine no..." 
+                    value={tempMachineNo}
+                    onChange={(e) => setTempMachineNo(e.target.value)}
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc]"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if(tempMachineNo.trim()) {
+                        setMachineNo(tempMachineNo.trim());
+                        setIsMachineModalOpen(false);
+                      }
+                    }}
+                    className="bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] rounded-[6px] text-[12px] font-bold transition-colors cursor-pointer"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-[8px] pt-[8px] border-t border-slate-100">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Existing Machines</label>
+                {uniqueMachines.length > 0 ? (
+                  <ul className="space-y-[4px]">
+                    {uniqueMachines.map(m => (
+                      <li 
+                        key={m} 
+                        onClick={() => {
+                          setMachineNo(m);
+                          setIsMachineModalOpen(false);
+                        }}
+                        className="bg-slate-50 hover:bg-[#e6f0fa] hover:text-[#0066cc] cursor-pointer px-[12px] py-[8px] rounded-[6px] text-[12px] text-slate-600 font-medium transition-colors border border-transparent hover:border-[#b2d1f0]"
+                      >
+                        {m}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-[12px] text-slate-400">No existing machines found in DB.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

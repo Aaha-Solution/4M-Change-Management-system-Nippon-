@@ -92,9 +92,8 @@ export const AllRequests = ({
         <div className="space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
           <input 
-            type="text" 
-            placeholder="dd/mm/yyyy" 
-            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-[11px]" 
+            type="date" 
+            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-[11px] text-slate-500" 
           />
         </div>
 
@@ -102,9 +101,8 @@ export const AllRequests = ({
         <div className="space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
           <input 
-            type="text" 
-            placeholder="dd/mm/yyyy" 
-            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-[11px]" 
+            type="date" 
+            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-[11px] text-slate-500" 
           />
         </div>
 
