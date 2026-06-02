@@ -300,7 +300,19 @@ export const L2Validation = ({
                   </tr>
                 ) : (
                   filteredLogs.map((log, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/50">
+                    <tr 
+                      key={idx} 
+                      className="hover:bg-slate-50/50 cursor-pointer"
+                      onClick={() => {
+                        setFormChangeNo(log.changeNo || '');
+                        setFormDate(log.date || '');
+                        setFormRequester(log.requester || '');
+                        setFormStatus(log.status || '');
+                        setFormRemarks(log.remarks || '');
+                        setFormPedFile(log.weldTest || 'weld-test.png');
+                        setFormQaFile(log.qaTest || 'weld-test.png');
+                      }}
+                    >
                       <td className="p-[12px] font-bold text-[#0066cc]">{log.changeNo}</td>
                       <td className="p-[12px] text-slate-500">{log.date}</td>
                       <td className="p-[12px] font-medium text-slate-700">{log.requester}</td>
@@ -330,7 +342,10 @@ export const L2Validation = ({
                       </td>
                       <td className="p-[12px] text-center">
                         <button 
-                          onClick={() => setSelectedLog(log)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedLog(log);
+                          }}
                           className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
                         >
                           <Eye size={14} />
