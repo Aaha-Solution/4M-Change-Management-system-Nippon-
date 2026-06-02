@@ -167,9 +167,9 @@ export const L2Validation = ({
             <input
               type="text"
               value={formDate}
-              disabled
+              onChange={(e) => setFormDate(e.target.value)}
               placeholder="Auto-populated from change request"
-              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none cursor-not-allowed"
+              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
             />
           </div>
 
@@ -180,8 +180,8 @@ export const L2Validation = ({
               type="text"
               placeholder="Auto-populated from change request"
               value={formRequester}
-              disabled
-              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none cursor-not-allowed"
+              onChange={(e) => setFormRequester(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
             />
           </div>
 

@@ -150,26 +150,105 @@ export const L1Request = ({
       setToastMsg('Please select a Unit.');
       return;
     }
+
+    const selectedChangesIn = Object.keys(changeIn).filter(k => changeIn[k]).join(', ');
+    if (!selectedChangesIn) {
+      setToastMsg('Please select at least one Change In option.');
+      return;
+    }
+
     if (!dept) {
       setToastMsg('Please select a Department.');
       return;
     }
-    if (!processName.trim()) {
+
+    if (!requestBy) {
+      setToastMsg('Please select a Requester Name.');
+      return;
+    }
+
+    if (!processName || !processName.trim()) {
       setToastMsg('Please enter a Process Name.');
       return;
     }
-    if (context.length < 10) {
+
+    if (!processLine || !processLine.trim()) {
+      setToastMsg('Please enter a Process Line.');
+      return;
+    }
+
+    if (!machineNo || !machineNo.trim()) {
+      setToastMsg('Please select a Machine No.');
+      return;
+    }
+
+    if (!context || context.trim().length < 10) {
       setToastMsg('Context of Change must be at least 10 characters.');
       return;
     }
-    if (description.length < 20) {
+
+    if (!description || description.trim().length < 20) {
       setToastMsg('Detailed Change Description must be at least 20 characters.');
+      return;
+    }
+
+    if (!improvementArea) {
+      setToastMsg('Please select a Change Improvement Area.');
+      return;
+    }
+
+    if (!changeType) {
+      setToastMsg('Please select a Permanent / Temporary Change option.');
+      return;
+    }
+
+    if (!dateStart || !dateStart.trim()) {
+      setToastMsg('Please enter an Implement / Change Date Start.');
+      return;
+    }
+
+    if (!traceFrom || traceFrom.trim().length < 20) {
+      setToastMsg('Part Traceability Details (From Changes) must be at least 20 characters.');
+      return;
+    }
+
+    if (!dateClose || !dateClose.trim()) {
+      setToastMsg('Please enter a Change Date Close.');
+      return;
+    }
+
+    if (!traceTo || traceTo.trim().length < 20) {
+      setToastMsg('Part Traceability Details (To Changes) must be at least 20 characters.');
+      return;
+    }
+
+    if (!riskAnalysis || !riskAnalysis.trim()) {
+      setToastMsg('Please enter a Risk Analysis.');
+      return;
+    }
+
+    if (!sopUpdate || !sopUpdate.trim()) {
+      setToastMsg('Please describe the Update in SOP / WI / Control Plan / FMEA.');
+      return;
+    }
+
+    if (!hodApproval || !hodApproval.trim()) {
+      setToastMsg('Please describe the User Dept HOD Approval.');
+      return;
+    }
+
+    if (!customerApproval) {
+      setToastMsg('Please select if Customer Approval is Required.');
+      return;
+    }
+
+    if (!effectivenessMonitoring || !effectivenessMonitoring.trim()) {
+      setToastMsg('Please describe the Effectiveness Monitoring plan.');
       return;
     }
 
     setIsSubmitting(true);
     
-    const selectedChangesIn = Object.keys(changeIn).filter(k => changeIn[k]).join(', ');
     const l1Data = {
       changeNo,
       unit,
@@ -363,16 +442,19 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name <span className="text-rose-500">*</span></label>
               <div className="flex gap-[8px]">
-                <select
+                <input
+                  type="text"
+                  list="processes-list"
+                  placeholder="e.g. Welding Line A"
                   value={processName}
                   onChange={(e) => setProcessName(e.target.value)}
                   className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
-                >
-                  <option value="">— Select Process —</option>
-                  {[...new Set([...uniqueProcesses, processName])].filter(Boolean).map(p => (
-                    <option key={p} value={p}>{p}</option>
+                />
+                <datalist id="processes-list">
+                  {[...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])].map(p => (
+                    <option key={p} value={p} />
                   ))}
-                </select>
+                </datalist>
                 <button 
                   type="button"
                   onClick={() => {
@@ -403,16 +485,19 @@ export const L1Request = ({
             <div className="space-y-[4px] md:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No <span className="text-rose-500">*</span></label>
               <div className="flex gap-[8px] md:max-w-[49%]">
-                <select
+                <input
+                  type="text"
+                  list="machines-list"
+                  placeholder="e.g. MFG-MC-1042"
                   value={machineNo}
                   onChange={(e) => setMachineNo(e.target.value)}
                   className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
-                >
-                  <option value="">— Select Machine —</option>
-                  {[...new Set([...uniqueMachines, machineNo])].filter(Boolean).map(m => (
-                    <option key={m} value={m}>{m}</option>
+                />
+                <datalist id="machines-list">
+                  {[...new Set([...dbMachines, ...changes.map(c => c.machineNo).filter(Boolean)])].map(m => (
+                    <option key={m} value={m} />
                   ))}
-                </select>
+                </datalist>
                 <button 
                   type="button"
                   onClick={() => {

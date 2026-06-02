@@ -203,6 +203,28 @@ export const L3RequestTracker = ({
             </div>
           </div>
 
+          {/* Acting Department (Admin) Select dropdown */}
+          {(userRole === 'Admin' || userRole === 'Administrator' || (userRole && userRole.toLowerCase() === 'admin')) && (
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Acting Department (Admin) <span className="text-rose-500">*</span></label>
+              <select
+                value={actingDept}
+                onChange={(e) => setActingDept(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
+              >
+                <option value="PED">PED</option>
+                <option value="Quality">Quality</option>
+                <option value="Production">Production</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="PC & L">PC & L</option>
+                <option value="Materials">Materials</option>
+                <option value="Marketing">Marketing</option>
+                <option value="HR & Safety">HR & Safety</option>
+                <option value="Unit Head">Unit Head</option>
+              </select>
+            </div>
+          )}
+
           {/* 4M CHANGE NO */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</label>
