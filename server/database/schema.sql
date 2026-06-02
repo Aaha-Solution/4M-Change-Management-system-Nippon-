@@ -110,18 +110,7 @@ INSERT INTO users (email, password, role, name, department, status) VALUES
 ('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active'),
 ('manager@cms.com', 'manager123', 'User', 'Manager User', 'General', 'Active'),
 ('requester@cms.com', 'requester123', 'User', 'Requester User', 'General', 'Active');
--- Seed change requests
-INSERT INTO change_requests (id, title, requester, date, priority, status) VALUES
-('CHG-8902', 'Upgrade production database cluster to PostgreSQL 16', 'admin@cms.com', '2026-05-20', 'High', 'Approved'),
-('CHG-8901', 'Integrate Auth0 SSO provider for corporate domain', 'manager@cms.com', '2026-05-19', 'High', 'Approved'),
-('CHG-8899', 'Modify API Gateway route rules for caching layers', 'requester@cms.com', '2026-05-18', 'Medium', 'Evaluating'),
-('CHG-8895', 'Resolve security vulnerability CVE-2026-3392', 'admin@cms.com', '2026-05-15', 'High', 'Completed'),
-('4M-2026-248', 'Machine Change in Welding Line A', 'kumar.s@plant.com', '2026-05-20', 'High', 'Approved'),
-('4M-2026-247', 'Method Calibration Setup', 'ravi.qa@plant.com', '2026-05-19', 'High', 'Approved'),
-('4M-2026-246', 'Material Spec Adjustment in Injection Molding B', 'kumar.s@plant.com', '2026-05-18', 'Medium', 'Evaluating'),
-('4M-2026-244', 'Man Training Syllabus Update', 'requester@cms.com', '2026-05-17', 'Medium', 'Pending'),
-('4M-2026-243', 'Gauge Repeatability Check', 'ravi.qa@plant.com', '2026-05-16', 'Low', 'Approved'),
-('4M-2026-241', 'Coolant Viscosity Spec Match', 'kumar.s@plant.com', '2026-05-14', 'Medium', 'Approved');
+-- No initial change requests seeded
 
 
 -- 3. Effectiveness Logs Table
@@ -164,24 +153,11 @@ CREATE TABLE notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed notifications
-INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color) VALUES
-('ALR-001', 'L2 Setup Validation Awaiting', 'Change Request 4M-2026-248 (Machine change in Welding Line A) requires L2 PED validation setup checklist.', '4M-2026-248', 'MACHINE', 'PED', 'Just now', FALSE, 'Action Required', 'blue'),
-('ALR-002', 'Change Request Approved by HOD', 'Change Request 4M-2026-247 (Method calibration) has been approved by L3 HOD and forwarded to unit supervisor.', '4M-2026-247', 'METHOD', 'QAD', '2 hours ago', TRUE, 'System Logs', 'green'),
-('ALR-003', 'L3 Final Review Required', 'Change Request 4M-2026-246 (Material spec adjustment in Injection Moulding B) reached L3 review stages.', '4M-2026-246', 'MATERIAL', 'PRODUCTION', '5 hours ago', FALSE, 'Action Required', 'blue'),
-('ALR-004', 'Change Request Rejected', 'Change Request 4M-2026-244 (Man training syllabus update) was rejected by Unit Head. Comments: Needs syllabus validation.', '4M-2026-244', 'MAN', 'MAINTENANCE', 'Yesterday', TRUE, 'System Logs', 'red'),
-('ALR-005', 'Effectiveness Evaluation Due', 'The 3-Month QA post-implementation observation logs are now due for approved Request 4M-2026-231.', '4M-2026-231', 'SYSTEM', 'QA', '3 days ago', FALSE, 'Action Required', 'orange'),
-('ALR-006', 'SSO Certificate Re-signature Done', 'SSO provider Auth0 corporate domain certificate updated and verified.', '4M-2026-230', 'SYSTEM', 'IT', '4 days ago', TRUE, 'System Logs', 'green');
+-- No initial notifications seeded
 
--- Seed effectiveness logs
-INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval) VALUES
-('EFF-8901', 'CHG-8901', '2026-05-19', 'Integrate Auth0 SSO provider for corporate domain', '2026-05-20', '2026-05', 'SSO integration successfully verified. Token refresh intervals and domain constraints are fully operational. Zero authentication latency observed.', 'sso-verification-report.pdf', 'Effectiveness Ok', 'Approved'),
-('EFF-8895', 'CHG-8895', '2026-05-15', 'Resolve security vulnerability CVE-2026-3392', '2026-05-16', '2026-05', 'Patch applied to all production instances. Vulnerability scan reports clean status. Compliance certification updated.', 'cve-scan-results.txt', 'Effectiveness Ok', 'Approved');
+-- No initial effectiveness logs seeded
 
--- Seed effectiveness attachments
-INSERT INTO effectiveness_attachments (log_id, file_name, file_data, file_type) VALUES
-('EFF-8901', 'sso-verification-report.pdf', 'U1NPIFZlcmlmaWNhdGlvbiBSZXBvcnQgQ29udGVudHM=', 'application/pdf'),
-('EFF-8895', 'cve-scan-results.txt', 'Q1ZFLTIwMjYtMzM5MiBQYXRjaGVkIGFuZCBWZXJpZmllZA==', 'text/plain');
+-- No initial effectiveness attachments seeded
 
 -- 6. L1 Requests Table
 CREATE TABLE l1_requests (
@@ -221,58 +197,10 @@ CREATE TABLE l2_validation_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed L2 Validation Logs
-INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) VALUES
-('4M-2026-248', '20 May', 'Kumar Selvam', 'weld-test.png', 'weld-test.png', 'Accepted', 'Zero alignment issues reported in shift logs. Production output exceeds threshold.'),
-('4M-2026-247', '19 May', 'Ravi QA', 'calib-report.pdf', 'calib-report.pdf', 'Accepted', 'Calibration setup validated. GR&R is within 5%.'),
-('4M-2026-246', '18 May', 'Kumar S.', 'mock-run-logs.xls', 'mock-run-logs.xls', 'Accepted', 'PED validation completed successfully on mock runs.'),
-('4M-2026-244', '17 May', 'John Doe', 'training-log.pdf', 'training-log.pdf', 'Rejected', 'Evidence of training incomplete for Operator B. Training records missing.'),
-('4M-2026-243', '16 May', 'Ravi QA', 'gauge-rr-may20.pdf', 'gauge-rr-may20.pdf', 'Accepted', 'Gauge repeatability improved by 14%. Zero repeat defects. Implementation consistent.'),
-('4M-2026-241', '14 May', 'Kumar S.', 'coolant-spec.pdf', 'coolant-spec.pdf', 'Accepted', 'Coolant viscosity specs match engineering standard.');
+-- No initial L2 Validation Logs seeded
 
--- 8. L3 Approvals Table
-CREATE TABLE l3_approvals (
-    change_no VARCHAR(50) PRIMARY KEY REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    date VARCHAR(50) NOT NULL,
-    requester VARCHAR(255) NOT NULL,
-    ped VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    quality VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    production VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    maintenance VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    pcl VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    materials VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    marketing VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    hr_safety VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    unit_head VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- No initial L3 Approvals seeded
 
--- Seed L3 Approvals
-INSERT INTO l3_approvals (change_no, date, requester, ped, quality, production, maintenance, pcl, materials, marketing, hr_safety, unit_head) VALUES
-('4M-2026-248', '20 May', 'Kumar Selvam', 'Accepted', 'Accepted', 'Approved', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Approved'),
-('4M-2026-247', '19 May', 'Ravi QA', 'Accepted', 'Accepted', 'Approved', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Approved'),
-('4M-2026-246', '18 May', 'Kumar S.', 'Accepted', 'Accepted', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending'),
-('4M-2026-244', '17 May', 'John Doe', 'Rejected', 'Rejected', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending'),
-('4M-2026-243', '16 May', 'Ravi QA', 'Accepted', 'Accepted', 'Approved', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Approved'),
-('4M-2026-241', '14 May', 'Kumar S.', 'Accepted', 'Accepted', 'Approved', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Approved');
-
--- Seed L1 Requests matching the seeded change requests
-INSERT INTO l1_requests (
-    change_no, unit, requested_time, change_in, dept, request_by, 
-    process_name, process_line, machine_no, description, 
-    improvement_area, change_type, date_start, trace_from, 
-    date_close, trace_to, risk_analysis, sop_update, 
-    hod_approval, customer_approval, effectiveness_monitoring
-) VALUES
-('CHG-8902', 'Unit 1', '10:00', 'Method', 'PRODUCTION', 'Admin User', 'Gold Line', 'Line 1', 'MFG-MC-1042', 'Database cluster upgrade description...', 'Quality', 'Permanent', '2026-05-20', 'Trace from logic...', '2026-05-25', 'Trace to logic...', 'Low risk', 'SOP updated', 'Approved', 'No', '3-month tracking'),
-('CHG-8901', 'Unit 1', '11:00', 'Method', 'MATERIALS', 'Manager User', 'Gold Line', 'Line 2', 'MFG-MC-1042', 'Integrate Auth0 SSO provider...', 'Cost', 'Permanent', '2026-05-19', 'Trace from...', '2026-05-24', 'Trace to...', 'Medium risk', 'WI updated', 'Approved', 'No', 'SSO health monitoring'),
-('CHG-8899', 'Unit 2', '12:00', 'Method', 'PRODUCTION', 'Requester User', 'Gold Line', 'Line 3', 'MFG-MC-1042', 'Modify API Gateway route rules...', 'Quality', 'Permanent', '2026-05-18', 'Trace from...', '2026-05-23', 'Trace to...', 'Low risk', 'SOP updated', 'Approved', 'No', 'Gateway latency check'),
-('CHG-8895', 'Unit 1', '09:00', 'Method', 'PED', 'Admin User', 'Gold Line', 'Line 1', 'MFG-MC-1042', 'Resolve security vulnerability CVE-2026-3392...', 'Safety', 'Permanent', '2026-05-15', 'Trace from...', '2026-05-16', 'Trace to...', 'High risk', 'WI updated', 'Approved', 'No', 'Security scans'),
-('4M-2026-248', 'Unit 1', '14:30', 'Machine', 'PRODUCTION', 'Kumar Selvam', 'Welding Line A', 'Line A', 'MFG-MC-2011', 'Machine Change in Welding Line A...', 'Delivery', 'Permanent', '2026-05-20', 'Trace from...', '2026-05-22', 'Trace to...', 'Medium risk', 'FMEA updated', 'Approved', 'Yes', 'Welding strength tests'),
-('4M-2026-247', 'Unit 1', '08:45', 'Method', 'QUALITY', 'Ravi QA', 'Gold Line', 'Line C', 'MFG-MC-1033', 'Method Calibration Setup...', 'Quality', 'Permanent', '2026-05-19', 'Trace from...', '2026-05-20', 'Trace to...', 'Low risk', 'Calibration sheet updated', 'Approved', 'No', 'GR&R validation'),
-('4M-2026-246', 'Unit 3', '15:15', 'Material', 'PRODUCTION', 'Kumar Selvam', 'Injection Molding B', 'Line B', 'MFG-MC-1044', 'Material Spec Adjustment in Injection Molding B...', 'Quality', 'Temporary', '2026-05-18', 'Trace from...', '2026-05-28', 'Trace to...', 'High risk', 'Control plan updated', 'Approved', 'Yes', 'Molding defect rate monitoring'),
-('4M-2026-244', 'Unit 1', '11:00', 'Man', 'PRODUCTION', 'Requester User', 'Potting Line', 'Line 4', 'MFG-MC-1042', 'Man Training Syllabus Update...', 'Safety', 'Permanent', '2026-05-17', 'Trace from...', '2026-05-19', 'Trace to...', 'Low risk', 'Training record updated', 'Pending', 'No', 'Operator performance metrics'),
-('4M-2026-243', 'Unit 2', '10:30', 'Measurement', 'QUALITY', 'Ravi QA', 'Gauge Line', 'Line 5', 'MFG-MC-1045', 'Gauge Repeatability Check...', 'Quality', 'Permanent', '2026-05-16', 'Trace from...', '2026-05-17', 'Trace to...', 'Low risk', 'SOP updated', 'Approved', 'No', 'Repeatability records'),
-('4M-2026-241', 'Unit 1', '13:00', 'Material', 'PRODUCTION', 'Kumar Selvam', 'Welding Line A', 'Line A', 'MFG-MC-1046', 'Coolant Viscosity Spec Match...', 'Cost', 'Permanent', '2026-05-14', 'Trace from...', '2026-05-15', 'Trace to...', 'Low risk', 'Control plan updated', 'Approved', 'No', 'Viscosity periodic tests');
+-- No initial L1 Requests seeded
 
 
