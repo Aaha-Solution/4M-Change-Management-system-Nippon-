@@ -14,6 +14,8 @@ DROP TABLE IF EXISTS change_requests;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS departments;
+DROP TABLE IF EXISTS processes;
+DROP TABLE IF EXISTS machines;
 
 -- Roles Table
 CREATE TABLE roles (
@@ -25,6 +27,18 @@ CREATE TABLE roles (
 CREATE TABLE departments (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- Processes Table
+CREATE TABLE processes (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE NOT NULL
+);
+
+-- Machines Table
+CREATE TABLE machines (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE NOT NULL
 );
 
 -- 1. Users Table
@@ -69,6 +83,23 @@ INSERT INTO roles (name) VALUES
 -- Seed Departments
 INSERT INTO departments (name) VALUES
 ('General');
+
+-- Seed Processes
+INSERT INTO processes (name) VALUES 
+('Gold Line'), 
+('Welding Line A'), 
+('Injection Molding B'), 
+('Potting Line'), 
+('Gauge Line');
+
+-- Seed Machines
+INSERT INTO machines (name) VALUES 
+('MFG-MC-1042'), 
+('MFG-MC-2011'), 
+('MFG-MC-1033'), 
+('MFG-MC-1044'), 
+('MFG-MC-1045'), 
+('MFG-MC-1046');
 
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES

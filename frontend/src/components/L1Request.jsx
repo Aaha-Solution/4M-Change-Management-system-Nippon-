@@ -4,33 +4,101 @@ import {
   FileText, 
   Loader2,
   Plus,
-  X
+  X,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
-import { createL1Request } from '../api/apiRoutes';
+import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine } from '../api/apiRoutes';
 
 export const L1Request = ({
-  userEmail,
   onTabChange,
   changes,
   setChanges,
   logAction,
-  setToastMsg,
-  onLocalSignOut
+  setToastMsg
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isMachineModalOpen, setIsMachineModalOpen] = useState(false);
   const [tempProcessName, setTempProcessName] = useState('');
   const [tempMachineNo, setTempMachineNo] = useState('');
+  const [itemToDelete, setItemToDelete] = useState(null);
 
-  const uniqueProcesses = [...new Set(changes.map(c => c.processName).filter(Boolean))];
-  const uniqueMachines = [...new Set(changes.map(c => c.machineNo).filter(Boolean))];
+  const [dbProcesses, setDbProcesses] = useState([]);
+  const [dbMachines, setDbMachines] = useState([]);
+
+  useEffect(() => {
+    fetchOptions();
+  }, []);
+
+  async function fetchOptions() {
+    try {
+      const [pRes, mRes] = await Promise.all([
+        getProcesses(),
+        getMachines()
+      ]);
+      setDbProcesses(pRes.data);
+      setDbMachines(mRes.data);
+    } catch (e) {
+      console.error('Error fetching options:', e);
+    }
+  }
+
+  const handleAddProcess = async () => {
+    if (tempProcessName.trim()) {
+      try {
+        await addProcess(tempProcessName.trim());
+        setProcessName(tempProcessName.trim());
+        setTempProcessName('');
+        setIsProcessModalOpen(false);
+        fetchOptions();
+      } catch (e) {
+        console.error('Error adding process:', e);
+      }
+    }
+  };
+
+  const handleDeleteProcess = (name, e) => {
+    e.stopPropagation();
+    setItemToDelete({ type: 'process', name });
+  };
+
+  const handleDeleteMachine = (name, e) => {
+    e.stopPropagation();
+    setItemToDelete({ type: 'machine', name });
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    try {
+      if (itemToDelete.type === 'process') {
+        await deleteProcess(itemToDelete.name);
+        if (processName === itemToDelete.name) setProcessName('');
+      } else {
+        await deleteMachine(itemToDelete.name);
+        if (machineNo === itemToDelete.name) setMachineNo('');
+      }
+      fetchOptions();
+    } catch (err) {
+      console.error('Error deleting:', err);
+    } finally {
+      setItemToDelete(null);
+    }
+  };
+
+  const uniqueProcesses = [...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])];
+  const uniqueMachines = [...new Set([...dbMachines, ...changes.map(c => c.machineNo).filter(Boolean)])];
   
   // Identifiers State
   const [unit, setUnit] = useState('');
   const [changeNo] = useState(() => `4M-2026-${Math.floor(250 + Math.random() * 700)}`);
   const [requestedDate] = useState('01/06/2026');
-  const [requestedTime, setRequestedTime] = useState('11:01');
+  const [requestedTime] = useState(() => {
+    const now = new Date();
+    const hrs = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    return `${hrs}:${mins}`;
+  });
   const [changeIn, setChangeIn] = useState({
     Man: false,
     Machine: false,
@@ -66,13 +134,7 @@ export const L1Request = ({
   const [customerApproval, setCustomerApproval] = useState('');
   const [effectivenessMonitoring, setEffectivenessMonitoring] = useState('');
 
-  // Auto capture time
-  useEffect(() => {
-    const now = new Date();
-    const hrs = String(now.getHours()).padStart(2, '0');
-    const mins = String(now.getMinutes()).padStart(2, '0');
-    setRequestedTime(`${hrs}:${mins}`);
-  }, []);
+
 
   const handleCheckboxChange = (name) => {
     setChangeIn(prev => ({
@@ -698,32 +760,30 @@ export const L1Request = ({
                   />
                   <button 
                     type="button"
-                    onClick={() => {
-                      if(tempProcessName.trim()) {
-                        setProcessName(tempProcessName.trim());
-                        setIsProcessModalOpen(false);
-                      }
-                    }}
+                    onClick={handleAddProcess}
                     className="bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] rounded-[6px] text-[12px] font-bold transition-colors cursor-pointer"
                   >
-                    Add
+                    Add / Select
                   </button>
                 </div>
               </div>
               <div className="space-y-[8px] pt-[8px] border-t border-slate-100">
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Existing Processes</label>
-                {uniqueProcesses.length > 0 ? (
+                {dbProcesses.length > 0 ? (
                   <ul className="space-y-[4px]">
-                    {uniqueProcesses.map(p => (
+                    {dbProcesses.map(p => (
                       <li 
                         key={p} 
                         onClick={() => {
                           setProcessName(p);
                           setIsProcessModalOpen(false);
                         }}
-                        className="bg-slate-50 hover:bg-[#e6f0fa] hover:text-[#0066cc] cursor-pointer px-[12px] py-[8px] rounded-[6px] text-[12px] text-slate-600 font-medium transition-colors border border-transparent hover:border-[#b2d1f0]"
+                        className="bg-slate-50 hover:bg-[#e6f0fa] hover:text-[#0066cc] cursor-pointer px-[12px] py-[8px] rounded-[6px] text-[12px] text-slate-600 font-medium transition-colors border border-transparent hover:border-[#b2d1f0] flex justify-between items-center"
                       >
-                        {p}
+                        <span>{p}</span>
+                        <button onClick={(e) => handleDeleteProcess(p, e)} className="text-slate-400 hover:text-rose-500 p-[4px] rounded-full hover:bg-white transition-colors" title="Delete Process">
+                          <Trash2 size={14} />
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -760,32 +820,42 @@ export const L1Request = ({
                   />
                   <button 
                     type="button"
-                    onClick={() => {
-                      if(tempMachineNo.trim()) {
-                        setMachineNo(tempMachineNo.trim());
-                        setIsMachineModalOpen(false);
+                    onClick={async () => {
+                      if (tempMachineNo.trim()) {
+                        try {
+                          await addMachine(tempMachineNo.trim());
+                          setMachineNo(tempMachineNo.trim());
+                          setTempMachineNo('');
+                          setIsMachineModalOpen(false);
+                          fetchOptions();
+                        } catch (e) {
+                          console.error('Error adding machine:', e);
+                        }
                       }
                     }}
                     className="bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] rounded-[6px] text-[12px] font-bold transition-colors cursor-pointer"
                   >
-                    Add
+                    Add / Select
                   </button>
                 </div>
               </div>
               <div className="space-y-[8px] pt-[8px] border-t border-slate-100">
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Existing Machines</label>
-                {uniqueMachines.length > 0 ? (
+                {dbMachines.length > 0 ? (
                   <ul className="space-y-[4px]">
-                    {uniqueMachines.map(m => (
+                    {dbMachines.map(m => (
                       <li 
                         key={m} 
                         onClick={() => {
                           setMachineNo(m);
                           setIsMachineModalOpen(false);
                         }}
-                        className="bg-slate-50 hover:bg-[#e6f0fa] hover:text-[#0066cc] cursor-pointer px-[12px] py-[8px] rounded-[6px] text-[12px] text-slate-600 font-medium transition-colors border border-transparent hover:border-[#b2d1f0]"
+                        className="bg-slate-50 hover:bg-[#e6f0fa] hover:text-[#0066cc] cursor-pointer px-[12px] py-[8px] rounded-[6px] text-[12px] text-slate-600 font-medium transition-colors border border-transparent hover:border-[#b2d1f0] flex justify-between items-center"
                       >
-                        {m}
+                        <span>{m}</span>
+                        <button onClick={(e) => handleDeleteMachine(m, e)} className="text-slate-400 hover:text-rose-500 p-[4px] rounded-full hover:bg-white transition-colors" title="Delete Machine">
+                          <Trash2 size={14} />
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -793,6 +863,36 @@ export const L1Request = ({
                   <p className="text-[12px] text-slate-400">No existing machines found in DB.</p>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {itemToDelete && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-[16px]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setItemToDelete(null)} />
+          <div className="relative bg-white w-full max-w-[320px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 p-[24px] text-center animate-fade-in-up">
+            <div className="mx-auto bg-rose-100 text-rose-600 p-[12px] rounded-full mb-[16px]">
+              <AlertTriangle size={24} />
+            </div>
+            <h4 className="text-[16px] font-bold text-slate-800 mb-[8px]">Delete {itemToDelete.type === 'process' ? 'Process' : 'Machine'}?</h4>
+            <p className="text-[13px] text-slate-500 mb-[24px]">
+              Are you sure you want to delete "{itemToDelete.name}"? This action cannot be undone.
+            </p>
+            <div className="flex gap-[12px] w-full">
+              <button 
+                onClick={() => setItemToDelete(null)}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-[10px] rounded-[8px] text-[13px] font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-[10px] rounded-[8px] text-[13px] font-bold transition-colors shadow-sm"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

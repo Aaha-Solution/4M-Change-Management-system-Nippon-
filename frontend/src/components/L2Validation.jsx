@@ -3,7 +3,6 @@ import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2 } fr
 import { getL2ValidationLogs, createL2ValidationLog } from '../api/apiRoutes';
 
 export const L2Validation = ({
-  userRole,
   setToastMsg,
   fetchChanges
 }) => {
