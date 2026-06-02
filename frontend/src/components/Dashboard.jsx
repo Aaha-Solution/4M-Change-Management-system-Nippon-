@@ -265,8 +265,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('dashboard')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'dashboard'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -279,8 +279,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('all-requests')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'all-requests'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -294,8 +294,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               <button
                 onClick={() => setLevelOpen(!levelOpen)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${(activeTab === 'l1' || activeTab === 'approvals' || activeTab === 'new-request')
-                    ? 'bg-sky-50 text-[#0066cc]'
-                    : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                  ? 'bg-sky-50 text-[#0066cc]'
+                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -312,8 +312,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   <button
                     onClick={() => handleTabChange('l1')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'l1'
-                        ? 'bg-sky-50/70 text-[#0066cc]'
-                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                      ? 'bg-sky-50/70 text-[#0066cc]'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -326,8 +326,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   <button
                     onClick={() => handleTabChange('approvals')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'approvals'
-                        ? 'bg-sky-50/70 text-[#0066cc]'
-                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                      ? 'bg-sky-50/70 text-[#0066cc]'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -340,8 +340,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   <button
                     onClick={() => handleTabChange('l3')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'l3'
-                        ? 'bg-sky-50/70 text-[#0066cc]'
-                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                      ? 'bg-sky-50/70 text-[#0066cc]'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -357,8 +357,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('effectiveness')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'effectiveness'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -371,8 +371,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('notifications')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'notifications'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -390,8 +390,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('users')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'users'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -404,8 +404,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('settings')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'settings'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -462,12 +462,12 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               <h2 className="font-heading text-[22px] font-bold text-slate-900">
                 {activeTab === 'dashboard' ? 'Overview' :
                   activeTab === 'new-request' ? 'Request New Change' :
-                  activeTab === 'approvals' ? 'L2 Validation Workflow' :
-                  activeTab === 'notifications' ? 'Notifications Feed' :
-                  activeTab === 'l1' ? 'L1 Approvals' :
-                  activeTab === 'l3' ? 'L3 Request Tracker & Final Approval' :
-                  activeTab === 'all-requests' ? 'All Change Requests' :
-                  activeTab.replace('-', ' ')}
+                    activeTab === 'approvals' ? 'L2 Validation Workflow' :
+                      activeTab === 'notifications' ? 'Notifications Feed' :
+                        activeTab === 'l1' ? 'New L1 Change Request' :
+                          activeTab === 'l3' ? 'L3 Request Tracker & Final Approval' :
+                            activeTab === 'all-requests' ? 'All Change Requests' :
+                              activeTab.replace('-', ' ')}
               </h2>
             </div>
           </div>
@@ -509,7 +509,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               <LogOut size={12} />
               <span>Sign Out</span>
             </button>
-            
+
             {/* Nippon Logo in assets */}
             <div className="pl-[8px] border-l border-slate-200">
               <img src={nipponLogo} alt="Nippon Logo" className="h-[32px] w-auto object-contain select-none" />

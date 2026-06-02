@@ -68,9 +68,9 @@ export const L2Validation = ({
     setIsSubmitting(true);
     try {
       await createL2ValidationLog(logData);
-      
+
       if (fetchChanges) await fetchChanges();
-      
+
       if (setToastMsg) {
         setToastMsg(`Successfully saved L2 validation log for ${formChangeNo}`);
       }
@@ -100,7 +100,7 @@ export const L2Validation = ({
   // Filter logic
   const filteredLogs = validationLogs.filter(log => {
     const q = searchQuery.toLowerCase().trim();
-    const matchesSearch = !q || 
+    const matchesSearch = !q ||
       log.changeNo.toLowerCase().includes(q) ||
       log.remarks.toLowerCase().includes(q) ||
       log.requester.toLowerCase().includes(q);
@@ -112,7 +112,7 @@ export const L2Validation = ({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_2.5fr] gap-[24px] animate-fade-in-up text-slate-800">
-      
+
       {/* LEFT COLUMN: Add L2 Validation Log Form */}
       <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px] h-fit">
         <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
@@ -124,12 +124,16 @@ export const L2Validation = ({
           {/* 4M CHANGE NO */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
-            <select 
+            <input
+              type="text"
+              placeholder="e.g. 4M-2026-248"
               value={formChangeNo}
               onChange={(e) => {
                 const val = e.target.value;
                 setFormChangeNo(val);
-                const selectedChange = changes?.find(c => c.id === val);
+
+                // Find matching request in changes
+                const selectedChange = changes?.find(c => c.id.toLowerCase().trim() === val.toLowerCase().trim());
                 if (selectedChange) {
                   let formattedD = '';
                   if (selectedChange.date) {
@@ -148,30 +152,23 @@ export const L2Validation = ({
                   setFormDate(formattedD || '');
                   setFormRequester(selectedChange.requester || '');
                 } else {
+                  // Reset auto-populated fields if typed value doesn't match any active change request
                   setFormDate('');
                   setFormRequester('');
                 }
               }}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors cursor-pointer"
-            >
-              <option value="">Select Change Request</option>
-              {changes?.map(c => (
-                <option key={c.id} value={c.id}>{c.id} - {c.title}</option>
-              ))}
-              {formChangeNo && !changes?.some(c => c.id === formChangeNo) && (
-                <option value={formChangeNo}>{formChangeNo}</option>
-              )}
-            </select>
+              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+            />
           </div>
 
           {/* REQUESTED DATE */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={formDate}
               disabled
-              placeholder="Select Change Request to populate date"
+              placeholder="Auto-populated from change request"
               className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none cursor-not-allowed"
             />
           </div>
@@ -179,9 +176,9 @@ export const L2Validation = ({
           {/* CHANGE REQUEST BY */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
-            <input 
-              type="text" 
-              placeholder="Select Change Request to populate requester"
+            <input
+              type="text"
+              placeholder="Auto-populated from change request"
               value={formRequester}
               disabled
               className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none cursor-not-allowed"
@@ -191,8 +188,8 @@ export const L2Validation = ({
           {/* REQUESTER VALIDATION (PED) ATTACHMENT */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requester Validation(PED) Attachment <span className="text-rose-500">*</span></label>
-            <input 
-              type="file" 
+            <input
+              type="file"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
                   setFormPedFile(e.target.files[0].name);
@@ -205,8 +202,8 @@ export const L2Validation = ({
           {/* APPROVER SET UP VERIFICATION (QA) ATTACHMENT */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Set Up Verification(QA) Attachment <span className="text-rose-500">*</span></label>
-            <input 
-              type="file" 
+            <input
+              type="file"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
                   setFormQaFile(e.target.files[0].name);
@@ -219,8 +216,8 @@ export const L2Validation = ({
           {/* APPROVER VALIDATION STATUS */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
-            <select 
-              value={formStatus} 
+            <select
+              value={formStatus}
               onChange={(e) => setFormStatus(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
             >
@@ -233,7 +230,7 @@ export const L2Validation = ({
           {/* REMARKS */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remarks <span className="text-rose-500">*</span></label>
-            <textarea 
+            <textarea
               placeholder="Enter Remarks..."
               rows={3}
               value={formRemarks}
@@ -243,8 +240,8 @@ export const L2Validation = ({
           </div>
 
           {/* Submit */}
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={isSubmitting}
             className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-60 border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
           >
@@ -269,17 +266,17 @@ export const L2Validation = ({
         <div className="flex gap-[8px] items-center text-[11px] flex-wrap">
           <div className="relative flex-grow min-w-[200px]">
             <Search className="absolute left-[10px] top-[10px] text-slate-400" size={14} />
-            <input 
-              type="text" 
-              placeholder="Search by change no or remarks..." 
+            <input
+              type="text"
+              placeholder="Search by change no or remarks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-[30px] pr-[12px] py-[8px] border border-slate-200 rounded-[6px] outline-none bg-white text-[12px] focus:border-[#0066cc]"
             />
           </div>
-          
-          <select 
-            value={decisionFilter} 
+
+          <select
+            value={decisionFilter}
             onChange={(e) => setDecisionFilter(e.target.value)}
             className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[120px] focus:border-[#0066cc]"
           >
@@ -288,7 +285,7 @@ export const L2Validation = ({
             <option value="Rejected">Rejected</option>
           </select>
 
-          <button 
+          <button
             onClick={handleResetFilters}
             className="flex items-center gap-[6px] bg-white border border-slate-200 hover:bg-slate-50 px-[14px] py-[8px] rounded-[6px] text-[12px] font-semibold transition-colors cursor-pointer"
           >
@@ -331,8 +328,8 @@ export const L2Validation = ({
                   </tr>
                 ) : (
                   filteredLogs.map((log, idx) => (
-                    <tr 
-                      key={idx} 
+                    <tr
+                      key={idx}
                       className="hover:bg-slate-50/50 cursor-pointer"
                       onClick={() => {
                         setFormChangeNo(log.changeNo || '');
@@ -360,11 +357,10 @@ export const L2Validation = ({
                         </span>
                       </td>
                       <td className="p-[12px]">
-                        <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
-                          log.status === 'Accepted' 
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                        <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${log.status === 'Accepted'
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                             : 'bg-rose-50 border-rose-200 text-rose-700'
-                        }`}>
+                          }`}>
                           {log.status}
                         </span>
                       </td>
@@ -372,7 +368,7 @@ export const L2Validation = ({
                         {log.remarks}
                       </td>
                       <td className="p-[12px] text-center">
-                        <button 
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedLog(log);
@@ -395,11 +391,11 @@ export const L2Validation = ({
       {selectedLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => setSelectedLog(null)}
           />
-          
+
           {/* Modal Container */}
           <div className="relative bg-white w-full max-w-[500px] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10">
             {/* Header */}
@@ -408,7 +404,7 @@ export const L2Validation = ({
                 <Eye size={16} className="text-[#0066cc]" />
                 <h4 className="text-[14px] font-bold text-slate-800">Validation Log Details</h4>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedLog(null)}
                 className="p-[4px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
               >
@@ -437,11 +433,10 @@ export const L2Validation = ({
                 <div className="space-y-[4px]">
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
                   <div>
-                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
-                      selectedLog.status === 'Accepted' 
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${selectedLog.status === 'Accepted'
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                         : 'bg-rose-50 border-rose-200 text-rose-700'
-                    }`}>
+                      }`}>
                       {selectedLog.status}
                     </span>
                   </div>
@@ -487,7 +482,7 @@ export const L2Validation = ({
 
             {/* Footer */}
             <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-100 flex justify-end">
-              <button 
+              <button
                 onClick={() => setSelectedLog(null)}
                 className="px-[16px] py-[8px] bg-white border border-slate-200 rounded-[6px] text-slate-600 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
               >
@@ -502,11 +497,11 @@ export const L2Validation = ({
       {validationError && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => setValidationError('')}
           />
-          
+
           {/* Modal Container */}
           <div className="relative bg-white w-full max-w-[400px] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10">
             {/* Header */}
@@ -515,7 +510,7 @@ export const L2Validation = ({
                 <AlertTriangle size={16} className="text-rose-600" />
                 <h4 className="text-[13px] font-bold">Validation Alert</h4>
               </div>
-              <button 
+              <button
                 onClick={() => setValidationError('')}
                 className="p-[4px] hover:bg-rose-100/60 rounded-full text-rose-450 hover:text-rose-650 transition-colors cursor-pointer"
               >
@@ -530,7 +525,7 @@ export const L2Validation = ({
 
             {/* Footer */}
             <div className="px-[20px] py-[12px] bg-slate-50 border-t border-slate-100 flex justify-end">
-              <button 
+              <button
                 onClick={() => setValidationError('')}
                 className="px-[14px] py-[6px] bg-rose-600 hover:bg-rose-700 text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
               >

@@ -184,8 +184,6 @@ export const L3RequestTracker = ({
     return matchesSearch && matchesStatus;
   });
 
-  const isAdmin = userRole === 'Admin' || userEmail === 'admin@cms.com';
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
       
@@ -197,34 +195,13 @@ export const L3RequestTracker = ({
         </div>
 
         <form onSubmit={handleSaveApproval} className="space-y-[14px]">
-          {/* LOGGED-IN USER ROLE / ADMIN SELECTOR */}
-          {isAdmin ? (
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Acting Department (Admin)</label>
-              <select 
-                value={actingDept} 
-                onChange={(e) => setActingDept(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 text-[#0066cc] font-bold rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
-              >
-                <option value="PED">PED</option>
-                <option value="Quality">Quality</option>
-                <option value="Production">Production HOD</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="PC & L">PC & L</option>
-                <option value="Materials">Materials</option>
-                <option value="Marketing">Marketing</option>
-                <option value="HR & Safety">HR & Safety</option>
-                <option value="Unit Head">Plant Unit Head</option>
-              </select>
+          {/* LOGGED-IN USER ROLE DISPLAY */}
+          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[10px_12px] mb-[4px] select-none">
+            <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-[2px]">LOGGED-IN USER ROLE</div>
+            <div className="text-[14px] font-bold text-[#0066cc]">
+              {actingDept === 'Production' ? 'Production HOD' : actingDept === 'Unit Head' ? 'Plant Unit Head' : `${actingDept} Approver`}
             </div>
-          ) : (
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Logged-in User Role</label>
-              <div className="w-full bg-slate-50 border border-slate-200 text-[#0066cc] font-bold rounded-[6px] py-[8px] px-[12px] text-[12px] select-none">
-                {actingDept === 'Production' ? 'Production HOD' : actingDept === 'Unit Head' ? 'Plant Unit Head' : `${actingDept} Approver`}
-              </div>
-            </div>
-          )}
+          </div>
 
           {/* 4M CHANGE NO */}
           <div className="space-y-[4px]">
