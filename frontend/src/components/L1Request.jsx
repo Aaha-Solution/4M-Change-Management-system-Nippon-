@@ -166,7 +166,7 @@ export const L1Request = ({
     }
 
     if (!processName || !processName.trim()) {
-      setToastMsg('Please enter a Process Name.');
+      setToastMsg('Please select a Process Name.');
       return;
     }
 
@@ -440,19 +440,16 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name <span className="text-rose-500">*</span></label>
               <div className="flex gap-[8px]">
-                <input
-                  type="text"
-                  list="processes-list"
-                  placeholder="e.g. Welding Line A"
+                <select
                   value={processName}
                   onChange={(e) => setProcessName(e.target.value)}
                   className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
-                />
-                <datalist id="processes-list">
+                >
+                  <option value="">— Select or Add Process —</option>
                   {[...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])].map(p => (
-                    <option key={p} value={p} />
+                    <option key={p} value={p}>{p}</option>
                   ))}
-                </datalist>
+                </select>
                 <button 
                   type="button"
                   onClick={() => {
@@ -483,19 +480,16 @@ export const L1Request = ({
             <div className="space-y-[4px] md:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No <span className="text-rose-500">*</span></label>
               <div className="flex gap-[8px] md:max-w-[49%]">
-                <input
-                  type="text"
-                  list="machines-list"
-                  placeholder="e.g. MFG-MC-1042"
+                <select
                   value={machineNo}
                   onChange={(e) => setMachineNo(e.target.value)}
                   className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
-                />
-                <datalist id="machines-list">
+                >
+                  <option value="">— Select or Add Machine —</option>
                   {[...new Set([...dbMachines, ...changes.map(c => c.machineNo).filter(Boolean)])].map(m => (
-                    <option key={m} value={m} />
+                    <option key={m} value={m}>{m}</option>
                   ))}
-                </datalist>
+                </select>
                 <button 
                   type="button"
                   onClick={() => {
