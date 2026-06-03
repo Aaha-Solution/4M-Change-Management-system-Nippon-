@@ -1,23 +1,16 @@
-/* eslint-disable react-hooks/set-state-in-effect, react-hooks/purity */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getChanges, updateChangeStatus, getEffectivenessLogs, getNotifications } from '../api/apiRoutes';
+import { getChanges, getEffectivenessLogs, getNotifications } from '../api/apiRoutes';
 import {
   LogOut,
   GitPullRequest,
   CheckCircle,
-  Clock,
   TrendingUp,
   Plus,
-  ShieldCheck,
-  Zap,
-  Loader2,
   Users as UsersIcon,
   LayoutGrid,
   FilePlus,
   ClipboardList,
-  CheckSquare,
-  BarChart3,
   Settings as SettingsIcon,
   Menu,
   X,
@@ -46,7 +39,6 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [levelOpen, setLevelOpen] = useState(true);
   const [notifications, setNotifications] = useState([]);
-  const [isFetchingNotifications, setIsFetchingNotifications] = useState(false);
 
   const handleLocalSignOut = () => {
     logAction('Sign Out', 'User logged out of the system.');
@@ -61,47 +53,45 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   // Global Toast State
   const [toastMsg, setToastMsg] = useState(null);
 
-  // Audit Logs State (using localStorage with seed data)
-  const [auditLogs, setAuditLogs] = useState(() => {
-    const stored = localStorage.getItem('cms_audit_logs');
-    if (stored) return JSON.parse(stored);
-    const defaultAudit = [
-      {
-        id: 'AUD-001',
-        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hr ago
-        action: 'User Login',
-        user: 'admin@cms.com',
-        details: 'Successfully authenticated as Administrator.'
-      },
-      {
-        id: 'AUD-002',
-        timestamp: new Date(Date.now() - 7200000).toISOString(), // 2 hrs ago
-        action: 'Status Updated',
-        user: 'manager@cms.com',
-        details: 'Approved change request CHG-8901.'
-      },
-      {
-        id: 'AUD-003',
-        timestamp: new Date(Date.now() - 10800000).toISOString(), // 3 hrs ago
-        action: 'Change Created',
-        user: 'requester@cms.com',
-        details: 'Created new change request CHG-8899.'
-      },
-      {
-        id: 'AUD-004',
-        timestamp: new Date(Date.now() - 14400000).toISOString(), // 4 hrs ago
-        action: 'Status Updated',
-        user: 'admin@cms.com',
-        details: 'Marked change request CHG-8895 as Completed.'
-      }
-    ];
-    localStorage.setItem('cms_audit_logs', JSON.stringify(defaultAudit));
-    return defaultAudit;
-  });
-
   // Effectiveness Monitoring State (loaded from backend API)
   const [effectivenessLogs, setEffectivenessLogs] = useState([]);
-  const [isFetchingEffectiveness, setIsFetchingEffectiveness] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('cms_audit_logs');
+    if (!stored) {
+      const defaultAudit = [
+        {
+          id: 'AUD-001',
+          timestamp: new Date(Date.now() - 3600000).toISOString(),
+          action: 'User Login',
+          user: 'admin@cms.com',
+          details: 'Successfully authenticated as Administrator.'
+        },
+        {
+          id: 'AUD-002',
+          timestamp: new Date(Date.now() - 7200000).toISOString(),
+          action: 'Status Updated',
+          user: 'manager@cms.com',
+          details: 'Approved change request CHG-8901.'
+        },
+        {
+          id: 'AUD-003',
+          timestamp: new Date(Date.now() - 10800000).toISOString(),
+          action: 'Change Created',
+          user: 'requester@cms.com',
+          details: 'Created new change request CHG-8899.'
+        },
+        {
+          id: 'AUD-004',
+          timestamp: new Date(Date.now() - 14400000).toISOString(),
+          action: 'Status Updated',
+          user: 'admin@cms.com',
+          details: 'Marked change request CHG-8895 as Completed.'
+        }
+      ];
+      localStorage.setItem('cms_audit_logs', JSON.stringify(defaultAudit));
+    }
+  }, []);
 
   // Helper to log audit actions
   const logAction = (action, details) => {
@@ -112,11 +102,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
       user: userEmail || 'system',
       details
     };
-    setAuditLogs(prev => {
-      const updated = [newLog, ...prev];
-      localStorage.setItem('cms_audit_logs', JSON.stringify(updated));
-      return updated;
-    });
+    const stored = localStorage.getItem('cms_audit_logs');
+    const prev = stored ? JSON.parse(stored) : [];
+    const updated = [newLog, ...prev];
+    localStorage.setItem('cms_audit_logs', JSON.stringify(updated));
   };
 
   // Fetch changes from the backend
@@ -140,29 +129,23 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   // Fetch initial data
   // Fetch effectiveness logs from backend
   const fetchEffectiveness = async () => {
-    setIsFetchingEffectiveness(true);
     try {
       const response = await getEffectivenessLogs();
       setEffectivenessLogs(response.data);
     } catch (error) {
       console.error(error);
       setToastMsg('Error loading effectiveness logs from server.');
-    } finally {
-      setIsFetchingEffectiveness(false);
     }
   };
 
   // Fetch notifications from backend
   const fetchNotifications = async () => {
-    setIsFetchingNotifications(true);
     try {
       const response = await getNotifications();
       setNotifications(response.data);
     } catch (error) {
       console.error(error);
       setToastMsg('Error loading notifications from server.');
-    } finally {
-      setIsFetchingNotifications(false);
     }
   };
 
@@ -187,48 +170,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     }
   }, [toastMsg]);
 
-  // Update a Change Status (Approvals)
-  const handleStatusUpdate = async (id, status) => {
-    try {
-      await updateChangeStatus(id, status);
-      setChanges(prev => prev.map(c => c.id === id ? { ...c, status } : c));
-      setToastMsg(`Updated ${id} to ${status}`);
-      logAction('Status Updated', `Moved change request ${id} status to "${status}".`);
-    } catch (error) {
-      console.error(error);
-      setToastMsg('Error updating status on server.');
-    }
-  };
 
-  // Compile metrics dynamically for approvals badge
-  const pendingCount = changes.filter(c => c.status === 'Pending').length;
-  const evaluatingCount = changes.filter(c => c.status === 'Evaluating').length;
-
-  // Sidebar Menu Config
-  const navigationItems = [
-    {
-      group: 'MAIN',
-      items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
-        { id: 'new-request', label: 'New Request', icon: FilePlus },
-        { id: 'all-requests', label: 'All Requests', icon: ClipboardList },
-        { id: 'approvals', label: 'Approvals', icon: CheckSquare, badge: pendingCount + evaluatingCount }
-      ]
-    },
-    {
-      group: 'MONITOR',
-      items: [
-        { id: 'effectiveness', label: 'Effectiveness', icon: TrendingUp }
-      ]
-    },
-    {
-      group: 'SYSTEM',
-      items: [
-        { id: 'users', label: 'Users', icon: UsersIcon },
-        { id: 'settings', label: 'Settings', icon: SettingsIcon }
-      ]
-    }
-  ];
 
   // Helper to handle tab select
   const handleTabChange = (tabId) => {

@@ -86,9 +86,6 @@ export const L1Request = ({
     }
   };
 
-  const uniqueProcesses = [...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])];
-  const uniqueMachines = [...new Set([...dbMachines, ...changes.map(c => c.machineNo).filter(Boolean)])];
-  
   // Identifiers State
   const [unit, setUnit] = useState('');
   const [changeNo] = useState(() => `4M-2026-${Math.floor(250 + Math.random() * 700)}`);

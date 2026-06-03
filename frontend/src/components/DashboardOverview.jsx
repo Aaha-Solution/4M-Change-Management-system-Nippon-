@@ -1,10 +1,6 @@
 import { useState } from 'react';
 import { 
   Clock, 
-  Zap, 
-  CheckCircle, 
-  TrendingUp, 
-  Plus, 
   Loader2, 
   BarChart3, 
   LayoutGrid,
@@ -18,8 +14,7 @@ import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
 
 export const DashboardOverview = ({
   changes,
-  isFetchingChanges,
-  onTabChange
+  isFetchingChanges
 }) => {
   const [isGridView, setIsGridView] = useState(false);
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Department');
@@ -261,7 +256,7 @@ export const DashboardOverview = ({
 
     filteredChanges.forEach(c => {
       const rawDept = (c.dept || c.department || '').trim().toUpperCase();
-      let mapped = '';
+      let mapped;
       if (rawDept.includes('PED')) mapped = 'PED';
       else if (rawDept.includes('QA') || rawDept.includes('QUALITY')) mapped = 'QAD';
       else if (rawDept.includes('PROD')) mapped = 'PRODUCTION';
@@ -317,7 +312,7 @@ export const DashboardOverview = ({
 
     filteredChanges.forEach(c => {
       const p = (c.processName || '').trim().toLowerCase();
-      let mapped = '';
+      let mapped;
       if (p.includes('wind') || p.includes('weld')) mapped = 'Wind';
       else if (p.includes('gold') || p.includes('calib')) mapped = 'Gold';
       else if (p.includes('eol') || p.includes('mold') || p.includes('mould') || p.includes('inject')) mapped = 'EOL';
@@ -368,7 +363,7 @@ export const DashboardOverview = ({
 
     filteredChanges.forEach(c => {
       const catStr = (c.changeIn || c.title || c.id || '').trim().toLowerCase();
-      let mapped = '';
+      let mapped;
       if (catStr.includes('man') || catStr.includes('train')) mapped = 'Man';
       else if (catStr.includes('mac') || catStr.includes('machin') || catStr.includes('weld')) mapped = 'Mac';
       else if (catStr.includes('met') || catStr.includes('calib') || catStr.includes('sso') || catStr.includes('db') || catStr.includes('api') || catStr.includes('vulner')) mapped = 'Met';
@@ -430,7 +425,9 @@ export const DashboardOverview = ({
           const monthIdx = d.getMonth();
           counts[monthIdx]++;
         }
-      } catch (e) {}
+      } catch {
+        // ignore
+      }
     });
 
     const data = months.map((m, idx) => ({
@@ -480,7 +477,9 @@ export const DashboardOverview = ({
             dataMap[monthIdx].pend++;
           }
         }
-      } catch (e) {}
+      } catch {
+        // ignore
+      }
     });
 
     const maxVal = Math.max(
