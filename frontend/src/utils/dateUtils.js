@@ -128,3 +128,93 @@ export const parseDDMMYYYYToDate = (dateStr) => {
   const d = new Date(cleanStr);
   return isNaN(d.getTime()) ? null : d;
 };
+
+/**
+ * Formats a date string or object consistently to DD/MM/YYYY format.
+ * This is timezone-safe and locale-safe.
+ * 
+ * @param {any} dateValue - The date to format (Date object, timestamp, ISO string, etc.)
+ * @returns {string} The formatted date string (DD/MM/YYYY)
+ */
+export const formatDateToDDMMYYYY = (dateValue) => {
+  if (!dateValue) return "-";
+  
+  const dateStr = String(dateValue).trim();
+  
+  // 1. If it's already in DD/MM/YYYY format (e.g. 03/06/2026), return it directly
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+    return dateStr;
+  }
+  
+  // 2. If it's in YYYY-MM-DD format (e.g. 2026-06-03)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const parts = dateStr.split('-');
+    const y = parts[0];
+    const m = parts[1];
+    const d = parts[2];
+    return `${d}/${m}/${y}`;
+  }
+
+  // 3. If it's in DD/MM/YY format (e.g. 03/06/26)
+  if (/^\d{2}\/\d{2}\/\d{2}$/.test(dateStr)) {
+    const parts = dateStr.split('/');
+    const y = parseInt(parts[2], 10);
+    const fullYear = y < 100 ? 2000 + y : y;
+    const m = parts[1];
+    const d = parts[0];
+    return `${d}/${m}/${fullYear}`;
+  }
+
+  // 4. Try parsing using a month mapping (e.g. "Jun 03, 2026", "03 June", "3 Jun")
+  const months = {
+    jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
+    jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12',
+    january: '01', february: '02', march: '03', april: '04', june: '06',
+    july: '07', august: '08', september: '09', october: '10', november: '11', december: '12'
+  };
+
+  // Tokenize the string
+  const tokens = dateStr.toLowerCase().replace(/,/g, '').split(/\s+/).filter(Boolean);
+  if (tokens.length === 3) {
+    // case A: ["jun", "03", "2026"]
+    if (months[tokens[0]] && /^\d+$/.test(tokens[1]) && /^\d+$/.test(tokens[2])) {
+      const d = tokens[1].padStart(2, '0');
+      const m = months[tokens[0]];
+      const y = tokens[2];
+      const fullYear = y.length === 2 ? `20${y}` : y;
+      return `${d}/${m}/${fullYear}`;
+    }
+    // case B: ["03", "jun", "2026"]
+    if (/^\d+$/.test(tokens[0]) && months[tokens[1]] && /^\d+$/.test(tokens[2])) {
+      const d = tokens[0].padStart(2, '0');
+      const m = months[tokens[1]];
+      const y = tokens[2];
+      const fullYear = y.length === 2 ? `20${y}` : y;
+      return `${d}/${m}/${fullYear}`;
+    }
+  } else if (tokens.length === 2) {
+    // case C: ["03", "jun"] or ["3", "jun"] or ["jun", "3"]
+    const currentYear = String(new Date().getFullYear());
+    if (/^\d+$/.test(tokens[0]) && months[tokens[1]]) {
+      const d = tokens[0].padStart(2, '0');
+      const m = months[tokens[1]];
+      return `${d}/${m}/${currentYear}`;
+    }
+    if (months[tokens[0]] && /^\d+$/.test(tokens[1])) {
+      const d = tokens[1].padStart(2, '0');
+      const m = months[tokens[0]];
+      return `${d}/${m}/${currentYear}`;
+    }
+  }
+
+  // 5. Fallback: JavaScript Date parsing
+  const d = new Date(dateValue);
+  if (!isNaN(d.getTime())) {
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = String(d.getFullYear());
+    return `${day}/${month}/${year}`;
+  }
+
+  return dateValue;
+};

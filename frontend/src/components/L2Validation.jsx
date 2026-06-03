@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2 } from 'lucide-react';
 import { getL2ValidationLogs, createL2ValidationLog } from '../api/apiRoutes';
-import { formatDateToDDMMYY } from '../utils/dateUtils';
+import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 
 export const L2Validation = ({
   changes,
@@ -47,6 +47,19 @@ export const L2Validation = ({
     fetchLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-populate the first pending/available request on mount/update of changes or validationLogs
+  useEffect(() => {
+    if (changes && changes.length > 0 && !formChangeNo) {
+      const validatedNos = new Set(validationLogs.map(log => log.changeNo?.toLowerCase().trim()));
+      const firstPending = changes.find(c => !validatedNos.has(c.id.toLowerCase().trim())) || changes[0];
+      if (firstPending) {
+        setFormChangeNo(firstPending.id);
+        setFormDate(formatDateToDDMMYYYY(firstPending.date));
+        setFormRequester(firstPending.requester || '');
+      }
+    }
+  }, [changes, validationLogs, formChangeNo]);
 
   const handleSaveLog = async (e) => {
     e.preventDefault();
@@ -98,12 +111,27 @@ export const L2Validation = ({
     setDecisionFilter('All');
   };
 
+  // Construct L2 table rows by combining changes and validationLogs
+  const tableLogs = (changes || []).map(change => {
+    const savedLog = validationLogs.find(log => log.changeNo?.toLowerCase().trim() === change.id?.toLowerCase().trim());
+    return {
+      changeNo: change.id,
+      date: change.date,
+      requester: change.requester || 'Unknown',
+      weldTest: savedLog?.weldTest || '-',
+      qaTest: savedLog?.qaTest || '-',
+      status: savedLog?.status || 'Pending',
+      remarks: savedLog?.remarks || '-',
+      isPending: !savedLog
+    };
+  });
+
   // Filter logic
-  const filteredLogs = validationLogs.filter(log => {
+  const filteredLogs = tableLogs.filter(log => {
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch = !q ||
       log.changeNo.toLowerCase().includes(q) ||
-      log.remarks.toLowerCase().includes(q) ||
+      (log.remarks && log.remarks.toLowerCase().includes(q)) ||
       log.requester.toLowerCase().includes(q);
 
     const matchesDecision = decisionFilter === 'All' || log.status === decisionFilter;
@@ -127,8 +155,9 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
             <input
               type="text"
-              placeholder="e.g. 4M-2026-248"
+              placeholder="Click a row on the right to select"
               value={formChangeNo}
+              tabIndex="-1"
               onChange={(e) => {
                 const val = e.target.value;
                 setFormChangeNo(val);
@@ -136,7 +165,7 @@ export const L2Validation = ({
                 // Find matching request in changes
                 const selectedChange = changes?.find(c => c.id.toLowerCase().trim() === val.toLowerCase().trim());
                 if (selectedChange) {
-                  setFormDate(formatDateToDDMMYY(selectedChange.date));
+                  setFormDate(formatDateToDDMMYYYY(selectedChange.date));
                   setFormRequester(selectedChange.requester || '');
                 } else {
                   // Reset auto-populated fields if typed value doesn't match any active change request
@@ -144,7 +173,7 @@ export const L2Validation = ({
                   setFormRequester('');
                 }
               }}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+              className="w-full bg-slate-100 text-slate-500 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pointer-events-none select-none"
             />
           </div>
 
@@ -154,9 +183,10 @@ export const L2Validation = ({
             <input
               type="text"
               value={formDate}
+              tabIndex="-1"
               onChange={(e) => setFormDate(e.target.value)}
-              placeholder="Auto-populated from change request"
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+              placeholder="Click a row on the right to select"
+              className="w-full bg-slate-100 text-slate-500 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pointer-events-none select-none"
             />
           </div>
 
@@ -165,10 +195,11 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
             <input
               type="text"
-              placeholder="Auto-populated from change request"
+              placeholder="Click a row on the right to select"
               value={formRequester}
+              tabIndex="-1"
               onChange={(e) => setFormRequester(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+              className="w-full bg-slate-100 text-slate-500 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pointer-events-none select-none"
             />
           </div>
 
@@ -320,16 +351,23 @@ export const L2Validation = ({
                       className="hover:bg-slate-50/50 cursor-pointer"
                       onClick={() => {
                         setFormChangeNo(log.changeNo || '');
-                        setFormDate(log.date || '');
+                        setFormDate(formatDateToDDMMYYYY(log.date));
                         setFormRequester(log.requester || '');
-                        setFormStatus(log.status || '');
-                        setFormRemarks(log.remarks || '');
-                        setFormPedFile(log.weldTest || 'weld-test.png');
-                        setFormQaFile(log.qaTest || 'weld-test.png');
+                        if (log.status === 'Pending') {
+                          setFormStatus('');
+                          setFormRemarks('');
+                          setFormPedFile('weld-test.png');
+                          setFormQaFile('weld-test.png');
+                        } else {
+                          setFormStatus(log.status || '');
+                          setFormRemarks(log.remarks === '-' ? '' : log.remarks || '');
+                          setFormPedFile(log.weldTest === '-' ? 'weld-test.png' : log.weldTest || 'weld-test.png');
+                          setFormQaFile(log.qaTest === '-' ? 'weld-test.png' : log.qaTest || 'weld-test.png');
+                        }
                       }}
                     >
                       <td className="p-[12px] font-bold text-[#0066cc]">{log.changeNo}</td>
-                      <td className="p-[12px] text-slate-500">{formatDateToDDMMYY(log.date)}</td>
+                      <td className="p-[12px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
                       <td className="p-[12px] font-medium text-slate-700">{log.requester}</td>
                       <td className="p-[12px]">
                         <span className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer">
@@ -344,9 +382,12 @@ export const L2Validation = ({
                         </span>
                       </td>
                       <td className="p-[12px]">
-                        <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${log.status === 'Accepted'
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                            : 'bg-rose-50 border-rose-200 text-rose-700'
+                        <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
+                            log.status === 'Accepted'
+                              ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                              : log.status === 'Pending'
+                              ? 'bg-amber-50 border-amber-250 text-amber-700'
+                              : 'bg-rose-50 border-rose-250 text-rose-700'
                           }`}>
                           {log.status}
                         </span>
@@ -408,7 +449,7 @@ export const L2Validation = ({
                 </div>
                 <div className="space-y-[4px]">
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
-                  <span className="font-medium text-slate-700">{formatDateToDDMMYY(selectedLog.date)}</span>
+                  <span className="font-medium text-slate-700">{formatDateToDDMMYYYY(selectedLog.date)}</span>
                 </div>
               </div>
 
@@ -420,9 +461,12 @@ export const L2Validation = ({
                 <div className="space-y-[4px]">
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
                   <div>
-                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${selectedLog.status === 'Accepted'
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                        : 'bg-rose-50 border-rose-200 text-rose-700'
+                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
+                        selectedLog.status === 'Accepted'
+                          ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                          : selectedLog.status === 'Pending'
+                          ? 'bg-amber-50 border-amber-250 text-amber-700'
+                          : 'bg-rose-50 border-rose-200 text-rose-700'
                       }`}>
                       {selectedLog.status}
                     </span>
