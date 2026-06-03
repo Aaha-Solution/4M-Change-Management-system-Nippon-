@@ -32,9 +32,9 @@ test.describe('Change Management System Full Lifecycle E2E Flow', () => {
     await page.locator('label:has-text("Change Request Dept") + select').selectOption('PED');
     await page.locator('label:has-text("Change Request By") + select').selectOption('Kumar Selvam');
     
-    await page.fill('input[placeholder="e.g. Welding Line A"]', 'Full Flow Line 4');
+    await page.locator('label:has-text("Process Name") + div select').selectOption('Welding Line A');
     await page.fill('input[placeholder="e.g. Line 3 / Bay B"]', 'Bay 9');
-    await page.fill('input[placeholder="e.g. MFG-MC-1042"]', 'MCH-9999');
+    await page.locator('label:has-text("Machine No") + div select').selectOption('MFG-MC-1042');
 
     // Extract the generated Change No from the UI
     const subheaderText = await page.locator('p:has-text("Change No:")').textContent();

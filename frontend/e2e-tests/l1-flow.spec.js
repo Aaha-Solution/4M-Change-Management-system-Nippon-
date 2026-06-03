@@ -42,9 +42,9 @@ test.describe('L1 Change Request E2E Flow', () => {
     await page.locator('label:has-text("Change Request By") + select').selectOption('Kumar Selvam');
 
     // Process details
-    await page.fill('input[placeholder="e.g. Welding Line A"]', 'Assembly Line 5');
+    await page.locator('label:has-text("Process Name") + div select').selectOption('Welding Line A');
     await page.fill('input[placeholder="e.g. Line 3 / Bay B"]', 'Bay 12');
-    await page.fill('input[placeholder="e.g. MFG-MC-1042"]', 'MCH-8822');
+    await page.locator('label:has-text("Machine No") + div select').selectOption('MFG-MC-1042');
 
     // Extract the generated Change No from the UI
     const subheaderText = await page.locator('p:has-text("Change No:")').textContent();

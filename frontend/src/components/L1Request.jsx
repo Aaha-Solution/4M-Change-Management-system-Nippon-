@@ -10,8 +10,10 @@ import {
 } from 'lucide-react';
 import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine } from '../api/apiRoutes';
 import { CustomDatePicker } from './CustomDatePicker';
+import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 
 export const L1Request = ({
+  userEmail,
   onTabChange,
   changes,
   setChanges,
@@ -89,8 +91,8 @@ export const L1Request = ({
 
   // Identifiers State
   const [unit, setUnit] = useState('');
-  const [changeNo] = useState(() => `4M-2026-${Math.floor(250 + Math.random() * 700)}`);
-  const [requestedDate] = useState('01/06/2026');
+  const [changeNo] = useState(() => `4M-2026-${Date.now().toString().slice(-8)}`);
+  const [requestedDate] = useState(() => formatDateToDDMMYYYY(new Date()));
   const [requestedTime] = useState(() => {
     const now = new Date();
     const hrs = String(now.getHours()).padStart(2, '0');
@@ -106,9 +108,27 @@ export const L1Request = ({
     'Mother Nature': false
   });
 
+  // File states for supporting uploads
+  const [fileDesc, setFileDesc] = useState(null);
+  const [fileImprovement, setFileImprovement] = useState(null);
+  const [fileTraceFrom, setFileTraceFrom] = useState(null);
+  const [fileTraceTo, setFileTraceTo] = useState(null);
+  const [fileRisk, setFileRisk] = useState(null);
+  const [fileSop, setFileSop] = useState(null);
+  const [fileEffectiveness, setFileEffectiveness] = useState(null);
+
   // Request Details State
   const [dept, setDept] = useState('');
-  const [requestBy, setRequestBy] = useState('');
+  const [requestBy, setRequestBy] = useState(() => {
+    if (userEmail) {
+      if (userEmail.toLowerCase().includes('ramanan')) return 'Ramanan Prabakaran';
+      if (userEmail.toLowerCase().includes('priya')) return 'Priya Venkat';
+      if (userEmail.toLowerCase().includes('kumar')) return 'Kumar Selvam';
+      if (userEmail.toLowerCase().includes('ravi')) return 'Ravi QA';
+      return userEmail;
+    }
+    return '';
+  });
   const [processName, setProcessName] = useState('');
   const [processLine, setProcessLine] = useState('');
   const [machineNo, setMachineNo] = useState('');
@@ -429,6 +449,9 @@ export const L1Request = ({
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
               >
                 <option value="">— Select Name —</option>
+                {userEmail && !['Ramanan Prabakaran', 'Priya Venkat', 'Kumar Selvam', 'Ravi QA'].some(name => userEmail.toLowerCase().includes(name.split(' ')[0].toLowerCase())) && (
+                  <option value={userEmail}>{userEmail}</option>
+                )}
                 <option value="Ramanan Prabakaran">Ramanan Prabakaran</option>
                 <option value="Priya Venkat">Priya Venkat</option>
                 <option value="Kumar Selvam">Kumar Selvam</option>
@@ -541,11 +564,23 @@ export const L1Request = ({
             <div className="space-y-[6px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Upload Supporting Files <span className="text-rose-500">*</span></label>
               <div className="flex items-center gap-[12px]">
-                <button type="button" className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer">
+                <input 
+                  type="file" 
+                  id="file-desc-input" 
+                  className="hidden" 
+                  onChange={(e) => setFileDesc(e.target.files[0])} 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => document.getElementById('file-desc-input').click()}
+                  className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer"
+                >
                   <Upload size={12} />
-                  <span>Upload Image / PDF</span>
+                  <span>{fileDesc ? 'Change File' : 'Upload Image / PDF'}</span>
                 </button>
-                <span className="text-[10px] text-slate-400">Allowed: PDF, JPG, PNG | Max 5MB each</span>
+                <span className="text-[10px] text-slate-400 truncate max-w-[250px]">
+                  {fileDesc ? fileDesc.name : 'Allowed: PDF, JPG, PNG | Max 5MB each'}
+                </span>
               </div>
             </div>
           </div>
@@ -576,11 +611,23 @@ export const L1Request = ({
             <div className="space-y-[4px] md:row-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Upload Supporting Files <span className="text-rose-500">*</span></label>
               <div className="border border-dashed border-slate-200 rounded-[8px] p-[16px] bg-slate-50/50 flex flex-col gap-[8px]">
-                <button type="button" className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer self-start">
+                <input 
+                  type="file" 
+                  id="file-improvement-input" 
+                  className="hidden" 
+                  onChange={(e) => setFileImprovement(e.target.files[0])} 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => document.getElementById('file-improvement-input').click()}
+                  className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer self-start"
+                >
                   <Upload size={12} />
-                  <span>Upload Image / PDF</span>
+                  <span>{fileImprovement ? 'Change File' : 'Upload Image / PDF'}</span>
                 </button>
-                <span className="text-[9px] text-slate-400">Allowed: PDF, JPG, PNG | Max 5MB each</span>
+                <span className="text-[9px] text-slate-400 truncate max-w-[200px]">
+                  {fileImprovement ? fileImprovement.name : 'Allowed: PDF, JPG, PNG | Max 5MB each'}
+                </span>
               </div>
             </div>
 
@@ -627,11 +674,23 @@ export const L1Request = ({
             <div className="space-y-[4px] md:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Upload Supporting Files</label>
               <div className="flex items-center gap-[12px]">
-                <button type="button" className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer">
+                <input 
+                  type="file" 
+                  id="file-tracefrom-input" 
+                  className="hidden" 
+                  onChange={(e) => setFileTraceFrom(e.target.files[0])} 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => document.getElementById('file-tracefrom-input').click()}
+                  className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer"
+                >
                   <Upload size={12} />
-                  <span>Upload Image / PDF</span>
+                  <span>{fileTraceFrom ? 'Change File' : 'Upload Image / PDF'}</span>
                 </button>
-                <span className="text-[10px] text-slate-400">Allowed: PDF, JPG, PNG | Max 5MB each</span>
+                <span className="text-[10px] text-slate-400 truncate max-w-[250px]">
+                  {fileTraceFrom ? fileTraceFrom.name : 'Allowed: PDF, JPG, PNG | Max 5MB each'}
+                </span>
               </div>
             </div>
 
@@ -664,11 +723,23 @@ export const L1Request = ({
             <div className="space-y-[4px] md:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Upload Supporting Files <span className="text-rose-500">*</span></label>
               <div className="flex items-center gap-[12px]">
-                <button type="button" className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer">
+                <input 
+                  type="file" 
+                  id="file-traceto-input" 
+                  className="hidden" 
+                  onChange={(e) => setFileTraceTo(e.target.files[0])} 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => document.getElementById('file-traceto-input').click()}
+                  className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer"
+                >
                   <Upload size={12} />
-                  <span>Upload Image / PDF</span>
+                  <span>{fileTraceTo ? 'Change File' : 'Upload Image / PDF'}</span>
                 </button>
-                <span className="text-[10px] text-slate-400">Allowed: PDF, JPG, PNG | Max 5MB each</span>
+                <span className="text-[10px] text-slate-400 truncate max-w-[250px]">
+                  {fileTraceTo ? fileTraceTo.name : 'Allowed: PDF, JPG, PNG | Max 5MB each'}
+                </span>
               </div>
             </div>
           </div>
@@ -695,11 +766,23 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Upload Supporting Files <span className="text-rose-500">*</span></label>
               <div className="flex items-center gap-[12px]">
-                <button type="button" className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer">
+                <input 
+                  type="file" 
+                  id="file-risk-input" 
+                  className="hidden" 
+                  onChange={(e) => setFileRisk(e.target.files[0])} 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => document.getElementById('file-risk-input').click()}
+                  className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer"
+                >
                   <Upload size={12} />
-                  <span>Upload Image / PDF</span>
+                  <span>{fileRisk ? 'Change File' : 'Upload Image / PDF'}</span>
                 </button>
-                <span className="text-[10px] text-slate-400">Allowed: PDF, JPG, PNG | Max 5MB each</span>
+                <span className="text-[10px] text-slate-400 truncate max-w-[250px]">
+                  {fileRisk ? fileRisk.name : 'Allowed: PDF, JPG, PNG | Max 5MB each'}
+                </span>
               </div>
             </div>
 
@@ -707,7 +790,7 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Update in SOP / WI / Control Plan / FMEA <span className="text-rose-500">*</span></label>
               <textarea 
-                placeholder="Describe potential risks, their likelihood, impact, and mitigation measures..." 
+                placeholder="Describe the updates required in SOP, Work Instructions, Control Plan, FMEA, etc..." 
                 value={sopUpdate}
                 onChange={(e) => setSopUpdate(e.target.value)}
                 rows={3}
@@ -716,12 +799,25 @@ export const L1Request = ({
             </div>
 
             {/* Click to upload updated documents */}
-            <div className="border border-dashed border-slate-200 hover:border-slate-350 bg-slate-50 rounded-[8px] p-[16px] flex items-center justify-center gap-[10px] cursor-pointer transition-all">
-              <FileText size={18} className="text-slate-400" />
+            <input 
+              type="file" 
+              id="file-sop-input" 
+              className="hidden" 
+              onChange={(e) => setFileSop(e.target.files[0])} 
+            />
+            <div 
+              onClick={() => document.getElementById('file-sop-input').click()}
+              className="border border-dashed border-slate-200 hover:border-slate-350 bg-slate-50 hover:bg-slate-100/50 rounded-[8px] p-[16px] flex items-center justify-center gap-[10px] cursor-pointer transition-all"
+            >
+              <FileText size={18} className={fileSop ? "text-emerald-500" : "text-slate-400"} />
               <div className="text-left select-none">
-                <span className="text-[#0066cc] text-[12px] font-bold hover:underline">Click to upload</span>
+                <span className="text-[#0066cc] text-[12px] font-bold hover:underline">
+                  {fileSop ? 'Change file' : 'Click to upload'}
+                </span>
                 <span className="text-slate-500 text-[12px] ml-[4px]">updated documents</span>
-                <p className="text-slate-400 text-[10px]">SOP, WI, Control Plan, FMEA — PDF, DOCX, XLSX accepted</p>
+                <p className="text-slate-400 text-[10px]">
+                  {fileSop ? `Selected: ${fileSop.name}` : 'SOP, WI, Control Plan, FMEA — PDF, DOCX, XLSX accepted'}
+                </p>
               </div>
             </div>
 
@@ -729,7 +825,7 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">User Dept HOD Approval <span className="text-rose-500">*</span></label>
               <textarea 
-                placeholder="Describe potential risks, their likelihood, impact, and mitigation measures..." 
+                placeholder="Describe HOD review comments, approval status, or conditions..." 
                 value={hodApproval}
                 onChange={(e) => setHodApproval(e.target.value)}
                 rows={3}
@@ -767,11 +863,23 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Upload Supporting Files <span className="text-rose-500">*</span></label>
               <div className="flex items-center gap-[12px]">
-                <button type="button" className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer">
+                <input 
+                  type="file" 
+                  id="file-effectiveness-input" 
+                  className="hidden" 
+                  onChange={(e) => setFileEffectiveness(e.target.files[0])} 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => document.getElementById('file-effectiveness-input').click()}
+                  className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer"
+                >
                   <Upload size={12} />
-                  <span>Upload Image / PDF</span>
+                  <span>{fileEffectiveness ? 'Change File' : 'Upload Image / PDF'}</span>
                 </button>
-                <span className="text-[10px] text-slate-400">Allowed: PDF, JPG, PNG | Max 5MB each</span>
+                <span className="text-[10px] text-slate-400 truncate max-w-[250px]">
+                  {fileEffectiveness ? fileEffectiveness.name : 'Allowed: PDF, JPG, PNG | Max 5MB each'}
+                </span>
               </div>
             </div>
 

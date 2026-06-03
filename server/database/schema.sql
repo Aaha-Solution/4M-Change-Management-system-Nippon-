@@ -174,12 +174,12 @@ CREATE TABLE l1_requests (
     improvement_area VARCHAR(100) NOT NULL,
     change_type VARCHAR(100) NOT NULL,
     date_start DATE,
-    trace_from VARCHAR(100) NOT NULL,
+    trace_from TEXT NOT NULL,
     date_close DATE,
-    trace_to VARCHAR(100) NOT NULL,
+    trace_to TEXT NOT NULL,
     risk_analysis TEXT NOT NULL,
-    sop_update VARCHAR(100) NOT NULL,
-    hod_approval VARCHAR(100) NOT NULL,
+    sop_update TEXT NOT NULL,
+    hod_approval TEXT NOT NULL,
     customer_approval VARCHAR(100) NOT NULL,
     effectiveness_monitoring TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -197,10 +197,37 @@ CREATE TABLE l2_validation_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- No initial L2 Validation Logs seeded
+-- 8. L3 Approvals Table
+CREATE TABLE l3_approvals (
+    change_no VARCHAR(50) PRIMARY KEY REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    date VARCHAR(50) NOT NULL,
+    requester VARCHAR(255) NOT NULL,
+    ped VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    quality VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    production VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    maintenance VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    pcl VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    materials VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    marketing VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    hr_safety VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    unit_head VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- No initial L3 Approvals seeded
+-- Seed one change request for L3 and E2E tests
+INSERT INTO change_requests (id, title, requester, date, priority, status) VALUES
+('4M-2026-248', 'Machine Change in Welding Line A', 'kumar.s@plant.com', '2026-05-20', 'High', 'Pending');
 
--- No initial L1 Requests seeded
+INSERT INTO l1_requests (
+    change_no, unit, requested_time, change_in, dept, request_by, 
+    process_name, process_line, machine_no, description, 
+    improvement_area, change_type, date_start, trace_from, 
+    date_close, trace_to, risk_analysis, sop_update, 
+    hod_approval, customer_approval, effectiveness_monitoring
+) VALUES
+('4M-2026-248', 'Unit 1', '14:30', 'Machine', 'PRODUCTION', 'Kumar Selvam', 'Welding Line A', 'Line A', 'MFG-MC-2011', 'Machine Change in Welding Line A description.', 'Delivery', 'Permanent', '2026-05-20', 'Trace from details...', '2026-05-22', 'Trace to details...', 'Medium risk', 'FMEA updated', 'Approved', 'Yes', 'Welding strength tests');
+
+INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) VALUES
+('4M-2026-248', '20 May', 'Kumar Selvam', 'weld-test.png', 'weld-test.png', 'Accepted', 'Zero alignment issues reported in shift logs.');
 
 
