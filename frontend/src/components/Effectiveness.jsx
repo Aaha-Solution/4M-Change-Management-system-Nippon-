@@ -8,6 +8,7 @@ import {
   resetEffectivenessLogs,
   getEffectivenessLogs
 } from '../api/apiRoutes';
+import { formatDateToDDMMYY } from '../utils/dateUtils';
 
 const generateEffId = () => `EFF-${Date.now().toString().substring(7)}`;
 
@@ -82,12 +83,9 @@ export const Effectiveness = ({
     return val;
   };
 
-  // Formatted date (e.g., "2026-05-20" -> "20 May")
+  // Formatted date (e.g., "2026-05-20" -> "20/05/26")
   const formatDateShort = (dateStr) => {
-    if (!dateStr) return "-";
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString("en-GB", { day: 'numeric', month: 'short' });
+    return formatDateToDDMMYY(dateStr);
   };
 
   // Add or Edit Effectiveness Log
@@ -892,7 +890,7 @@ export const Effectiveness = ({
                       <div className="border-t border-slate-100 pt-3 space-y-2.5 text-xs text-slate-600">
                         <div className="flex justify-between border-b border-slate-50 pb-1.5"><span className="font-bold">Filename:</span> <span>{previewFile}</span></div>
                         <div className="flex justify-between border-b border-slate-50 pb-1.5"><span className="font-bold">System Status:</span> <span className="text-emerald-600 font-bold">Verified Log</span></div>
-                        <div className="flex justify-between border-b border-slate-50 pb-1.5"><span className="font-bold">Verification Date:</span> <span>{new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
+                        <div className="flex justify-between border-b border-slate-50 pb-1.5"><span className="font-bold">Verification Date:</span> <span>{formatDateToDDMMYY(new Date())}</span></div>
                       </div>
                       <div className="pt-2 space-y-2">
                         <div className="font-bold text-xs text-slate-800">Observation Evidence Summary:</div>

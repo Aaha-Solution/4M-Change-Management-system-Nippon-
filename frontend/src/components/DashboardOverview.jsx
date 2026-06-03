@@ -14,6 +14,7 @@ import {
   Settings,
   ShieldAlert
 } from 'lucide-react';
+import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
 
 export const DashboardOverview = ({
   changes,
@@ -62,18 +63,22 @@ export const DashboardOverview = ({
 
     let matchesFromDate = true;
     if (filterFromDate) {
-      const fD = new Date(filterFromDate);
-      fD.setHours(0,0,0,0);
-      const itemD = new Date(c.date);
-      matchesFromDate = !isNaN(itemD.getTime()) && itemD >= fD;
+      const fD = parseDDMMYYYYToDate(filterFromDate);
+      if (fD) {
+        fD.setHours(0,0,0,0);
+        const itemD = parseDDMMYYYYToDate(c.date);
+        matchesFromDate = itemD && itemD >= fD;
+      }
     }
 
     let matchesToDate = true;
     if (filterToDate) {
-      const tD = new Date(filterToDate);
-      tD.setHours(23,59,59,999);
-      const itemD = new Date(c.date);
-      matchesToDate = !isNaN(itemD.getTime()) && itemD <= tD;
+      const tD = parseDDMMYYYYToDate(filterToDate);
+      if (tD) {
+        tD.setHours(23,59,59,999);
+        const itemD = parseDDMMYYYYToDate(c.date);
+        matchesToDate = itemD && itemD <= tD;
+      }
     }
 
     const matchesPerson = filterPerson === 'All' || c.requester === filterPerson;
@@ -94,16 +99,7 @@ export const DashboardOverview = ({
   const rejectedCount = dynamicRejected;
 
   const formattedDbChanges = filteredChanges.map((c, idx) => {
-    let displayDate = c.date;
-    try {
-      const d = new Date(c.date);
-      if (!isNaN(d.getTime())) {
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        displayDate = `${day}/${month}/${year}`;
-      }
-    } catch (e) {}
+    const displayDate = formatDateToDDMMYY(c.date);
 
     let displayStatus = c.status;
     if (c.status === 'Pending' || c.status === 'Evaluating') displayStatus = 'Pending L2';
@@ -140,8 +136,9 @@ export const DashboardOverview = ({
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
         <input 
-          type="date" 
-          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" 
+          type="text" 
+          placeholder="dd/mm/yyyy" 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500" 
           value={filterFromDate}
           onChange={(e) => setFilterFromDate(e.target.value)}
         />
@@ -149,8 +146,9 @@ export const DashboardOverview = ({
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
         <input 
-          type="date" 
-          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" 
+          type="text" 
+          placeholder="dd/mm/yyyy" 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500" 
           value={filterToDate}
           onChange={(e) => setFilterToDate(e.target.value)}
         />
@@ -212,8 +210,9 @@ export const DashboardOverview = ({
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
         <input 
-          type="date" 
-          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" 
+          type="text" 
+          placeholder="dd/mm/yyyy" 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500" 
           value={filterFromDate}
           onChange={(e) => setFilterFromDate(e.target.value)}
         />
@@ -221,8 +220,9 @@ export const DashboardOverview = ({
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
         <input 
-          type="date" 
-          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-slate-500" 
+          type="text" 
+          placeholder="dd/mm/yyyy" 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500" 
           value={filterToDate}
           onChange={(e) => setFilterToDate(e.target.value)}
         />

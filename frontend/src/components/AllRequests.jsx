@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ClipboardList, Plus, X, Trash2, AlertTriangle } from 'lucide-react';
 import { getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine } from '../api/apiRoutes';
+import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
 
 export const AllRequests = ({
   changes
@@ -86,18 +87,7 @@ export const AllRequests = ({
     }
   };
   const formattedDbChanges = changes.map((c) => {
-    let displayDate = c.date;
-    try {
-      const d = new Date(c.date);
-      if (!isNaN(d.getTime())) {
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        displayDate = `${day}/${month}/${year}`;
-      }
-    } catch {
-      // ignore
-    }
+    const displayDate = formatDateToDDMMYY(c.date);
 
     let displayStatus = c.status;
     if (c.status === 'Completed' || c.status === 'Evaluating') displayStatus = 'Pending';
@@ -153,18 +143,22 @@ export const AllRequests = ({
 
     let matchesFromDate = true;
     if (fromDate) {
-      const fD = new Date(fromDate);
-      fD.setHours(0,0,0,0);
-      const itemD = new Date(item.rawDate);
-      matchesFromDate = !isNaN(itemD.getTime()) && itemD >= fD;
+      const fD = parseDDMMYYYYToDate(fromDate);
+      if (fD) {
+        fD.setHours(0,0,0,0);
+        const itemD = parseDDMMYYYYToDate(item.rawDate);
+        matchesFromDate = itemD && itemD >= fD;
+      }
     }
 
     let matchesToDate = true;
     if (toDate) {
-      const tD = new Date(toDate);
-      tD.setHours(23,59,59,999);
-      const itemD = new Date(item.rawDate);
-      matchesToDate = !isNaN(itemD.getTime()) && itemD <= tD;
+      const tD = parseDDMMYYYYToDate(toDate);
+      if (tD) {
+        tD.setHours(23,59,59,999);
+        const itemD = parseDDMMYYYYToDate(item.rawDate);
+        matchesToDate = itemD && itemD <= tD;
+      }
     }
 
     return matchesSearch && matchesPerson && matchesProcess && matchesMachine && matchesMonth && matchesFromDate && matchesToDate;
@@ -205,8 +199,9 @@ export const AllRequests = ({
         <div className="space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
           <input 
-            type="date" 
-            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-[11px] text-slate-500" 
+            type="text" 
+            placeholder="dd/mm/yyyy" 
+            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-[11px] text-slate-500" 
             value={fromDate}
             onChange={(e) => setFromDate(e.target.value)}
           />
@@ -216,8 +211,9 @@ export const AllRequests = ({
         <div className="space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
           <input 
-            type="date" 
-            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300 text-[11px] text-slate-500" 
+            type="text" 
+            placeholder="dd/mm/yyyy" 
+            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-[11px] text-slate-500" 
             value={toDate}
             onChange={(e) => setToDate(e.target.value)}
           />

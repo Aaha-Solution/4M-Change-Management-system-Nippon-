@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, RotateCcw, Eye, X, Loader2, AlertTriangle } from 'lucide-react';
 import { getL3Approvals, createL3Approval } from '../api/apiRoutes';
+import { formatDateToDDMMYY } from '../utils/dateUtils';
 
 export const L3RequestTracker = ({
   userEmail,
@@ -99,7 +100,7 @@ export const L3RequestTracker = ({
 
     setSelectedChangeId(log.changeNo);
     setFormChangeNo(log.changeNo);
-    setFormDate(log.date);
+    setFormDate(formatDateToDDMMYY(log.date));
     setFormRequester(log.requester);
   };
 
@@ -394,7 +395,7 @@ export const L3RequestTracker = ({
                         }`}
                       >
                         <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
-                        <td className="p-[8px] text-slate-500">{log.date}</td>
+                        <td className="p-[8px] text-slate-500">{formatDateToDDMMYY(log.date)}</td>
                         <td className="p-[8px] font-medium text-slate-700 truncate" title={log.requester}>{log.requester}</td>
                         
                         {/* Department Badges */}
@@ -484,7 +485,7 @@ export const L3RequestTracker = ({
                 </div>
                 <div className="space-y-[4px]">
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
-                  <span className="font-medium text-slate-700">{selectedLog.date}</span>
+                  <span className="font-medium text-slate-700">{formatDateToDDMMYY(selectedLog.date)}</span>
                 </div>
               </div>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2 } from 'lucide-react';
 import { getL2ValidationLogs, createL2ValidationLog } from '../api/apiRoutes';
+import { formatDateToDDMMYY } from '../utils/dateUtils';
 
 export const L2Validation = ({
   changes,
@@ -135,21 +136,7 @@ export const L2Validation = ({
                 // Find matching request in changes
                 const selectedChange = changes?.find(c => c.id.toLowerCase().trim() === val.toLowerCase().trim());
                 if (selectedChange) {
-                  let formattedD = '';
-                  if (selectedChange.date) {
-                    const parts = selectedChange.date.split('/');
-                    if (parts.length === 3) {
-                      formattedD = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                    } else {
-                      const parsed = new Date(selectedChange.date);
-                      if (!isNaN(parsed.getTime())) {
-                        formattedD = parsed.toISOString().split('T')[0];
-                      } else {
-                        formattedD = selectedChange.date;
-                      }
-                    }
-                  }
-                  setFormDate(formattedD || '');
+                  setFormDate(formatDateToDDMMYY(selectedChange.date));
                   setFormRequester(selectedChange.requester || '');
                 } else {
                   // Reset auto-populated fields if typed value doesn't match any active change request
@@ -342,7 +329,7 @@ export const L2Validation = ({
                       }}
                     >
                       <td className="p-[12px] font-bold text-[#0066cc]">{log.changeNo}</td>
-                      <td className="p-[12px] text-slate-500">{log.date}</td>
+                      <td className="p-[12px] text-slate-500">{formatDateToDDMMYY(log.date)}</td>
                       <td className="p-[12px] font-medium text-slate-700">{log.requester}</td>
                       <td className="p-[12px]">
                         <span className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer">
@@ -421,7 +408,7 @@ export const L2Validation = ({
                 </div>
                 <div className="space-y-[4px]">
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
-                  <span className="font-medium text-slate-700">{selectedLog.date}</span>
+                  <span className="font-medium text-slate-700">{formatDateToDDMMYY(selectedLog.date)}</span>
                 </div>
               </div>
 
