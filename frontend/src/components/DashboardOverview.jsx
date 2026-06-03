@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Clock, 
   Loader2, 
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
 import { CustomDatePicker } from './CustomDatePicker';
+import { getProcesses, getMachines } from '../api/apiRoutes';
 
 
 export const DashboardOverview = ({
@@ -29,6 +30,22 @@ export const DashboardOverview = ({
   const [filterMachine, setFilterMachine] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
 
+  const [dbProcesses, setDbProcesses] = useState([]);
+  const [dbMachines, setDbMachines] = useState([]);
+
+  useEffect(() => {
+    async function fetchOptions() {
+      try {
+        const [pRes, mRes] = await Promise.all([getProcesses(), getMachines()]);
+        setDbProcesses(pRes.data);
+        setDbMachines(mRes.data);
+      } catch (e) {
+        console.error('Error fetching process/machine options:', e);
+      }
+    }
+    fetchOptions();
+  }, []);
+
   const monthsList = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -37,8 +54,8 @@ export const DashboardOverview = ({
   const monthOptions = monthsList.map(m => `${m}-${currentYearShort}`);
 
   const uniquePersons = ['All', ...new Set(changes.map(c => c.requester).filter(Boolean))];
-  const uniqueProcesses = ['All', ...new Set(changes.map(c => c.dept || c.department).filter(Boolean))];
-  const uniqueMachines = ['All', ...new Set(changes.map(c => c.machineNo).filter(Boolean))];
+  const uniqueProcesses = ['All', ...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])];
+  const uniqueMachines = ['All', ...new Set([...dbMachines, ...changes.map(c => c.machineNo).filter(Boolean)])];
 
   const filteredChanges = changes.filter(c => {
     let matchesMonth = true;
@@ -79,7 +96,7 @@ export const DashboardOverview = ({
     }
 
     const matchesPerson = filterPerson === 'All' || c.requester === filterPerson;
-    const matchesProcess = filterProcess === 'All' || (c.dept || c.department) === filterProcess;
+    const matchesProcess = filterProcess === 'All' || c.processName === filterProcess;
     const matchesMachine = filterMachine === 'All' || c.machineNo === filterMachine;
     const matchesStatus = filterStatus === 'All' || c.status === filterStatus;
 
@@ -105,7 +122,7 @@ export const DashboardOverview = ({
     return {
       slNo: idx + 1,
       id: c.id,
-      machineNo: c.machineNo || 'MFG-MC-1042',
+      machineNo: c.machineNo || '',
       department: c.dept || c.department || 'PRODUCTION',
       date: displayDate,
       status: displayStatus

@@ -95,7 +95,8 @@ export const AllRequests = ({
 
     return {
       id: c.id,
-      machineNo: c.machineNo || 'MFG-MC-1042',
+      machineNo: c.machineNo || '',
+      processName: c.processName || '',
       department: c.dept || c.department || 'PRODUCTION',
       date: displayDate,
       status: displayStatus,
@@ -109,7 +110,7 @@ export const AllRequests = ({
 
   // Get unique filter options
   const uniquePersons = ['All', ...new Set(combinedData.map(i => i.requester).filter(Boolean))];
-  const filterProcesses = ['All', ...new Set([...dbProcesses, ...combinedData.map(i => i.department).filter(Boolean)])];
+  const filterProcesses = ['All', ...new Set([...dbProcesses, ...combinedData.map(i => i.processName).filter(Boolean)])];
   const filterMachines = ['All', ...new Set([...dbMachines, ...combinedData.map(i => i.machineNo).filter(Boolean)])];
 
   // Apply filters
@@ -122,7 +123,7 @@ export const AllRequests = ({
       (item.requester && item.requester.toLowerCase().includes(query));
 
     const matchesPerson = selectedPerson === 'All' || item.requester === selectedPerson;
-    const matchesProcess = selectedProcess === 'All' || item.department === selectedProcess;
+    const matchesProcess = selectedProcess === 'All' || item.processName === selectedProcess;
     const matchesMachine = selectedMachine === 'All' || item.machineNo === selectedMachine;
 
     let matchesMonth = true;
