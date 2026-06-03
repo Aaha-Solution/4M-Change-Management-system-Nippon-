@@ -418,16 +418,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             {/* Email always visible */}
             <span className="text-[14px] font-medium text-slate-600 hidden sm:inline">{userEmail}</span>
 
-            {/* Request Change button - only on dashboard tab */}
-            {activeTab === 'dashboard' && (
-              <button
-                onClick={() => handleTabChange('new-request')}
-                className="hidden sm:flex items-center gap-[4px] bg-sky-50 border border-sky-100 hover:bg-sky-100 text-[#0066cc] px-[12px] py-[6px] rounded-[8px] text-[12px] font-bold transition-all cursor-pointer"
-              >
-                <Plus size={12} />
-                <span>Request Change</span>
-              </button>
-            )}
+
 
             {/* Bell icon - only on dashboard tab */}
             {activeTab === 'dashboard' && (
