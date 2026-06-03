@@ -9,6 +9,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine } from '../api/apiRoutes';
+import { CustomDatePicker } from './CustomDatePicker';
 
 export const L1Request = ({
   onTabChange,
@@ -604,14 +605,14 @@ export const L1Request = ({
             </div>
 
             {/* IMPLEMENT / CHANGE DATE START */}
-            <div className="space-y-[4px] md:col-span-2">
+            <div className="space-y-[4px] md:col-span-2 relative">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start <span className="text-rose-500">*</span></label>
-              <input 
-                type="text" 
-                placeholder="dd/mm/yyyy" 
+              <CustomDatePicker 
                 value={dateStart}
-                onChange={(e) => setDateStart(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors md:max-w-[49%]"
+                onChange={setDateStart}
+                containerClassName="md:max-w-[49%]"
+                inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                buttonClassName="right-[10px] bottom-[12px]"
               />
             </div>
 
@@ -641,14 +642,14 @@ export const L1Request = ({
             </div>
 
             {/* CHANGE DATE CLOSE */}
-            <div className="space-y-[4px] md:col-span-2">
+            <div className="space-y-[4px] md:col-span-2 relative">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close <span className="text-rose-500">*</span></label>
-              <input 
-                type="text" 
-                placeholder="dd/mm/yyyy" 
+              <CustomDatePicker 
                 value={dateClose}
-                onChange={(e) => setDateClose(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors md:max-w-[49%]"
+                onChange={setDateClose}
+                containerClassName="md:max-w-[49%]"
+                inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                buttonClassName="right-[10px] bottom-[12px]"
               />
             </div>
 

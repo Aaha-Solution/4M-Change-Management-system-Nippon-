@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ClipboardList, Plus, X, Trash2, AlertTriangle } from 'lucide-react';
 import { getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine } from '../api/apiRoutes';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
+import { CustomDatePicker } from './CustomDatePicker';
 
 export const AllRequests = ({
   changes
@@ -196,26 +197,24 @@ export const AllRequests = ({
         </div>
 
         {/* FROM DATE */}
-        <div className="space-y-[4px]">
+        <div className="space-y-[4px] relative">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
-          <input 
-            type="text" 
-            placeholder="dd/mm/yyyy" 
-            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-[11px] text-slate-500" 
+          <CustomDatePicker 
             value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
+            onChange={setFromDate}
+            inputClassName="w-full pl-[8px] pr-[24px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-[11px] text-slate-500"
+            buttonClassName="right-[8px] bottom-[8px]"
           />
         </div>
 
         {/* TO DATE */}
-        <div className="space-y-[4px]">
+        <div className="space-y-[4px] relative">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-          <input 
-            type="text" 
-            placeholder="dd/mm/yyyy" 
-            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-[11px] text-slate-500" 
+          <CustomDatePicker 
             value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
+            onChange={setToDate}
+            inputClassName="w-full pl-[8px] pr-[24px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-[11px] text-slate-500"
+            buttonClassName="right-[8px] bottom-[8px]"
           />
         </div>
 
