@@ -54,7 +54,7 @@ const formatDateToSql = (dateStr) => {
   return null;
 };
 
-export const addL1Request = async (l1Data, userEmail) => {
+export const addL1Request = async (l1Data, attachments, userEmail) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -81,7 +81,14 @@ export const addL1Request = async (l1Data, userEmail) => {
       sopUpdate,
       hodApproval,
       customerApproval,
-      effectivenessMonitoring
+      effectivenessMonitoring,
+      fileDesc,
+      fileImprovement,
+      fileTraceFrom,
+      fileTraceTo,
+      fileRisk,
+      fileSop,
+      fileEffectiveness
     } = l1Data;
 
     const status = 'Pending';
@@ -99,16 +106,31 @@ export const addL1Request = async (l1Data, userEmail) => {
         process_name, process_line, machine_no, description, 
         improvement_area, change_type, date_start, trace_from, 
         date_close, trace_to, risk_analysis, sop_update, 
-        hod_approval, customer_approval, effectiveness_monitoring
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        hod_approval, customer_approval, effectiveness_monitoring,
+        file_desc, file_improvement, file_trace_from, file_trace_to,
+        file_risk, file_sop, file_effectiveness
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         changeNo, unit, requestedTime, changeIn || '', dept, requestBy,
         processName, processLine, machineNo, description,
         improvementArea, changeType, formatDateToSql(dateStart), traceFrom,
         formatDateToSql(dateClose), traceTo, riskAnalysis, sopUpdate,
-        hodApproval, customerApproval, effectivenessMonitoring
+        hodApproval, customerApproval, effectivenessMonitoring,
+        fileDesc || '', fileImprovement || '', fileTraceFrom || '', fileTraceTo || '',
+        fileRisk || '', fileSop || '', fileEffectiveness || ''
       ]
     );
+
+    // Save L1 attachments if any
+    if (attachments && attachments.length > 0) {
+      for (const file of attachments) {
+        await connection.query(
+          `INSERT INTO l1_attachments (change_no, field_name, file_name, file_data, file_type) 
+           VALUES (?, ?, ?, ?, ?)`,
+          [changeNo, file.fieldName, file.name, file.data, file.type]
+        );
+      }
+    }
 
     await connection.commit();
     return {
@@ -283,6 +305,16 @@ export const getNextChangeNo = async () => {
     }
   }
   return `4M-2026-${maxNum + 1}`;
+};
+
+export const getL1Attachment = async (changeNo, fileName) => {
+  const [rows] = await pool.query(
+    `SELECT file_name as name, file_data as data, file_type as type 
+     FROM l1_attachments 
+     WHERE change_no = ? AND file_name = ?`,
+    [changeNo, fileName]
+  );
+  return rows.length > 0 ? rows[0] : null;
 };
 
 

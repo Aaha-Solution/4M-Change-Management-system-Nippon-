@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { login, signup, forgotPassword, getUsers, deleteUser, updateUser } from '../controllers/authController.js';
-import { getAllChanges, createChange, updateChangeStatus, createL1Request, getL2ValidationLogs, createL2ValidationLog, getL3Approvals, createL3Approval, getNextChangeNo } from '../controllers/changeController.js';
+import { getAllChanges, createChange, updateChangeStatus, createL1Request, getL2ValidationLogs, createL2ValidationLog, getL3Approvals, createL3Approval, getNextChangeNo, getL1AttachmentFile } from '../controllers/changeController.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
 import {
   getRoles,
@@ -48,6 +48,7 @@ router.get('/changes', verifyToken, getAllChanges);
 router.get('/changes/next-no', verifyToken, getNextChangeNo);
 router.post('/changes', verifyToken, createChange);
 router.post('/changes/l1', verifyToken, createL1Request);
+router.get('/changes/l1/attachment/:changeNo/:fileName', verifyToken, getL1AttachmentFile);
 router.get('/changes/l2', verifyToken, getL2ValidationLogs);
 router.post('/changes/l2', verifyToken, createL2ValidationLog);
 router.get('/changes/l3', verifyToken, getL3Approvals);

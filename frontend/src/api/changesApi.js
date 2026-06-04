@@ -12,11 +12,17 @@ export const updateChangeStatus = (id, status) => {
   });
 };
 
-export const createL1Request = (l1Data) => {
-  return axiosInstance.post('/changes/l1', { l1Data }, {
+export const createL1Request = (l1Data, attachments) => {
+  return axiosInstance.post('/changes/l1', { l1Data, attachments }, {
     headers: {
       'Content-Type': 'application/json',
     },
+  });
+};
+
+export const getL1Attachment = (changeNo, fileName) => {
+  return axiosInstance.get(`/changes/l1/attachment/${changeNo}/${fileName}`, {
+    responseType: 'blob'
   });
 };
 

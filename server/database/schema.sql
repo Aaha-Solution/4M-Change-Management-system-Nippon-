@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS effectiveness_attachments;
 DROP TABLE IF EXISTS effectiveness_logs;
 DROP TABLE IF EXISTS l3_approvals;
 DROP TABLE IF EXISTS l2_validation_logs;
+DROP TABLE IF EXISTS l1_attachments;
 DROP TABLE IF EXISTS l1_requests;
 DROP TABLE IF EXISTS change_requests;
 DROP TABLE IF EXISTS users;
@@ -182,6 +183,24 @@ CREATE TABLE l1_requests (
     hod_approval TEXT NOT NULL,
     customer_approval VARCHAR(100) NOT NULL,
     effectiveness_monitoring TEXT NOT NULL,
+    file_desc VARCHAR(255) NOT NULL DEFAULT '',
+    file_improvement VARCHAR(255) NOT NULL DEFAULT '',
+    file_trace_from VARCHAR(255) NOT NULL DEFAULT '',
+    file_trace_to VARCHAR(255) NOT NULL DEFAULT '',
+    file_risk VARCHAR(255) NOT NULL DEFAULT '',
+    file_sop VARCHAR(255) NOT NULL DEFAULT '',
+    file_effectiveness VARCHAR(255) NOT NULL DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6a. L1 Attachments Table
+CREATE TABLE l1_attachments (
+    id SERIAL PRIMARY KEY,
+    change_no VARCHAR(50) NOT NULL REFERENCES l1_requests(change_no) ON UPDATE CASCADE ON DELETE CASCADE,
+    field_name VARCHAR(50) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_data LONGTEXT NOT NULL,
+    file_type VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

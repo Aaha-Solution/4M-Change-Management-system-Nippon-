@@ -127,6 +127,20 @@ export const L1Request = ({
   const [fileSop, setFileSop] = useState('');
   const [fileEffectiveness, setFileEffectiveness] = useState('');
 
+  const [uploadedFilesList, setUploadedFilesList] = useState([]);
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   // Request Details State
   const [dept, setDept] = useState('');
   const [requestBy, setRequestBy] = useState(() => {
@@ -299,11 +313,18 @@ export const L1Request = ({
       sopUpdate,
       hodApproval,
       customerApproval,
-      effectivenessMonitoring
+      effectivenessMonitoring,
+      fileDesc,
+      fileImprovement,
+      fileTraceFrom,
+      fileTraceTo,
+      fileRisk,
+      fileSop,
+      fileEffectiveness
     };
     
     try {
-      const response = await createL1Request(l1Data);
+      const response = await createL1Request(l1Data, uploadedFilesList);
       const newChange = response.data.change;
 
       setChanges([newChange, ...changes]);
@@ -321,7 +342,7 @@ export const L1Request = ({
     }
   };
 
-  const renderAttachmentInput = (label, value, setValue, inputId, isRequired = false) => {
+  const renderAttachmentInput = (label, value, setValue, inputId, fieldName, isRequired = false) => {
     return (
       <div className="space-y-[4px]">
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label} {isRequired && <span className="text-rose-500">*</span>}</label>
@@ -337,7 +358,10 @@ export const L1Request = ({
             {value && (
               <button
                 type="button"
-                onClick={() => setValue('')}
+                onClick={() => {
+                  setValue('');
+                  setUploadedFilesList(prev => prev.filter(f => f.fieldName !== fieldName));
+                }}
                 className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                 title="Clear all attachments"
               >
@@ -354,10 +378,26 @@ export const L1Request = ({
               accept="image/*,application/pdf"
               id={inputId}
               className="hidden"
-              onChange={(e) => {
+              onChange={async (e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const files = Array.from(e.target.files);
                   const names = files.map(f => f.name);
+
+                  // Convert files to base64 for server upload
+                  const base64Files = await Promise.all(
+                    files.map(async (file) => ({
+                      name: file.name,
+                      type: file.type || 'application/octet-stream',
+                      data: await fileToBase64(file),
+                      fieldName
+                    }))
+                  );
+
+                  setUploadedFilesList(prev => {
+                    const filtered = prev.filter(f => !(f.fieldName === fieldName && names.includes(f.name)));
+                    return [...filtered, ...base64Files];
+                  });
+
                   const existing = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
                   const updated = Array.from(new Set([...existing, ...names])).join(', ');
                   setValue(updated);
@@ -381,6 +421,7 @@ export const L1Request = ({
                     const existing = value.split(',').map(s => s.trim()).filter(Boolean);
                     const updated = existing.filter(f => f !== file).join(', ');
                     setValue(updated);
+                    setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === fieldName && f.name === file)));
                   }}
                   className="text-slate-450 hover:text-rose-650 font-bold ml-[2px] cursor-pointer text-[12px]"
                 >
@@ -644,7 +685,7 @@ export const L1Request = ({
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
-            {renderAttachmentInput("Upload Supporting Files", fileDesc, setFileDesc, "file-desc-input", true)}
+            {renderAttachmentInput("Upload Supporting Files", fileDesc, setFileDesc, "file-desc-input", "fileDesc", true)}
           </div>
         </div>
 
@@ -671,7 +712,7 @@ export const L1Request = ({
 
             {/* UPLOAD SUPPORTING FILES */}
             <div className="md:row-span-2">
-              {renderAttachmentInput("Upload Supporting Files", fileImprovement, setFileImprovement, "file-improvement-input", true)}
+              {renderAttachmentInput("Upload Supporting Files", fileImprovement, setFileImprovement, "file-improvement-input", "fileImprovement", true)}
             </div>
 
             {/* PERMANENT / TEMPORARY CHANGE */}
@@ -715,7 +756,7 @@ export const L1Request = ({
 
             {/* UPLOAD SUPPORTING FILES */}
             <div className="md:col-span-2">
-              {renderAttachmentInput("Upload Supporting Files", fileTraceFrom, setFileTraceFrom, "file-tracefrom-input")}
+              {renderAttachmentInput("Upload Supporting Files", fileTraceFrom, setFileTraceFrom, "file-tracefrom-input", "fileTraceFrom")}
             </div>
 
             {/* CHANGE DATE CLOSE */}
@@ -745,7 +786,7 @@ export const L1Request = ({
 
             {/* UPLOAD SUPPORTING FILES */}
             <div className="md:col-span-2">
-              {renderAttachmentInput("Upload Supporting Files", fileTraceTo, setFileTraceTo, "file-traceto-input", true)}
+              {renderAttachmentInput("Upload Supporting Files", fileTraceTo, setFileTraceTo, "file-traceto-input", "fileTraceTo", true)}
             </div>
           </div>
         </div>
@@ -768,7 +809,7 @@ export const L1Request = ({
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
-            {renderAttachmentInput("Upload Supporting Files", fileRisk, setFileRisk, "file-risk-input", true)}
+            {renderAttachmentInput("Upload Supporting Files", fileRisk, setFileRisk, "file-risk-input", "fileRisk", true)}
 
             {/* UPDATE IN SOP / WI / CONTROL PLAN / FMEA */}
             <div className="space-y-[4px]">
@@ -783,7 +824,7 @@ export const L1Request = ({
             </div>
 
             {/* Click to upload updated documents */}
-            {renderAttachmentInput("Upload Supporting Files (SOP, WI, Control Plan, FMEA)", fileSop, setFileSop, "file-sop-input")}
+            {renderAttachmentInput("Upload Supporting Files (SOP, WI, Control Plan, FMEA)", fileSop, setFileSop, "file-sop-input", "fileSop")}
 
             {/* USER DEPT HOD APPROVAL */}
             <div className="space-y-[4px]">
@@ -824,7 +865,7 @@ export const L1Request = ({
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
-            {renderAttachmentInput("Upload Supporting Files", fileEffectiveness, setFileEffectiveness, "file-effectiveness-input", true)}
+            {renderAttachmentInput("Upload Supporting Files", fileEffectiveness, setFileEffectiveness, "file-effectiveness-input", "fileEffectiveness", true)}
 
             {/* L2 & L3 STATUS BADGES */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] pt-[8px]">
