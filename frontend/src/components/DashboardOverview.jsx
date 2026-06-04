@@ -103,8 +103,8 @@ export const DashboardOverview = ({
     return matchesMonth && matchesFromDate && matchesToDate && matchesPerson && matchesProcess && matchesMachine && matchesStatus;
   });
 
-  const dynamicApproved = filteredChanges.filter(c => c.status === 'Approved').length;
-  const dynamicPending = filteredChanges.filter(c => c.status === 'Pending' || c.status === 'Evaluating').length;
+  const dynamicApproved = filteredChanges.filter(c => c.status === 'Approved' || ((c.status === 'Pending' || c.status === 'Evaluating') && c.l2Status === 'Accepted')).length;
+  const dynamicPending = filteredChanges.filter(c => (c.status === 'Pending' || c.status === 'Evaluating') && c.l2Status !== 'Accepted').length;
   const dynamicRejected = filteredChanges.filter(c => c.status === 'Rejected').length;
 
   const totalCount = filteredChanges.length;
@@ -116,7 +116,9 @@ export const DashboardOverview = ({
     const displayDate = formatDateToDDMMYY(c.date);
 
     let displayStatus = c.status;
-    if (c.status === 'Pending' || c.status === 'Evaluating') displayStatus = 'Pending L2';
+    if (c.status === 'Pending' || c.status === 'Evaluating') {
+      displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
+    }
     if (c.status === 'Completed') displayStatus = 'Closed';
 
     return {

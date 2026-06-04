@@ -91,7 +91,10 @@ export const AllRequests = ({
     const displayDate = formatDateToDDMMYY(c.date);
 
     let displayStatus = c.status;
-    if (c.status === 'Completed' || c.status === 'Evaluating') displayStatus = 'Pending';
+    if (c.status === 'Pending' || c.status === 'Evaluating') {
+      displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
+    }
+    if (c.status === 'Completed') displayStatus = 'Closed';
 
     return {
       id: c.id,
@@ -330,9 +333,10 @@ export const AllRequests = ({
                     <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
                     <td className="p-[16px]">
                       <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
-                        r.status === 'Pending' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                        r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
                         r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
-                        'bg-rose-50 border-rose-250 text-rose-700'
+                        r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
+                        'bg-teal-50 border-teal-200 text-teal-700'
                       }`}>
                         {r.status}
                       </span>
