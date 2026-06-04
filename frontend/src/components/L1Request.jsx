@@ -920,23 +920,6 @@ export const L1Request = ({
 
             {/* UPLOAD SUPPORTING FILES */}
             {renderAttachmentInput("Upload Supporting Files", fileEffectiveness, setFileEffectiveness, "file-effectiveness-input", "fileEffectiveness", true)}
-
-            {/* L2 & L3 STATUS BADGES */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] pt-[8px]">
-              <div className="space-y-[4px]">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">L2 Approval Status <span className="text-rose-500">*</span></label>
-                <div className="bg-emerald-50 border border-emerald-250 text-emerald-700 px-[16px] py-[8px] rounded-[6px] text-center font-bold text-[12px]">
-                  Approved
-                </div>
-              </div>
-              
-              <div className="space-y-[4px]">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">L3 Approval Status <span className="text-rose-500">*</span></label>
-                <div className="bg-amber-50 border border-amber-250 text-amber-700 px-[16px] py-[8px] rounded-[6px] text-center font-bold text-[12px]">
-                  Pending
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
