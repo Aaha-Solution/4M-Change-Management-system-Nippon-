@@ -171,5 +171,20 @@ export const getL1Details = async (req, res) => {
   }
 };
 
+export const getL2Details = async (req, res) => {
+  const { changeNo } = req.params;
+
+  try {
+    const details = await changeModel.getL2Details(changeNo);
+    if (!details) {
+      return res.status(404).json({ error: 'L2 validation log not found' });
+    }
+    res.status(200).json(details);
+  } catch (error) {
+    console.error('Error in getL2Details controller:', error);
+    res.status(500).json({ error: 'Failed to fetch L2 validation details' });
+  }
+};
+
 
 

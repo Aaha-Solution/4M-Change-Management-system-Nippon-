@@ -58,4 +58,8 @@ export const getL1Details = (changeNo) => {
   return axiosInstance.get(`/changes/l1/${changeNo}`);
 };
 
+export const getL2Details = (changeNo) => {
+  return axiosInstance.get(`/changes/l2/${changeNo}`);
+};
+
 

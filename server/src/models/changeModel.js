@@ -331,6 +331,17 @@ export const getL1Attachment = async (changeNo, fileName) => {
   return rows.length > 0 ? rows[0] : null;
 };
 
+export const getL2Details = async (changeNo) => {
+  const [rows] = await pool.query(
+    `SELECT change_no as changeNo, validation_date as date, requester, 
+            weld_test as weldTest, qa_test as qaTest, status, remarks 
+     FROM l2_validation_logs 
+     WHERE change_no = ?`,
+    [changeNo]
+  );
+  return rows.length > 0 ? rows[0] : null;
+};
+
 
 
 

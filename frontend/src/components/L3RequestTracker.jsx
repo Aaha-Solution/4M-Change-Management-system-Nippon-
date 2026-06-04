@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Save, Search, RotateCcw, Eye, X, Loader2, AlertTriangle } from 'lucide-react';
-import { getL3Approvals, createL3Approval } from '../api/apiRoutes';
+import { Save, Search, RotateCcw, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar } from 'lucide-react';
+import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details } from '../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 
 export const L3RequestTracker = ({
@@ -13,6 +13,14 @@ export const L3RequestTracker = ({
   const [isFetchingLogs, setIsFetchingLogs] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
   const [validationError, setValidationError] = useState('');
+
+  // L3 Details Modal state hooks
+  const [selectedL1Details, setSelectedL1Details] = useState(null);
+  const [selectedL2Details, setSelectedL2Details] = useState(null);
+  const [isFetchingDetails, setIsFetchingDetails] = useState(false);
+  const [activeTab, setActiveTab] = useState('l1');
+  const [previewFile, setPreviewFile] = useState(null);
+  const [fileUrls, setFileUrls] = useState({});
 
   // Database approval logs
   const [approvalLogs, setApprovalLogs] = useState([]);
@@ -169,6 +177,55 @@ export const L3RequestTracker = ({
   const handleResetFilters = () => {
     setSearchQuery('');
     setStatusFilter('All');
+  };
+
+  const handleViewDetails = async (log) => {
+    setIsFetchingDetails(true);
+    try {
+      const [l1Res, l2Res] = await Promise.all([
+        getL1Details(log.changeNo),
+        getL2Details(log.changeNo)
+      ]);
+      setSelectedL1Details(l1Res.data);
+      setSelectedL2Details(l2Res.data);
+      setSelectedLog(log);
+      setActiveTab('l1');
+    } catch (err) {
+      console.error(err);
+      if (setToastMsg) setToastMsg('Error loading L1 change request or L2 validation details.');
+    } finally {
+      setIsFetchingDetails(false);
+    }
+  };
+
+  const handleViewAttachment = async (filename, changeNo) => {
+    if (!filename) return;
+    setPreviewFile(filename);
+
+    if (!fileUrls[filename]) {
+      try {
+        const response = await getL1Attachment(changeNo, filename);
+        const blobUrl = URL.createObjectURL(response.data);
+        setFileUrls(prev => ({ ...prev, [filename]: blobUrl }));
+      } catch (err) {
+        console.error("Error loading attachment from server:", err);
+      }
+    }
+  };
+
+  const renderL1FilePill = (filename, changeNo) => {
+    if (!filename) return null;
+    return (
+      <div className="mt-1 flex items-center gap-2">
+        <span 
+          className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
+          onClick={() => handleViewAttachment(filename, changeNo)}
+        >
+          <Paperclip size={11} className="text-slate-400" />
+          <span className="underline truncate max-w-[200px]">{filename}</span>
+        </span>
+      </div>
+    );
   };
 
   // Filter logic
@@ -430,7 +487,7 @@ export const L3RequestTracker = ({
 
                         <td className="p-[8px] text-center" onClick={(e) => e.stopPropagation()}>
                           <button 
-                            onClick={() => setSelectedLog(log)}
+                            onClick={() => handleViewDetails(log)}
                             className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
                           >
                             <Eye size={12} />
@@ -446,7 +503,7 @@ export const L3RequestTracker = ({
         </div>
       </div>
 
-      {/* L3 Matrix Modal */}
+      {/* L3 Details Modal */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
           {/* Backdrop */}
@@ -456,86 +513,540 @@ export const L3RequestTracker = ({
           />
           
           {/* Modal Container */}
-          <div className="relative bg-white w-full max-w-[600px] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10">
+          <div className="relative bg-white w-full max-w-[800px] max-h-[90vh] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
-            <div className="bg-slate-50 px-[24px] py-[18px] border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-[8px]">
-                <Eye size={16} className="text-[#0066cc]" />
-                <h4 className="text-[14px] font-bold text-slate-800">L3 Approval Matrix</h4>
+            <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between">
+              <div className="flex items-center gap-[10px]">
+                <span className="p-2 bg-[#e6f0fa] text-[#0066cc] rounded-lg">
+                  <Eye size={18} />
+                </span>
+                <div>
+                  <h4 className="text-[15px] font-bold text-slate-900">Change Request Details (L1, L2, L3)</h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Tracking details for: <span className="font-mono font-bold text-slate-600">{selectedLog.changeNo}</span></p>
+                </div>
               </div>
               <button 
                 onClick={() => setSelectedLog(null)}
-                className="p-[4px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                className="p-[6px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
               >
-                <X size={16} />
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Tabs Header */}
+            <div className="flex border-b border-slate-200 bg-slate-50/50">
+              <button
+                onClick={() => setActiveTab('l1')}
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l1' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
+                    : 'border-transparent text-slate-500 hover:text-slate-850'
+                }`}
+              >
+                1. L1 Request Details
+              </button>
+              <button
+                onClick={() => setActiveTab('l2')}
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l2' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
+                    : 'border-transparent text-slate-500 hover:text-slate-850'
+                }`}
+              >
+                2. L2 Validation Details
+              </button>
+              <button
+                onClick={() => setActiveTab('l3')}
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l3' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
+                    : 'border-transparent text-slate-500 hover:text-slate-850'
+                }`}
+              >
+                3. L3 Approval Matrix
               </button>
             </div>
 
             {/* Content */}
-            <div className="p-[24px] space-y-[20px] text-[13px] text-slate-650">
-              {/* Metadata */}
-              <div className="grid grid-cols-3 gap-[16px] pb-[16px] border-b border-slate-100">
-                <div className="space-y-[4px]">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</span>
-                  <span className="font-bold text-[#0066cc] text-[13px]">{selectedLog.changeNo}</span>
-                </div>
-                <div className="space-y-[4px]">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By</span>
-                  <span className="font-medium text-slate-700">{selectedLog.requester}</span>
-                </div>
-                <div className="space-y-[4px]">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
-                  <span className="font-medium text-slate-700">{formatDateToDDMMYYYY(selectedLog.date)}</span>
-                </div>
-              </div>
+            <div className="p-[24px] overflow-y-auto space-y-[24px] text-[13px] text-slate-600 flex-1">
+              {activeTab === 'l1' && selectedL1Details && (
+                <div className="space-y-[20px]">
+                  {/* General Info */}
+                  <div className="space-y-[12px]">
+                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                      <Folder size={14} />
+                      <span>General Information</span>
+                    </h5>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                        <span className="font-mono font-bold text-slate-800">{selectedL1Details.change_no}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                        <span className="font-medium text-slate-700">{selectedL1Details.crDate ? formatDateToDDMMYYYY(selectedL1Details.crDate) : '-'}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Time</span>
+                        <span className="font-medium text-slate-700">{selectedL1Details.requested_time}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Priority / Status</span>
+                        <div className="flex gap-1.5 items-center mt-0.5">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            selectedL1Details.priority === 'High' 
+                              ? 'bg-rose-50 border-rose-220 text-rose-700' 
+                              : 'bg-amber-50 border-amber-220 text-amber-700'
+                          }`}>
+                            {selectedL1Details.priority}
+                          </span>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            selectedL1Details.crStatus === 'Approved' 
+                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
+                              : 'bg-amber-50 border-amber-220 text-amber-700'
+                          }`}>
+                            {selectedL1Details.crStatus}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-              {/* Matrix Grid */}
-              <div className="space-y-[10px]">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department Matrix Approval Status</span>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
-                  {[
-                    { label: 'PED', value: selectedLog.ped },
-                    { label: 'Quality', value: selectedLog.quality },
-                    { label: 'Production', value: selectedLog.production },
-                    { label: 'Maintenance', value: selectedLog.maintenance },
-                    { label: 'PC & L', value: selectedLog.pcl },
-                    { label: 'Materials', value: selectedLog.materials },
-                    { label: 'Marketing', value: selectedLog.marketing },
-                    { label: 'HR & Safety', value: selectedLog.hrSafety },
-                    { label: 'Unit Head', value: selectedLog.unitHead }
-                  ].map((dept, index) => {
-                    const status = dept.value;
-                    const isAccepted = status === 'Accepted' || status === 'Approved';
-                    const isRejected = status === 'Rejected';
-                    const badgeClass = isAccepted 
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
-                      : isRejected 
-                      ? 'bg-rose-50 border-rose-200 text-rose-700' 
-                      : 'bg-amber-50 border-amber-200 text-amber-700';
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[12px]">
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
+                        <span className="font-semibold text-slate-850">{selectedL1Details.title}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-[16px]">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
+                          <span className="font-medium text-slate-700">{selectedL1Details.unit}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In</span>
+                          <span className="font-medium text-slate-750">{selectedL1Details.change_in}</span>
+                        </div>
+                      </div>
+                    </div>
 
-                    return (
-                      <div 
-                        key={index} 
-                        className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
-                      >
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
-                        <span className={`inline-block px-[10px] py-[3px] rounded-full border text-[10px] font-bold shadow-sm ${badgeClass}`}>
-                          {status}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                      <div className="space-y-[4px] md:col-span-2">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
+                        <span className="font-semibold text-slate-800">{selectedL1Details.request_by}</span>
+                        <span className="block text-[11px] text-slate-400 mt-0.5 font-mono">{selectedL1Details.crRequester}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
+                        <span className="font-medium text-slate-700">{selectedL1Details.dept}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
+                        <span className="font-medium text-slate-700">{selectedL1Details.change_type}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
+                        <span className="font-medium text-slate-700">{selectedL1Details.process_name}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line</span>
+                        <span className="font-medium text-slate-700">{selectedL1Details.process_line}</span>
+                      </div>
+                      <div className="space-y-[4px] col-span-2 md:col-span-1">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No</span>
+                        <span className="font-mono text-slate-700">{selectedL1Details.machine_no}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Details & Justification */}
+                  <div className="space-y-[12px] pt-4 border-t border-slate-100">
+                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                      <FileText size={14} />
+                      <span>Details & Justification</span>
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                      <div className="space-y-[6px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Description</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                          {selectedL1Details.description}
+                        </div>
+                        {selectedL1Details.file_desc && renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
+                      </div>
+
+                      <div className="space-y-[6px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Area of Improvement / Benefit</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                          {selectedL1Details.improvement_area}
+                        </div>
+                        {selectedL1Details.file_improvement && renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no)}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Start</span>
+                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                          <Calendar size={13} className="text-slate-400" />
+                          {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
                         </span>
                       </div>
-                    );
-                  })}
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Close</span>
+                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                          <Calendar size={13} className="text-slate-400" />
+                          {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Traceability, Risk & Approvals */}
+                  <div className="space-y-[12px] pt-4 border-t border-slate-100">
+                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                      <Cpu size={14} />
+                      <span>Traceability, Risk & Approvals</span>
+                    </h5>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                      <div className="space-y-[6px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability FROM (Before Change)</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                          {selectedL1Details.trace_from}
+                        </div>
+                        {selectedL1Details.file_trace_from && renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
+                      </div>
+
+                      <div className="space-y-[6px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability TO (After Change)</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                          {selectedL1Details.trace_to}
+                        </div>
+                        {selectedL1Details.file_trace_to && renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                      <div className="space-y-[6px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis & Mitigations</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                          {selectedL1Details.risk_analysis}
+                        </div>
+                        {selectedL1Details.file_risk && renderL1FilePill(selectedL1Details.file_risk, selectedL1Details.change_no)}
+                      </div>
+
+                      <div className="space-y-[6px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">SOP / WI / Control Plan Update</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                          {selectedL1Details.sop_update}
+                        </div>
+                        {selectedL1Details.file_sop && renderL1FilePill(selectedL1Details.file_sop, selectedL1Details.change_no)}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mt-4">
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Approval</span>
+                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                          <CheckCircle2 size={14} className="text-emerald-500" />
+                          {selectedL1Details.hod_approval}
+                        </span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required</span>
+                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                          <Clock size={14} className="text-slate-400" />
+                          {selectedL1Details.customer_approval}
+                        </span>
+                      </div>
+                      <div className="space-y-[6px] md:col-span-1">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Monitoring</span>
+                        <div className="font-semibold text-slate-750 leading-relaxed">
+                          {selectedL1Details.effectiveness_monitoring}
+                        </div>
+                        {selectedL1Details.file_effectiveness && renderL1FilePill(selectedL1Details.file_effectiveness, selectedL1Details.change_no)}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {activeTab === 'l2' && selectedL2Details && (
+                <div className="space-y-[20px]">
+                  <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                    <CheckCircle2 size={14} />
+                    <span>L2 Validation Details</span>
+                  </h5>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Date</span>
+                      <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
+                    </div>
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
+                      <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
+                    </div>
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
+                      <div>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                          selectedL2Details.status === 'Accepted'
+                            ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                            : 'bg-rose-50 border-rose-220 text-rose-700'
+                        }`}>
+                          {selectedL2Details.status || 'Pending'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                      <span className="font-mono font-bold text-slate-800">{selectedL2Details.changeNo}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                    <div className="space-y-[6px]">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">PED Validation Attachment</span>
+                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
+                        <span className="font-medium text-slate-650 truncate max-w-[200px]" title={selectedL2Details.weldTest || '-'}>
+                          {selectedL2Details.weldTest || '-'}
+                        </span>
+                        {selectedL2Details.weldTest && selectedL2Details.weldTest !== '-' && (
+                          <span 
+                            className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
+                            onClick={() => handleViewAttachment(selectedL2Details.weldTest, selectedL2Details.changeNo)}
+                          >
+                            Preview
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-[6px]">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Setup Verification Attachment</span>
+                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
+                        <span className="font-medium text-slate-650 truncate max-w-[200px]" title={selectedL2Details.qaTest || '-'}>
+                          {selectedL2Details.qaTest || '-'}
+                        </span>
+                        {selectedL2Details.qaTest && selectedL2Details.qaTest !== '-' && (
+                          <span 
+                            className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
+                            onClick={() => handleViewAttachment(selectedL2Details.qaTest, selectedL2Details.changeNo)}
+                          >
+                            Preview
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-[4px] mt-4">
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validator Remarks / Comments</span>
+                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto">
+                      {selectedL2Details.remarks || 'No remarks provided.'}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'l3' && selectedLog && (
+                <div className="space-y-[20px]">
+                  <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                    <Cpu size={14} />
+                    <span>L3 Approval Status Matrix</span>
+                  </h5>
+
+                  {/* Metadata */}
+                  <div className="grid grid-cols-3 gap-[16px] pb-[16px] border-b border-slate-100">
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</span>
+                      <span className="font-bold text-[#0066cc] text-[13px]">{selectedLog.changeNo}</span>
+                    </div>
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By</span>
+                      <span className="font-medium text-slate-700">{selectedLog.requester}</span>
+                    </div>
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                      <span className="font-medium text-slate-700">{formatDateToDDMMYYYY(selectedLog.date)}</span>
+                    </div>
+                  </div>
+
+                  {/* Matrix Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
+                    {[
+                      { label: 'PED', value: selectedLog.ped },
+                      { label: 'Quality', value: selectedLog.quality },
+                      { label: 'Production', value: selectedLog.production },
+                      { label: 'Maintenance', value: selectedLog.maintenance },
+                      { label: 'PC & L', value: selectedLog.pcl },
+                      { label: 'Materials', value: selectedLog.materials },
+                      { label: 'Marketing', value: selectedLog.marketing },
+                      { label: 'HR & Safety', value: selectedLog.hrSafety },
+                      { label: 'Unit Head', value: selectedLog.unitHead }
+                    ].map((dept, index) => {
+                      const status = dept.value;
+                      const isAccepted = status === 'Accepted' || status === 'Approved';
+                      const isRejected = status === 'Rejected';
+                      const badgeClass = isAccepted 
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                        : isRejected 
+                        ? 'bg-rose-50 border-rose-200 text-rose-700' 
+                        : 'bg-amber-50 border-amber-200 text-amber-700';
+
+                      return (
+                        <div 
+                          key={index} 
+                          className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
+                        >
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
+                          <span className={`inline-block px-[10px] py-[3px] rounded-full border text-[10px] font-bold shadow-sm ${badgeClass}`}>
+                            {status}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
-            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-100 flex justify-end">
+            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end">
               <button 
                 onClick={() => setSelectedLog(null)}
-                className="px-[16px] py-[8px] bg-white border border-slate-200 rounded-[6px] text-slate-600 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
+                className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
               >
-                Close Matrix
+                Close Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading spinner for details */}
+      {isFetchingDetails && (
+        <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-2xl flex flex-col items-center gap-3">
+            <Loader2 className="animate-spin text-[#0066cc]" size={32} />
+            <span className="text-sm font-semibold text-slate-700">Loading Change Request details...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Attachment Preview Modal */}
+      {previewFile && (
+        <div 
+          className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setPreviewFile(null)}
+        >
+          <div 
+            className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[85vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 bg-[#e6f0fa] text-[#0066cc] rounded">
+                  <Paperclip size={16} />
+                </span>
+                <span className="font-bold text-slate-800 text-sm">{previewFile}</span>
+              </div>
+              <button 
+                onClick={() => setPreviewFile(null)} 
+                className="text-slate-400 hover:text-slate-650 p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
+              {fileUrls[previewFile] ? (
+                previewFile.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
+                  <img 
+                    src={fileUrls[previewFile]} 
+                    alt={previewFile} 
+                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200" 
+                  />
+                ) : previewFile.toLowerCase().endsWith('.pdf') ? (
+                  <iframe 
+                    src={`${fileUrls[previewFile]}#navpanes=0`} 
+                    title={previewFile} 
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white" 
+                  />
+                ) : (
+                  <iframe 
+                    src={fileUrls[previewFile]} 
+                    title={previewFile} 
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700" 
+                  />
+                )
+              ) : (
+                previewFile.toLowerCase().endsWith('.pdf') ? (
+                  <div className="bg-white border border-slate-250 shadow-md p-8 w-full max-w-md aspect-[1/1.4] relative flex flex-col justify-between text-slate-800 select-none rounded animate-fade-in">
+                    <div className="absolute top-0 inset-x-0 h-1 bg-[#0066cc]" />
+                    <div className="space-y-4 flex-1">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-bold text-xs uppercase tracking-wider text-slate-400">Nippon Quality Assurance</div>
+                          <h3 className="font-extrabold text-base text-slate-900 mt-0.5">Change Request Attachment</h3>
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-mono text-right">
+                          DOC: L1-ATT-VER<br />
+                          REV: 03 (2026)
+                        </div>
+                      </div>
+                      <div className="border-t border-slate-100 pt-3 space-y-2.5 text-xs text-slate-600">
+                        <div className="flex justify-between border-b border-slate-50 pb-1.5"><span className="font-bold">Filename:</span> <span>{previewFile}</span></div>
+                        <div className="flex justify-between border-b border-slate-50 pb-1.5"><span className="font-bold">System Status:</span> <span className="text-emerald-600 font-bold">Verified File</span></div>
+                      </div>
+                      <div className="pt-2 space-y-2">
+                        <div className="font-bold text-xs text-slate-800">Observation Summary:</div>
+                        <p className="text-[11px] leading-relaxed text-slate-500">
+                          This attachment supports the change request details. The document or image content was uploaded during the Level 1/Level 2 submission phase.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="border-t border-slate-150 pt-3 flex justify-between items-center text-[10px] text-slate-400 font-mono">
+                      <span>OFFICIAL ELECTRONIC ATTACHMENT</span>
+                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-bold">VERIFIED</span>
+                    </div>
+                  </div>
+                ) : previewFile.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
+                  <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-md max-w-sm w-full text-center space-y-4 animate-fade-in">
+                    <div className="w-16 h-16 bg-teal-50 text-teal-650 rounded-full flex items-center justify-center mx-auto text-3xl">
+                      🖼️
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-850 text-sm">{previewFile}</h4>
+                      <p className="text-xs text-slate-450 mt-1">Mock Image Evidence</p>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-150 p-4 rounded-lg flex items-center justify-center h-40">
+                      <span className="text-[10px] text-slate-400 font-mono italic">[ Image Content Placeholder ]</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 italic">This is a mock placeholder showing where the image attachment will load.</p>
+                  </div>
+                ) : (
+                  <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 w-full h-[50vh] font-mono text-xs text-slate-355 overflow-auto text-left shadow-inner flex flex-col">
+                    <div className="text-[10px] text-slate-555 pb-2 border-b border-slate-800 flex justify-between">
+                      <span>{previewFile}</span>
+                      <span>UTF-8 PLAINTEXT</span>
+                    </div>
+                    <pre className="mt-2 flex-1 leading-relaxed text-slate-300">
+                      {`=== Attachment Plaintext Evidence ===\n\n[INFO] - Supporting document for Change No: ${selectedLog?.changeNo}\n[SUCCESS] - Document content loaded successfully.\n\n==========================================`}
+                    </pre>
+                  </div>
+                )
+              )}
+            </div>
+            
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button
+                onClick={() => setPreviewFile(null)}
+                className="px-4 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+              >
+                Close Preview
               </button>
             </div>
           </div>
