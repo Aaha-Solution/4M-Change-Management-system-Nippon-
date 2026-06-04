@@ -83,7 +83,16 @@ INSERT INTO roles (name) VALUES
 
 -- Seed Departments
 INSERT INTO departments (name) VALUES
-('General');
+('General'),
+('PED'),
+('QAD'),
+('PRODUCTION'),
+('MAINTENANCE'),
+('PC & L'),
+('MATERIALS'),
+('MARKETING'),
+('HR'),
+('SAFETY');
 
 -- Seed Processes
 INSERT INTO processes (name) VALUES 
@@ -105,9 +114,9 @@ INSERT INTO machines (name) VALUES
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES
 ('ramanan.p@plant.com', 'ramanan123', 'Admin', 'Ramanan Prabakaran', 'General', 'Active'),
-('priya.v@plant.com', 'priya123', 'User', 'Priya Venkat', 'General', 'Active'),
-('kumar.s@plant.com', 'kumar123', 'User', 'Kumar Selvam', 'General', 'Active'),
-('ravi.qa@plant.com', 'ravi123', 'User', 'Ravi QA', 'General', 'Active'),
+('priya.v@plant.com', 'priya123', 'User', 'Priya Venkat', 'PRODUCTION', 'Active'),
+('kumar.s@plant.com', 'kumar123', 'User', 'Kumar Selvam', 'PED', 'Active'),
+('ravi.qa@plant.com', 'ravi123', 'User', 'Ravi QA', 'QAD', 'Active'),
 ('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active'),
 ('manager@cms.com', 'manager123', 'User', 'Manager User', 'General', 'Active'),
 ('requester@cms.com', 'requester123', 'User', 'Requester User', 'General', 'Active');

@@ -7,7 +7,7 @@ import {
   Trash2,
   AlertTriangle
 } from 'lucide-react';
-import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo } from '../api/apiRoutes';
+import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo, getUsers, getDepartments } from '../api/apiRoutes';
 import { CustomDatePicker } from './CustomDatePicker';
 import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 
@@ -28,6 +28,19 @@ export const L1Request = ({
 
   const [dbProcesses, setDbProcesses] = useState([]);
   const [dbMachines, setDbMachines] = useState([]);
+  const [systemUsers, setSystemUsers] = useState([]);
+  const [dbDepartments, setDbDepartments] = useState([]);
+
+  // Fallback list of users matching seed data if database fetch hasn't completed or returned nothing
+  const fallbackUsers = [
+    { name: 'Ramanan Prabakaran', department: 'General', email: 'ramanan.p@plant.com' },
+    { name: 'Priya Venkat', department: 'PRODUCTION', email: 'priya.v@plant.com' },
+    { name: 'Kumar Selvam', department: 'PED', email: 'kumar.s@plant.com' },
+    { name: 'Ravi QA', department: 'QAD', email: 'ravi.qa@plant.com' },
+    { name: 'Admin User', department: 'General', email: 'admin@cms.com' },
+    { name: 'Manager User', department: 'General', email: 'manager@cms.com' },
+    { name: 'Requester User', department: 'General', email: 'requester@cms.com' }
+  ];
 
   useEffect(() => {
     fetchOptions();
@@ -46,12 +59,16 @@ export const L1Request = ({
 
   async function fetchOptions() {
     try {
-      const [pRes, mRes] = await Promise.all([
+      const [pRes, mRes, uRes, dRes] = await Promise.all([
         getProcesses(),
-        getMachines()
+        getMachines(),
+        getUsers(),
+        getDepartments()
       ]);
       setDbProcesses(pRes.data);
       setDbMachines(mRes.data);
+      setSystemUsers(uRes.data || []);
+      setDbDepartments(dRes.data || []);
     } catch (e) {
       console.error('Error fetching options:', e);
     }
@@ -142,7 +159,15 @@ export const L1Request = ({
   };
 
   // Request Details State
-  const [dept, setDept] = useState('');
+  const [dept, setDept] = useState(() => {
+    if (userEmail) {
+      if (userEmail.toLowerCase().includes('kumar')) return 'PED';
+      if (userEmail.toLowerCase().includes('ravi')) return 'QAD';
+      if (userEmail.toLowerCase().includes('priya')) return 'PRODUCTION';
+      if (userEmail.toLowerCase().includes('ramanan')) return 'General';
+    }
+    return '';
+  });
   const [requestBy, setRequestBy] = useState(() => {
     if (userEmail) {
       if (userEmail.toLowerCase().includes('ramanan')) return 'Ramanan Prabakaran';
@@ -153,6 +178,23 @@ export const L1Request = ({
     }
     return '';
   });
+
+  const activeUsersList = systemUsers.length > 0 ? systemUsers : fallbackUsers;
+
+  const filteredUsers = activeUsersList.filter(u => {
+    if (!dept) return true;
+    return (u.department || '').toLowerCase() === dept.toLowerCase();
+  });
+
+  useEffect(() => {
+    if (userEmail && systemUsers.length > 0) {
+      const currentUser = systemUsers.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
+      if (currentUser && currentUser.department && currentUser.department !== 'General') {
+        setDept(prev => prev || currentUser.department);
+      }
+    }
+  }, [userEmail, systemUsers]);
+
   const [processName, setProcessName] = useState('');
   const [processLine, setProcessLine] = useState('');
   const [machineNo, setMachineNo] = useState('');
@@ -548,19 +590,27 @@ export const L1Request = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request Dept <span className="text-rose-500">*</span></label>
               <select 
                 value={dept} 
-                onChange={(e) => setDept(e.target.value)}
+                onChange={(e) => {
+                  const selectedDept = e.target.value;
+                  setDept(selectedDept);
+                  
+                  // Reset requestBy if the currently selected requester doesn't belong to the new department
+                  if (selectedDept) {
+                    const matchedUsers = (systemUsers.length > 0 ? systemUsers : fallbackUsers).filter(
+                      u => (u.department || '').toLowerCase() === selectedDept.toLowerCase()
+                    );
+                    const isStillValid = matchedUsers.some(u => (u.name || u.email) === requestBy);
+                    if (!isStillValid) {
+                      setRequestBy('');
+                    }
+                  }
+                }}
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
               >
                 <option value="">— Select Department —</option>
-                <option value="PED">PED</option>
-                <option value="QAD">QAD</option>
-                <option value="PRODUCTION">PRODUCTION</option>
-                <option value="MAINTENANCE">MAINTENANCE</option>
-                <option value="PC & L">PC & L</option>
-                <option value="MATERIALS">MATERIALS</option>
-                <option value="MARKETING">MARKETING</option>
-                <option value="HR">HR</option>
-                <option value="SAFETY">SAFETY</option>
+                {[...new Set(['PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY', ...dbDepartments])].map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
               </select>
             </div>
 
@@ -573,13 +623,17 @@ export const L1Request = ({
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
               >
                 <option value="">— Select Name —</option>
-                {userEmail && !['Ramanan Prabakaran', 'Priya Venkat', 'Kumar Selvam', 'Ravi QA'].some(name => userEmail.toLowerCase().includes(name.split(' ')[0].toLowerCase())) && (
-                  <option value={userEmail}>{userEmail}</option>
+                {filteredUsers.map(u => {
+                  const displayName = u.name || u.email;
+                  return (
+                    <option key={u.email || displayName} value={displayName}>
+                      {displayName}
+                    </option>
+                  );
+                })}
+                {filteredUsers.length === 0 && (
+                  <option disabled value="">No members in this department</option>
                 )}
-                <option value="Ramanan Prabakaran">Ramanan Prabakaran</option>
-                <option value="Priya Venkat">Priya Venkat</option>
-                <option value="Kumar Selvam">Kumar Selvam</option>
-                <option value="Ravi QA">Ravi QA</option>
               </select>
             </div>
 
