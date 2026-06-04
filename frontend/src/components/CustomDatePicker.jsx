@@ -68,9 +68,15 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
       <input 
         type="text" 
         placeholder={placeholder}
-        className={`w-full outline-none placeholder-slate-350 text-slate-700 ${inputClassName}`}
+        readOnly
+        onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={(e) => {
+          if (e.key !== 'Tab' && e.key !== 'Escape' && e.key !== 'Enter') {
+            e.preventDefault();
+          }
+        }}
+        className={`w-full outline-none placeholder-slate-350 text-slate-700 cursor-pointer ${inputClassName}`}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
       />
       <button
         type="button"
