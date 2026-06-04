@@ -634,17 +634,17 @@ export const L2Validation = ({
                   <span>Details & Justification</span>
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-                  <div className="space-y-[6px]">
+                  <div className="space-y-[6px] min-w-0">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Description</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                       {selectedL1Details.description}
                     </div>
                     {selectedL1Details.file_desc && renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
                   </div>
 
-                  <div className="space-y-[6px]">
+                  <div className="space-y-[6px] min-w-0">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Area of Improvement / Benefit</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                       {selectedL1Details.improvement_area}
                     </div>
                     {selectedL1Details.file_improvement && renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no)}
@@ -677,17 +677,17 @@ export const L2Validation = ({
                 </h5>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-                  <div className="space-y-[6px]">
+                  <div className="space-y-[6px] min-w-0">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability FROM (Before Change)</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                       {selectedL1Details.trace_from}
                     </div>
                     {selectedL1Details.file_trace_from && renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
                   </div>
 
-                  <div className="space-y-[6px]">
+                  <div className="space-y-[6px] min-w-0">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability TO (After Change)</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                       {selectedL1Details.trace_to}
                     </div>
                     {selectedL1Details.file_trace_to && renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
@@ -695,17 +695,17 @@ export const L2Validation = ({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
-                  <div className="space-y-[6px]">
+                  <div className="space-y-[6px] min-w-0">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis & Mitigations</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                       {selectedL1Details.risk_analysis}
                     </div>
                     {selectedL1Details.file_risk && renderL1FilePill(selectedL1Details.file_risk, selectedL1Details.change_no)}
                   </div>
 
-                  <div className="space-y-[6px]">
+                  <div className="space-y-[6px] min-w-0">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">SOP / WI / Control Plan Update</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed">
+                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                       {selectedL1Details.sop_update}
                     </div>
                     {selectedL1Details.file_sop && renderL1FilePill(selectedL1Details.file_sop, selectedL1Details.change_no)}
@@ -727,9 +727,9 @@ export const L2Validation = ({
                       {selectedL1Details.customer_approval}
                     </span>
                   </div>
-                  <div className="space-y-[6px] md:col-span-1">
+                  <div className="space-y-[6px] md:col-span-1 min-w-0">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Monitoring</span>
-                    <div className="font-semibold text-slate-750 leading-relaxed">
+                    <div className="font-semibold text-slate-750 leading-relaxed break-words">
                       {selectedL1Details.effectiveness_monitoring}
                     </div>
                     {selectedL1Details.file_effectiveness && renderL1FilePill(selectedL1Details.file_effectiveness, selectedL1Details.change_no)}
