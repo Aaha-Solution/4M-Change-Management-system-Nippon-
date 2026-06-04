@@ -156,4 +156,20 @@ export const getL1AttachmentFile = async (req, res) => {
   }
 };
 
+export const getL1Details = async (req, res) => {
+  const { changeNo } = req.params;
+
+  try {
+    const details = await changeModel.getL1Details(changeNo);
+    if (!details) {
+      return res.status(404).json({ error: 'L1 change request not found' });
+    }
+    res.status(200).json(details);
+  } catch (error) {
+    console.error('Error in getL1Details controller:', error);
+    res.status(500).json({ error: 'Failed to fetch L1 request details' });
+  }
+};
+
+
 

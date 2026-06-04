@@ -307,6 +307,20 @@ export const getNextChangeNo = async () => {
   return `4M-2026-${maxNum + 1}`;
 };
 
+export const getL1Details = async (changeNo) => {
+  const [rows] = await pool.query(
+    `SELECT cr.title, cr.requester as crRequester, DATE_FORMAT(cr.date, '%Y-%m-%d') as crDate, cr.priority, cr.status as crStatus,
+            l1.*,
+            DATE_FORMAT(l1.date_start, '%Y-%m-%d') as date_start,
+            DATE_FORMAT(l1.date_close, '%Y-%m-%d') as date_close
+     FROM change_requests cr
+     LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
+     WHERE cr.id = ?`,
+    [changeNo]
+  );
+  return rows.length > 0 ? rows[0] : null;
+};
+
 export const getL1Attachment = async (changeNo, fileName) => {
   const [rows] = await pool.query(
     `SELECT file_name as name, file_data as data, file_type as type 
@@ -316,5 +330,7 @@ export const getL1Attachment = async (changeNo, fileName) => {
   );
   return rows.length > 0 ? rows[0] : null;
 };
+
+
 
 

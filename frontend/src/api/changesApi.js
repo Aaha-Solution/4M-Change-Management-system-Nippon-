@@ -54,3 +54,8 @@ export const getNextChangeNo = () => {
   return axiosInstance.get('/changes/next-no');
 };
 
+export const getL1Details = (changeNo) => {
+  return axiosInstance.get(`/changes/l1/${changeNo}`);
+};
+
+
