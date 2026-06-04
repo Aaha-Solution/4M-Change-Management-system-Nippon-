@@ -127,4 +127,14 @@ export const createL3Approval = async (req, res) => {
   }
 };
 
+export const getNextChangeNo = async (req, res) => {
+  try {
+    const nextNo = await changeModel.getNextChangeNo();
+    res.status(200).json({ nextNo });
+  } catch (error) {
+    console.error('Error in getNextChangeNo:', error);
+    res.status(500).json({ error: 'Failed to calculate next change number.' });
+  }
+};
+
 

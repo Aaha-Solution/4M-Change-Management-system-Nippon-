@@ -28,12 +28,12 @@ test.describe('L3 Approval Matrix E2E Flow', () => {
     await expect(page.locator('h4').first()).toContainText('Add L3 Approval Log');
 
     // 3. Select a change request row that is L2 validated
-    const row = page.locator('tr:has-text("4M-2026-248")').first();
+    const row = page.locator('tr', { has: page.locator('td').filter({ hasText: /^4M-2026-1$/ }) }).first();
     await expect(row).toBeVisible();
     await row.click();
 
     // Verify the form is populated with the selected row's data
-    await expect(page.locator('input[placeholder="Click a row to select"]').first()).toHaveValue('4M-2026-248');
+    await expect(page.locator('input[placeholder="Click a row to select"]').first()).toHaveValue('4M-2026-1');
 
     // 4. Admin acting department: toggle to Production HOD (Production) and select Approved
     await page.selectOption('label:has-text("Acting Department (Admin)") + select', 'Production');
@@ -45,6 +45,6 @@ test.describe('L3 Approval Matrix E2E Flow', () => {
     await page.click('button:has-text("Save Approval Log")');
 
     // Verify success toast message is shown
-    await expect(page.locator('text=Successfully saved Production approval log for 4M-2026-248')).toBeVisible();
+    await expect(page.locator('text=Successfully saved Production approval log for 4M-2026-1')).toBeVisible();
   });
 });

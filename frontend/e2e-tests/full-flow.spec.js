@@ -87,7 +87,7 @@ test.describe('Change Management System Full Lifecycle E2E Flow', () => {
     await expect(page.locator('h4').first()).toContainText('Add L3 Approval Log');
 
     // Select our newly validated change request row
-    const row = page.locator(`tr:has-text("${changeNo}")`).first();
+    const row = page.locator('tr', { has: page.locator('td').filter({ hasText: new RegExp('^' + changeNo + '$') }) }).first();
     await expect(row).toBeVisible();
     await row.click();
 

@@ -270,4 +270,19 @@ export const addL3ApprovalLog = async (logData) => {
   }
 };
 
+export const getNextChangeNo = async () => {
+  const [rows] = await pool.query('SELECT id FROM change_requests');
+  let maxNum = 0;
+  for (const row of rows) {
+    const match = row.id.match(/^4M-2026-(\d+)$/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNum) {
+        maxNum = num;
+      }
+    }
+  }
+  return `4M-2026-${maxNum + 1}`;
+};
+
 

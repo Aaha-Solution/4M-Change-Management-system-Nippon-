@@ -58,11 +58,6 @@ test.describe('Change Management System E2E Flow', () => {
     await page.fill('input[placeholder="e.g. Line 3 / Bay B"]', 'Bay 12');
     await page.locator('label:has-text("Machine No") + div select').selectOption('MFG-MC-1042');
 
-    // Extract the generated Change No from the UI
-    const subheaderText = await page.locator('p:has-text("Change No:")').textContent();
-    const changeNoMatch = subheaderText.match(/4M-2026-\d+/);
-    const changeNo = changeNoMatch ? changeNoMatch[0] : '';
-
     await page.fill('textarea[placeholder^="Brief description of WHY this change is needed"]', 'E2E Test Change Request');
     await page.fill('textarea[placeholder^="Describe the change"]', 'This is a long detailed description for the E2E test. We are verifying database integration.');
 

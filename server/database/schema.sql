@@ -216,7 +216,7 @@ CREATE TABLE l3_approvals (
 
 -- Seed one change request for L3 and E2E tests
 INSERT INTO change_requests (id, title, requester, date, priority, status) VALUES
-('4M-2026-248', 'Machine Change in Welding Line A', 'kumar.s@plant.com', '2026-05-20', 'High', 'Pending');
+('4M-2026-1', 'Machine Change in Welding Line A', 'kumar.s@plant.com', '2026-05-20', 'High', 'Pending');
 
 INSERT INTO l1_requests (
     change_no, unit, requested_time, change_in, dept, request_by, 
@@ -225,9 +225,9 @@ INSERT INTO l1_requests (
     date_close, trace_to, risk_analysis, sop_update, 
     hod_approval, customer_approval, effectiveness_monitoring
 ) VALUES
-('4M-2026-248', 'Unit 1', '14:30', 'Machine', 'PRODUCTION', 'Kumar Selvam', 'Welding Line A', 'Line A', 'MFG-MC-2011', 'Machine Change in Welding Line A description.', 'Delivery', 'Permanent', '2026-05-20', 'Trace from details...', '2026-05-22', 'Trace to details...', 'Medium risk', 'FMEA updated', 'Approved', 'Yes', 'Welding strength tests');
+('4M-2026-1', 'Unit 1', '14:30', 'Machine', 'PRODUCTION', 'Kumar Selvam', 'Welding Line A', 'Line A', 'MFG-MC-2011', 'Machine Change in Welding Line A description.', 'Delivery', 'Permanent', '2026-05-20', 'Trace from details...', '2026-05-22', 'Trace to details...', 'Medium risk', 'FMEA updated', 'Approved', 'Yes', 'Welding strength tests');
 
 INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) VALUES
-('4M-2026-248', '20 May', 'Kumar Selvam', 'weld-test.png', 'weld-test.png', 'Accepted', 'Zero alignment issues reported in shift logs.');
+('4M-2026-1', '20 May', 'Kumar Selvam', 'weld-test.png', 'weld-test.png', 'Accepted', 'Zero alignment issues reported in shift logs.');
 
 

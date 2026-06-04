@@ -44,3 +44,7 @@ export const createL3Approval = (logData) => {
   });
 };
 
+export const getNextChangeNo = () => {
+  return axiosInstance.get('/changes/next-no');
+};
+

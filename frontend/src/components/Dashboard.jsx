@@ -6,7 +6,6 @@ import {
   GitPullRequest,
   CheckCircle,
   TrendingUp,
-  Plus,
   Users as UsersIcon,
   LayoutGrid,
   FilePlus,

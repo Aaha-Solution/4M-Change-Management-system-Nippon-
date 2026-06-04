@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { Buffer } from 'node:buffer';
 
 test.describe('L1 Change Request E2E Flow', () => {
   
@@ -71,7 +72,32 @@ test.describe('L1 Change Request E2E Flow', () => {
     await page.locator('label:has-text("Customer Approval Required") + select').selectOption('No');
     await page.fill('label:has-text("Effectiveness Monitoring") + textarea', 'Measured by cycle time checks over 3 days.');
 
+    // 4. Test File Upload under Change Description (file-desc-input)
+    const uploadContainer = page.locator('div:has(> .flex > label > #file-desc-input)');
+    await page.setInputFiles('#file-desc-input', [
+      { name: 'test-file-1.pdf', mimeType: 'application/pdf', buffer: Buffer.from('pdf content') },
+      { name: 'image-2.png', mimeType: 'image/png', buffer: Buffer.from('png content') }
+    ]);
+
+    // Verify the input box displays the file names comma-separated
+    await expect(uploadContainer.locator('input[type="text"]')).toHaveValue('test-file-1.pdf, image-2.png');
+
+    // Verify both pills are visible
+    const pills = uploadContainer.locator('span.bg-slate-100');
+    await expect(pills).toHaveCount(2);
+    await expect(pills.first()).toContainText('test-file-1.pdf');
+    await expect(pills.nth(1)).toContainText('image-2.png');
+
+    // Delete the second pill (image-2.png)
+    await pills.nth(1).locator('button').click();
+
+    // Verify the textbox now only lists 'test-file-1.pdf'
+    await expect(uploadContainer.locator('input[type="text"]')).toHaveValue('test-file-1.pdf');
+    await expect(pills).toHaveCount(1);
+
+
     // Submit L1 Request
+
     await page.click('button[type="submit"]');
 
     // Verify redirected back to dashboard overview and toast message is shown

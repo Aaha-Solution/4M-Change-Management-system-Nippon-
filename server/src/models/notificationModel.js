@@ -47,7 +47,7 @@ export const resetNotifications = async () => {
     await connection.query('DELETE FROM notifications');
     await connection.query(`
       INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color) VALUES
-      ('ALR-001', 'L2 Setup Validation Awaiting', 'Change Request 4M-2026-248 (Machine change in Welding Line A) requires L2 PED validation setup checklist.', '4M-2026-248', 'MACHINE', 'PED', 'Just now', FALSE, 'Action Required', 'blue'),
+      ('ALR-001', 'L2 Setup Validation Awaiting', 'Change Request 4M-2026-1 (Machine change in Welding Line A) requires L2 PED validation setup checklist.', '4M-2026-1', 'MACHINE', 'PED', 'Just now', FALSE, 'Action Required', 'blue'),
       ('ALR-002', 'Change Request Approved by HOD', 'Change Request 4M-2026-247 (Method calibration) has been approved by L3 HOD and forwarded to unit supervisor.', '4M-2026-247', 'METHOD', 'QAD', '2 hours ago', TRUE, 'System Logs', 'green'),
       ('ALR-003', 'L3 Final Review Required', 'Change Request 4M-2026-246 (Material spec adjustment in Injection Moulding B) reached L3 review stages.', '4M-2026-246', 'MATERIAL', 'PRODUCTION', '5 hours ago', FALSE, 'Action Required', 'blue'),
       ('ALR-004', 'Change Request Rejected', 'Change Request 4M-2026-244 (Man training syllabus update) was rejected by Unit Head. Comments: Needs syllabus validation.', '4M-2026-244', 'MAN', 'MAINTENANCE', 'Yesterday', TRUE, 'System Logs', 'red'),
