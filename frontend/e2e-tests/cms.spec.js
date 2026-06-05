@@ -35,23 +35,53 @@ test.describe('Change Management System E2E Flow', () => {
     // Email is always visible in the header
     await expect(page.locator('header span:has-text("admin@cms.com")')).toBeVisible();
 
-    // 2. Click "Request Change" in the header (visible on dashboard tab)
-    await page.locator('header button:has-text("Request Change")').click();
+    // 2. Click "L1" in the Level expandable menu
+    const l1NavBtn = page.locator('nav button:has-text("L1")');
+    const isL1Visible = await l1NavBtn.isVisible();
+    if (!isL1Visible) {
+      await page.locator('nav button:has-text("Level")').click();
+    }
+    await expect(l1NavBtn).toBeVisible();
+    await l1NavBtn.click();
 
-    // Verify we are on the creation tab / form is visible
-    await expect(page.locator('h2')).toContainText('Request New Change');
+    // Verify L1 page is visible
+    await expect(page.locator('h3')).toContainText('New L1 Change Request');
 
-    // 3. Fill in the form
-    const uniqueTitle = `E2E Test Change Request ${Date.now()}`;
-    await page.fill('#form-title', uniqueTitle);
-    await page.click('button:has-text("High")');
+    // 3. Fill in the L1 form
+    await page.locator('label:has-text("Unit") + select').selectOption('Unit 1');
+    await page.locator('label:has-text("Machine") input[type="checkbox"]').check();
+    await page.locator('label:has-text("Method") input[type="checkbox"]').check();
+    await page.locator('label:has-text("Change Request Dept") + select').selectOption('PED');
+    await page.locator('label:has-text("Change Request By") + select').selectOption('Kumar Selvam');
+    
+    await page.locator('label:has-text("Process Name") + div select').selectOption('Welding Line A');
+    await page.fill('input[placeholder="e.g. Line 3 / Bay B"]', 'Bay 12');
+    await page.locator('label:has-text("Machine No") + div select').selectOption('MFG-MC-1042');
+
+    await page.fill('textarea[placeholder^="Brief description of WHY this change is needed"]', 'E2E Test Change Request');
+    await page.fill('textarea[placeholder^="Describe the change"]', 'This is a long detailed description for the E2E test. We are verifying database integration.');
+
+    await page.locator('label:has-text("Change Improvement Area") + select').selectOption('Quality');
+    await page.locator('label:has-text("Permanent / Temporary Change") + select').selectOption('Temporary');
+    await page.fill('label:has-text("Implement / Change Date Start") + input', '01/06/2026');
+    await page.fill('label:has-text("Part Traceability Details (From Changes)") + textarea', 'LOT-100: Initial batch of 100 parts trace.');
+    await page.fill('label:has-text("Change Date Close") + input', '05/06/2026');
+    await page.fill('label:has-text("Part Traceability Details (To Changes)") + textarea', 'LOT-110: Closure batch of 110 parts trace.');
+
+    await page.fill('label:has-text("Risk Analysis") + textarea', 'Potential minor startup latency on line 5.');
+    await page.fill('label:has-text("Update in SOP / WI / Control Plan / FMEA") + textarea', 'SOP and WI needs to be updated for line 5 operation.');
+    await page.fill('label:has-text("User Dept HOD Approval") + textarea', 'Approved by HOD Ramanan.');
+    await page.locator('label:has-text("Customer Approval Required") + select').selectOption('No');
+    await page.fill('label:has-text("Effectiveness Monitoring") + textarea', 'Measured by cycle time checks over 3 days.');
+
+    // Submit L1 Request
     await page.click('button[type="submit"]');
 
     // Form submission should redirect back to overview with a toast showing new CHG ID
     await expect(page.locator('h2')).toContainText('Overview');
 
     // Verify the toast shows the new change request ID
-    await expect(page.locator('text=Created request:')).toBeVisible({ timeout: 4000 });
+    await expect(page.locator('text=Successfully submitted L1 Change Request')).toBeVisible({ timeout: 4000 });
 
     // 4. Sign Out
     await page.click('button[title="Sign Out"]');
@@ -162,25 +192,60 @@ test.describe('Change Management System E2E Flow', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/dashboard/);
 
-    // 2. Add a new change request via the header button (visible on dashboard tab)
-    await page.locator('header button:has-text("Request Change")').click();
-    await expect(page.locator('h2')).toContainText('Request New Change');
+    // 2. Add a new change request via the L1 form
+    const l1NavBtn = page.locator('nav button:has-text("L1")');
+    const isL1Visible = await l1NavBtn.isVisible();
+    if (!isL1Visible) {
+      await page.locator('nav button:has-text("Level")').click();
+    }
+    await expect(l1NavBtn).toBeVisible();
+    await l1NavBtn.click();
 
-    const uniqueTitle = `E2E Refactor Admin Workflow ${Date.now()}`;
-    await page.fill('#form-title', uniqueTitle);
-    await page.click('button:has-text("High")');
+    // Verify L1 page is visible
+    await expect(page.locator('h3')).toContainText('New L1 Change Request');
+
+    // Fill in the L1 form
+    await page.locator('label:has-text("Unit") + select').selectOption('Unit 1');
+    await page.locator('label:has-text("Machine") input[type="checkbox"]').check();
+    await page.locator('label:has-text("Method") input[type="checkbox"]').check();
+    await page.locator('label:has-text("Change Request Dept") + select').selectOption('PED');
+    await page.locator('label:has-text("Change Request By") + select').selectOption('Kumar Selvam');
+    
+    await page.locator('label:has-text("Process Name") + div select').selectOption('Welding Line A');
+    await page.fill('input[placeholder="e.g. Line 3 / Bay B"]', 'Bay 12');
+    await page.locator('label:has-text("Machine No") + div select').selectOption('MFG-MC-1042');
+
+    // Extract the generated Change No from the UI
+    const subheaderText = await page.locator('p:has-text("Change No:")').textContent();
+    const changeNoMatch = subheaderText.match(/4M-2026-\d+/);
+    const changeId = changeNoMatch ? changeNoMatch[0] : 'CHG-0000';
+    console.log(`Created Change Request ID: ${changeId}`);
+
+    await page.fill('textarea[placeholder^="Brief description of WHY this change is needed"]', 'E2E Refactor Admin Workflow');
+    await page.fill('textarea[placeholder^="Describe the change"]', 'This is a long detailed description for the E2E admin workflow. We are verifying database integration.');
+
+    await page.locator('label:has-text("Change Improvement Area") + select').selectOption('Quality');
+    await page.locator('label:has-text("Permanent / Temporary Change") + select').selectOption('Temporary');
+    await page.fill('label:has-text("Implement / Change Date Start") + input', '01/06/2026');
+    await page.fill('label:has-text("Part Traceability Details (From Changes)") + textarea', 'LOT-100: Initial batch of 100 parts trace.');
+    await page.fill('label:has-text("Change Date Close") + input', '05/06/2026');
+    await page.fill('label:has-text("Part Traceability Details (To Changes)") + textarea', 'LOT-110: Closure batch of 110 parts trace.');
+
+    await page.fill('label:has-text("Risk Analysis") + textarea', 'Potential minor startup latency on line 5.');
+    await page.fill('label:has-text("Update in SOP / WI / Control Plan / FMEA") + textarea', 'SOP and WI needs to be updated for line 5 operation.');
+    await page.fill('label:has-text("User Dept HOD Approval") + textarea', 'Approved by HOD Ramanan.');
+    await page.locator('label:has-text("Customer Approval Required") + select').selectOption('No');
+    await page.fill('label:has-text("Effectiveness Monitoring") + textarea', 'Measured by cycle time checks over 3 days.');
+
+    // Submit L1 Request
     await page.click('button[type="submit"]');
 
     // Confirm redirected to Dashboard Overview
     await expect(page.locator('h2')).toContainText('Overview');
 
-    // Get the new change ID from the toast message (format: "Created request: CHG-XXXX")
-    const toastLocator = page.locator('text=Created request:');
+    // Verify the toast shows the successful L1 submission
+    const toastLocator = page.locator('text=Successfully submitted L1 Change Request');
     await expect(toastLocator).toBeVisible({ timeout: 4000 });
-    const toastText = await toastLocator.textContent();
-    const changeIdMatch = toastText.match(/(CHG-\d+|4M-\d+-\d+)/);
-    const changeId = changeIdMatch ? changeIdMatch[1] : 'CHG-0000';
-    console.log(`Created Change Request ID: ${changeId}`);
     // Verify the change ID is in the AllRequests table
     await page.locator('nav button:has-text("All Requests")').click();
     const tableBody = page.locator('tbody').first();

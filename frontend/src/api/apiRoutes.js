@@ -5,3 +5,5 @@ export * from './rolesApi';
 export * from './departmentsApi';
 export * from './effectivenessApi';
 export * from './notificationsApi';
+export * from './processesApi';
+export * from './machinesApi';

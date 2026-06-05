@@ -8,8 +8,7 @@ import {
   Mail, 
   MailOpen, 
   AlertTriangle, 
-  Check, 
-  ChevronRight 
+  Check
 } from 'lucide-react';
 import { 
   toggleNotificationRead, 
@@ -19,80 +18,6 @@ import {
   resetNotifications 
 } from '../api/apiRoutes';
 
-const DEFAULT_ALERTS = [
-  {
-    id: 'ALR-001',
-    title: 'L2 Setup Validation Awaiting',
-    details: 'Change Request 4M-2026-248 (Machine change in Welding Line A) requires L2 PED validation setup checklist.',
-    changeNo: '4M-2026-248',
-    category: 'MACHINE',
-    dept: 'PED',
-    time: 'Just now',
-    isRead: false,
-    type: 'Action Required',
-    color: 'blue'
-  },
-  {
-    id: 'ALR-002',
-    title: 'Change Request Approved by HOD',
-    details: 'Change Request 4M-2026-247 (Method calibration) has been approved by L3 HOD and forwarded to unit supervisor.',
-    changeNo: '4M-2026-247',
-    category: 'METHOD',
-    dept: 'QAD',
-    time: '2 hours ago',
-    isRead: true,
-    type: 'System Logs',
-    color: 'green'
-  },
-  {
-    id: 'ALR-003',
-    title: 'L3 Final Review Required',
-    details: 'Change Request 4M-2026-246 (Material spec adjustment in Injection Moulding B) reached L3 review stages.',
-    changeNo: '4M-2026-246',
-    category: 'MATERIAL',
-    dept: 'PRODUCTION',
-    time: '5 hours ago',
-    isRead: false,
-    type: 'Action Required',
-    color: 'blue'
-  },
-  {
-    id: 'ALR-004',
-    title: 'Change Request Rejected',
-    details: 'Change Request 4M-2026-244 (Man training syllabus update) was rejected by Unit Head. Comments: Needs syllabus validation.',
-    changeNo: '4M-2026-244',
-    category: 'MAN',
-    dept: 'MAINTENANCE',
-    time: 'Yesterday',
-    isRead: true,
-    type: 'System Logs',
-    color: 'red'
-  },
-  {
-    id: 'ALR-005',
-    title: 'Effectiveness Evaluation Due',
-    details: 'The 3-Month QA post-implementation observation logs are now due for approved Request 4M-2026-231.',
-    changeNo: '4M-2026-231',
-    category: 'SYSTEM',
-    dept: 'QA',
-    time: '3 days ago',
-    isRead: false,
-    type: 'Action Required',
-    color: 'orange'
-  },
-  {
-    id: 'ALR-006',
-    title: 'SSO Certificate Re-signature Done',
-    details: 'SSO provider Auth0 corporate domain certificate updated and verified.',
-    changeNo: '4M-2026-230',
-    category: 'SYSTEM',
-    dept: 'IT',
-    time: '4 days ago',
-    isRead: true,
-    type: 'System Logs',
-    color: 'green'
-  }
-];
 
 export const Notifications = ({ setToastMsg, notifications, setNotifications, fetchNotifications }) => {
   const alerts = notifications || [];

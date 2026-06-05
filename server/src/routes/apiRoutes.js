@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { login, signup, forgotPassword, getUsers, deleteUser, updateUser } from '../controllers/authController.js';
-import { getAllChanges, createChange, updateChangeStatus, createL1Request, getL2ValidationLogs, createL2ValidationLog, getL3Approvals, createL3Approval } from '../controllers/changeController.js';
+import { getAllChanges, createChange, updateChangeStatus, createL1Request, getL2ValidationLogs, createL2ValidationLog, getL3Approvals, createL3Approval, getNextChangeNo, getL1AttachmentFile, getL1Details, getL2Details } from '../controllers/changeController.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
 import {
   getRoles,
@@ -8,7 +8,13 @@ import {
   deleteRole,
   getDepartments,
   addDepartment,
-  deleteDepartment
+  deleteDepartment,
+  getProcesses,
+  addProcess,
+  deleteProcess,
+  getMachines,
+  addMachine,
+  deleteMachine
 } from '../controllers/optionController.js';
 import {
   getLogs,
@@ -39,10 +45,14 @@ router.get('/users', verifyToken, getUsers);
 router.put('/users/:id', verifyToken, updateUser);
 router.delete('/users/:id', verifyToken, deleteUser);
 router.get('/changes', verifyToken, getAllChanges);
+router.get('/changes/next-no', verifyToken, getNextChangeNo);
 router.post('/changes', verifyToken, createChange);
 router.post('/changes/l1', verifyToken, createL1Request);
+router.get('/changes/l1/attachment/:changeNo/:fileName', verifyToken, getL1AttachmentFile);
+router.get('/changes/l1/:changeNo', verifyToken, getL1Details);
 router.get('/changes/l2', verifyToken, getL2ValidationLogs);
 router.post('/changes/l2', verifyToken, createL2ValidationLog);
+router.get('/changes/l2/:changeNo', verifyToken, getL2Details);
 router.get('/changes/l3', verifyToken, getL3Approvals);
 router.post('/changes/l3', verifyToken, createL3Approval);
 router.put('/changes/:id/status', verifyToken, updateChangeStatus);
@@ -72,5 +82,15 @@ router.delete('/roles/:name', verifyToken, deleteRole);
 router.get('/departments', verifyToken, getDepartments);
 router.post('/departments', verifyToken, addDepartment);
 router.delete('/departments/:name', verifyToken, deleteDepartment);
+
+// Processes option endpoints
+router.get('/processes', verifyToken, getProcesses);
+router.post('/processes', verifyToken, addProcess);
+router.delete('/processes/:name', verifyToken, deleteProcess);
+
+// Machines option endpoints
+router.get('/machines', verifyToken, getMachines);
+router.post('/machines', verifyToken, addMachine);
+router.delete('/machines/:name', verifyToken, deleteMachine);
 
 export default router;

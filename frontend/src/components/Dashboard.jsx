@@ -1,23 +1,15 @@
-/* eslint-disable react-hooks/set-state-in-effect, react-hooks/purity */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getChanges, updateChangeStatus, getEffectivenessLogs, getNotifications } from '../api/apiRoutes';
+import { getChanges, getEffectivenessLogs, getNotifications } from '../api/apiRoutes';
 import {
   LogOut,
   GitPullRequest,
   CheckCircle,
-  Clock,
   TrendingUp,
-  Plus,
-  ShieldCheck,
-  Zap,
-  Loader2,
   Users as UsersIcon,
   LayoutGrid,
   FilePlus,
   ClipboardList,
-  CheckSquare,
-  BarChart3,
   Settings as SettingsIcon,
   Menu,
   X,
@@ -29,7 +21,6 @@ import {
 } from 'lucide-react';
 
 import { DashboardOverview } from './DashboardOverview';
-import { NewRequest } from './NewRequest';
 import { AllRequests } from './AllRequests';
 import { L1Request } from './L1Request';
 import { L3RequestTracker } from './L3RequestTracker';
@@ -46,7 +37,6 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [levelOpen, setLevelOpen] = useState(true);
   const [notifications, setNotifications] = useState([]);
-  const [isFetchingNotifications, setIsFetchingNotifications] = useState(false);
 
   const handleLocalSignOut = () => {
     logAction('Sign Out', 'User logged out of the system.');
@@ -61,47 +51,45 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   // Global Toast State
   const [toastMsg, setToastMsg] = useState(null);
 
-  // Audit Logs State (using localStorage with seed data)
-  const [auditLogs, setAuditLogs] = useState(() => {
-    const stored = localStorage.getItem('cms_audit_logs');
-    if (stored) return JSON.parse(stored);
-    const defaultAudit = [
-      {
-        id: 'AUD-001',
-        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hr ago
-        action: 'User Login',
-        user: 'admin@cms.com',
-        details: 'Successfully authenticated as Administrator.'
-      },
-      {
-        id: 'AUD-002',
-        timestamp: new Date(Date.now() - 7200000).toISOString(), // 2 hrs ago
-        action: 'Status Updated',
-        user: 'manager@cms.com',
-        details: 'Approved change request CHG-8901.'
-      },
-      {
-        id: 'AUD-003',
-        timestamp: new Date(Date.now() - 10800000).toISOString(), // 3 hrs ago
-        action: 'Change Created',
-        user: 'requester@cms.com',
-        details: 'Created new change request CHG-8899.'
-      },
-      {
-        id: 'AUD-004',
-        timestamp: new Date(Date.now() - 14400000).toISOString(), // 4 hrs ago
-        action: 'Status Updated',
-        user: 'admin@cms.com',
-        details: 'Marked change request CHG-8895 as Completed.'
-      }
-    ];
-    localStorage.setItem('cms_audit_logs', JSON.stringify(defaultAudit));
-    return defaultAudit;
-  });
-
   // Effectiveness Monitoring State (loaded from backend API)
   const [effectivenessLogs, setEffectivenessLogs] = useState([]);
-  const [isFetchingEffectiveness, setIsFetchingEffectiveness] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('cms_audit_logs');
+    if (!stored) {
+      const defaultAudit = [
+        {
+          id: 'AUD-001',
+          timestamp: new Date(Date.now() - 3600000).toISOString(),
+          action: 'User Login',
+          user: 'admin@cms.com',
+          details: 'Successfully authenticated as Administrator.'
+        },
+        {
+          id: 'AUD-002',
+          timestamp: new Date(Date.now() - 7200000).toISOString(),
+          action: 'Status Updated',
+          user: 'manager@cms.com',
+          details: 'Approved change request CHG-8901.'
+        },
+        {
+          id: 'AUD-003',
+          timestamp: new Date(Date.now() - 10800000).toISOString(),
+          action: 'Change Created',
+          user: 'requester@cms.com',
+          details: 'Created new change request CHG-8899.'
+        },
+        {
+          id: 'AUD-004',
+          timestamp: new Date(Date.now() - 14400000).toISOString(),
+          action: 'Status Updated',
+          user: 'admin@cms.com',
+          details: 'Marked change request CHG-8895 as Completed.'
+        }
+      ];
+      localStorage.setItem('cms_audit_logs', JSON.stringify(defaultAudit));
+    }
+  }, []);
 
   // Helper to log audit actions
   const logAction = (action, details) => {
@@ -112,11 +100,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
       user: userEmail || 'system',
       details
     };
-    setAuditLogs(prev => {
-      const updated = [newLog, ...prev];
-      localStorage.setItem('cms_audit_logs', JSON.stringify(updated));
-      return updated;
-    });
+    const stored = localStorage.getItem('cms_audit_logs');
+    const prev = stored ? JSON.parse(stored) : [];
+    const updated = [newLog, ...prev];
+    localStorage.setItem('cms_audit_logs', JSON.stringify(updated));
   };
 
   // Fetch changes from the backend
@@ -140,29 +127,23 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   // Fetch initial data
   // Fetch effectiveness logs from backend
   const fetchEffectiveness = async () => {
-    setIsFetchingEffectiveness(true);
     try {
       const response = await getEffectivenessLogs();
       setEffectivenessLogs(response.data);
     } catch (error) {
       console.error(error);
       setToastMsg('Error loading effectiveness logs from server.');
-    } finally {
-      setIsFetchingEffectiveness(false);
     }
   };
 
   // Fetch notifications from backend
   const fetchNotifications = async () => {
-    setIsFetchingNotifications(true);
     try {
       const response = await getNotifications();
       setNotifications(response.data);
     } catch (error) {
       console.error(error);
       setToastMsg('Error loading notifications from server.');
-    } finally {
-      setIsFetchingNotifications(false);
     }
   };
 
@@ -187,48 +168,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     }
   }, [toastMsg]);
 
-  // Update a Change Status (Approvals)
-  const handleStatusUpdate = async (id, status) => {
-    try {
-      await updateChangeStatus(id, status);
-      setChanges(prev => prev.map(c => c.id === id ? { ...c, status } : c));
-      setToastMsg(`Updated ${id} to ${status}`);
-      logAction('Status Updated', `Moved change request ${id} status to "${status}".`);
-    } catch (error) {
-      console.error(error);
-      setToastMsg('Error updating status on server.');
-    }
-  };
 
-  // Compile metrics dynamically for approvals badge
-  const pendingCount = changes.filter(c => c.status === 'Pending').length;
-  const evaluatingCount = changes.filter(c => c.status === 'Evaluating').length;
-
-  // Sidebar Menu Config
-  const navigationItems = [
-    {
-      group: 'MAIN',
-      items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
-        { id: 'new-request', label: 'New Request', icon: FilePlus },
-        { id: 'all-requests', label: 'All Requests', icon: ClipboardList },
-        { id: 'approvals', label: 'Approvals', icon: CheckSquare, badge: pendingCount + evaluatingCount }
-      ]
-    },
-    {
-      group: 'MONITOR',
-      items: [
-        { id: 'effectiveness', label: 'Effectiveness', icon: TrendingUp }
-      ]
-    },
-    {
-      group: 'SYSTEM',
-      items: [
-        { id: 'users', label: 'Users', icon: UsersIcon },
-        { id: 'settings', label: 'Settings', icon: SettingsIcon }
-      ]
-    }
-  ];
 
   // Helper to handle tab select
   const handleTabChange = (tabId) => {
@@ -265,8 +205,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('dashboard')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'dashboard'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -279,8 +219,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('all-requests')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'all-requests'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -293,13 +233,13 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <div className="space-y-0.5">
               <button
                 onClick={() => setLevelOpen(!levelOpen)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${(activeTab === 'l1' || activeTab === 'approvals' || activeTab === 'new-request')
-                    ? 'bg-sky-50 text-[#0066cc]'
-                    : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${(activeTab === 'l1' || activeTab === 'approvals')
+                  ? 'bg-sky-50 text-[#0066cc]'
+                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <FilePlus size={18} className={(activeTab === 'l1' || activeTab === 'approvals' || activeTab === 'new-request') ? 'text-[#0066cc]' : 'text-slate-400'} />
+                  <FilePlus size={18} className={(activeTab === 'l1' || activeTab === 'approvals') ? 'text-[#0066cc]' : 'text-slate-400'} />
                   <span>Level</span>
                 </div>
                 {levelOpen ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
@@ -312,8 +252,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   <button
                     onClick={() => handleTabChange('l1')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'l1'
-                        ? 'bg-sky-50/70 text-[#0066cc]'
-                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                      ? 'bg-sky-50/70 text-[#0066cc]'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -326,8 +266,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   <button
                     onClick={() => handleTabChange('approvals')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'approvals'
-                        ? 'bg-sky-50/70 text-[#0066cc]'
-                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                      ? 'bg-sky-50/70 text-[#0066cc]'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -340,8 +280,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   <button
                     onClick={() => handleTabChange('l3')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'l3'
-                        ? 'bg-sky-50/70 text-[#0066cc]'
-                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                      ? 'bg-sky-50/70 text-[#0066cc]'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -357,8 +297,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('effectiveness')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'effectiveness'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -371,8 +311,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('notifications')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'notifications'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -390,8 +330,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('users')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'users'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -404,8 +344,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('settings')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'settings'
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-sky-50 text-[#0066cc]'
+                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -461,13 +401,12 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <div>
               <h2 className="font-heading text-[22px] font-bold text-slate-900">
                 {activeTab === 'dashboard' ? 'Overview' :
-                  activeTab === 'new-request' ? 'Request New Change' :
                   activeTab === 'approvals' ? 'L2 Validation Workflow' :
-                  activeTab === 'notifications' ? 'Notifications Feed' :
-                  activeTab === 'l1' ? 'L1 Approvals' :
-                  activeTab === 'l3' ? 'L3 Request Tracker & Final Approval' :
-                  activeTab === 'all-requests' ? 'All Change Requests' :
-                  activeTab.replace('-', ' ')}
+                    activeTab === 'notifications' ? 'Notifications Feed' :
+                      activeTab === 'l1' ? 'New L1 Change Request' :
+                        activeTab === 'l3' ? 'L3 Request Tracker & Final Approval' :
+                          activeTab === 'all-requests' ? 'All Change Requests' :
+                            activeTab.replace('-', ' ')}
               </h2>
             </div>
           </div>
@@ -476,16 +415,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             {/* Email always visible */}
             <span className="text-[14px] font-medium text-slate-600 hidden sm:inline">{userEmail}</span>
 
-            {/* Request Change button - only on dashboard tab */}
-            {activeTab === 'dashboard' && (
-              <button
-                onClick={() => handleTabChange('new-request')}
-                className="hidden sm:flex items-center gap-[4px] bg-sky-50 border border-sky-100 hover:bg-sky-100 text-[#0066cc] px-[12px] py-[6px] rounded-[8px] text-[12px] font-bold transition-all cursor-pointer"
-              >
-                <Plus size={12} />
-                <span>Request Change</span>
-              </button>
-            )}
+
 
             {/* Bell icon - only on dashboard tab */}
             {activeTab === 'dashboard' && (
@@ -509,7 +439,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               <LogOut size={12} />
               <span>Sign Out</span>
             </button>
-            
+
             {/* Nippon Logo in assets */}
             <div className="pl-[8px] border-l border-slate-200">
               <img src={nipponLogo} alt="Nippon Logo" className="h-[32px] w-auto object-contain select-none" />
@@ -529,18 +459,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             />
           )}
 
-          {/* TAB: NEW REQUEST */}
-          {activeTab === 'new-request' && (
-            <NewRequest
-              userEmail={userEmail}
-              onTabChange={handleTabChange}
-              changes={changes}
-              setChanges={setChanges}
-              logAction={logAction}
-              setToastMsg={setToastMsg}
-              onLocalSignOut={handleLocalSignOut}
-            />
-          )}
+
 
           {/* TAB: ALL REQUESTS */}
           {activeTab === 'all-requests' && (
@@ -553,6 +472,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
           {/* TAB: APPROVALS */}
           {activeTab === 'approvals' && (
             <L2Validation
+              changes={changes}
               userRole={userRole}
               setToastMsg={setToastMsg}
               fetchChanges={fetchChanges}

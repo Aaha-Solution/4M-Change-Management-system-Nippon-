@@ -4,14 +4,6 @@ export const getChanges = () => {
   return axiosInstance.get('/changes');
 };
 
-export const createChange = (data) => {
-  return axiosInstance.post('/changes', data, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-};
-
 export const updateChangeStatus = (id, status) => {
   return axiosInstance.put(`/changes/${id}/status`, { status }, {
     headers: {
@@ -20,11 +12,17 @@ export const updateChangeStatus = (id, status) => {
   });
 };
 
-export const createL1Request = (l1Data) => {
-  return axiosInstance.post('/changes/l1', { l1Data }, {
+export const createL1Request = (l1Data, attachments) => {
+  return axiosInstance.post('/changes/l1', { l1Data, attachments }, {
     headers: {
       'Content-Type': 'application/json',
     },
+  });
+};
+
+export const getL1Attachment = (changeNo, fileName) => {
+  return axiosInstance.get(`/changes/l1/attachment/${changeNo}/${fileName}`, {
+    responseType: 'blob'
   });
 };
 
@@ -51,4 +49,17 @@ export const createL3Approval = (logData) => {
     },
   });
 };
+
+export const getNextChangeNo = () => {
+  return axiosInstance.get('/changes/next-no');
+};
+
+export const getL1Details = (changeNo) => {
+  return axiosInstance.get(`/changes/l1/${changeNo}`);
+};
+
+export const getL2Details = (changeNo) => {
+  return axiosInstance.get(`/changes/l2/${changeNo}`);
+};
+
 

@@ -11,7 +11,6 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
-  GitBranch,
   ArrowRight
 } from 'lucide-react';
 

@@ -1,10 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Clock, 
-  Zap, 
-  CheckCircle, 
-  TrendingUp, 
-  Plus, 
   Loader2, 
   BarChart3, 
   LayoutGrid,
@@ -14,44 +10,121 @@ import {
   Settings,
   ShieldAlert
 } from 'lucide-react';
+import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
+import { CustomDatePicker } from './CustomDatePicker';
+import { getProcesses, getMachines } from '../api/apiRoutes';
+
 
 export const DashboardOverview = ({
   changes,
-  isFetchingChanges,
-  onTabChange
+  isFetchingChanges
 }) => {
   const [isGridView, setIsGridView] = useState(false);
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Department');
 
-  const dynamicApproved = changes.filter(c => c.status === 'Approved').length;
-  const dynamicPending = changes.filter(c => c.status === 'Pending' || c.status === 'Evaluating').length;
-  const dynamicRejected = changes.filter(c => c.status === 'Rejected').length;
+  const [filterMonth, setFilterMonth] = useState('All');
+  const [filterFromDate, setFilterFromDate] = useState('');
+  const [filterToDate, setFilterToDate] = useState('');
+  const [filterPerson, setFilterPerson] = useState('All');
+  const [filterProcess, setFilterProcess] = useState('All');
+  const [filterMachine, setFilterMachine] = useState('All');
+  const [filterStatus, setFilterStatus] = useState('All');
 
-  const totalCount = changes.length;
+  const [dbProcesses, setDbProcesses] = useState([]);
+  const [dbMachines, setDbMachines] = useState([]);
+
+  useEffect(() => {
+    async function fetchOptions() {
+      try {
+        const [pRes, mRes] = await Promise.all([getProcesses(), getMachines()]);
+        setDbProcesses(pRes.data);
+        setDbMachines(mRes.data);
+      } catch (e) {
+        console.error('Error fetching process/machine options:', e);
+      }
+    }
+    fetchOptions();
+  }, []);
+
+  const monthsList = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  const currentYearShort = String(new Date().getFullYear()).slice(-2);
+  const monthOptions = monthsList.map(m => `${m}-${currentYearShort}`);
+
+  const uniquePersons = ['All', ...new Set(changes.map(c => c.requester).filter(Boolean))];
+  const uniqueProcesses = ['All', ...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])];
+  const uniqueMachines = ['All', ...new Set([...dbMachines, ...changes.map(c => c.machineNo).filter(Boolean)])];
+
+  const filteredChanges = changes.filter(c => {
+    let matchesMonth = true;
+    if (filterMonth !== 'All') {
+      try {
+        const [selMonthName, selYearShort] = filterMonth.split('-');
+        const d = new Date(c.date);
+        if (!isNaN(d.getTime())) {
+          const itemMonthName = d.toLocaleDateString('en-US', { month: 'short' });
+          const itemYearShort = String(d.getFullYear()).slice(-2);
+          matchesMonth = (itemMonthName === selMonthName && itemYearShort === selYearShort);
+        } else {
+          matchesMonth = false;
+        }
+      } catch {
+        matchesMonth = false;
+      }
+    }
+
+    let matchesFromDate = true;
+    if (filterFromDate) {
+      const fD = parseDDMMYYYYToDate(filterFromDate);
+      if (fD) {
+        fD.setHours(0,0,0,0);
+        const itemD = parseDDMMYYYYToDate(c.date);
+        matchesFromDate = itemD && itemD >= fD;
+      }
+    }
+
+    let matchesToDate = true;
+    if (filterToDate) {
+      const tD = parseDDMMYYYYToDate(filterToDate);
+      if (tD) {
+        tD.setHours(23,59,59,999);
+        const itemD = parseDDMMYYYYToDate(c.date);
+        matchesToDate = itemD && itemD <= tD;
+      }
+    }
+
+    const matchesPerson = filterPerson === 'All' || c.requester === filterPerson;
+    const matchesProcess = filterProcess === 'All' || c.processName === filterProcess;
+    const matchesMachine = filterMachine === 'All' || c.machineNo === filterMachine;
+    const matchesStatus = filterStatus === 'All' || c.status === filterStatus;
+
+    return matchesMonth && matchesFromDate && matchesToDate && matchesPerson && matchesProcess && matchesMachine && matchesStatus;
+  });
+
+  const dynamicApproved = filteredChanges.filter(c => c.status === 'Approved' || ((c.status === 'Pending' || c.status === 'Evaluating') && c.l2Status === 'Accepted')).length;
+  const dynamicPending = filteredChanges.filter(c => (c.status === 'Pending' || c.status === 'Evaluating') && c.l2Status !== 'Accepted').length;
+  const dynamicRejected = filteredChanges.filter(c => c.status === 'Rejected').length;
+
+  const totalCount = filteredChanges.length;
   const approvedCount = dynamicApproved;
   const pendingCount = dynamicPending;
   const rejectedCount = dynamicRejected;
 
-  const formattedDbChanges = changes.map((c, idx) => {
-    let displayDate = c.date;
-    try {
-      const d = new Date(c.date);
-      if (!isNaN(d.getTime())) {
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        displayDate = `${day}/${month}/${year}`;
-      }
-    } catch (e) {}
+  const formattedDbChanges = filteredChanges.map((c, idx) => {
+    const displayDate = formatDateToDDMMYY(c.date);
 
     let displayStatus = c.status;
-    if (c.status === 'Pending' || c.status === 'Evaluating') displayStatus = 'Pending L2';
+    if (c.status === 'Pending' || c.status === 'Evaluating') {
+      displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
+    }
     if (c.status === 'Completed') displayStatus = 'Closed';
 
     return {
       slNo: idx + 1,
       id: c.id,
-      machineNo: c.machineNo || 'MFG-MC-1042',
+      machineNo: c.machineNo || '',
       department: c.dept || c.department || 'PRODUCTION',
       date: displayDate,
       status: displayStatus
@@ -65,34 +138,69 @@ export const DashboardOverview = ({
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-[8px] p-[12px] bg-slate-50/50 border-y border-slate-100 text-[10px]">
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Month</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Months</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterMonth}
+          onChange={(e) => setFilterMonth(e.target.value)}
+        >
+          <option value="All">All Months</option>
+          {monthOptions.map(m => (
+            <option key={m} value={m}>{m}</option>
+          ))}
         </select>
       </div>
-      <div className="space-y-[2px]">
+      <div className="space-y-[2px] relative">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
-        <input type="text" placeholder="dd/mm/yyyy" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300" />
+        <CustomDatePicker 
+          value={filterFromDate}
+          onChange={setFilterFromDate}
+          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
+          buttonClassName="right-[6px] bottom-[6px]"
+        />
       </div>
-      <div className="space-y-[2px]">
+      <div className="space-y-[2px] relative">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <input type="text" placeholder="dd/mm/yyyy" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300" />
+        <CustomDatePicker 
+          value={filterToDate}
+          onChange={setFilterToDate}
+          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
+          buttonClassName="right-[6px] bottom-[6px]"
+        />
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Person</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Persons</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterPerson}
+          onChange={(e) => setFilterPerson(e.target.value)}
+        >
+          {uniquePersons.map(p => (
+            <option key={p} value={p}>{p === 'All' ? 'All Persons' : p.split('@')[0]}</option>
+          ))}
         </select>
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Process</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Processes</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterProcess}
+          onChange={(e) => setFilterProcess(e.target.value)}
+        >
+          {uniqueProcesses.map(p => (
+            <option key={p} value={p}>{p === 'All' ? 'All Processes' : p}</option>
+          ))}
         </select>
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By M/C No</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Machines</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterMachine}
+          onChange={(e) => setFilterMachine(e.target.value)}
+        >
+          {uniqueMachines.map(m => (
+            <option key={m} value={m}>{m === 'All' ? 'All Machines' : m}</option>
+          ))}
         </select>
       </div>
     </div>
@@ -102,22 +210,48 @@ export const DashboardOverview = ({
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-[8px] p-[12px] bg-slate-50/50 border-y border-slate-100 text-[10px]">
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Month</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Months</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterMonth}
+          onChange={(e) => setFilterMonth(e.target.value)}
+        >
+          <option value="All">All Months</option>
+          {monthOptions.map(m => (
+            <option key={m} value={m}>{m}</option>
+          ))}
         </select>
       </div>
-      <div className="space-y-[2px]">
+      <div className="space-y-[2px] relative">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
-        <input type="text" placeholder="dd/mm/yyyy" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300" />
+        <CustomDatePicker 
+          value={filterFromDate}
+          onChange={setFilterFromDate}
+          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
+          buttonClassName="right-[6px] bottom-[6px]"
+        />
       </div>
-      <div className="space-y-[2px]">
+      <div className="space-y-[2px] relative">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <input type="text" placeholder="dd/mm/yyyy" className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-300" />
+        <CustomDatePicker 
+          value={filterToDate}
+          onChange={setFilterToDate}
+          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
+          buttonClassName="right-[6px] bottom-[6px]"
+        />
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
-        <select className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none">
-          <option>All Statuses</option>
+        <select 
+          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
+          <option value="All">All Statuses</option>
+          <option value="Approved">Approved</option>
+          <option value="Pending">Pending</option>
+          <option value="Evaluating">Evaluating</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Completed">Completed</option>
         </select>
       </div>
     </div>
@@ -137,9 +271,9 @@ export const DashboardOverview = ({
       'SAFETY': 0
     };
 
-    changes.forEach(c => {
+    filteredChanges.forEach(c => {
       const rawDept = (c.dept || c.department || '').trim().toUpperCase();
-      let mapped = '';
+      let mapped;
       if (rawDept.includes('PED')) mapped = 'PED';
       else if (rawDept.includes('QA') || rawDept.includes('QUALITY')) mapped = 'QAD';
       else if (rawDept.includes('PROD')) mapped = 'PRODUCTION';
@@ -193,9 +327,9 @@ export const DashboardOverview = ({
       'Load': 0
     };
 
-    changes.forEach(c => {
+    filteredChanges.forEach(c => {
       const p = (c.processName || '').trim().toLowerCase();
-      let mapped = '';
+      let mapped;
       if (p.includes('wind') || p.includes('weld')) mapped = 'Wind';
       else if (p.includes('gold') || p.includes('calib')) mapped = 'Gold';
       else if (p.includes('eol') || p.includes('mold') || p.includes('mould') || p.includes('inject')) mapped = 'EOL';
@@ -244,9 +378,9 @@ export const DashboardOverview = ({
       'Mot': 0
     };
 
-    changes.forEach(c => {
+    filteredChanges.forEach(c => {
       const catStr = (c.changeIn || c.title || c.id || '').trim().toLowerCase();
-      let mapped = '';
+      let mapped;
       if (catStr.includes('man') || catStr.includes('train')) mapped = 'Man';
       else if (catStr.includes('mac') || catStr.includes('machin') || catStr.includes('weld')) mapped = 'Mac';
       else if (catStr.includes('met') || catStr.includes('calib') || catStr.includes('sso') || catStr.includes('db') || catStr.includes('api') || catStr.includes('vulner')) mapped = 'Met';
@@ -300,7 +434,7 @@ export const DashboardOverview = ({
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const counts = Array(12).fill(0);
 
-    changes.forEach(c => {
+    filteredChanges.forEach(c => {
       if (!c.date) return;
       try {
         const d = new Date(c.date);
@@ -308,7 +442,9 @@ export const DashboardOverview = ({
           const monthIdx = d.getMonth();
           counts[monthIdx]++;
         }
-      } catch (e) {}
+      } catch {
+        // ignore
+      }
     });
 
     const data = months.map((m, idx) => ({
@@ -343,7 +479,7 @@ export const DashboardOverview = ({
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const dataMap = months.map(m => ({ label: m, appr: 0, rej: 0, pend: 0 }));
 
-    changes.forEach(c => {
+    filteredChanges.forEach(c => {
       if (!c.date) return;
       try {
         const d = new Date(c.date);
@@ -358,7 +494,9 @@ export const DashboardOverview = ({
             dataMap[monthIdx].pend++;
           }
         }
-      } catch (e) {}
+      } catch {
+        // ignore
+      }
     });
 
     const maxVal = Math.max(
