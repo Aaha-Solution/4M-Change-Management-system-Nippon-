@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getChanges, getEffectivenessLogs, getNotifications } from '../api/apiRoutes';
 import {
@@ -17,18 +17,19 @@ import {
   ListTodo,
   Bell,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Loader2
 } from 'lucide-react';
 
-import { DashboardOverview } from './DashboardOverview';
-import { AllRequests } from './AllRequests';
-import { L1Request } from './L1Request';
-import { L3RequestTracker } from './L3RequestTracker';
-import { L2Validation } from './L2Validation';
-import { Effectiveness } from './Effectiveness';
-import { Users } from './Users';
-import { Settings } from './Settings';
-import { Notifications } from './Notifications';
+const DashboardOverview = lazy(() => import('./DashboardOverview').then(m => ({ default: m.DashboardOverview })));
+const AllRequests = lazy(() => import('./AllRequests').then(m => ({ default: m.AllRequests })));
+const L1Request = lazy(() => import('./L1Request').then(m => ({ default: m.L1Request })));
+const L3RequestTracker = lazy(() => import('./L3RequestTracker').then(m => ({ default: m.L3RequestTracker })));
+const L2Validation = lazy(() => import('./L2Validation').then(m => ({ default: m.L2Validation })));
+const Effectiveness = lazy(() => import('./Effectiveness').then(m => ({ default: m.Effectiveness })));
+const Users = lazy(() => import('./Users').then(m => ({ default: m.Users })));
+const Settings = lazy(() => import('./Settings').then(m => ({ default: m.Settings })));
+const Notifications = lazy(() => import('./Notifications').then(m => ({ default: m.Notifications })));
 import nipponLogo from '../assets/Nippon Logo.png';
 
 export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
@@ -449,99 +450,102 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
 
         {/* Main Content Area */}
         <main className="flex-grow py-[24px] px-[24px] w-full max-w-none">
+          <Suspense fallback={
+            <div className="flex flex-col items-center justify-center py-[100px] gap-2 text-slate-500">
+              <Loader2 className="animate-spin text-[#0066cc]" size={24} />
+              <span className="text-[12px] font-semibold">Loading tab content...</span>
+            </div>
+          }>
+            {/* TAB: DASHBOARD OVERVIEW */}
+            {activeTab === 'dashboard' && (
+              <DashboardOverview
+                changes={changes}
+                isFetchingChanges={isFetchingChanges}
+                onTabChange={handleTabChange}
+              />
+            )}
 
-          {/* TAB: DASHBOARD OVERVIEW */}
-          {activeTab === 'dashboard' && (
-            <DashboardOverview
-              changes={changes}
-              isFetchingChanges={isFetchingChanges}
-              onTabChange={handleTabChange}
-            />
-          )}
+            {/* TAB: ALL REQUESTS */}
+            {activeTab === 'all-requests' && (
+              <AllRequests
+                changes={changes}
+                onTabChange={handleTabChange}
+              />
+            )}
 
+            {/* TAB: APPROVALS */}
+            {activeTab === 'approvals' && (
+              <L2Validation
+                changes={changes}
+                userRole={userRole}
+                setToastMsg={setToastMsg}
+                fetchChanges={fetchChanges}
+              />
+            )}
 
+            {/* TAB: L1 REQUEST */}
+            {activeTab === 'l1' && (
+              <L1Request
+                userEmail={userEmail}
+                onTabChange={handleTabChange}
+                changes={changes}
+                setChanges={setChanges}
+                logAction={logAction}
+                setToastMsg={setToastMsg}
+                onLocalSignOut={handleLocalSignOut}
+              />
+            )}
 
-          {/* TAB: ALL REQUESTS */}
-          {activeTab === 'all-requests' && (
-            <AllRequests
-              changes={changes}
-              onTabChange={handleTabChange}
-            />
-          )}
+            {/* TAB: L3 REQUEST TRACKER */}
+            {activeTab === 'l3' && (
+              <L3RequestTracker
+                userEmail={userEmail}
+                userRole={userRole}
+                logAction={logAction}
+                setToastMsg={setToastMsg}
+              />
+            )}
 
-          {/* TAB: APPROVALS */}
-          {activeTab === 'approvals' && (
-            <L2Validation
-              changes={changes}
-              userRole={userRole}
-              setToastMsg={setToastMsg}
-              fetchChanges={fetchChanges}
-            />
-          )}
+            {/* TAB: EFFECTIVENESS MONITORING */}
+            {activeTab === 'effectiveness' && (
+              <Effectiveness
+                changes={changes}
+                effectivenessLogs={effectivenessLogs}
+                setEffectivenessLogs={setEffectivenessLogs}
+                logAction={logAction}
+                setToastMsg={setToastMsg}
+              />
+            )}
 
-          {/* TAB: L1 REQUEST */}
-          {activeTab === 'l1' && (
-            <L1Request
-              userEmail={userEmail}
-              onTabChange={handleTabChange}
-              changes={changes}
-              setChanges={setChanges}
-              logAction={logAction}
-              setToastMsg={setToastMsg}
-              onLocalSignOut={handleLocalSignOut}
-            />
-          )}
+            {/* TAB: NOTIFICATIONS */}
+            {activeTab === 'notifications' && (
+              <Notifications
+                setToastMsg={setToastMsg}
+                notifications={notifications}
+                setNotifications={setNotifications}
+                fetchNotifications={fetchNotifications}
+              />
+            )}
 
-          {/* TAB: L3 REQUEST TRACKER */}
-          {activeTab === 'l3' && (
-            <L3RequestTracker
-              userEmail={userEmail}
-              userRole={userRole}
-              logAction={logAction}
-              setToastMsg={setToastMsg}
-            />
-          )}
+            {/* TAB: USERS LIST */}
+            {activeTab === 'users' && (
+              <Users
+                userRole={userRole}
+                userEmail={userEmail}
+                logAction={logAction}
+                setToastMsg={setToastMsg}
+                onLocalSignOut={handleLocalSignOut}
+              />
+            )}
 
-          {/* TAB: EFFECTIVENESS MONITORING */}
-          {activeTab === 'effectiveness' && (
-            <Effectiveness
-              changes={changes}
-              effectivenessLogs={effectivenessLogs}
-              setEffectivenessLogs={setEffectivenessLogs}
-              logAction={logAction}
-              setToastMsg={setToastMsg}
-            />
-          )}
-
-          {/* TAB: NOTIFICATIONS */}
-          {activeTab === 'notifications' && (
-            <Notifications
-              setToastMsg={setToastMsg}
-              notifications={notifications}
-              setNotifications={setNotifications}
-              fetchNotifications={fetchNotifications}
-            />
-          )}
-
-          {/* TAB: USERS LIST */}
-          {activeTab === 'users' && (
-            <Users
-              userRole={userRole}
-              userEmail={userEmail}
-              logAction={logAction}
-              setToastMsg={setToastMsg}
-              onLocalSignOut={handleLocalSignOut}
-            />
-          )}
-
-          {/* TAB: SETTINGS */}
-          {activeTab === 'settings' && (
-            <Settings
-              userEmail={userEmail}
-              userRole={userRole}
-            />
-          )}
-
+            {/* TAB: SETTINGS */}
+            {activeTab === 'settings' && (
+              <Settings
+                userEmail={userEmail}
+                userRole={userRole}
+              />
+            )}
+          </Suspense>
         </main>
       </div>
 

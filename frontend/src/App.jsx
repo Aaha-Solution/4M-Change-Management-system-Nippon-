@@ -1,8 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Login } from './components/Login';
-import { Dashboard } from './components/Dashboard';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Loader2 } from 'lucide-react';
+
+const Login = lazy(() => import('./components/Login').then(m => ({ default: m.Login })));
+const Dashboard = lazy(() => import('./components/Dashboard').then(m => ({ default: m.Dashboard })));
+
+const PageLoader = () => (
+  <div className="w-screen h-screen flex flex-col items-center justify-center bg-slate-50 gap-3">
+    <Loader2 className="animate-spin text-[#0066cc]" size={32} />
+    <span className="text-sm font-semibold text-slate-700">Loading page...</span>
+  </div>
+);
 
 function App() {
   const [userEmail, setUserEmail] = useState(() => {
@@ -61,26 +69,28 @@ function App() {
 
   return (
     <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <Login onLoginSuccess={handleLoginSuccess} />
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <Dashboard
-              userEmail={userEmail}
-              userRole={userRole}
-              onSignOut={handleSignOut}
-            />
-          }
-        />
-        {/* Fallback route redirection */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Login onLoginSuccess={handleLoginSuccess} />
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <Dashboard
+                userEmail={userEmail}
+                userRole={userRole}
+                onSignOut={handleSignOut}
+              />
+            }
+          />
+          {/* Fallback route redirection */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
       
       {/* Toast Notification */}
       {toastMsg && (
