@@ -58,12 +58,23 @@ test.describe('L1 Change Request E2E Flow', () => {
     await page.fill('textarea[placeholder^="Brief description of WHY this change is needed"]', uniqueContext);
     await page.fill('textarea[placeholder^="Describe the change"]', 'This is a long detailed description for the L1 automation test. We are verifying database integration.');
 
+    // Generate valid future/present dates dynamically
+    const today = new Date();
+    const formatDate = (date) => {
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
+    };
+    const dateStartStr = formatDate(today);
+    const dateCloseStr = formatDate(new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000));
+
     // Timeline
     await page.locator('label:has-text("Change Improvement Area") + select').selectOption('Quality');
     await page.locator('label:has-text("Permanent / Temporary Change") + select').selectOption('Temporary');
-    await page.fill('label:has-text("Implement / Change Date Start") + input', '01/06/2026');
+    await page.fill('label:has-text("Implement / Change Date Start") ~ div input', dateStartStr);
     await page.fill('label:has-text("Part Traceability Details (From Changes)") + textarea', 'LOT-100: Initial batch of 100 parts trace.');
-    await page.fill('label:has-text("Change Date Close") + input', '05/06/2026');
+    await page.fill('label:has-text("Change Date Close") ~ div input', dateCloseStr);
     await page.fill('label:has-text("Part Traceability Details (To Changes)") + textarea', 'LOT-110: Closure batch of 110 parts trace.');
 
     // Risk Analysis
@@ -95,6 +106,23 @@ test.describe('L1 Change Request E2E Flow', () => {
     // Verify the textbox now only lists 'test-file-1.pdf'
     await expect(uploadContainer.locator('input[type="text"]')).toHaveValue('test-file-1.pdf');
     await expect(pills).toHaveCount(1);
+
+    // Delete the remaining first pill (test-file-1.pdf)
+    await pills.first().locator('button').click();
+
+    // Verify the textbox is empty
+    await expect(uploadContainer.locator('input[type="text"]')).toHaveValue('');
+    await expect(pills).toHaveCount(0);
+
+    // Upload 'test-file-1.pdf' again
+    await page.setInputFiles('#file-desc-input', [
+      { name: 'test-file-1.pdf', mimeType: 'application/pdf', buffer: Buffer.from('pdf content') }
+    ]);
+
+    // Verify 'test-file-1.pdf' is successfully uploaded again
+    await expect(uploadContainer.locator('input[type="text"]')).toHaveValue('test-file-1.pdf');
+    await expect(pills).toHaveCount(1);
+    await expect(pills.first()).toContainText('test-file-1.pdf');
 
 
     // Submit L1 Request

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { 
-  Upload, 
+import {
+  Upload,
   Loader2,
   Plus,
   X,
@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo, getUsers, getDepartments } from '../api/apiRoutes';
 import { CustomDatePicker } from './CustomDatePicker';
-import { formatDateToDDMMYYYY } from '../utils/dateUtils';
+import { formatDateToDDMMYYYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
 
 export const L1Request = ({
   userEmail,
@@ -301,6 +301,17 @@ export const L1Request = ({
       return;
     }
 
+    const parsedRequestDate = parseDDMMYYYYToDate(requestedDate);
+    const parsedDateStart = parseDDMMYYYYToDate(dateStart);
+    if (parsedDateStart && parsedRequestDate) {
+      const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
+      const dRequest = new Date(parsedRequestDate.getFullYear(), parsedRequestDate.getMonth(), parsedRequestDate.getDate());
+      if (dStart < dRequest) {
+        setToastMsg('Implement / Change Date Start should be >= Change Request Date.');
+        return;
+      }
+    }
+
     if (!traceFrom || traceFrom.trim().length < 20) {
       setToastMsg('Part Traceability Details (From Changes) must be at least 20 characters.');
       return;
@@ -309,6 +320,16 @@ export const L1Request = ({
     if (!dateClose || !dateClose.trim()) {
       setToastMsg('Please enter a Change Date Close.');
       return;
+    }
+
+    const parsedDateClose = parseDDMMYYYYToDate(dateClose);
+    if (parsedDateClose && parsedDateStart) {
+      const dClose = new Date(parsedDateClose.getFullYear(), parsedDateClose.getMonth(), parsedDateClose.getDate());
+      const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
+      if (dClose < dStart) {
+        setToastMsg('Change Date Close should be >= Implement / Change Date Start.');
+        return;
+      }
     }
 
     if (!traceTo || traceTo.trim().length < 20) {
@@ -342,7 +363,7 @@ export const L1Request = ({
     }
 
     setIsSubmitting(true);
-    
+
     const l1Data = {
       changeNo,
       unit,
@@ -374,7 +395,7 @@ export const L1Request = ({
       fileSop,
       fileEffectiveness
     };
-    
+
     try {
       const response = await createL1Request(l1Data, uploadedFilesList);
       const newChange = response.data.change;
@@ -382,7 +403,7 @@ export const L1Request = ({
       setChanges([newChange, ...changes]);
       setToastMsg(`Successfully submitted L1 Change Request: ${changeNo}`);
       logAction('L1 Request Created', `Successfully submitted L1 Change Request ${changeNo} for department ${dept}`);
-      
+
       // Redirect back to dashboard overview
       onTabChange('dashboard');
     } catch (err) {
@@ -431,9 +452,13 @@ export const L1Request = ({
               id={inputId}
               className="hidden"
               onChange={async (e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  const files = Array.from(e.target.files);
+                const target = e.target;
+                if (target.files && target.files.length > 0) {
+                  const files = Array.from(target.files);
                   const names = files.map(f => f.name);
+
+                  // Reset input value synchronously immediately to allow uploading the same file again
+                  target.value = '';
 
                   // Convert files to base64 for server upload
                   const base64Files = await Promise.all(
@@ -453,9 +478,6 @@ export const L1Request = ({
                   const existing = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
                   const updated = Array.from(new Set([...existing, ...names])).join(', ');
                   setValue(updated);
-                  
-                  // Reset input value to allow uploading the same file again
-                  e.target.value = '';
                 }
               }}
             />
@@ -492,7 +514,7 @@ export const L1Request = ({
 
   return (
     <div className="w-full space-y-[24px] animate-fade-in-up pb-[40px] text-slate-800">
-      
+
       {/* Title */}
       <div>
         <h3 className="font-heading text-[20px] font-bold text-slate-900">New L1 Change Request</h3>
@@ -500,17 +522,17 @@ export const L1Request = ({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-[24px]">
-        
+
         {/* 1. Identifiers Section */}
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Identifiers</h4>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
             {/* UNIT */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit <span className="text-rose-500">*</span></label>
-              <select 
-                value={unit} 
+              <select
+                value={unit}
                 onChange={(e) => setUnit(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
               >
@@ -526,10 +548,10 @@ export const L1Request = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
               <div className="relative flex items-center">
                 <span className="absolute left-[12px] text-slate-400 text-[12px]">#</span>
-                <input 
-                  type="text" 
-                  disabled 
-                  value={changeNo} 
+                <input
+                  type="text"
+                  disabled
+                  value={changeNo}
                   className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] pl-[24px] pr-[54px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-medium"
                 />
                 <span className="absolute right-[8px] bg-sky-50 border border-sky-100 text-[#0066cc] text-[9px] font-bold rounded px-[6px] py-[2px] uppercase select-none">
@@ -543,10 +565,10 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
               <div className="relative flex items-center">
-                <input 
-                  type="text" 
-                  disabled 
-                  value={requestedDate} 
+                <input
+                  type="text"
+                  disabled
+                  value={requestedDate}
                   className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[54px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-medium"
                 />
                 <span className="absolute right-[8px] bg-sky-50 border border-sky-100 text-[#0066cc] text-[9px] font-bold rounded px-[6px] py-[2px] uppercase select-none">
@@ -560,10 +582,10 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Time <span className="text-rose-500">*</span></label>
               <div className="relative flex items-center">
-                <input 
-                  type="text" 
-                  disabled 
-                  value={requestedTime} 
+                <input
+                  type="text"
+                  disabled
+                  value={requestedTime}
                   className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[54px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-medium"
                 />
                 <span className="absolute right-[8px] bg-indigo-50 border border-indigo-100 text-indigo-700 text-[9px] font-bold rounded px-[6px] py-[2px] uppercase select-none">
@@ -580,9 +602,9 @@ export const L1Request = ({
             <div className="flex flex-wrap gap-x-[16px] gap-y-[8px] text-[12px] text-slate-700 font-medium select-none">
               {Object.keys(changeIn).map(key => (
                 <label key={key} className="flex items-center gap-[6px] cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={changeIn[key]} 
+                  <input
+                    type="checkbox"
+                    checked={changeIn[key]}
                     onChange={() => handleCheckboxChange(key)}
                     className="w-[14px] h-[14px] rounded border-slate-300 text-[#0066cc] focus:ring-[#0066cc]"
                   />
@@ -596,17 +618,17 @@ export const L1Request = ({
         {/* 2. Request Details Section */}
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Request Details</h4>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
             {/* CHANGE REQUEST DEPT */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request Dept <span className="text-rose-500">*</span></label>
-              <select 
-                value={dept} 
+              <select
+                value={dept}
                 onChange={(e) => {
                   const selectedDept = e.target.value;
                   setDept(selectedDept);
-                  
+
                   // Reset requestBy if the currently selected requester doesn't belong to the new department
                   if (selectedDept) {
                     const matchedUsers = (systemUsers.length > 0 ? systemUsers : fallbackUsers).filter(
@@ -630,8 +652,8 @@ export const L1Request = ({
             {/* CHANGE REQUEST BY */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
-              <select 
-                value={requestBy} 
+              <select
+                value={requestBy}
                 onChange={(e) => setRequestBy(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
               >
@@ -664,7 +686,7 @@ export const L1Request = ({
                     <option key={p} value={p}>{p}</option>
                   ))}
                 </select>
-                <button 
+                <button
                   type="button"
                   onClick={() => {
                     setTempProcessName('');
@@ -681,9 +703,9 @@ export const L1Request = ({
             {/* PROCESS LINE */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line <span className="text-rose-500">*</span></label>
-              <input 
-                type="text" 
-                placeholder="e.g. Line 3 / Bay B" 
+              <input
+                type="text"
+                placeholder="e.g. Line 3 / Bay B"
                 value={processLine}
                 onChange={(e) => setProcessLine(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
@@ -704,7 +726,7 @@ export const L1Request = ({
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
-                <button 
+                <button
                   type="button"
                   onClick={() => {
                     setTempMachineNo('');
@@ -723,13 +745,13 @@ export const L1Request = ({
         {/* 3. Change Description Section */}
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Change Description</h4>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-[16px]">
             {/* CONTEXT OF CHANGE */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change <span className="text-rose-500">*</span></label>
-              <textarea 
-                placeholder="Brief description of WHY this change is needed (min 10 characters)..." 
+              <textarea
+                placeholder="Brief description of WHY this change is needed (min 10 characters)..."
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 rows={4}
@@ -741,8 +763,8 @@ export const L1Request = ({
             {/* DETAILED CHANGE DESCRIPTION */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Detailed Change Description <span className="text-rose-500">*</span></label>
-              <textarea 
-                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..." 
+              <textarea
+                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
@@ -761,13 +783,13 @@ export const L1Request = ({
         {/* 4. Implementation Timeline Section */}
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Implementation Timeline</h4>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
             {/* CHANGE IMPROVEMENT AREA */}
             <div className="space-y-[4px] sm:col-span-1 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Improvement Area <span className="text-rose-500">*</span></label>
-              <select 
-                value={improvementArea} 
+              <select
+                value={improvementArea}
                 onChange={(e) => setImprovementArea(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
               >
@@ -787,8 +809,8 @@ export const L1Request = ({
             {/* PERMANENT / TEMPORARY CHANGE */}
             <div className="space-y-[4px] sm:col-span-1 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Permanent / Temporary Change <span className="text-rose-500">*</span></label>
-              <select 
-                value={changeType} 
+              <select
+                value={changeType}
                 onChange={(e) => setChangeType(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
               >
@@ -801,7 +823,7 @@ export const L1Request = ({
             {/* IMPLEMENT / CHANGE DATE START */}
             <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start <span className="text-rose-500">*</span></label>
-              <CustomDatePicker 
+              <CustomDatePicker
                 value={dateStart}
                 onChange={setDateStart}
                 containerClassName="sm:max-w-[49%] lg:max-w-full"
@@ -813,8 +835,8 @@ export const L1Request = ({
             {/* PART TRACEABILITY DETAILS (FROM CHANGES) */}
             <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes) <span className="text-rose-500">*</span></label>
-              <textarea 
-                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..." 
+              <textarea
+                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={traceFrom}
                 onChange={(e) => setTraceFrom(e.target.value)}
                 rows={3}
@@ -831,7 +853,7 @@ export const L1Request = ({
             {/* CHANGE DATE CLOSE */}
             <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close <span className="text-rose-500">*</span></label>
-              <CustomDatePicker 
+              <CustomDatePicker
                 value={dateClose}
                 onChange={setDateClose}
                 containerClassName="sm:max-w-[49%] lg:max-w-full"
@@ -843,8 +865,8 @@ export const L1Request = ({
             {/* PART TRACEABILITY DETAILS (TO CHANGES) */}
             <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (To Changes) <span className="text-rose-500">*</span></label>
-              <textarea 
-                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..." 
+              <textarea
+                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={traceTo}
                 onChange={(e) => setTraceTo(e.target.value)}
                 rows={3}
@@ -863,13 +885,13 @@ export const L1Request = ({
         {/* 5. Risk Analysis Section */}
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Risk Analysis</h4>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
             {/* RISK ANALYSIS */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis <span className="text-rose-500">*</span></label>
-              <textarea 
-                placeholder="Describe potential risks, their likelihood, impact, and mitigation measures..." 
+              <textarea
+                placeholder="Describe potential risks, their likelihood, impact, and mitigation measures..."
                 value={riskAnalysis}
                 onChange={(e) => setRiskAnalysis(e.target.value)}
                 rows={3}
@@ -885,8 +907,8 @@ export const L1Request = ({
             {/* UPDATE IN SOP / WI / CONTROL PLAN / FMEA */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Update in SOP / WI / Control Plan / FMEA <span className="text-rose-500">*</span></label>
-              <textarea 
-                placeholder="Describe the updates required in SOP, Work Instructions, Control Plan, FMEA, etc..." 
+              <textarea
+                placeholder="Describe the updates required in SOP, Work Instructions, Control Plan, FMEA, etc..."
                 value={sopUpdate}
                 onChange={(e) => setSopUpdate(e.target.value)}
                 rows={3}
@@ -902,8 +924,8 @@ export const L1Request = ({
             {/* USER DEPT HOD APPROVAL */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">User Dept HOD Approval <span className="text-rose-500">*</span></label>
-              <textarea 
-                placeholder="Describe HOD review comments, approval status, or conditions..." 
+              <textarea
+                placeholder="Describe HOD review comments, approval status, or conditions..."
                 value={hodApproval}
                 onChange={(e) => setHodApproval(e.target.value)}
                 rows={3}
@@ -914,8 +936,8 @@ export const L1Request = ({
             {/* CUSTOMER APPROVAL REQUIRED */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required <span className="text-rose-500">*</span></label>
-              <select 
-                value={customerApproval} 
+              <select
+                value={customerApproval}
                 onChange={(e) => setCustomerApproval(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
               >
@@ -928,8 +950,8 @@ export const L1Request = ({
             {/* EFFECTIVENESS MONITORING */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Monitoring <span className="text-rose-500">*</span></label>
-              <textarea 
-                placeholder="How will effectiveness of this change be monitored and measured?.." 
+              <textarea
+                placeholder="How will effectiveness of this change be monitored and measured?.."
                 value={effectivenessMonitoring}
                 onChange={(e) => setEffectivenessMonitoring(e.target.value)}
                 rows={3}
@@ -946,8 +968,8 @@ export const L1Request = ({
 
         {/* Centered Submit Button */}
         <div className="flex justify-center pt-[16px]">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={isSubmitting}
             className="flex items-center justify-center gap-[8px] bg-[#0066cc] hover:bg-[#0052a3] disabled:opacity-60 text-white px-[32px] py-[12px] rounded-[6px] text-[13px] font-bold shadow-md transition-all transform active:scale-[0.98] cursor-pointer"
           >
@@ -978,14 +1000,14 @@ export const L1Request = ({
               <div className="space-y-[4px]">
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Add New Process</label>
                 <div className="flex gap-[8px]">
-                  <input 
-                    type="text" 
-                    placeholder="Enter new process name..." 
+                  <input
+                    type="text"
+                    placeholder="Enter new process name..."
                     value={tempProcessName}
                     onChange={(e) => setTempProcessName(e.target.value)}
                     className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc]"
                   />
-                  <button 
+                  <button
                     type="button"
                     onClick={handleAddProcess}
                     className="bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] rounded-[6px] text-[12px] font-bold transition-colors cursor-pointer"
@@ -999,8 +1021,8 @@ export const L1Request = ({
                 {dbProcesses.length > 0 ? (
                   <ul className="space-y-[4px]">
                     {dbProcesses.map(p => (
-                      <li 
-                        key={p} 
+                      <li
+                        key={p}
                         onClick={() => {
                           setProcessName(p);
                           setIsProcessModalOpen(false);
@@ -1038,14 +1060,14 @@ export const L1Request = ({
               <div className="space-y-[4px]">
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Add New Machine No</label>
                 <div className="flex gap-[8px]">
-                  <input 
-                    type="text" 
-                    placeholder="Enter new machine no..." 
+                  <input
+                    type="text"
+                    placeholder="Enter new machine no..."
                     value={tempMachineNo}
                     onChange={(e) => setTempMachineNo(e.target.value)}
                     className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc]"
                   />
-                  <button 
+                  <button
                     type="button"
                     onClick={async () => {
                       if (tempMachineNo.trim()) {
@@ -1071,8 +1093,8 @@ export const L1Request = ({
                 {dbMachines.length > 0 ? (
                   <ul className="space-y-[4px]">
                     {dbMachines.map(m => (
-                      <li 
-                        key={m} 
+                      <li
+                        key={m}
                         onClick={() => {
                           setMachineNo(m);
                           setIsMachineModalOpen(false);
@@ -1108,13 +1130,13 @@ export const L1Request = ({
               Are you sure you want to delete "{itemToDelete.name}"? This action cannot be undone.
             </p>
             <div className="flex gap-[12px] w-full">
-              <button 
+              <button
                 onClick={() => setItemToDelete(null)}
                 className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-[10px] rounded-[8px] text-[13px] font-bold transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={confirmDelete}
                 className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-[10px] rounded-[8px] text-[13px] font-bold transition-colors shadow-sm"
               >

@@ -47,11 +47,22 @@ test.describe('Change Management System Full Lifecycle E2E Flow', () => {
     await page.fill('textarea[placeholder^="Brief description of WHY this change is needed"]', 'E2E Full Lifecycle validation');
     await page.fill('textarea[placeholder^="Describe the change"]', 'This is a long detailed description for the full lifecycle E2E validation test. We are verifying database integration.');
 
+    // Generate valid future/present dates dynamically
+    const today = new Date();
+    const formatDate = (date) => {
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
+    };
+    const dateStartStr = formatDate(today);
+    const dateCloseStr = formatDate(new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000));
+
     await page.locator('label:has-text("Change Improvement Area") + select').selectOption('Quality');
     await page.locator('label:has-text("Permanent / Temporary Change") + select').selectOption('Temporary');
-    await page.fill('label:has-text("Implement / Change Date Start") + input', '01/06/2026');
+    await page.fill('label:has-text("Implement / Change Date Start") ~ div input', dateStartStr);
     await page.fill('label:has-text("Part Traceability Details (From Changes)") + textarea', 'LOT-100: Initial trace.');
-    await page.fill('label:has-text("Change Date Close") + input', '05/06/2026');
+    await page.fill('label:has-text("Change Date Close") ~ div input', dateCloseStr);
     await page.fill('label:has-text("Part Traceability Details (To Changes)") + textarea', 'LOT-110: Closure trace.');
 
     await page.fill('label:has-text("Risk Analysis") + textarea', 'Potential minor startup latency on line 5.');

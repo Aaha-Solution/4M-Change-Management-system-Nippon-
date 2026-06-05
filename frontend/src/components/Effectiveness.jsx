@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, Paperclip, RefreshCw, Search, X, Eye, Save } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
-import { 
-  createEffectivenessLog, 
-  updateEffectivenessLog, 
-  deleteEffectivenessLog, 
+import {
+  createEffectivenessLog,
+  updateEffectivenessLog,
+  deleteEffectivenessLog,
   getEffectivenessAttachment,
   resetEffectivenessLogs,
   getEffectivenessLogs
@@ -117,7 +117,7 @@ export const Effectiveness = ({
     const selectedChange = changes.find(c => c.id === effChangeNo);
     const context = selectedChange ? selectedChange.title : 'External Assessment';
     const reqDate = selectedChange ? selectedChange.date : new Date().toISOString().split('T')[0];
-    
+
     if (editingEffLogId) {
       // Edit mode 123
       const logData = {
@@ -157,7 +157,7 @@ export const Effectiveness = ({
         setEffectivenessLogs(prev => [response.data.log, ...prev]);
         logAction('Effectiveness Log Created', `Created monitoring observations for change ${effChangeNo}.`);
         setToastMsg(`Log entry added for ${effChangeNo}`);
-        
+
         // Reset form
         setEffChangeNo('');
         setEffRemarks('');
@@ -278,433 +278,425 @@ export const Effectiveness = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_2.5fr] gap-[24px]">
 
-      {/* LEFT COLUMN: Add Effectiveness Log Form */}
-      <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px] h-fit">
-        <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
-          <Save size={16} className="text-[#0066cc]" />
-          <h4 className="text-[13px] font-bold text-slate-900">
-            {editingEffLogId ? 'Edit Monitoring Log' : 'Add Monitoring Log'}
-          </h4>
-        </div>
+        {/* LEFT COLUMN: Add Effectiveness Log Form */}
+        <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px] h-fit">
+          <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
+            <Save size={16} className="text-[#0066cc]" />
+            <h4 className="text-[13px] font-bold text-slate-900">
+              {editingEffLogId ? 'Edit Monitoring Log' : 'Add Monitoring Log'}
+            </h4>
+          </div>
 
-        <form onSubmit={handleAddOrEditEff} className="space-y-[14px]">
-          {/* 4M CHANGE NO */}
-          <div className="space-y-1">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No *</label>
-            {editingEffLogId || effChangeNo ? (
+          <form onSubmit={handleAddOrEditEff} className="space-y-[14px]">
+            {/* 4M CHANGE NO */}
+            <div className="space-y-1">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No *</label>
+              {editingEffLogId || effChangeNo ? (
+                <input
+                  type="text"
+                  disabled
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
+                  value={effChangeNo}
+                />
+              ) : (
+                <select
+                  required
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
+                  value={effChangeNo}
+                  onChange={(e) => handleSelectChangeNo(e.target.value)}
+                >
+                  <option value="">Select Approved Change</option>
+                  {changes.filter(c => c.status === 'Approved' || c.status === 'Completed').map(c => (
+                    <option key={c.id} value={c.id}>{c.id} - {c.title.substring(0, 30)}...</option>
+                  ))}
+                  {changes.filter(c => c.status === 'Approved' || c.status === 'Completed').length === 0 && (
+                    <option value="CHG-DEMO">No Approved Changes (Create DEMO)</option>
+                  )}
+                </select>
+              )}
+            </div>
+
+            {/* REQUESTED DATE */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date *</label>
               <input
                 type="text"
                 disabled
+                placeholder="e.g. 16 May"
                 className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
-                value={effChangeNo}
+                value={displayReqDate}
               />
-            ) : (
-              <select
-                required
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
-                value={effChangeNo}
-                onChange={(e) => handleSelectChangeNo(e.target.value)}
-              >
-                <option value="">Select Approved Change</option>
-                {changes.filter(c => c.status === 'Approved' || c.status === 'Completed').map(c => (
-                  <option key={c.id} value={c.id}>{c.id} - {c.title.substring(0, 30)}...</option>
-                ))}
-                {changes.filter(c => c.status === 'Approved' || c.status === 'Completed').length === 0 && (
-                  <option value="CHG-DEMO">No Approved Changes (Create DEMO)</option>
-                )}
-              </select>
-            )}
-          </div>
-
-          {/* REQUESTED DATE */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date *</label>
-            <input
-              type="text"
-              disabled
-              placeholder="e.g. 16 May"
-              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
-              value={displayReqDate}
-            />
-          </div>
-
-          {/* CONTEXT OF CHANGE */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change *</label>
-            <input
-              type="text"
-              disabled
-              placeholder="e.g. Gauge R&R Study"
-              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
-              value={displayContext}
-            />
-          </div>
-
-          {/* CHANGE DATE START */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start *</label>
-            <input
-              type="text"
-              disabled
-              placeholder="e.g. 17 May"
-              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
-              value={displayStartDate}
-            />
-          </div>
-
-          {/* MONTH WISE */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise *</label>
-            <input
-              type="month"
-              required
-              disabled={!effChangeNo}
-              className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${
-                !effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
-              }`}
-              value={effMonthWise}
-              onChange={(e) => setEffMonthWise(e.target.value)}
-            />
-          </div>
-
-          {/* OBSERVATION REMARKS */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Observation Remarks *</label>
-            <textarea
-              required
-              disabled={!effChangeNo}
-              rows={3}
-              placeholder="Enter evaluation remarks/results..."
-              className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${
-                !effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
-              }`}
-              value={effRemarks}
-              onChange={(e) => setEffRemarks(e.target.value)}
-            />
-          </div>
-
-          {/* ATTACHMENTS */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attachments</label>
-            <div className="flex gap-[8px]">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  readOnly
-                  disabled={!effChangeNo}
-                  placeholder="e.g. proof-log.pdf"
-                  className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${
-                    !effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
-                  }`}
-                  value={effAttachment}
-                />
-                {effAttachment && (
-                  <button
-                    type="button"
-                    disabled={!effChangeNo}
-                    onClick={() => setEffAttachment('')}
-                    className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                    title="Clear all attachments"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-              <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 rounded-[6px] text-[12px] font-bold transition-all cursor-pointer ${
-                !effChangeNo ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'
-              }`}>
-                <Paperclip size={14} />
-                <span>Upload</span>
-                <input
-                  type="file"
-                  multiple
-                  disabled={!effChangeNo}
-                  className="hidden"
-                  onChange={async (e) => {
-                    if (e.target.files && e.target.files.length > 0) {
-                      const files = Array.from(e.target.files);
-                      const names = files.map(f => f.name);
-
-                      // Store object URLs for preview
-                      const newUrls = {};
-                      files.forEach(file => {
-                        newUrls[file.name] = URL.createObjectURL(file);
-                      });
-                      setFileUrls(prev => ({ ...prev, ...newUrls }));
-
-                      // Convert files to base64 for server upload
-                      const base64Files = await Promise.all(
-                        files.map(async (file) => ({
-                          name: file.name,
-                          type: file.type || 'application/octet-stream',
-                          data: await fileToBase64(file)
-                        }))
-                      );
-                      setUploadedFilesList(prev => {
-                        const existingNames = prev.map(f => f.name);
-                        const newOnes = base64Files.filter(f => !existingNames.includes(f.name));
-                        return [...prev, ...newOnes];
-                      });
-
-                      const existing = effAttachment ? effAttachment.split(',').map(s => s.trim()).filter(Boolean) : [];
-                      const updated = Array.from(new Set([...existing, ...names])).join(', ');
-                      setEffAttachment(updated);
-                      
-                      // Reset input value to allow uploading the same file again
-                      e.target.value = '';
-                    }
-                  }}
-                />
-              </label>
             </div>
 
-            {/* Selected File Pills */}
-            {effAttachment && (
-              <div className="flex flex-wrap gap-[6px] pt-[6px]">
-                {effAttachment.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
-                  <span key={i} className="inline-flex items-center gap-[4px] bg-slate-50 border border-slate-200 text-[11px] font-semibold text-slate-700 px-[8px] py-[2px] rounded-[4px] select-none">
-                    <span 
-                      onClick={() => handleViewAttachment(file)}
-                      className="truncate max-w-[150px] cursor-pointer hover:underline text-[#0066cc]" 
-                      title="Click to view file"
-                    >
-                      📎 {file}
-                    </span>
+            {/* CONTEXT OF CHANGE */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change *</label>
+              <input
+                type="text"
+                disabled
+                placeholder="e.g. Gauge R&R Study"
+                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
+                value={displayContext}
+              />
+            </div>
+
+            {/* CHANGE DATE START */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start *</label>
+              <input
+                type="text"
+                disabled
+                placeholder="e.g. 17 May"
+                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
+                value={displayStartDate}
+              />
+            </div>
+
+            {/* MONTH WISE */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise *</label>
+              <input
+                type="month"
+                required
+                disabled={!effChangeNo}
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                  }`}
+                value={effMonthWise}
+                onChange={(e) => setEffMonthWise(e.target.value)}
+              />
+            </div>
+
+            {/* OBSERVATION REMARKS */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Observation Remarks *</label>
+              <textarea
+                required
+                disabled={!effChangeNo}
+                rows={3}
+                placeholder="Enter evaluation remarks/results..."
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
+                  }`}
+                value={effRemarks}
+                onChange={(e) => setEffRemarks(e.target.value)}
+              />
+            </div>
+
+            {/* ATTACHMENTS */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attachments</label>
+              <div className="flex gap-[8px]">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    readOnly
+                    disabled={!effChangeNo}
+                    placeholder="e.g. proof-log.pdf"
+                    className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
+                      }`}
+                    value={effAttachment}
+                  />
+                  {effAttachment && (
                     <button
                       type="button"
                       disabled={!effChangeNo}
-                      onClick={() => {
-                        const existing = effAttachment.split(',').map(s => s.trim()).filter(Boolean);
-                        const updated = existing.filter(f => f !== file).join(', ');
-                        setEffAttachment(updated);
-                      }}
-                      className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-xs"
+                      onClick={() => setEffAttachment('')}
+                      className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                      title="Clear all attachments"
                     >
-                      &times;
+                      <X size={14} />
                     </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+                  )}
+                </div>
+                <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 rounded-[6px] text-[12px] font-bold transition-all cursor-pointer ${!effChangeNo ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'
+                  }`}>
+                  <Paperclip size={14} />
+                  <span>Upload</span>
+                  <input
+                    type="file"
+                    multiple
+                    disabled={!effChangeNo}
+                    className="hidden"
+                    onChange={async (e) => {
+                      const target = e.target;
+                      if (target.files && target.files.length > 0) {
+                        const files = Array.from(target.files);
+                        const names = files.map(f => f.name);
 
-          {/* EFFECTIVENESS STATUS */}
-          <div className="space-y-1">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Status *</label>
+                        // Reset input value synchronously immediately to allow uploading the same file again
+                        target.value = '';
+
+                        // Store object URLs for preview
+                        const newUrls = {};
+                        files.forEach(file => {
+                          newUrls[file.name] = URL.createObjectURL(file);
+                        });
+                        setFileUrls(prev => ({ ...prev, ...newUrls }));
+
+                        // Convert files to base64 for server upload
+                        const base64Files = await Promise.all(
+                          files.map(async (file) => ({
+                            name: file.name,
+                            type: file.type || 'application/octet-stream',
+                            data: await fileToBase64(file)
+                          }))
+                        );
+                        setUploadedFilesList(prev => {
+                          const existingNames = prev.map(f => f.name);
+                          const newOnes = base64Files.filter(f => !existingNames.includes(f.name));
+                          return [...prev, ...newOnes];
+                        });
+
+                        const existing = effAttachment ? effAttachment.split(',').map(s => s.trim()).filter(Boolean) : [];
+                        const updated = Array.from(new Set([...existing, ...names])).join(', ');
+                        setEffAttachment(updated);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              {/* Selected File Pills */}
+              {effAttachment && (
+                <div className="flex flex-wrap gap-[6px] pt-[6px]">
+                  {effAttachment.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
+                    <span key={i} className="inline-flex items-center gap-[4px] bg-slate-50 border border-slate-200 text-[11px] font-semibold text-slate-700 px-[8px] py-[2px] rounded-[4px] select-none">
+                      <span
+                        onClick={() => handleViewAttachment(file)}
+                        className="truncate max-w-[150px] cursor-pointer hover:underline text-[#0066cc]"
+                        title="Click to view file"
+                      >
+                        📎 {file}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={!effChangeNo}
+                        onClick={() => {
+                          const existing = effAttachment.split(',').map(s => s.trim()).filter(Boolean);
+                          const updated = existing.filter(f => f !== file).join(', ');
+                          setEffAttachment(updated);
+                        }}
+                        className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-xs"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* EFFECTIVENESS STATUS */}
+            <div className="space-y-1">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Status *</label>
+              <select
+                required
+                disabled={!effChangeNo}
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                  }`}
+                value={effStatus}
+                onChange={(e) => setEffStatus(e.target.value)}
+              >
+                <option value="">Select Status</option>
+                <option value="Effectiveness Ok">Effectiveness Ok</option>
+                <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
+              </select>
+            </div>
+
+            {/* QA APPROVAL DECISION */}
+            <div className="space-y-1">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Approval Decision *</label>
+              <select
+                required
+                disabled={!effChangeNo}
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                  }`}
+                value={effQaApproval}
+                onChange={(e) => setEffQaApproval(e.target.value)}
+              >
+                <option value="">Select QA Decision</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+
+            {/* Buttons */}
+            <div className="space-y-[8px] pt-[4px]">
+              <button
+                type="submit"
+                disabled={!effChangeNo}
+                className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
+              >
+                <Save size={14} />
+                <span>{editingEffLogId ? 'Save Changes' : 'Add Log Entry'}</span>
+              </button>
+              {(editingEffLogId || effChangeNo) && (
+                <button
+                  type="button"
+                  onClick={handleCancelEditing}
+                  className="w-full text-center py-[6px] text-slate-500 hover:text-slate-800 text-[11px] font-semibold cursor-pointer"
+                >
+                  Cancel Selection
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* RIGHT COLUMN: Table Column */}
+        <div className="space-y-[16px]">
+          {/* Search and filters */}
+          <div className="flex gap-[8px] items-center text-[11px] flex-wrap">
+            <div className="relative flex-grow min-w-[200px]">
+              <Search className="absolute left-[10px] top-[10px] text-slate-400" size={14} />
+              <input
+                type="text"
+                placeholder="Search logs by change no or remarks..."
+                className="w-full pl-[30px] pr-[12px] py-[8px] border border-slate-200 rounded-[6px] outline-none bg-white text-[12px] focus:border-[#0066cc]"
+                value={effSearch}
+                onChange={(e) => setEffSearch(e.target.value)}
+              />
+            </div>
+
             <select
-              required
-              disabled={!effChangeNo}
-              className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${
-                !effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
-              }`}
-              value={effStatus}
-              onChange={(e) => setEffStatus(e.target.value)}
+              className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[150px] focus:border-[#0066cc]"
+              value={effFilterStatus}
+              onChange={(e) => setEffFilterStatus(e.target.value)}
             >
-              <option value="">Select Status</option>
+              <option value="All">All Statuses</option>
               <option value="Effectiveness Ok">Effectiveness Ok</option>
               <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
             </select>
-          </div>
 
-          {/* QA APPROVAL DECISION */}
-          <div className="space-y-1">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Approval Decision *</label>
             <select
-              required
-              disabled={!effChangeNo}
-              className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${
-                !effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
-              }`}
-              value={effQaApproval}
-              onChange={(e) => setEffQaApproval(e.target.value)}
+              className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[150px] focus:border-[#0066cc]"
+              value={effFilterMonth}
+              onChange={(e) => setEffFilterMonth(e.target.value)}
             >
-              <option value="">Select QA Decision</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
+              <option value="All">All Months</option>
+              {uniqueMonths.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
             </select>
-          </div>
 
-          {/* Buttons */}
-          <div className="space-y-[8px] pt-[4px]">
             <button
-              type="submit"
-              disabled={!effChangeNo}
-              className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
+              onClick={handleResetEffToDefaults}
+              className="flex items-center gap-[6px] bg-white border border-slate-200 hover:bg-slate-50 px-[14px] py-[8px] rounded-[6px] text-[12px] font-semibold transition-colors cursor-pointer"
             >
-              <Save size={14} />
-              <span>{editingEffLogId ? 'Save Changes' : 'Add Log Entry'}</span>
+              <RefreshCw size={12} />
+              <span>Reset</span>
             </button>
-            {(editingEffLogId || effChangeNo) && (
-              <button
-                type="button"
-                onClick={handleCancelEditing}
-                className="w-full text-center py-[6px] text-slate-500 hover:text-slate-800 text-[11px] font-semibold cursor-pointer"
-              >
-                Cancel Selection
-              </button>
-            )}
           </div>
-        </form>
-      </div>
 
-      {/* RIGHT COLUMN: Table Column */}
-      <div className="space-y-[16px]">
-        {/* Search and filters */}
-        <div className="flex gap-[8px] items-center text-[11px] flex-wrap">
-          <div className="relative flex-grow min-w-[200px]">
-            <Search className="absolute left-[10px] top-[10px] text-slate-400" size={14} />
-            <input
-              type="text"
-              placeholder="Search logs by change no or remarks..."
-              className="w-full pl-[30px] pr-[12px] py-[8px] border border-slate-200 rounded-[6px] outline-none bg-white text-[12px] focus:border-[#0066cc]"
-              value={effSearch}
-              onChange={(e) => setEffSearch(e.target.value)}
+          {/* Logs Table Card */}
+          <div className="bg-white border border-slate-200 rounded-[12px] shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse table-fixed min-w-[1050px]">
+                <thead>
+                  <tr className="bg-[#fdfaf5] border-b border-slate-150 text-[10px]">
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">4M Change No</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[95px]">Requested Date</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[170px]">Context of Change</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Change Date Start</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[90px]">Month Wise</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[170px]">Remarks</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Attachment</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Status</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">QA Approval</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[65px]">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-[11px]">
+                  {filteredLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={10} className="text-center py-[48px] text-slate-400">
+                        No observations logs recorded.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedLogs.map(log => {
+                      const isEditing = editingEffLogId === log.id;
+                      return (
+                        <tr
+                          key={log.id}
+                          className={`hover:bg-slate-50/50 cursor-pointer transition-colors ${isEditing ? 'bg-sky-50/60 hover:bg-sky-50/60 border-l-[3px] border-l-[#0066cc]' : ''
+                            }`}
+                          onClick={() => handleSelectRowForEdit(log)}
+                        >
+                          <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
+                          <td className="p-[8px] text-slate-500">{formatDateShort(log.reqDate)}</td>
+                          <td className="p-[8px] font-medium text-slate-700 truncate" title={log.context}>{log.context}</td>
+                          <td className="p-[8px] text-slate-500">{formatDateShort(log.startDate)}</td>
+                          <td className="p-[8px] font-medium text-slate-600">{formatMonthWise(log.monthWise)}</td>
+                          <td className="p-[8px] max-w-[200px] truncate text-slate-500" title={log.remarks}>{log.remarks}</td>
+
+                          <td className="p-[8px] font-mono text-teal-655" onClick={(e) => e.stopPropagation()}>
+                            {log.attachment ? (
+                              <div className="flex flex-col gap-[4px]">
+                                {log.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                                  <span
+                                    key={idx}
+                                    onClick={() => handleViewAttachment(file, log)}
+                                    className="inline-flex items-center gap-[4px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-[2px] px-[6px] text-[10px] font-medium text-[#0066cc] cursor-pointer max-w-[120px] truncate"
+                                    title="Click to view file"
+                                  >
+                                    <Paperclip size={10} className="text-slate-400" />
+                                    <span className="underline truncate">{file}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : '-'}
+                          </td>
+
+                          <td className="p-[8px]">
+                            <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${log.status === 'Effectiveness Ok'
+                                ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                                : 'bg-rose-50 border-rose-250 text-rose-700'
+                              }`}>
+                              {log.status}
+                            </span>
+                          </td>
+
+                          <td className="p-[8px]">
+                            <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${log.qaApproval === 'Approved'
+                                ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                                : 'bg-rose-50 border-rose-250 text-rose-700'
+                              }`}>
+                              {log.qaApproval}
+                            </span>
+                          </td>
+
+                          <td className="p-[8px] text-center" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => setViewingLog(log)}
+                              className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
+                              title="View Details"
+                            >
+                              <Eye size={12} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25, 50]}
+              component="div"
+              count={filteredLogs.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={(event, newPage) => setPage(newPage)}
+              onRowsPerPageChange={(event) => {
+                setRowsPerPage(parseInt(event.target.value, 10));
+                setPage(0);
+              }}
+              className="border-t border-slate-100"
             />
           </div>
-
-          <select
-            className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[150px] focus:border-[#0066cc]"
-            value={effFilterStatus}
-            onChange={(e) => setEffFilterStatus(e.target.value)}
-          >
-            <option value="All">All Statuses</option>
-            <option value="Effectiveness Ok">Effectiveness Ok</option>
-            <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
-          </select>
-
-          <select
-            className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[150px] focus:border-[#0066cc]"
-            value={effFilterMonth}
-            onChange={(e) => setEffFilterMonth(e.target.value)}
-          >
-            <option value="All">All Months</option>
-            {uniqueMonths.map(m => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
-
-          <button
-            onClick={handleResetEffToDefaults}
-            className="flex items-center gap-[6px] bg-white border border-slate-200 hover:bg-slate-50 px-[14px] py-[8px] rounded-[6px] text-[12px] font-semibold transition-colors cursor-pointer"
-          >
-            <RefreshCw size={12} />
-            <span>Reset</span>
-          </button>
         </div>
-
-        {/* Logs Table Card */}
-        <div className="bg-white border border-slate-200 rounded-[12px] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse table-fixed min-w-[1050px]">
-              <thead>
-                <tr className="bg-[#fdfaf5] border-b border-slate-150 text-[10px]">
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">4M Change No</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[95px]">Requested Date</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[170px]">Context of Change</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Change Date Start</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[90px]">Month Wise</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[170px]">Remarks</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Attachment</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Status</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">QA Approval</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[65px]">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-[11px]">
-                {filteredLogs.length === 0 ? (
-                  <tr>
-                    <td colSpan={10} className="text-center py-[48px] text-slate-400">
-                      No observations logs recorded.
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedLogs.map(log => {
-                    const isEditing = editingEffLogId === log.id;
-                    return (
-                      <tr
-                        key={log.id}
-                        className={`hover:bg-slate-50/50 cursor-pointer transition-colors ${
-                          isEditing ? 'bg-sky-50/60 hover:bg-sky-50/60 border-l-[3px] border-l-[#0066cc]' : ''
-                        }`}
-                        onClick={() => handleSelectRowForEdit(log)}
-                      >
-                        <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
-                        <td className="p-[8px] text-slate-500">{formatDateShort(log.reqDate)}</td>
-                        <td className="p-[8px] font-medium text-slate-700 truncate" title={log.context}>{log.context}</td>
-                        <td className="p-[8px] text-slate-500">{formatDateShort(log.startDate)}</td>
-                        <td className="p-[8px] font-medium text-slate-600">{formatMonthWise(log.monthWise)}</td>
-                        <td className="p-[8px] max-w-[200px] truncate text-slate-500" title={log.remarks}>{log.remarks}</td>
-                        
-                        <td className="p-[8px] font-mono text-teal-655" onClick={(e) => e.stopPropagation()}>
-                          {log.attachment ? (
-                            <div className="flex flex-col gap-[4px]">
-                              {log.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
-                                <span 
-                                  key={idx} 
-                                  onClick={() => handleViewAttachment(file, log)}
-                                  className="inline-flex items-center gap-[4px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-[2px] px-[6px] text-[10px] font-medium text-[#0066cc] cursor-pointer max-w-[120px] truncate" 
-                                  title="Click to view file"
-                                >
-                                  <Paperclip size={10} className="text-slate-400" />
-                                  <span className="underline truncate">{file}</span>
-                                </span>
-                              ))}
-                            </div>
-                          ) : '-'}
-                        </td>
-                        
-                        <td className="p-[8px]">
-                          <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${
-                            log.status === 'Effectiveness Ok'
-                              ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                              : 'bg-rose-50 border-rose-250 text-rose-700'
-                          }`}>
-                            {log.status}
-                          </span>
-                        </td>
-
-                        <td className="p-[8px]">
-                          <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${
-                            log.qaApproval === 'Approved'
-                              ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                              : 'bg-rose-50 border-rose-250 text-rose-700'
-                          }`}>
-                            {log.qaApproval}
-                          </span>
-                        </td>
-
-                        <td className="p-[8px] text-center" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            type="button"
-                            onClick={() => setViewingLog(log)}
-                            className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
-                            title="View Details"
-                          >
-                            <Eye size={12} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            component="div"
-            count={filteredLogs.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={(event, newPage) => setPage(newPage)}
-            onRowsPerPageChange={(event) => {
-              setRowsPerPage(parseInt(event.target.value, 10));
-              setPage(0);
-            }}
-            className="border-t border-slate-100"
-          />
-        </div>
-      </div>
 
       </div>
 
@@ -751,11 +743,11 @@ export const Effectiveness = ({
       {viewingLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => setViewingLog(null)}
           />
-          
+
           {/* Modal Container */}
           <div className="relative bg-white w-full max-w-[500px] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
@@ -764,7 +756,7 @@ export const Effectiveness = ({
                 <Eye size={16} className="text-[#0066cc]" />
                 <h4 className="font-heading text-[14px] font-bold text-slate-800">Effectiveness Log Details</h4>
               </div>
-              <button 
+              <button
                 onClick={() => setViewingLog(null)}
                 className="p-[4px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
               >
@@ -805,11 +797,10 @@ export const Effectiveness = ({
                 <div className="space-y-[4px]">
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Status</span>
                   <div>
-                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
-                      viewingLog.status === 'Effectiveness Ok' 
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${viewingLog.status === 'Effectiveness Ok'
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                         : 'bg-rose-50 border-rose-250 text-rose-700'
-                    }`}>
+                      }`}>
                       {viewingLog.status}
                     </span>
                   </div>
@@ -817,11 +808,10 @@ export const Effectiveness = ({
                 <div className="space-y-[4px]">
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Approval</span>
                   <div>
-                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
-                      viewingLog.qaApproval === 'Approved' 
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${viewingLog.qaApproval === 'Approved'
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                         : 'bg-rose-50 border-rose-200 text-rose-700'
-                    }`}>
+                      }`}>
                       {viewingLog.qaApproval}
                     </span>
                   </div>
@@ -833,14 +823,14 @@ export const Effectiveness = ({
                 {viewingLog.attachment ? (
                   <div className="flex flex-wrap gap-1.5">
                     {viewingLog.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
-                      <span 
-                        key={idx} 
+                      <span
+                        key={idx}
                         onClick={(e) => {
                           e.stopPropagation();
                           setViewingLog(null);
                           handleViewAttachment(file, viewingLog);
                         }}
-                        className="inline-flex items-center gap-1 bg-slate-50 border border-slate-150 text-[11px] font-medium text-slate-700 px-2 py-0.5 rounded-full hover:bg-slate-100 hover:border-teal-500 hover:text-teal-700 cursor-pointer" 
+                        className="inline-flex items-center gap-1 bg-slate-50 border border-slate-150 text-[11px] font-medium text-slate-700 px-2 py-0.5 rounded-full hover:bg-slate-100 hover:border-teal-500 hover:text-teal-700 cursor-pointer"
                         title="Click to view file"
                       >
                         📎 {file}
@@ -860,7 +850,7 @@ export const Effectiveness = ({
 
             {/* Footer */}
             <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-100 flex justify-end">
-              <button 
+              <button
                 onClick={() => setViewingLog(null)}
                 className="px-[16px] py-[8px] bg-white border border-slate-200 rounded-[6px] text-slate-600 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
               >
@@ -873,11 +863,11 @@ export const Effectiveness = ({
 
       {/* Attachment Preview Modal (opens in the same page) */}
       {previewFile && (
-        <div 
+        <div
           className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setPreviewFile(null)}
         >
-          <div 
+          <div
             className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -888,33 +878,33 @@ export const Effectiveness = ({
                 </span>
                 <span className="font-heading font-bold text-slate-800 text-sm">{previewFile}</span>
               </div>
-              <button 
-                onClick={() => setPreviewFile(null)} 
+              <button
+                onClick={() => setPreviewFile(null)}
                 className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
                 previewFile.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
-                  <img 
-                    src={fileUrls[previewFile]} 
-                    alt={previewFile} 
-                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200" 
+                  <img
+                    src={fileUrls[previewFile]}
+                    alt={previewFile}
+                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200"
                   />
                 ) : previewFile.toLowerCase().endsWith('.pdf') ? (
-                  <iframe 
-                    src={`${fileUrls[previewFile]}#navpanes=0`} 
-                    title={previewFile} 
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white" 
+                  <iframe
+                    src={`${fileUrls[previewFile]}#navpanes=0`}
+                    title={previewFile}
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white"
                   />
                 ) : (
-                  <iframe 
-                    src={fileUrls[previewFile]} 
-                    title={previewFile} 
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700" 
+                  <iframe
+                    src={fileUrls[previewFile]}
+                    title={previewFile}
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700"
                   />
                 )
               ) : (
@@ -976,7 +966,7 @@ export const Effectiveness = ({
                 )
               )}
             </div>
-            
+
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
               <button
                 onClick={() => setPreviewFile(null)}
