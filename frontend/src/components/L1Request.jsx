@@ -729,7 +729,7 @@ export const L1Request = ({
                 placeholder="Brief description of WHY this change is needed (min 10 characters)..." 
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
-                rows={3}
+                rows={4}
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none"
               />
               <span className="block text-[9px] text-slate-400">{context.length} / 10 min</span>
