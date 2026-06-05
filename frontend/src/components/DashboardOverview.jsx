@@ -320,7 +320,34 @@ export const DashboardOverview = ({
                 style={{ height: `${barHeight}%`, minHeight: '4px' }}
               />
               <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
-                {item.label}
+                {item.label === 'PRODUCTION' ? (
+                  <>
+                    <span className="hidden sm:inline">PRODUCTION</span>
+                    <span className="inline sm:hidden">PROD</span>
+                  </>
+                ) : item.label === 'MAINTENANCE' ? (
+                  <>
+                    <span className="hidden sm:inline">MAINTENANCE</span>
+                    <span className="inline sm:hidden">MAINT</span>
+                  </>
+                ) : item.label === 'MATERIALS' ? (
+                  <>
+                    <span className="hidden sm:inline">MATERIALS</span>
+                    <span className="inline sm:hidden">MAT</span>
+                  </>
+                ) : item.label === 'MARKETING' ? (
+                  <>
+                    <span className="hidden sm:inline">MARKETING</span>
+                    <span className="inline sm:hidden">MKTG</span>
+                  </>
+                ) : item.label === 'SAFETY' ? (
+                  <>
+                    <span className="hidden sm:inline">SAFETY</span>
+                    <span className="inline sm:hidden">SAFE</span>
+                  </>
+                ) : (
+                  item.label
+                )}
               </span>
             </div>
           );
@@ -604,7 +631,7 @@ export const DashboardOverview = ({
           <div className="flex items-center gap-[12px]">
             {/* Show tab segments ONLY in Tab View mode */}
             {!isGridView && (
-              <div className="flex items-center bg-slate-100 p-[4px] rounded-[6px] border border-slate-200">
+              <div className="flex flex-wrap items-center justify-center bg-slate-100 p-[4px] rounded-[6px] border border-slate-200 gap-y-1">
                 {['Department', 'Process', '6M Category', 'Monthly', 'Approval Status'].map((tab) => (
                   <button
                     key={tab}

@@ -889,7 +889,7 @@ export const L3RequestTracker = ({
                   </h5>
 
                   {/* Metadata */}
-                  <div className="grid grid-cols-3 gap-[16px] pb-[16px] border-b border-slate-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-[16px] pb-[16px] border-b border-slate-100">
                     <div className="space-y-[4px]">
                       <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</span>
                       <span className="font-bold text-[#0066cc] text-[13px]">{selectedLog.changeNo}</span>

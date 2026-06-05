@@ -389,8 +389,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
       {/* 2. Main Content Right Panel */}
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen">
 
-        {/* Top Header Bar */}
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-[24px] py-[16px] flex items-center justify-between">
+        {/* Top Header Bar */}        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-[12px] sm:px-[24px] py-[12px] sm:py-[16px] flex items-center justify-between">
           <div className="flex items-center gap-[12px]">
             {/* Mobile menu toggle */}
             <button
@@ -435,15 +434,15 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={handleLocalSignOut}
               title="Sign Out"
-              className="flex items-center gap-[6px] bg-white border border-slate-250 hover:bg-rose-50 hover:border-rose-500 hover:text-rose-600 text-slate-600 px-[14px] py-[6px] rounded-[8px] text-[12px] font-semibold cursor-pointer transition-colors"
+              className="flex items-center gap-[6px] bg-white border border-slate-250 hover:bg-rose-50 hover:border-rose-500 hover:text-rose-600 text-slate-600 px-[8px] sm:px-[14px] py-[6px] rounded-[8px] text-[12px] font-semibold cursor-pointer transition-colors"
             >
               <LogOut size={12} />
-              <span>Sign Out</span>
+              <span className="hidden sm:inline">Sign Out</span>
             </button>
 
             {/* Nippon Logo in assets */}
-            <div className="pl-[8px] border-l border-slate-200">
-              <img src={nipponLogo} alt="Nippon Logo" className="h-[32px] w-auto object-contain select-none" />
+            <div className="pl-[4px] sm:pl-[8px] border-l border-slate-200">
+              <img src={nipponLogo} alt="Nippon Logo" className="h-[24px] sm:h-[32px] w-auto object-contain select-none" />
             </div>
           </div>
         </header>
