@@ -94,6 +94,9 @@ export const createL2ValidationLog = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in createL2ValidationLog:', error);
+    if (error.message && error.message.includes('already exists')) {
+      return res.status(400).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to save L2 validation log to database.' });
   }
 };

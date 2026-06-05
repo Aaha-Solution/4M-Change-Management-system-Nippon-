@@ -28,8 +28,9 @@ export const L2Validation = ({
   const [formRequester, setFormRequester] = useState('');
   const [formStatus, setFormStatus] = useState('');
   const [formRemarks, setFormRemarks] = useState('');
-  const [formPedFile, setFormPedFile] = useState('weld-test.png');
-  const [formQaFile, setFormQaFile] = useState('weld-test.png');
+
+  // Inline field validation errors
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // File Upload states
   const [pedFileObj, setPedFileObj] = useState(null);
@@ -69,9 +70,9 @@ export const L2Validation = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-populate the first pending/available request on mount/update of changes or validationLogs
+  // Auto-populate the first pending/available request on initial mount only
   useEffect(() => {
-    if (changes && changes.length > 0) {
+    if (changes && changes.length > 0 && !formChangeNo) {
       const validatedNos = new Set(validationLogs.map(log => log.changeNo?.toLowerCase().trim()));
       const firstPending = changes.find(c => !validatedNos.has(c.id.toLowerCase().trim())) || changes[0];
       if (firstPending) {
@@ -80,15 +81,61 @@ export const L2Validation = ({
         setFormRequester(firstPending.requestBy || firstPending.requester || '');
       }
     }
-  }, [changes, validationLogs]);
+  // Only run when changes or validationLogs first load (not on every re-render)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [changes]);
+
+  // Sync form inputs with saved validation logs when formChangeNo or validationLogs changes
+  useEffect(() => {
+    // Clear field-level errors and file selections whenever the selected record changes
+    setFieldErrors({});
+    setPedFileObj(null);
+    setQaFileObj(null);
+
+    if (formChangeNo) {
+      // Sync date/requester from changes list
+      const matchedChange = changes?.find(c => c.id.toLowerCase().trim() === formChangeNo.toLowerCase().trim());
+      if (matchedChange) {
+        setFormDate(formatDateToDDMMYYYY(matchedChange.date));
+        setFormRequester(matchedChange.requestBy || matchedChange.requester || '');
+      }
+      // Sync status/remarks from saved log
+      const savedLog = validationLogs.find(
+        log => log.changeNo?.toLowerCase().trim() === formChangeNo.toLowerCase().trim()
+      );
+      if (savedLog) {
+        setFormStatus(savedLog.status || '');
+        setFormRemarks(savedLog.remarks === '-' ? '' : savedLog.remarks || '');
+      } else {
+        setFormStatus('');
+        setFormRemarks('');
+      }
+    } else {
+      setFormStatus('');
+      setFormRemarks('');
+    }
+  }, [formChangeNo, validationLogs, changes]);
 
   const handleSaveLog = async (e) => {
     e.preventDefault();
 
-    if (!formChangeNo.trim() || !formDate.trim() || !formRequester.trim() || !formStatus || !formRemarks.trim()) {
-      setValidationError('Please fill out all required validation log details.');
+    // Per-field validation
+    const errors = {};
+    if (!formStatus) errors.status = 'Please select a validation status.';
+    if (!formRemarks.trim()) errors.remarks = 'Remarks are required.';
+    if (!pedFileObj) errors.pedFile = 'PED attachment is required.';
+    if (!qaFileObj) errors.qaFile = 'QA attachment is required.';
+    if (!formDate.trim() || !formRequester.trim()) {
+      setValidationError('Change request data is missing. Please select a valid row from the table.');
       return;
     }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
 
     setIsSubmitting(true);
     try {
@@ -116,8 +163,8 @@ export const L2Validation = ({
         changeNo: formChangeNo.trim(),
         date: formDate.trim(),
         requester: formRequester.trim(),
-        weldTest: formPedFile,
-        qaTest: formQaFile,
+        weldTest: pedFileObj ? pedFileObj.name : '',
+        qaTest: qaFileObj ? qaFileObj.name : '',
         status: formStatus,
         remarks: formRemarks.trim()
       };
@@ -132,12 +179,7 @@ export const L2Validation = ({
 
       await fetchLogs();
 
-      // Reset Form Fields
-      setFormChangeNo('');
-      setFormDate('');
-      setFormRequester('');
-      setFormStatus('');
-      setFormRemarks('');
+      // Clear file upload states
       setPedFileObj(null);
       setQaFileObj(null);
     } catch (err) {
@@ -202,6 +244,10 @@ export const L2Validation = ({
     );
   };
 
+  const isAlreadyValidated = validationLogs.some(
+    log => log.changeNo?.toLowerCase().trim() === formChangeNo?.toLowerCase().trim()
+  );
+
   // Construct L2 table rows by combining changes and validationLogs
   const tableLogs = (changes || []).map(change => {
     const savedLog = validationLogs.find(log => log.changeNo?.toLowerCase().trim() === change.id?.toLowerCase().trim());
@@ -248,22 +294,8 @@ export const L2Validation = ({
               type="text"
               placeholder="Click a row on the right to select"
               value={formChangeNo}
+              readOnly
               tabIndex="-1"
-              onChange={(e) => {
-                const val = e.target.value;
-                setFormChangeNo(val);
-
-                // Find matching request in changes
-                const selectedChange = changes?.find(c => c.id.toLowerCase().trim() === val.toLowerCase().trim());
-                if (selectedChange) {
-                  setFormDate(formatDateToDDMMYYYY(selectedChange.date));
-                  setFormRequester(selectedChange.requestBy || selectedChange.requester || '');
-                } else {
-                  // Reset auto-populated fields if typed value doesn't match any active change request
-                  setFormDate('');
-                  setFormRequester('');
-                }
-              }}
               className="w-full bg-slate-100 text-slate-500 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pointer-events-none select-none"
             />
           </div>
@@ -298,32 +330,50 @@ export const L2Validation = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requester Validation(PED) Attachment <span className="text-rose-500">*</span></label>
             <input
+              key={`ped-${formChangeNo}`}
               type="file"
+              disabled={isAlreadyValidated}
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
-                  const file = e.target.files[0];
-                  setFormPedFile(file.name);
-                  setPedFileObj(file);
+                  setPedFileObj(e.target.files[0]);
+                  setFieldErrors(prev => ({ ...prev, pedFile: '' }));
                 }
               }}
-              className="w-full text-[11px] text-slate-500 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:border-slate-200 file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer"
+              className={`w-full text-[11px] text-slate-500 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+                fieldErrors.pedFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
+              }`}
             />
+            {fieldErrors.pedFile && (
+              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
+                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
+                {fieldErrors.pedFile}
+              </p>
+            )}
           </div>
 
           {/* APPROVER SET UP VERIFICATION (QA) ATTACHMENT */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Set Up Verification(QA) Attachment <span className="text-rose-500">*</span></label>
             <input
+              key={`qa-${formChangeNo}`}
               type="file"
+              disabled={isAlreadyValidated}
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
-                  const file = e.target.files[0];
-                  setFormQaFile(file.name);
-                  setQaFileObj(file);
+                  setQaFileObj(e.target.files[0]);
+                  setFieldErrors(prev => ({ ...prev, qaFile: '' }));
                 }
               }}
-              className="w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:border-slate-200 file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer"
+              className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+                fieldErrors.qaFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
+              }`}
             />
+            {fieldErrors.qaFile && (
+              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
+                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
+                {fieldErrors.qaFile}
+              </p>
+            )}
           </div>
 
           {/* APPROVER VALIDATION STATUS */}
@@ -331,13 +381,25 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
             <select
               value={formStatus}
-              onChange={(e) => setFormStatus(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+              disabled={isAlreadyValidated}
+              onChange={(e) => {
+                setFormStatus(e.target.value);
+                setFieldErrors(prev => ({ ...prev, status: '' }));
+              }}
+              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors disabled:cursor-not-allowed text-slate-550 ${
+                fieldErrors.status ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+              }`}
             >
               <option value="">Select Status</option>
               <option value="Accepted">Accepted</option>
               <option value="Rejected">Rejected</option>
             </select>
+            {fieldErrors.status && (
+              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
+                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
+                {fieldErrors.status}
+              </p>
+            )}
           </div>
 
           {/* REMARKS */}
@@ -347,22 +409,38 @@ export const L2Validation = ({
               placeholder="Enter Remarks..."
               rows={3}
               value={formRemarks}
-              onChange={(e) => setFormRemarks(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none"
+              disabled={isAlreadyValidated}
+              onChange={(e) => {
+                setFormRemarks(e.target.value);
+                setFieldErrors(prev => ({ ...prev, remarks: '' }));
+              }}
+              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none disabled:cursor-not-allowed text-slate-550 ${
+                fieldErrors.remarks ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+              }`}
             />
+            {fieldErrors.remarks && (
+              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
+                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
+                {fieldErrors.remarks}
+              </p>
+            )}
           </div>
 
           {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-60 border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
+            disabled={isSubmitting || isAlreadyValidated || !formChangeNo.trim()}
+            className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-60 border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="animate-spin" size={14} />
                 <span>Saving Validation Log...</span>
               </>
+            ) : isAlreadyValidated ? (
+              <span>Log Already Saved</span>
+            ) : !formChangeNo.trim() ? (
+              <span>Select a Request to Validate</span>
             ) : (
               <>
                 <Save size={14} />
@@ -448,17 +526,6 @@ export const L2Validation = ({
                         setFormChangeNo(log.changeNo || '');
                         setFormDate(formatDateToDDMMYYYY(log.date));
                         setFormRequester(log.requester || '');
-                        if (log.status === 'Pending') {
-                          setFormStatus('');
-                          setFormRemarks('');
-                          setFormPedFile('weld-test.png');
-                          setFormQaFile('weld-test.png');
-                        } else {
-                          setFormStatus(log.status || '');
-                          setFormRemarks(log.remarks === '-' ? '' : log.remarks || '');
-                          setFormPedFile(log.weldTest === '-' ? 'weld-test.png' : log.weldTest || 'weld-test.png');
-                          setFormQaFile(log.qaTest === '-' ? 'weld-test.png' : log.qaTest || 'weld-test.png');
-                        }
                       }}
                     >
                       <td className="p-[12px] font-bold text-[#0066cc]">{log.changeNo}</td>

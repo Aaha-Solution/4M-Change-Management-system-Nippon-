@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { Buffer } from 'node:buffer';
 
 test.describe('Change Management System Full Lifecycle E2E Flow', () => {
   
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/');
   });
 
@@ -33,17 +35,17 @@ test.describe('Change Management System Full Lifecycle E2E Flow', () => {
     await page.locator('label:has-text("Change Request By") + select').selectOption('Kumar Selvam');
     
     await page.locator('label:has-text("Process Name") + div select').selectOption('Welding Line A');
-    await page.fill('input[placeholder="e.g. Line 3 / Bay B"]', 'Bay 9');
+    await page.fill('input[placeholder="e.g. Line 3 / Bay B"]', 'Bay 12');
     await page.locator('label:has-text("Machine No") + div select').selectOption('MFG-MC-1042');
 
     // Extract the generated Change No from the UI
     const subheaderText = await page.locator('p:has-text("Change No:")').textContent();
     const changeNoMatch = subheaderText.match(/4M-2026-\d+/);
-    const changeNo = changeNoMatch ? changeNoMatch[0] : '';
+    const changeNo = changeNoMatch ? changeNoMatch[0] : 'CHG-0000';
     console.log(`[E2E Lifecycle] Generated Change No: ${changeNo}`);
 
-    await page.fill('textarea[placeholder^="Brief description of WHY this change is needed"]', 'Full Flow Test Context');
-    await page.fill('textarea[placeholder^="Describe the change"]', 'Full flow E2E description describing the change details.');
+    await page.fill('textarea[placeholder^="Brief description of WHY this change is needed"]', 'E2E Full Lifecycle validation');
+    await page.fill('textarea[placeholder^="Describe the change"]', 'This is a long detailed description for the full lifecycle E2E validation test. We are verifying database integration.');
 
     await page.locator('label:has-text("Change Improvement Area") + select').selectOption('Quality');
     await page.locator('label:has-text("Permanent / Temporary Change") + select').selectOption('Temporary');
@@ -52,16 +54,16 @@ test.describe('Change Management System Full Lifecycle E2E Flow', () => {
     await page.fill('label:has-text("Change Date Close") + input', '05/06/2026');
     await page.fill('label:has-text("Part Traceability Details (To Changes)") + textarea', 'LOT-110: Closure trace.');
 
-    await page.fill('label:has-text("Risk Analysis") + textarea', 'Risk evaluation comments.');
-    await page.fill('label:has-text("Update in SOP / WI / Control Plan / FMEA") + textarea', 'SOP comments.');
-    await page.fill('label:has-text("User Dept HOD Approval") + textarea', 'HOD approval comments.');
+    await page.fill('label:has-text("Risk Analysis") + textarea', 'Potential minor startup latency on line 5.');
+    await page.fill('label:has-text("Update in SOP / WI / Control Plan / FMEA") + textarea', 'SOP and WI needs to be updated for line 5 operation.');
+    await page.fill('label:has-text("User Dept HOD Approval") + textarea', 'Approved by HOD Ramanan.');
     await page.locator('label:has-text("Customer Approval Required") + select').selectOption('No');
-    await page.fill('label:has-text("Effectiveness Monitoring") + textarea', 'Observational checks.');
+    await page.fill('label:has-text("Effectiveness Monitoring") + textarea', 'Measured by cycle time checks over 3 days.');
 
-    // Submit L1
+    // Submit L1 Request
     await page.click('button[type="submit"]');
 
-    // Verify redirect and toast
+    // Confirm redirected to Dashboard Overview
     await expect(page.locator('h2')).toContainText('Overview');
     await expect(page.locator('text=Successfully submitted L1 Change Request')).toBeVisible();
 
@@ -70,10 +72,19 @@ test.describe('Change Management System Full Lifecycle E2E Flow', () => {
     await l2NavBtn.click();
     await expect(page.locator('h4').first()).toContainText('Add L2 Validation Log');
 
-    // Fill L2 validation form
-    await page.fill('label:has-text("4M Change No") + input', changeNo);
-    await page.fill('label:has-text("Requested Date") + input', '01 June');
-    await page.fill('label:has-text("Change Request By") + input', 'Kumar Selvam');
+    // Click the newly created L1 request in the table to select and auto-populate L2 Validation form
+    const newRequestRow = page.locator(`tr:has-text("${changeNo}")`).first();
+    await expect(newRequestRow).toBeVisible();
+    await newRequestRow.click();
+
+    // Upload required file attachments for L2 validation
+    await page.setInputFiles('label:has-text("Requester Validation(PED) Attachment") + input', [
+      { name: 'ped-weld-test.pdf', mimeType: 'application/pdf', buffer: Buffer.from('ped file content') }
+    ]);
+    await page.setInputFiles('label:has-text("Approver Set Up Verification(QA) Attachment") + input', [
+      { name: 'qa-setup-test.pdf', mimeType: 'application/pdf', buffer: Buffer.from('qa file content') }
+    ]);
+
     await page.locator('label:has-text("Approver Validation Status") + select').selectOption('Accepted');
     await page.fill('label:has-text("Remarks") + textarea', 'L2 validation comments for full lifecycle E2E.');
     await page.click('button:has-text("Save Validation Log")');

@@ -4,6 +4,7 @@ import { Buffer } from 'node:buffer';
 test.describe('L1 Change Request E2E Flow', () => {
   
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/');
   });
 

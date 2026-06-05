@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('L3 Approval Matrix E2E Flow', () => {
   
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/');
   });
 

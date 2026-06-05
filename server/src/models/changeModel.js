@@ -168,6 +168,15 @@ export const addL2ValidationLog = async (logData, attachments) => {
   try {
     await connection.beginTransaction();
 
+    const [existingL2] = await connection.query(
+      `SELECT status FROM l2_validation_logs WHERE change_no = ?`,
+      [changeNo]
+    );
+
+    if (existingL2.length > 0) {
+      throw new Error(`L2 validation log already exists for change request ${changeNo} and cannot be updated.`);
+    }
+
     const [existing] = await connection.query(
       `SELECT id FROM change_requests WHERE id = ?`,
       [changeNo]
@@ -193,14 +202,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
 
     await connection.query(
       `INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE
-         validation_date = VALUES(validation_date),
-         requester = VALUES(requester),
-         weld_test = VALUES(weld_test),
-         qa_test = VALUES(qa_test),
-         status = VALUES(status),
-         remarks = VALUES(remarks)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [changeNo, date, requester, weldTest || '', qaTest || '', status, remarks]
     );
 
