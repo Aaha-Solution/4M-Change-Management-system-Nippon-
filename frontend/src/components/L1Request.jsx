@@ -120,12 +120,22 @@ export const L1Request = ({
   const [unit, setUnit] = useState('');
   const [changeNo, setChangeNo] = useState('');
   const [requestedDate] = useState(() => formatDateToDDMMYYYY(new Date()));
-  const [requestedTime] = useState(() => {
+  const [requestedTime, setRequestedTime] = useState(() => {
     const now = new Date();
     const hrs = String(now.getHours()).padStart(2, '0');
     const mins = String(now.getMinutes()).padStart(2, '0');
     return `${hrs}:${mins}`;
   });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      const hrs = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      setRequestedTime(`${hrs}:${mins}`);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
   const [changeIn, setChangeIn] = useState({
     Man: false,
     Machine: false,
