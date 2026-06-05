@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, RotateCcw, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar } from 'lucide-react';
-import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details } from '../api/apiRoutes';
+import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment } from '../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 
 export const L3RequestTracker = ({
@@ -198,17 +198,22 @@ export const L3RequestTracker = ({
     }
   };
 
-  const handleViewAttachment = async (filename, changeNo) => {
-    if (!filename) return;
+  const handleViewAttachment = async (filename, changeNo, type = 'L1') => {
+    if (!filename || filename === '-') return;
     setPreviewFile(filename);
 
     if (!fileUrls[filename]) {
       try {
-        const response = await getL1Attachment(changeNo, filename);
+        let response;
+        if (type === 'L2') {
+          response = await getL2Attachment(changeNo, filename);
+        } else {
+          response = await getL1Attachment(changeNo, filename);
+        }
         const blobUrl = URL.createObjectURL(response.data);
         setFileUrls(prev => ({ ...prev, [filename]: blobUrl }));
       } catch (err) {
-        console.error("Error loading attachment from server:", err);
+        console.error(`Error loading ${type} attachment from server:`, err);
       }
     }
   };
@@ -816,7 +821,7 @@ export const L3RequestTracker = ({
                         {selectedL2Details.weldTest && selectedL2Details.weldTest !== '-' && (
                           <span 
                             className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
-                            onClick={() => handleViewAttachment(selectedL2Details.weldTest, selectedL2Details.changeNo)}
+                            onClick={() => handleViewAttachment(selectedL2Details.weldTest, selectedL2Details.changeNo, 'L2')}
                           >
                             Preview
                           </span>
@@ -833,7 +838,7 @@ export const L3RequestTracker = ({
                         {selectedL2Details.qaTest && selectedL2Details.qaTest !== '-' && (
                           <span 
                             className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
-                            onClick={() => handleViewAttachment(selectedL2Details.qaTest, selectedL2Details.changeNo)}
+                            onClick={() => handleViewAttachment(selectedL2Details.qaTest, selectedL2Details.changeNo, 'L2')}
                           >
                             Preview
                           </span>

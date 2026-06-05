@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText } from 'lucide-react';
-import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment } from '../api/apiRoutes';
+import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment } from '../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 
 export const L2Validation = ({
@@ -30,6 +30,22 @@ export const L2Validation = ({
   const [formRemarks, setFormRemarks] = useState('');
   const [formPedFile, setFormPedFile] = useState('weld-test.png');
   const [formQaFile, setFormQaFile] = useState('weld-test.png');
+
+  // File Upload states
+  const [pedFileObj, setPedFileObj] = useState(null);
+  const [qaFileObj, setQaFileObj] = useState(null);
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
   // Search & Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,19 +90,39 @@ export const L2Validation = ({
       return;
     }
 
-    const logData = {
-      changeNo: formChangeNo.trim(),
-      date: formDate.trim(),
-      requester: formRequester.trim(),
-      weldTest: formPedFile,
-      qaTest: formQaFile,
-      status: formStatus,
-      remarks: formRemarks.trim()
-    };
-
     setIsSubmitting(true);
     try {
-      await createL2ValidationLog(logData);
+      const attachments = [];
+      if (pedFileObj) {
+        const base64Data = await fileToBase64(pedFileObj);
+        attachments.push({
+          fieldName: 'weld_test',
+          name: pedFileObj.name,
+          type: pedFileObj.type || 'application/octet-stream',
+          data: base64Data
+        });
+      }
+      if (qaFileObj) {
+        const base64Data = await fileToBase64(qaFileObj);
+        attachments.push({
+          fieldName: 'qa_test',
+          name: qaFileObj.name,
+          type: qaFileObj.type || 'application/octet-stream',
+          data: base64Data
+        });
+      }
+
+      const logData = {
+        changeNo: formChangeNo.trim(),
+        date: formDate.trim(),
+        requester: formRequester.trim(),
+        weldTest: formPedFile,
+        qaTest: formQaFile,
+        status: formStatus,
+        remarks: formRemarks.trim()
+      };
+
+      await createL2ValidationLog(logData, attachments);
 
       if (fetchChanges) await fetchChanges();
 
@@ -102,6 +138,8 @@ export const L2Validation = ({
       setFormRequester('');
       setFormStatus('');
       setFormRemarks('');
+      setPedFileObj(null);
+      setQaFileObj(null);
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Error saving L2 validation log to database.';
@@ -129,17 +167,22 @@ export const L2Validation = ({
     }
   };
 
-  const handleViewAttachment = async (filename, changeNo) => {
-    if (!filename) return;
+  const handleViewAttachment = async (filename, changeNo, type = 'L1') => {
+    if (!filename || filename === '-') return;
     setPreviewFile(filename);
 
     if (!fileUrls[filename]) {
       try {
-        const response = await getL1Attachment(changeNo, filename);
+        let response;
+        if (type === 'L2') {
+          response = await getL2Attachment(changeNo, filename);
+        } else {
+          response = await getL1Attachment(changeNo, filename);
+        }
         const blobUrl = URL.createObjectURL(response.data);
         setFileUrls(prev => ({ ...prev, [filename]: blobUrl }));
       } catch (err) {
-        console.error("Error loading attachment from server:", err);
+        console.error(`Error loading ${type} attachment from server:`, err);
       }
     }
   };
@@ -258,7 +301,9 @@ export const L2Validation = ({
               type="file"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
-                  setFormPedFile(e.target.files[0].name);
+                  const file = e.target.files[0];
+                  setFormPedFile(file.name);
+                  setPedFileObj(file);
                 }
               }}
               className="w-full text-[11px] text-slate-500 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:border-slate-200 file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer"
@@ -272,10 +317,12 @@ export const L2Validation = ({
               type="file"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
-                  setFormQaFile(e.target.files[0].name);
+                  const file = e.target.files[0];
+                  setFormQaFile(file.name);
+                  setQaFileObj(file);
                 }
               }}
-              className="w-full text-[11px] text-slate-500 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:border-slate-200 file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer"
+              className="w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:border-slate-200 file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer"
             />
           </div>
 
@@ -418,13 +465,25 @@ export const L2Validation = ({
                       <td className="p-[12px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
                       <td className="p-[12px] font-medium text-slate-700">{log.requester}</td>
                       <td className="p-[12px]">
-                        <span className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer">
+                        <span 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewAttachment(log.weldTest, log.changeNo, 'L2');
+                          }}
+                          className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
+                        >
                           <Paperclip size={12} className="text-slate-400" />
                           <span className="underline truncate max-w-[120px]">{log.weldTest}</span>
                         </span>
                       </td>
                       <td className="p-[12px]">
-                        <span className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer">
+                        <span 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewAttachment(log.qaTest, log.changeNo, 'L2');
+                          }}
+                          className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
+                        >
                           <Paperclip size={12} className="text-slate-400" />
                           <span className="underline truncate max-w-[120px]">{log.qaTest}</span>
                         </span>

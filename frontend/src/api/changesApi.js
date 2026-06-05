@@ -30,11 +30,17 @@ export const getL2ValidationLogs = () => {
   return axiosInstance.get('/changes/l2');
 };
 
-export const createL2ValidationLog = (logData) => {
-  return axiosInstance.post('/changes/l2', { logData }, {
+export const createL2ValidationLog = (logData, attachments) => {
+  return axiosInstance.post('/changes/l2', { logData, attachments }, {
     headers: {
       'Content-Type': 'application/json',
     },
+  });
+};
+
+export const getL2Attachment = (changeNo, fileName) => {
+  return axiosInstance.get(`/changes/l2/attachment/${changeNo}/${fileName}`, {
+    responseType: 'blob'
   });
 };
 

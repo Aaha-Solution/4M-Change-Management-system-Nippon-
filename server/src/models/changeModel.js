@@ -161,7 +161,7 @@ export const getL2ValidationLogs = async () => {
   return rows;
 };
 
-export const addL2ValidationLog = async (logData) => {
+export const addL2ValidationLog = async (logData, attachments) => {
   const { changeNo, date, requester, weldTest, qaTest, status, remarks } = logData;
   const connection = await pool.getConnection();
   try {
@@ -183,13 +183,41 @@ export const addL2ValidationLog = async (logData) => {
         `UPDATE change_requests SET status = 'Approved' WHERE id = ?`,
         [changeNo]
       );
+    } else if (status === 'Rejected') {
+      await connection.query(
+        `UPDATE change_requests SET status = 'Evaluating' WHERE id = ?`,
+        [changeNo]
+      );
     }
 
     await connection.query(
       `INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         validation_date = VALUES(validation_date),
+         requester = VALUES(requester),
+         weld_test = VALUES(weld_test),
+         qa_test = VALUES(qa_test),
+         status = VALUES(status),
+         remarks = VALUES(remarks)`,
       [changeNo, date, requester, weldTest || '', qaTest || '', status, remarks]
     );
+
+    // Save L2 attachments if any
+    if (attachments && attachments.length > 0) {
+      for (const file of attachments) {
+        // Delete previous attachment for this field before inserting new one
+        await connection.query(
+          `DELETE FROM l2_attachments WHERE change_no = ? AND field_name = ?`,
+          [changeNo, file.fieldName]
+        );
+        await connection.query(
+          `INSERT INTO l2_attachments (change_no, field_name, file_name, file_data, file_type) 
+           VALUES (?, ?, ?, ?, ?)`,
+          [changeNo, file.fieldName, file.name, file.data, file.type]
+        );
+      }
+    }
 
     await connection.commit();
     return logData;
@@ -340,6 +368,16 @@ export const getL2Details = async (changeNo) => {
      FROM l2_validation_logs 
      WHERE change_no = ?`,
     [changeNo]
+  );
+  return rows.length > 0 ? rows[0] : null;
+};
+
+export const getL2Attachment = async (changeNo, fileName) => {
+  const [rows] = await pool.query(
+    `SELECT file_name as name, file_data as data, file_type as type 
+     FROM l2_attachments 
+     WHERE change_no = ? AND file_name = ?`,
+    [changeNo, fileName]
   );
   return rows.length > 0 ? rows[0] : null;
 };

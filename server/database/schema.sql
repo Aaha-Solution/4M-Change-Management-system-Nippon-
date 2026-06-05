@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS effectiveness_attachments;
 DROP TABLE IF EXISTS effectiveness_logs;
 DROP TABLE IF EXISTS l3_approvals;
+DROP TABLE IF EXISTS l2_attachments;
 DROP TABLE IF EXISTS l2_validation_logs;
 DROP TABLE IF EXISTS l1_attachments;
 DROP TABLE IF EXISTS l1_requests;
@@ -222,6 +223,17 @@ CREATE TABLE l2_validation_logs (
     qa_test VARCHAR(255) NOT NULL DEFAULT '',
     status VARCHAR(50) NOT NULL,
     remarks TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 7a. L2 Attachments Table
+CREATE TABLE l2_attachments (
+    id SERIAL PRIMARY KEY,
+    change_no VARCHAR(50) NOT NULL REFERENCES l2_validation_logs(change_no) ON UPDATE CASCADE ON DELETE CASCADE,
+    field_name VARCHAR(50) NOT NULL, -- 'weld_test' or 'qa_test'
+    file_name VARCHAR(255) NOT NULL,
+    file_data LONGTEXT NOT NULL,
+    file_type VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -80,14 +80,14 @@ export const getL2ValidationLogs = async (req, res) => {
 };
 
 export const createL2ValidationLog = async (req, res) => {
-  const { logData } = req.body;
+  const { logData, attachments } = req.body;
 
   if (!logData || !logData.changeNo || !logData.date || !logData.requester || !logData.status || !logData.remarks) {
     return res.status(400).json({ error: 'Required L2 validation log data fields are missing.' });
   }
 
   try {
-    const newLog = await changeModel.addL2ValidationLog(logData);
+    const newLog = await changeModel.addL2ValidationLog(logData, attachments);
     res.status(201).json({
       message: 'L2 Validation log created successfully',
       log: newLog
@@ -183,6 +183,25 @@ export const getL2Details = async (req, res) => {
   } catch (error) {
     console.error('Error in getL2Details controller:', error);
     res.status(500).json({ error: 'Failed to fetch L2 validation details' });
+  }
+};
+
+export const getL2AttachmentFile = async (req, res) => {
+  const { changeNo, fileName } = req.params;
+
+  try {
+    const file = await changeModel.getL2Attachment(changeNo, fileName);
+    if (!file) {
+      return res.status(404).json({ error: 'Attachment not found' });
+    }
+
+    const fileBuffer = Buffer.from(file.data, 'base64');
+    res.setHeader('Content-Type', file.type);
+    res.setHeader('Content-Disposition', `inline; filename="${file.name}"`);
+    res.send(fileBuffer);
+  } catch (error) {
+    console.error('Error in getL2AttachmentFile:', error);
+    res.status(500).json({ error: 'Failed to retrieve L2 attachment file' });
   }
 };
 
