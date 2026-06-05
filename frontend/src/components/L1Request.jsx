@@ -492,7 +492,7 @@ export const L1Request = ({
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Identifiers</h4>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
             {/* UNIT */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit <span className="text-rose-500">*</span></label>
@@ -584,7 +584,7 @@ export const L1Request = ({
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Request Details</h4>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
             {/* CHANGE REQUEST DEPT */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request Dept <span className="text-rose-500">*</span></label>
@@ -678,9 +678,9 @@ export const L1Request = ({
             </div>
 
             {/* MACHINE NO */}
-            <div className="space-y-[4px] md:col-span-2">
+            <div className="space-y-[4px] sm:col-span-2 lg:col-span-4">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No <span className="text-rose-500">*</span></label>
-              <div className="flex gap-[8px] md:max-w-[49%]">
+              <div className="flex gap-[8px] sm:max-w-[49%] lg:max-w-[24.4%]">
                 <select
                   value={machineNo}
                   onChange={(e) => setMachineNo(e.target.value)}
@@ -711,7 +711,7 @@ export const L1Request = ({
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Change Description</h4>
           
-          <div className="space-y-[16px]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-[16px]">
             {/* CONTEXT OF CHANGE */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change <span className="text-rose-500">*</span></label>
@@ -739,7 +739,9 @@ export const L1Request = ({
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
-            {renderAttachmentInput("Upload Supporting Files", fileDesc, setFileDesc, "file-desc-input", "fileDesc", true)}
+            <div className="lg:col-span-2">
+              {renderAttachmentInput("Upload Supporting Files", fileDesc, setFileDesc, "file-desc-input", "fileDesc", true)}
+            </div>
           </div>
         </div>
 
@@ -747,9 +749,9 @@ export const L1Request = ({
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Implementation Timeline</h4>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
             {/* CHANGE IMPROVEMENT AREA */}
-            <div className="space-y-[4px]">
+            <div className="space-y-[4px] sm:col-span-1 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Improvement Area <span className="text-rose-500">*</span></label>
               <select 
                 value={improvementArea} 
@@ -765,12 +767,12 @@ export const L1Request = ({
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
-            <div className="md:row-span-2">
+            <div className="sm:col-span-1 sm:row-span-2 lg:col-span-2 lg:row-span-2">
               {renderAttachmentInput("Upload Supporting Files", fileImprovement, setFileImprovement, "file-improvement-input", "fileImprovement", true)}
             </div>
 
             {/* PERMANENT / TEMPORARY CHANGE */}
-            <div className="space-y-[4px]">
+            <div className="space-y-[4px] sm:col-span-1 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Permanent / Temporary Change <span className="text-rose-500">*</span></label>
               <select 
                 value={changeType} 
@@ -784,19 +786,19 @@ export const L1Request = ({
             </div>
 
             {/* IMPLEMENT / CHANGE DATE START */}
-            <div className="space-y-[4px] md:col-span-2 relative">
+            <div className="space-y-[4px] sm:col-span-2 lg:col-span-2 relative">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start <span className="text-rose-500">*</span></label>
               <CustomDatePicker 
                 value={dateStart}
                 onChange={setDateStart}
-                containerClassName="md:max-w-[49%]"
+                containerClassName="sm:max-w-[49%] lg:max-w-full"
                 inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
                 buttonClassName="right-[10px] bottom-[12px]"
               />
             </div>
 
             {/* PART TRACEABILITY DETAILS (FROM CHANGES) */}
-            <div className="space-y-[4px] md:col-span-2">
+            <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes) <span className="text-rose-500">*</span></label>
               <textarea 
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..." 
@@ -809,24 +811,24 @@ export const L1Request = ({
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2 lg:col-span-2">
               {renderAttachmentInput("Upload Supporting Files", fileTraceFrom, setFileTraceFrom, "file-tracefrom-input", "fileTraceFrom")}
             </div>
 
             {/* CHANGE DATE CLOSE */}
-            <div className="space-y-[4px] md:col-span-2 relative">
+            <div className="space-y-[4px] sm:col-span-2 lg:col-span-2 relative">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close <span className="text-rose-500">*</span></label>
               <CustomDatePicker 
                 value={dateClose}
                 onChange={setDateClose}
-                containerClassName="md:max-w-[49%]"
+                containerClassName="sm:max-w-[49%] lg:max-w-full"
                 inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
                 buttonClassName="right-[10px] bottom-[12px]"
               />
             </div>
 
             {/* PART TRACEABILITY DETAILS (TO CHANGES) */}
-            <div className="space-y-[4px] md:col-span-2">
+            <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (To Changes) <span className="text-rose-500">*</span></label>
               <textarea 
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..." 
@@ -839,7 +841,7 @@ export const L1Request = ({
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2 lg:col-span-2">
               {renderAttachmentInput("Upload Supporting Files", fileTraceTo, setFileTraceTo, "file-traceto-input", "fileTraceTo", true)}
             </div>
           </div>
@@ -849,7 +851,7 @@ export const L1Request = ({
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Risk Analysis</h4>
           
-          <div className="space-y-[16px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
             {/* RISK ANALYSIS */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis <span className="text-rose-500">*</span></label>
@@ -863,7 +865,9 @@ export const L1Request = ({
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
-            {renderAttachmentInput("Upload Supporting Files", fileRisk, setFileRisk, "file-risk-input", "fileRisk", true)}
+            <div>
+              {renderAttachmentInput("Upload Supporting Files", fileRisk, setFileRisk, "file-risk-input", "fileRisk", true)}
+            </div>
 
             {/* UPDATE IN SOP / WI / CONTROL PLAN / FMEA */}
             <div className="space-y-[4px]">
@@ -878,7 +882,9 @@ export const L1Request = ({
             </div>
 
             {/* Click to upload updated documents */}
-            {renderAttachmentInput("Upload Supporting Files (SOP, WI, Control Plan, FMEA)", fileSop, setFileSop, "file-sop-input", "fileSop")}
+            <div>
+              {renderAttachmentInput("Upload Supporting Files (SOP, WI, Control Plan, FMEA)", fileSop, setFileSop, "file-sop-input", "fileSop")}
+            </div>
 
             {/* USER DEPT HOD APPROVAL */}
             <div className="space-y-[4px]">
@@ -898,7 +904,7 @@ export const L1Request = ({
               <select 
                 value={customerApproval} 
                 onChange={(e) => setCustomerApproval(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors md:max-w-[49%]"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
               >
                 <option value="">— Select —</option>
                 <option value="Yes">Yes</option>
@@ -919,7 +925,9 @@ export const L1Request = ({
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
-            {renderAttachmentInput("Upload Supporting Files", fileEffectiveness, setFileEffectiveness, "file-effectiveness-input", "fileEffectiveness", true)}
+            <div>
+              {renderAttachmentInput("Upload Supporting Files", fileEffectiveness, setFileEffectiveness, "file-effectiveness-input", "fileEffectiveness", true)}
+            </div>
           </div>
         </div>
 
