@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ClipboardList, Plus, X, Trash2, AlertTriangle } from 'lucide-react';
+import TablePagination from '@mui/material/TablePagination';
 import { getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine } from '../api/apiRoutes';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
 import { CustomDatePicker } from './CustomDatePicker';
@@ -14,6 +15,15 @@ export const AllRequests = ({
   const [selectedPerson, setSelectedPerson] = useState('All');
   const [selectedProcess, setSelectedProcess] = useState('All');
   const [selectedMachine, setSelectedMachine] = useState('All');
+
+  // Pagination State
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Reset page when any filter changes
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, selectedMonth, fromDate, toDate, selectedPerson, selectedProcess, selectedMachine]);
 
   const monthsList = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -169,6 +179,8 @@ export const AllRequests = ({
     return matchesSearch && matchesPerson && matchesProcess && matchesMachine && matchesMonth && matchesFromDate && matchesToDate;
   });
 
+  const paginatedData = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <div className="space-y-[20px] animate-fade-in-up">
       {/* Search and Filters row */}
@@ -317,16 +329,16 @@ export const AllRequests = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredData.length === 0 ? (
+              {paginatedData.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-[48px] text-slate-400 text-[14px]">
                     No matching change requests found.
                   </td>
                 </tr>
               ) : (
-                filteredData.map((r, idx) => (
+                paginatedData.map((r, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/50">
-                    <td className="p-[16px] text-[12px] text-slate-500 font-semibold">{idx + 1}</td>
+                    <td className="p-[16px] text-[12px] text-slate-500 font-semibold">{page * rowsPerPage + idx + 1}</td>
                     <td className="p-[16px] text-[12px] font-bold text-[#0066cc] hover:underline cursor-pointer">{r.id}</td>
                     <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.machineNo}</td>
                     <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.department}</td>
@@ -347,6 +359,19 @@ export const AllRequests = ({
             </tbody>
           </table>
         </div>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25, 50]}
+          component="div"
+          count={filteredData.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(event, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(0);
+          }}
+          className="border-t border-slate-100"
+        />
       </div>
 
       {/* Process Modal */}

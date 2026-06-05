@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import TablePagination from '@mui/material/TablePagination';
 import {
   getUsers,
   deleteUser,
@@ -46,6 +47,15 @@ export const Users = ({
   const [showFormPassword, setShowFormPassword] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('All');
+  
+  // Pagination State
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Reset page when search or filters change
+  useEffect(() => {
+    setPage(0);
+  }, [userSearchQuery, userRoleFilter]);
   
   const [visiblePasswords, setVisiblePasswords] = useState({});
   const [isCreatingUser, setIsCreatingUser] = useState(false);
@@ -308,6 +318,8 @@ export const Users = ({
     return matchesSearch && matchesRole;
   });
 
+  const paginatedUsers = filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div>
@@ -521,7 +533,7 @@ export const Users = ({
                         </td>
                       </tr>
                     ) : (
-                      filteredUsers.map(u => {
+                      paginatedUsers.map(u => {
                         const nameToUse = u.name && u.name.trim() ? u.name.trim() : u.email.split('@')[0];
                         const parts = nameToUse.split(/\s+/);
                         const initials = parts.length >= 2 
@@ -607,6 +619,19 @@ export const Users = ({
                 </table>
               )}
             </div>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25, 50]}
+              component="div"
+              count={filteredUsers.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={(event, newPage) => setPage(newPage)}
+              onRowsPerPageChange={(event) => {
+                setRowsPerPage(parseInt(event.target.value, 10));
+                setPage(0);
+              }}
+              className="border-t border-slate-100"
+            />
           </div>
         </div>
 

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AlertTriangle, Paperclip, RefreshCw, Search, X, Eye } from 'lucide-react';
+import TablePagination from '@mui/material/TablePagination';
 import { 
   createEffectivenessLog, 
   updateEffectivenessLog, 
@@ -65,6 +66,15 @@ export const Effectiveness = ({
   const [effSearch, setEffSearch] = useState('');
   const [effFilterStatus, setEffFilterStatus] = useState('All');
   const [effFilterMonth, setEffFilterMonth] = useState('All');
+
+  // Pagination State
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(0);
+  }, [effSearch, effFilterStatus, effFilterMonth]);
 
   // Format month names (e.g. "2026-05" -> "May-26")
   const formatMonthWise = (val) => {
@@ -238,6 +248,8 @@ export const Effectiveness = ({
     const matchesMonth = effFilterMonth === 'All' || formatMonthWise(log.monthWise) === effFilterMonth;
     return matchesSearch && matchesStatus && matchesMonth;
   });
+
+  const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const selectedChange = changes.find(c => c.id === effChangeNo);
   const currentLog = effectivenessLogs.find(l => l.id === editingEffLogId);
@@ -585,7 +597,7 @@ export const Effectiveness = ({
                       </td>
                     </tr>
                   ) : (
-                    filteredLogs.map(log => {
+                    paginatedLogs.map(log => {
                       const isEditing = editingEffLogId === log.id;
                       return (
                         <tr
@@ -655,10 +667,23 @@ export const Effectiveness = ({
                       );
                     })
                   )}
-                </tbody>
-              </table>
-            </div>
+              </tbody>
+            </table>
           </div>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            component="div"
+            count={filteredLogs.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(event, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(parseInt(event.target.value, 10));
+              setPage(0);
+            }}
+            className="border-t border-slate-100"
+          />
+        </div>
         </div>
 
       </div>

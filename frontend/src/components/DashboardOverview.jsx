@@ -10,6 +10,7 @@ import {
   Settings,
   ShieldAlert
 } from 'lucide-react';
+import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
 import { CustomDatePicker } from './CustomDatePicker';
 import { getProcesses, getMachines } from '../api/apiRoutes';
@@ -22,6 +23,10 @@ export const DashboardOverview = ({
   const [isGridView, setIsGridView] = useState(false);
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Department');
 
+  // Pagination State
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
   const [filterMonth, setFilterMonth] = useState('All');
   const [filterFromDate, setFilterFromDate] = useState('');
   const [filterToDate, setFilterToDate] = useState('');
@@ -29,6 +34,11 @@ export const DashboardOverview = ({
   const [filterProcess, setFilterProcess] = useState('All');
   const [filterMachine, setFilterMachine] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(0);
+  }, [filterMonth, filterFromDate, filterToDate, filterPerson, filterProcess, filterMachine, filterStatus]);
 
   const [dbProcesses, setDbProcesses] = useState([]);
   const [dbMachines, setDbMachines] = useState([]);
@@ -132,6 +142,7 @@ export const DashboardOverview = ({
   });
 
   const allTableRows = formattedDbChanges;
+  const paginatedTableRows = allTableRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   // Helper filters render
   const renderFilters = () => (
@@ -747,29 +758,50 @@ export const DashboardOverview = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {allTableRows.map((r, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/50">
-                    <td className="p-[16px] text-[12px] text-slate-500 font-semibold">{r.slNo}</td>
-                    <td className="p-[16px] text-[12px] font-bold text-[#0066cc] hover:underline cursor-pointer">{r.id}</td>
-                    <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.machineNo}</td>
-                    <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.department}</td>
-                    <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
-                    <td className="p-[16px]">
-                      <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
-                        r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                        r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
-                        r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
-                        'bg-teal-50 border-teal-200 text-teal-700'
-                      }`}>
-                        {r.status}
-                      </span>
+                {paginatedTableRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-[24px] text-slate-400 text-[13px]">
+                      No matching change requests found.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  paginatedTableRows.map((r, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50/50">
+                      <td className="p-[16px] text-[12px] text-slate-500 font-semibold">{r.slNo}</td>
+                      <td className="p-[16px] text-[12px] font-bold text-[#0066cc] hover:underline cursor-pointer">{r.id}</td>
+                      <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.machineNo}</td>
+                      <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.department}</td>
+                      <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
+                      <td className="p-[16px]">
+                        <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
+                          r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                          r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
+                          r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
+                          'bg-teal-50 border-teal-200 text-teal-700'
+                        }`}>
+                          {r.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           )}
         </div>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={allTableRows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(event, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(0);
+          }}
+          className="border-t border-slate-100"
+        />
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText } from 'lucide-react';
+import TablePagination from '@mui/material/TablePagination';
 import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment } from '../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 
@@ -51,6 +52,15 @@ export const L2Validation = ({
   // Search & Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [decisionFilter, setDecisionFilter] = useState('All');
+
+  // Pagination State
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Reset page when search or filters change
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, decisionFilter]);
 
   const fetchLogs = async () => {
     setIsFetchingLogs(true);
@@ -275,6 +285,8 @@ export const L2Validation = ({
 
     return matchesSearch && matchesDecision;
   });
+
+  const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_2.5fr] gap-[24px] animate-fade-in-up text-slate-800">
@@ -518,7 +530,7 @@ export const L2Validation = ({
                     </td>
                   </tr>
                 ) : (
-                  filteredLogs.map((log, idx) => (
+                  paginatedLogs.map((log, idx) => (
                     <tr
                       key={idx}
                       className="hover:bg-slate-50/50 cursor-pointer"
@@ -586,6 +598,19 @@ export const L2Validation = ({
               </tbody>
             </table>
           </div>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            component="div"
+            count={filteredLogs.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(event, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(parseInt(event.target.value, 10));
+              setPage(0);
+            }}
+            className="border-t border-slate-100"
+          />
         </div>
       </div>
       {/* Validation Warning Modal */}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, RotateCcw, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar } from 'lucide-react';
+import TablePagination from '@mui/material/TablePagination';
 import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment } from '../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 
@@ -40,6 +41,15 @@ export const L3RequestTracker = ({
   // Search & Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+
+  // Pagination State
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Reset page when search or status filters change
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, statusFilter]);
 
   // Fetch L3 logs from database
   const fetchLogs = async () => {
@@ -247,6 +257,8 @@ export const L3RequestTracker = ({
     return matchesSearch && matchesStatus;
   });
 
+  const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
       
@@ -446,7 +458,7 @@ export const L3RequestTracker = ({
                     </td>
                   </tr>
                 ) : (
-                  filteredLogs.map((log, idx) => {
+                  paginatedLogs.map((log, idx) => {
                     const isSelected = selectedChangeId === log.changeNo;
                     return (
                       <tr 
@@ -505,6 +517,19 @@ export const L3RequestTracker = ({
               </tbody>
             </table>
           </div>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            component="div"
+            count={filteredLogs.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(event, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(parseInt(event.target.value, 10));
+              setPage(0);
+            }}
+            className="border-t border-slate-100"
+          />
         </div>
       </div>
 
