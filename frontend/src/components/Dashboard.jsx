@@ -385,11 +385,10 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
           </div>
         </div>
       </aside>
+      {/* 2. Main Content Right Panel */}
+      <div className="flex-1 md:pl-64 flex flex-col min-h-screen min-w-0">
 
-      {/* 2. Main Content Right Panel */}
-      <div className="flex-1 md:pl-64 flex flex-col min-h-screen">
-
-        {/* Top Header Bar */}        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-[12px] sm:px-[24px] py-[12px] sm:py-[16px] flex items-center justify-between">
+        {/* Top Header Bar */}        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-[12px] sm:px-[24px] py-[12px] sm:py-[16px] flex items-center justify-between">
           <div className="flex items-center gap-[12px]">
             {/* Mobile menu toggle */}
             <button
@@ -448,7 +447,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-grow py-[24px] px-[24px] w-full max-w-none">
+        <main className="flex-grow py-[24px] px-[24px] w-full max-w-none min-w-0">
           <Suspense fallback={
             <div className="flex flex-col items-center justify-center py-[100px] gap-2 text-slate-500">
               <Loader2 className="animate-spin text-[#0066cc]" size={24} />

@@ -182,11 +182,11 @@ export const AllRequests = ({
   const paginatedData = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <div className="space-y-[20px] animate-fade-in-up">
+    <div className="space-y-[20px] animate-fade-in-up w-full min-w-0">
       {/* Search and Filters row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-[8px] p-[16px] bg-white border border-slate-200 rounded-[12px] shadow-sm text-[10px]">
+      <div className="flex flex-wrap gap-[12px] p-[16px] bg-white border border-slate-200 rounded-[12px] shadow-sm text-[10px]">
         {/* SEARCH QUERY */}
-        <div className="space-y-[4px]">
+        <div className="flex-1 min-w-[200px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">Search Query</label>
           <input 
             type="text" 
@@ -198,7 +198,7 @@ export const AllRequests = ({
         </div>
 
         {/* BY MONTH */}
-        <div className="space-y-[4px]">
+        <div className="flex-1 min-w-[120px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">By Month</label>
           <select 
             className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none text-[11px]"
@@ -213,7 +213,7 @@ export const AllRequests = ({
         </div>
 
         {/* FROM DATE */}
-        <div className="space-y-[4px] relative">
+        <div className="flex-1 min-w-[130px] space-y-[4px] relative">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
           <CustomDatePicker 
             value={fromDate}
@@ -224,7 +224,7 @@ export const AllRequests = ({
         </div>
 
         {/* TO DATE */}
-        <div className="space-y-[4px] relative">
+        <div className="flex-1 min-w-[130px] space-y-[4px] relative">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
           <CustomDatePicker 
             value={toDate}
@@ -235,7 +235,7 @@ export const AllRequests = ({
         </div>
 
         {/* BY PERSON */}
-        <div className="space-y-[4px]">
+        <div className="flex-1 min-w-[130px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">By Person</label>
           <select 
             className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none text-[11px]"
@@ -249,7 +249,7 @@ export const AllRequests = ({
         </div>
 
         {/* BY PROCESS */}
-        <div className="space-y-[4px]">
+        <div className="flex-1 min-w-[150px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">By Process</label>
           <div className="flex gap-[4px]">
             <select 
@@ -276,7 +276,7 @@ export const AllRequests = ({
         </div>
 
         {/* BY M/C NO */}
-        <div className="space-y-[4px]">
+        <div className="flex-1 min-w-[150px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">By M/C No</label>
           <div className="flex gap-[4px]">
             <select 
@@ -304,8 +304,8 @@ export const AllRequests = ({
       </div>
 
       {/* Main requests Table card */}
-      <div className="bg-white border border-slate-200 rounded-[12px] shadow-sm overflow-hidden">
-        <div className="p-[20px] border-b border-slate-100 flex justify-between items-center">
+      <div className="bg-white border border-slate-200 rounded-[12px] shadow-sm overflow-hidden w-full max-w-full min-w-0">
+        <div className="p-[20px] border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[12px]">
           <div className="flex items-center gap-[8px]">
             <h3 className="font-heading text-[18px] font-bold text-slate-900">All change requests</h3>
             <ClipboardList size={18} className="text-slate-400" />
@@ -316,16 +316,16 @@ export const AllRequests = ({
           </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse table-fixed min-w-[780px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-150">
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">SL. NO.</th>
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">CHANGE NO.</th>
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">MACHINE NO.</th>
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">DEPARTMENT</th>
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">REQUEST DATE</th>
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">STATUS</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[80px]">SL. NO.</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[150px]">CHANGE NO.</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[130px]">MACHINE NO.</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[150px]">DEPARTMENT</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[140px]">REQUEST DATE</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[130px]">STATUS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
