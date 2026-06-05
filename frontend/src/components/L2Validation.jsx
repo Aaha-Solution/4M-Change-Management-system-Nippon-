@@ -306,9 +306,8 @@ export const L2Validation = ({
               type="text"
               placeholder="Click a row on the right to select"
               value={formChangeNo}
-              readOnly
-              tabIndex="-1"
-              className="w-full bg-slate-100 text-slate-500 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pointer-events-none select-none"
+              disabled
+              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
             />
           </div>
 
@@ -317,11 +316,10 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
             <input
               type="text"
-              value={formDate}
-              tabIndex="-1"
-              onChange={(e) => setFormDate(e.target.value)}
               placeholder="Click a row on the right to select"
-              className="w-full bg-slate-100 text-slate-500 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pointer-events-none select-none"
+              value={formDate}
+              disabled
+              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
             />
           </div>
 
@@ -332,9 +330,8 @@ export const L2Validation = ({
               type="text"
               placeholder="Click a row on the right to select"
               value={formRequester}
-              tabIndex="-1"
-              onChange={(e) => setFormRequester(e.target.value)}
-              className="w-full bg-slate-100 text-slate-500 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pointer-events-none select-none"
+              disabled
+              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
             />
           </div>
 

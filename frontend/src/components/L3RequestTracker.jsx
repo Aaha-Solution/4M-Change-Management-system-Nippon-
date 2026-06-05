@@ -302,7 +302,7 @@ export const L3RequestTracker = ({
 
           {/* 4M CHANGE NO */}
           <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
             <input 
               type="text" 
               placeholder="Click a row to select"
@@ -314,7 +314,7 @@ export const L3RequestTracker = ({
 
           {/* REQUESTED DATE */}
           <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
             <input 
               type="text" 
               placeholder="Click a row to select"
@@ -326,7 +326,7 @@ export const L3RequestTracker = ({
 
           {/* CHANGE REQUEST BY */}
           <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By</label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
             <input 
               type="text" 
               placeholder="Click a row to select"
