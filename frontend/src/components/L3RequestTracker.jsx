@@ -259,6 +259,23 @@ export const L3RequestTracker = ({
 
   const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  const currentChangeLog = selectedChangeId ? approvalLogs.find(log => log.changeNo === selectedChangeId) : null;
+  let isAlreadyValidated = false;
+  if (currentChangeLog) {
+    let deptStatus = 'Pending';
+    if (actingDept === 'PED') deptStatus = currentChangeLog.ped;
+    else if (actingDept === 'Quality') deptStatus = currentChangeLog.quality;
+    else if (actingDept === 'Production') deptStatus = currentChangeLog.production;
+    else if (actingDept === 'Maintenance') deptStatus = currentChangeLog.maintenance;
+    else if (actingDept === 'PC & L') deptStatus = currentChangeLog.pcl;
+    else if (actingDept === 'Materials') deptStatus = currentChangeLog.materials;
+    else if (actingDept === 'Marketing') deptStatus = currentChangeLog.marketing;
+    else if (actingDept === 'HR & Safety') deptStatus = currentChangeLog.hrSafety;
+    else if (actingDept === 'Unit Head') deptStatus = currentChangeLog.unitHead;
+
+    isAlreadyValidated = deptStatus && deptStatus !== 'Pending';
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
       
@@ -341,7 +358,7 @@ export const L3RequestTracker = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approval Status <span className="text-rose-500">*</span></label>
             <select 
               value={formStatus} 
-              disabled={!selectedChangeId}
+              disabled={!selectedChangeId || isAlreadyValidated}
               onChange={(e) => setFormStatus(e.target.value)}
               className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
             >
@@ -356,7 +373,7 @@ export const L3RequestTracker = ({
           <div className="space-y-[8px] pt-[4px]">
             <button 
               type="submit" 
-              disabled={isSubmitting || !selectedChangeId}
+              disabled={isSubmitting || !selectedChangeId || isAlreadyValidated}
               className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
             >
               {isSubmitting ? (
@@ -364,6 +381,10 @@ export const L3RequestTracker = ({
                   <Loader2 className="animate-spin" size={14} />
                   <span>Saving Log...</span>
                 </>
+              ) : isAlreadyValidated ? (
+                <span>Log Already Saved</span>
+              ) : !selectedChangeId ? (
+                <span>Select a Request to Approve</span>
               ) : (
                 <>
                   <Save size={14} />
