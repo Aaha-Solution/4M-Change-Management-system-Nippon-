@@ -7,9 +7,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependencies
+node_modules/
+
+# Build files
+dist/
+dist-ssr/
+
+# Environment variables
+.env
+.env.*
 *.local
 test-results/
 playwright-report/
@@ -25,13 +32,28 @@ playwright-report/
 !.env.example
 
 
+# Database
+*.sql
+schema.sql
+
+# Package files (if you don't want to track them)
+package.json
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Misc
+coverage/
+temp/
+tmp/
