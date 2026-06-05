@@ -796,14 +796,14 @@ export const L1Request = ({
             </div>
 
             {/* IMPLEMENT / CHANGE DATE START */}
-            <div className="space-y-[4px] sm:col-span-2 lg:col-span-2 relative">
+            <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start <span className="text-rose-500">*</span></label>
               <CustomDatePicker 
                 value={dateStart}
                 onChange={setDateStart}
                 containerClassName="sm:max-w-[49%] lg:max-w-full"
                 inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
-                buttonClassName="right-[10px] bottom-[12px]"
+                buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
             </div>
 
@@ -826,14 +826,14 @@ export const L1Request = ({
             </div>
 
             {/* CHANGE DATE CLOSE */}
-            <div className="space-y-[4px] sm:col-span-2 lg:col-span-2 relative">
+            <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close <span className="text-rose-500">*</span></label>
               <CustomDatePicker 
                 value={dateClose}
                 onChange={setDateClose}
                 containerClassName="sm:max-w-[49%] lg:max-w-full"
                 inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
-                buttonClassName="right-[10px] bottom-[12px]"
+                buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
             </div>
 

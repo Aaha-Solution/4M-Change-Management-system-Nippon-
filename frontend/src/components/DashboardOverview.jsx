@@ -160,22 +160,22 @@ export const DashboardOverview = ({
           ))}
         </select>
       </div>
-      <div className="space-y-[2px] relative">
+      <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
         <CustomDatePicker 
           value={filterFromDate}
           onChange={setFilterFromDate}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
-          buttonClassName="right-[6px] bottom-[6px]"
+          buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
       </div>
-      <div className="space-y-[2px] relative">
+      <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
         <CustomDatePicker 
           value={filterToDate}
           onChange={setFilterToDate}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
-          buttonClassName="right-[6px] bottom-[6px]"
+          buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
       </div>
       <div className="space-y-[2px]">
@@ -232,22 +232,22 @@ export const DashboardOverview = ({
           ))}
         </select>
       </div>
-      <div className="space-y-[2px] relative">
+      <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
         <CustomDatePicker 
           value={filterFromDate}
           onChange={setFilterFromDate}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
-          buttonClassName="right-[6px] bottom-[6px]"
+          buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
       </div>
-      <div className="space-y-[2px] relative">
+      <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
         <CustomDatePicker 
           value={filterToDate}
           onChange={setFilterToDate}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
-          buttonClassName="right-[6px] bottom-[6px]"
+          buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
       </div>
       <div className="space-y-[2px]">
