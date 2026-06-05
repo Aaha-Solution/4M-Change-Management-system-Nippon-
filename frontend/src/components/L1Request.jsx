@@ -453,6 +453,9 @@ export const L1Request = ({
                   const existing = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
                   const updated = Array.from(new Set([...existing, ...names])).join(', ');
                   setValue(updated);
+                  
+                  // Reset input value to allow uploading the same file again
+                  e.target.value = '';
                 }
               }}
             />
