@@ -71,16 +71,16 @@ export const L2Validation = ({
 
   // Auto-populate the first pending/available request on mount/update of changes or validationLogs
   useEffect(() => {
-    if (changes && changes.length > 0 && !formChangeNo) {
+    if (changes && changes.length > 0) {
       const validatedNos = new Set(validationLogs.map(log => log.changeNo?.toLowerCase().trim()));
       const firstPending = changes.find(c => !validatedNos.has(c.id.toLowerCase().trim())) || changes[0];
       if (firstPending) {
         setFormChangeNo(firstPending.id);
         setFormDate(formatDateToDDMMYYYY(firstPending.date));
-        setFormRequester(firstPending.requester || '');
+        setFormRequester(firstPending.requestBy || firstPending.requester || '');
       }
     }
-  }, [changes, validationLogs, formChangeNo]);
+  }, [changes, validationLogs]);
 
   const handleSaveLog = async (e) => {
     e.preventDefault();
@@ -208,7 +208,7 @@ export const L2Validation = ({
     return {
       changeNo: change.id,
       date: change.date,
-      requester: change.requester || 'Unknown',
+      requester: savedLog?.requester || change.requestBy || change.requester || 'Unknown',
       weldTest: savedLog?.weldTest || '-',
       qaTest: savedLog?.qaTest || '-',
       status: savedLog?.status || 'Pending',
@@ -257,7 +257,7 @@ export const L2Validation = ({
                 const selectedChange = changes?.find(c => c.id.toLowerCase().trim() === val.toLowerCase().trim());
                 if (selectedChange) {
                   setFormDate(formatDateToDDMMYYYY(selectedChange.date));
-                  setFormRequester(selectedChange.requester || '');
+                  setFormRequester(selectedChange.requestBy || selectedChange.requester || '');
                 } else {
                   // Reset auto-populated fields if typed value doesn't match any active change request
                   setFormDate('');
