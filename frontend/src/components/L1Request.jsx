@@ -246,11 +246,19 @@ export const L1Request = ({
 
 
   const handleCheckboxChange = (name) => {
-    setChangeIn(prev => ({
-      ...prev,
-      [name]: !prev[name]
-    }));
+    setChangeIn(prev => {
+      const isAlreadyChecked = prev[name];
+      const newState = Object.keys(prev).reduce((acc, key) => {
+        acc[key] = false;
+        return acc;
+      }, {});
+      if (!isAlreadyChecked) {
+        newState[name] = true;
+      }
+      return newState;
+    });
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
