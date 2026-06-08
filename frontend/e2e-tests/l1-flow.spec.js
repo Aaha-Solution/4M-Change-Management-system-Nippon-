@@ -82,7 +82,7 @@ test.describe('L1 Change Request E2E Flow', () => {
     await page.fill('label:has-text("Update in SOP / WI / Control Plan / FMEA") + textarea', 'SOP and WI needs to be updated for line 5 operation.');
     await page.fill('label:has-text("User Dept HOD Approval") + textarea', 'Approved by HOD Suriya.');
     await page.locator('label:has-text("Customer Approval Required") + select').selectOption('No');
-    await page.fill('label:has-text("Effectiveness Monitoring") + textarea', 'Measured by cycle time checks over 3 days.');
+
 
     // 4. Test File Upload under Change Description (file-desc-input)
     const uploadContainer = page.locator('div:has(> .flex > label > #file-desc-input)');

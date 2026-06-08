@@ -226,7 +226,7 @@ export const L1Request = ({
   const [sopUpdate, setSopUpdate] = useState('');
   const [hodApproval, setHodApproval] = useState('');
   const [customerApproval, setCustomerApproval] = useState('');
-  const [effectivenessMonitoring, setEffectivenessMonitoring] = useState('');
+  const [effectivenessMonitoring, setEffectivenessMonitoring] = useState('None');
 
 
 
@@ -357,10 +357,6 @@ export const L1Request = ({
       return;
     }
 
-    if (!effectivenessMonitoring || !effectivenessMonitoring.trim()) {
-      setToastMsg('Please describe the Effectiveness Monitoring plan.');
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -947,22 +943,7 @@ export const L1Request = ({
               </select>
             </div>
 
-            {/* EFFECTIVENESS MONITORING */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Monitoring <span className="text-rose-500">*</span></label>
-              <textarea
-                placeholder="How will effectiveness of this change be monitored and measured?.."
-                value={effectivenessMonitoring}
-                onChange={(e) => setEffectivenessMonitoring(e.target.value)}
-                rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
-              />
-            </div>
 
-            {/* UPLOAD SUPPORTING FILES */}
-            <div>
-              {renderAttachmentInput("Upload Supporting Files", fileEffectiveness, setFileEffectiveness, "file-effectiveness-input", "fileEffectiveness", true)}
-            </div>
           </div>
         </div>
 
