@@ -25,7 +25,7 @@ test.describe('Change Management System Full Lifecycle E2E Flow', () => {
     await l1NavBtn.click();
 
     // Verify L1 page is visible
-    await expect(page.locator('h3')).toContainText('New L1 Change Request');
+    await expect(page.locator('h3', { hasText: 'New L1 Change Request' })).toBeVisible();
 
     // Fill L1 fields
     await page.locator('label:has-text("Unit") + select').selectOption('Unit 1');

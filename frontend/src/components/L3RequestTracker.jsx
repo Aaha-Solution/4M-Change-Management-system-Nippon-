@@ -111,11 +111,7 @@ export const L3RequestTracker = ({
 
   // Click row to select it
   const handleSelectRow = (log) => {
-    if (log.l2Decision !== 'Accepted') {
-      setValidationError(`Error: Change Request ${log.changeNo} is awaiting L2 Validation before L3 Sign-off (Current L2 Status: ${log.l2Decision || 'Pending'}).`);
-      return;
-    }
-
+    setValidationError('');
     setSelectedChangeId(log.changeNo);
     setFormChangeNo(log.changeNo);
     setFormDate(formatDateToDDMMYYYY(log.date));
@@ -142,6 +138,11 @@ export const L3RequestTracker = ({
     const currentLog = approvalLogs.find(log => log.changeNo === formChangeNo);
     if (!currentLog) {
       setValidationError('Selected change request was not found.');
+      return;
+    }
+
+    if (currentLog.l2Decision !== 'Accepted') {
+      setValidationError(`Error: Change Request ${currentLog.changeNo} cannot be signed off at L3 because L2 validation is not Accepted (Current L2 Status: ${currentLog.l2Decision || 'Pending'}).`);
       return;
     }
 
@@ -260,6 +261,7 @@ export const L3RequestTracker = ({
   const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const currentChangeLog = selectedChangeId ? approvalLogs.find(log => log.changeNo === selectedChangeId) : null;
+  const isL2Accepted = !selectedChangeId || currentChangeLog?.l2Decision === 'Accepted';
   let isAlreadyValidated = false;
   if (currentChangeLog) {
     let deptStatus = 'Pending';
@@ -294,6 +296,15 @@ export const L3RequestTracker = ({
               {actingDept === 'Production' ? 'Production HOD' : actingDept === 'Unit Head' ? 'Plant Unit Head' : `${actingDept} Approver`}
             </div>
           </div>
+
+          {selectedChangeId && !isL2Accepted && (
+            <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+              <AlertTriangle size={14} className="shrink-0 mt-0.5 text-rose-600" />
+              <div>
+                <span className="font-bold">L3 Sign-off Blocked:</span> This request has not passed L2 validation (Current L2 Status: <span className="font-bold uppercase">{currentChangeLog?.l2Decision || 'Pending'}</span>). L3 approvals can only be submitted for accepted L2 requests.
+              </div>
+            </div>
+          )}
 
           {/* Acting Department (Admin) Select dropdown */}
           {(userRole === 'Admin' || userRole === 'Administrator' || (userRole && userRole.toLowerCase() === 'admin')) && (
@@ -358,7 +369,7 @@ export const L3RequestTracker = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approval Status <span className="text-rose-500">*</span></label>
             <select 
               value={formStatus} 
-              disabled={!selectedChangeId || isAlreadyValidated}
+              disabled={!selectedChangeId || isAlreadyValidated || !isL2Accepted}
               onChange={(e) => setFormStatus(e.target.value)}
               className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
             >
@@ -373,7 +384,7 @@ export const L3RequestTracker = ({
           <div className="space-y-[8px] pt-[4px]">
             <button 
               type="submit" 
-              disabled={isSubmitting || !selectedChangeId || isAlreadyValidated}
+              disabled={isSubmitting || !selectedChangeId || isAlreadyValidated || !isL2Accepted}
               className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
             >
               {isSubmitting ? (
@@ -385,6 +396,8 @@ export const L3RequestTracker = ({
                 <span>Log Already Saved</span>
               ) : !selectedChangeId ? (
                 <span>Select a Request to Approve</span>
+              ) : !isL2Accepted ? (
+                <span className="truncate">L3 Sign-off Disabled (L2 {currentChangeLog?.l2Decision || 'Pending'})</span>
               ) : (
                 <>
                   <Save size={14} />

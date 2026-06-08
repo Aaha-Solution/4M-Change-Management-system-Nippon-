@@ -27,7 +27,7 @@ test.describe('L1 Change Request E2E Flow', () => {
     await l1NavBtn.click();
 
     // Verify L1 page is visible
-    await expect(page.locator('h3')).toContainText('New L1 Change Request');
+    await expect(page.locator('h3', { hasText: 'New L1 Change Request' })).toBeVisible();
 
     // 3. Fill in the L1 form
     // Select Unit
