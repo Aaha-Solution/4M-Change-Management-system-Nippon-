@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CheckCircle, Loader2 } from 'lucide-react';
+import { initTimeSync } from './utils/timeSync';
 
 const Login = lazy(() => import('./components/Login').then(m => ({ default: m.Login })));
 const Dashboard = lazy(() => import('./components/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -40,6 +41,10 @@ function App() {
   });
 
   const [toastMsg, setToastMsg] = useState(null);
+
+  useEffect(() => {
+    initTimeSync();
+  }, []);
 
   // Clear toast notifications
   useEffect(() => {

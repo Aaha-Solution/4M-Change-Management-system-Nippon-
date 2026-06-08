@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
+import { getSyncedDate } from '../utils/timeSync';
 import { CustomDatePicker } from './CustomDatePicker';
 import { getProcesses, getMachines } from '../api/apiRoutes';
 
@@ -61,7 +62,7 @@ export const DashboardOverview = ({
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
-  const currentYearShort = String(new Date().getFullYear()).slice(-2);
+  const currentYearShort = String(getSyncedDate().getFullYear()).slice(-2);
   const monthOptions = monthsList.map(m => `${m}-${currentYearShort}`);
 
   const uniquePersons = ['All', ...new Set(changes.map(c => c.requester).filter(Boolean))];

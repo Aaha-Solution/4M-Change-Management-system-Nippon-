@@ -40,6 +40,11 @@ router.post('/auth/login', login);
 router.post('/auth/signup', signup);
 router.post('/auth/forgot-password', forgotPassword);
 
+// Time endpoint (public)
+router.get('/time', (req, res) => {
+  res.status(200).json({ time: new Date().toISOString() });
+});
+
 // Protected routes
 router.get('/users', verifyToken, getUsers);
 router.put('/users/:id', verifyToken, updateUser);

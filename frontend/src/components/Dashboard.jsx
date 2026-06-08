@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getChanges, getEffectivenessLogs, getNotifications } from '../api/apiRoutes';
+import { getSyncedDate } from '../utils/timeSync';
 import {
   LogOut,
   GitPullRequest,
@@ -61,28 +62,28 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
       const defaultAudit = [
         {
           id: 'AUD-001',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
+          timestamp: new Date(getSyncedDate().getTime() - 3600000).toISOString(),
           action: 'User Login',
           user: 'admin@cms.com',
           details: 'Successfully authenticated as Administrator.'
         },
         {
           id: 'AUD-002',
-          timestamp: new Date(Date.now() - 7200000).toISOString(),
+          timestamp: new Date(getSyncedDate().getTime() - 7200000).toISOString(),
           action: 'Status Updated',
           user: 'manager@cms.com',
           details: 'Approved change request CHG-8901.'
         },
         {
           id: 'AUD-003',
-          timestamp: new Date(Date.now() - 10800000).toISOString(),
+          timestamp: new Date(getSyncedDate().getTime() - 10800000).toISOString(),
           action: 'Change Created',
           user: 'requester@cms.com',
           details: 'Created new change request CHG-8899.'
         },
         {
           id: 'AUD-004',
-          timestamp: new Date(Date.now() - 14400000).toISOString(),
+          timestamp: new Date(getSyncedDate().getTime() - 14400000).toISOString(),
           action: 'Status Updated',
           user: 'admin@cms.com',
           details: 'Marked change request CHG-8895 as Completed.'
@@ -96,7 +97,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const logAction = (action, details) => {
     const newLog = {
       id: `AUD-${Date.now().toString().substring(7)}`,
-      timestamp: new Date().toISOString(),
+      timestamp: getSyncedDate().toISOString(),
       action,
       user: userEmail || 'system',
       details

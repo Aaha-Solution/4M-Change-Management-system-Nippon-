@@ -1,3 +1,5 @@
+import { getSyncedDate } from './timeSync';
+
 /**
  * Formats a date string or object consistently to DD/MM/YY format.
  * This is timezone-safe and locale-safe.
@@ -60,7 +62,7 @@ export const formatDateToDDMMYY = (dateValue) => {
     }
   } else if (tokens.length === 2) {
     // case C: ["03", "jun"] or ["3", "jun"] or ["jun", "3"]
-    const currentYear = String(new Date().getFullYear()).slice(-2);
+    const currentYear = String(getSyncedDate().getFullYear()).slice(-2);
     if (/^\d+$/.test(tokens[0]) && months[tokens[1]]) {
       const d = tokens[0].padStart(2, '0');
       const m = months[tokens[1]];
@@ -194,7 +196,7 @@ export const formatDateToDDMMYYYY = (dateValue) => {
     }
   } else if (tokens.length === 2) {
     // case C: ["03", "jun"] or ["3", "jun"] or ["jun", "3"]
-    const currentYear = String(new Date().getFullYear());
+    const currentYear = String(getSyncedDate().getFullYear());
     if (/^\d+$/.test(tokens[0]) && months[tokens[1]]) {
       const d = tokens[0].padStart(2, '0');
       const m = months[tokens[1]];

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ClipboardList, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '../utils/dateUtils';
+import { getSyncedDate } from '../utils/timeSync';
 import { CustomDatePicker } from './CustomDatePicker';
 import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Approvals } from '../api/apiRoutes';
 
@@ -38,7 +39,7 @@ export const AllRequests = ({
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
-  const currentYearShort = String(new Date().getFullYear()).slice(-2);
+  const currentYearShort = String(getSyncedDate().getFullYear()).slice(-2);
   const monthOptions = monthsList.map(m => `${m}-${currentYearShort}`);
 
   const formattedDbChanges = changes.map((c) => {

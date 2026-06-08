@@ -7,7 +7,7 @@ import {
   Trash2,
   AlertTriangle
 } from 'lucide-react';
-import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo, getUsers, getDepartments } from '../api/apiRoutes';
+import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo, getUsers, getDepartments, getServerTime } from '../api/apiRoutes';
 import { CustomDatePicker } from './CustomDatePicker';
 import { formatDateToDDMMYYYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
 
@@ -119,7 +119,8 @@ export const L1Request = ({
   // Identifiers State
   const [unit, setUnit] = useState('');
   const [changeNo, setChangeNo] = useState('');
-  const [requestedDate] = useState(() => formatDateToDDMMYYYY(new Date()));
+  const [timeOffset, setTimeOffset] = useState(0);
+  const [requestedDate, setRequestedDate] = useState(() => formatDateToDDMMYYYY(new Date()));
   const [requestedTime, setRequestedTime] = useState(() => {
     const now = new Date();
     const hrs = String(now.getHours()).padStart(2, '0');
@@ -128,14 +129,39 @@ export const L1Request = ({
   });
 
   useEffect(() => {
+    async function syncTime() {
+      try {
+        const start = Date.now();
+        const res = await getServerTime();
+        const serverTimeMs = new Date(res.data.time).getTime();
+        const latency = (Date.now() - start) / 2;
+        const offset = (serverTimeMs + latency) - Date.now();
+        setTimeOffset(offset);
+
+        // Update initially synced date/time
+        const syncedNow = new Date(Date.now() + offset);
+        setRequestedDate(formatDateToDDMMYYYY(syncedNow));
+        const hrs = String(syncedNow.getHours()).padStart(2, '0');
+        const mins = String(syncedNow.getMinutes()).padStart(2, '0');
+        setRequestedTime(`${hrs}:${mins}`);
+      } catch (err) {
+        console.error('Failed to sync time with server, falling back to local time:', err);
+        setTimeOffset(0);
+      }
+    }
+    syncTime();
+  }, []);
+
+  useEffect(() => {
     const timer = setInterval(() => {
-      const now = new Date();
-      const hrs = String(now.getHours()).padStart(2, '0');
-      const mins = String(now.getMinutes()).padStart(2, '0');
+      const syncedNow = new Date(Date.now() + timeOffset);
+      const hrs = String(syncedNow.getHours()).padStart(2, '0');
+      const mins = String(syncedNow.getMinutes()).padStart(2, '0');
       setRequestedTime(`${hrs}:${mins}`);
+      setRequestedDate(formatDateToDDMMYYYY(syncedNow));
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [timeOffset]);
   const [changeIn, setChangeIn] = useState({
     Man: false,
     Machine: false,
