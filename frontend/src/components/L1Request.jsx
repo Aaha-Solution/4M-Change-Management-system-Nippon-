@@ -453,7 +453,7 @@ export const L1Request = ({
             <input
               type="text"
               readOnly
-              placeholder="e.g. proof-log.pdf"
+              placeholder="e.g. proof-log.pdf, image.png"
               className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] select-none text-slate-500"
               value={value}
             />

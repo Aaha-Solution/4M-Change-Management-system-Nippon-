@@ -342,7 +342,7 @@ export const Effectiveness = ({
                     required
                     readOnly
                     disabled={!effChangeNo || isAlreadyValidated}
-                    placeholder="e.g. proof-log.pdf"
+                    placeholder="e.g. proof-log.pdf, image.png"
                     className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
                       }`}
                     value={effAttachment}
