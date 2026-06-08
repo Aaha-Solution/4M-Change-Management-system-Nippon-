@@ -657,7 +657,7 @@ export const L3RequestTracker = ({
                               ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
                               : 'bg-amber-50 border-amber-220 text-amber-700'
                           }`}>
-                            {selectedL1Details.crStatus}
+                            L1 {selectedL1Details.crStatus}
                           </span>
                         </div>
                       </div>
@@ -846,9 +846,11 @@ export const L3RequestTracker = ({
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                           selectedL2Details.status === 'Accepted'
                             ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
-                            : 'bg-rose-50 border-rose-220 text-rose-700'
+                            : selectedL2Details.status === 'Rejected'
+                            ? 'bg-rose-50 border-rose-220 text-rose-700'
+                            : 'bg-amber-50 border-amber-220 text-amber-700'
                         }`}>
-                          {selectedL2Details.status || 'Pending'}
+                          L2 {selectedL2Details.status || 'Pending'}
                         </span>
                       </div>
                     </div>
@@ -955,7 +957,7 @@ export const L3RequestTracker = ({
                         >
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
                           <span className={`inline-block px-[10px] py-[3px] rounded-full border text-[10px] font-bold shadow-sm ${badgeClass}`}>
-                            {status}
+                            L3 {status}
                           </span>
                         </div>
                       );
