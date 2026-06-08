@@ -2,12 +2,15 @@ import pool from '../config/db.js';
 
 export const getChanges = async () => {
   const [rows] = await pool.query(
-    `SELECT c.id, c.title, c.requester, DATE_FORMAT(c.date, '%b %d, %Y') as date, c.priority, c.status,
+    `SELECT c.id, c.title, 
+            COALESCE(l1.request_by, u.name, c.requester) as requester, 
+            DATE_FORMAT(c.date, '%b %d, %Y') as date, c.priority, c.status,
             l1.dept, l1.process_name as processName, l1.machine_no as machineNo, l1.change_in as changeIn,
             l1.request_by as requestBy,
             v.status as l2Status
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
+     LEFT JOIN users u ON c.requester = u.email
      LEFT JOIN l2_validation_logs v ON c.id = v.change_no
      ORDER BY c.created_at DESC`
   );
@@ -154,10 +157,14 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
 
 export const getL2ValidationLogs = async () => {
   const [rows] = await pool.query(
-    `SELECT change_no as changeNo, validation_date as date, requester, 
-            weld_test as weldTest, qa_test as qaTest, status, remarks 
-     FROM l2_validation_logs 
-     ORDER BY created_at DESC`
+    `SELECT v.change_no as changeNo, v.validation_date as date, 
+            COALESCE(l1.request_by, u.name, v.requester) as requester, 
+            v.weld_test as weldTest, v.qa_test as qaTest, v.status, v.remarks 
+     FROM l2_validation_logs v
+     LEFT JOIN l1_requests l1 ON v.change_no = l1.change_no
+     LEFT JOIN change_requests c ON v.change_no = c.id
+     LEFT JOIN users u ON c.requester = u.email
+     ORDER BY v.created_at DESC`
   );
   return rows;
 };
@@ -236,7 +243,7 @@ export const getL3Approvals = async () => {
   const [rows] = await pool.query(
     `SELECT c.id as changeNo, 
             DATE_FORMAT(c.date, '%e %b') as date, 
-            u.name as requester,
+            COALESCE(l1.request_by, u.name, c.requester) as requester,
             v.status as l2Decision,
             v.remarks as l2Remarks,
             COALESCE(l.ped, 'Pending') as ped,
@@ -249,6 +256,7 @@ export const getL3Approvals = async () => {
             COALESCE(l.hr_safety, 'Pending') as hrSafety,
             COALESCE(l.unit_head, 'Pending') as unitHead
      FROM change_requests c
+     LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
      INNER JOIN l2_validation_logs v ON c.id = v.change_no
      LEFT JOIN l3_approvals l ON c.id = l.change_no
@@ -366,10 +374,14 @@ export const getL1Attachment = async (changeNo, fileName) => {
 
 export const getL2Details = async (changeNo) => {
   const [rows] = await pool.query(
-    `SELECT change_no as changeNo, validation_date as date, requester, 
-            weld_test as weldTest, qa_test as qaTest, status, remarks 
-     FROM l2_validation_logs 
-     WHERE change_no = ?`,
+    `SELECT v.change_no as changeNo, v.validation_date as date, 
+            COALESCE(l1.request_by, u.name, v.requester) as requester, 
+            v.weld_test as weldTest, v.qa_test as qaTest, v.status, v.remarks 
+     FROM l2_validation_logs v
+     LEFT JOIN l1_requests l1 ON v.change_no = l1.change_no
+     LEFT JOIN change_requests c ON v.change_no = c.id
+     LEFT JOIN users u ON c.requester = u.email
+     WHERE v.change_no = ?`,
     [changeNo]
   );
   return rows.length > 0 ? rows[0] : null;

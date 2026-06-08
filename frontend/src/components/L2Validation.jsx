@@ -265,7 +265,7 @@ export const L2Validation = ({
     return {
       changeNo: change.id,
       date: change.date,
-      requester: savedLog?.requester || change.requestBy || change.requester || 'Unknown',
+      requester: change.requestBy || change.requester || savedLog?.requester || 'Unknown',
       weldTest: savedLog?.weldTest || '-',
       qaTest: savedLog?.qaTest || '-',
       status: savedLog?.status || 'Pending',
