@@ -205,6 +205,21 @@ export const L1Request = ({
     }
   }, [userEmail, systemUsers]);
 
+  useEffect(() => {
+    if (dept) {
+      const matchedUsers = (systemUsers.length > 0 ? systemUsers : fallbackUsers).filter(
+        u => (u.department || '').toLowerCase() === dept.toLowerCase()
+      );
+      if (matchedUsers.length > 0) {
+        setRequestBy(matchedUsers[0].name || matchedUsers[0].email);
+      } else {
+        setRequestBy('');
+      }
+    } else {
+      setRequestBy('');
+    }
+  }, [dept, systemUsers]);
+
   const [processName, setProcessName] = useState('');
   const [processLine, setProcessLine] = useState('');
   const [machineNo, setMachineNo] = useState('');
@@ -621,21 +636,7 @@ export const L1Request = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request Dept <span className="text-rose-500">*</span></label>
               <select
                 value={dept}
-                onChange={(e) => {
-                  const selectedDept = e.target.value;
-                  setDept(selectedDept);
-
-                  // Reset requestBy if the currently selected requester doesn't belong to the new department
-                  if (selectedDept) {
-                    const matchedUsers = (systemUsers.length > 0 ? systemUsers : fallbackUsers).filter(
-                      u => (u.department || '').toLowerCase() === selectedDept.toLowerCase()
-                    );
-                    const isStillValid = matchedUsers.some(u => (u.name || u.email) === requestBy);
-                    if (!isStillValid) {
-                      setRequestBy('');
-                    }
-                  }
-                }}
+                onChange={(e) => setDept(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               >
                 <option value="">— Select Department —</option>
@@ -648,24 +649,13 @@ export const L1Request = ({
             {/* CHANGE REQUEST BY */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
-              <select
+              <input
+                type="text"
+                readOnly
                 value={requestBy}
-                onChange={(e) => setRequestBy(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
-              >
-                <option value="">— Select Name —</option>
-                {filteredUsers.map(u => {
-                  const displayName = u.name || u.email;
-                  return (
-                    <option key={u.email || displayName} value={displayName}>
-                      {displayName}
-                    </option>
-                  );
-                })}
-                {filteredUsers.length === 0 && (
-                  <option disabled value="">No members in this department</option>
-                )}
-              </select>
+                placeholder="Select Department to populate"
+                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 font-semibold cursor-not-allowed"
+              />
             </div>
 
             {/* PROCESS NAME */}
