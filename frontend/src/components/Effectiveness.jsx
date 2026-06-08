@@ -181,20 +181,7 @@ export const Effectiveness = ({
     setUploadedFilesList([]);
   };
 
-  // Reset to default logs (calls backend API)
-  const handleResetEffToDefaults = async () => {
-    try {
-      await resetEffectivenessLogs();
-      // Reload logs from backend after reset
-      const response = await getEffectivenessLogs();
-      setEffectivenessLogs(response.data);
-      setToastMsg('Effectiveness logs restored to default.');
-      logAction('Effectiveness Restored', 'Restored default monitoring records.');
-    } catch (err) {
-      console.error('Error resetting logs:', err);
-      setToastMsg('Failed to reset effectiveness logs.');
-    }
-  };
+
 
   // Extract unique months for filter
   const uniqueMonths = Array.from(new Set(effectivenessLogs.map(l => formatMonthWise(l.monthWise)))).filter(Boolean);
@@ -559,13 +546,7 @@ export const Effectiveness = ({
               ))}
             </select>
 
-            <button
-              onClick={handleResetEffToDefaults}
-              className="flex items-center gap-[6px] bg-white border border-slate-200 hover:bg-slate-50 px-[14px] py-[8px] rounded-[6px] text-[12px] font-semibold transition-colors cursor-pointer"
-            >
-              <RefreshCw size={12} />
-              <span>Reset</span>
-            </button>
+
           </div>
 
           {/* Logs Table Card */}

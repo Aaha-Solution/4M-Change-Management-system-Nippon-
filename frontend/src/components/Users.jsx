@@ -567,15 +567,7 @@ export const Users = ({
               </select>
             </div>
 
-            <button
-              onClick={() => {
-                setUserSearchQuery('');
-                setUserRoleFilter('All');
-              }}
-              className="px-3 py-1.5 border border-slate-200 text-slate-650 hover:bg-slate-50 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
-            >
-              <RefreshCw size={12} /> Reset
-            </button>
+
           </div>
 
           {/* Users List Table */}

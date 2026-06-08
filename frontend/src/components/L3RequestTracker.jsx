@@ -185,10 +185,7 @@ export const L3RequestTracker = ({
     }
   };
 
-  const handleResetFilters = () => {
-    setSearchQuery('');
-    setStatusFilter('All');
-  };
+
 
   const handleViewDetails = async (log) => {
     setIsFetchingDetails(true);
@@ -449,13 +446,7 @@ export const L3RequestTracker = ({
             <option value="Rejected">Rejected</option>
           </select>
 
-          <button 
-            onClick={handleResetFilters}
-            className="flex items-center gap-[6px] bg-white border border-slate-200 hover:bg-slate-50 px-[14px] py-[8px] rounded-[6px] text-[12px] font-semibold transition-colors cursor-pointer"
-          >
-            <RotateCcw size={12} />
-            <span>Reset</span>
-          </button>
+
         </div>
 
         {/* Table Matrix */}

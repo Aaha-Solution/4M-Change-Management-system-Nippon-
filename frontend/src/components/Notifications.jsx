@@ -20,8 +20,7 @@ import {
   toggleNotificationRead,
   markAllNotificationsRead,
   clearReadNotifications,
-  deleteNotification,
-  resetNotifications
+  deleteNotification
 } from '../api/apiRoutes';
 
 
@@ -57,16 +56,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
     }
   };
 
-  const handleResetAlerts = async () => {
-    try {
-      await resetNotifications();
-      await fetchNotifications();
-      setToastMsg('Notifications reset to defaults.');
-    } catch (error) {
-      console.error(error);
-      setToastMsg('Error resetting notifications.');
-    }
-  };
+
 
   const toggleReadStatus = async (id) => {
     try {

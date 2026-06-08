@@ -108,7 +108,7 @@ export const L1Request = ({
   };
 
   // Identifiers State
-  const [unit, setUnit] = useState('unit-Pdy');
+  const [unit, setUnit] = useState('UNIT-Pdy');
   const [changeNo, setChangeNo] = useState('');
   const [timeOffset, setTimeOffset] = useState(0);
   const [requestedDate, setRequestedDate] = useState(() => formatDateToDDMMYYYY(new Date()));
