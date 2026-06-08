@@ -19,7 +19,8 @@ import {
   Bell,
   ChevronDown,
   ChevronUp,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
 
 const DashboardOverview = lazy(() => import('./DashboardOverview').then(m => ({ default: m.DashboardOverview })));
@@ -554,12 +555,18 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
       </div>
 
       {/* Global Toast Notification */}
-      {toastMsg && (
-        <div className="fixed bottom-6 right-6 bg-slate-900 text-white rounded-xl px-4 py-3 flex items-center gap-2 shadow-xl z-50 animate-slide-in-right text-xs sm:text-sm font-medium">
-          <CheckCircle size={16} className="text-emerald-400" />
-          <span>{toastMsg}</span>
-        </div>
-      )}
+      {toastMsg && (() => {
+        const isError = /error|please|must be|should be|failed|invalid|required|at least/i.test(toastMsg);
+        return (
+          <div className={`fixed bottom-6 right-6 text-white rounded-xl px-4 py-3 flex items-center gap-2 shadow-xl z-50 animate-slide-in-right text-xs sm:text-sm font-medium ${isError ? 'bg-rose-700' : 'bg-slate-900'}`}>
+            {isError
+              ? <AlertTriangle size={16} className="text-rose-200" />
+              : <CheckCircle size={16} className="text-emerald-400" />
+            }
+            <span>{toastMsg}</span>
+          </div>
+        );
+      })()}
 
     </div>
   );
