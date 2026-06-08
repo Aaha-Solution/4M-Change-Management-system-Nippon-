@@ -108,7 +108,7 @@ export const L1Request = ({
   };
 
   // Identifiers State
-  const [unit, setUnit] = useState('');
+  const [unit, setUnit] = useState('unit-Pdy');
   const [changeNo, setChangeNo] = useState('');
   const [timeOffset, setTimeOffset] = useState(0);
   const [requestedDate, setRequestedDate] = useState(() => formatDateToDDMMYYYY(new Date()));
@@ -560,16 +560,12 @@ export const L1Request = ({
             {/* UNIT */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit <span className="text-rose-500">*</span></label>
-              <select
+              <input
+                type="text"
                 value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
-              >
-                <option value="">— Select Unit —</option>
-                <option value="Unit 1">Unit 1 - Chennai</option>
-                <option value="Unit 2">Unit 2 - Hosur</option>
-                <option value="Unit 3">Unit 3 - Madurai</option>
-              </select>
+                readOnly
+                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-medium select-none"
+              />
             </div>
 
             {/* 4M CHANGE NO */}
