@@ -1,6 +1,6 @@
 -- -------------------------------------------------------------
 -- Database Schema for Change Management System (CMS.io)
--- Supports PostgreSQL / MySQL
+-- MySQL
 -- -------------------------------------------------------------
 
 -- Drop tables if they already exist (for clean initialization)
@@ -21,31 +21,31 @@ DROP TABLE IF EXISTS machines;
 
 -- Roles Table
 CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL
 );
 
 -- Departments Table
 CREATE TABLE departments (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL
 );
 
 -- Processes Table
 CREATE TABLE processes (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL
 );
 
 -- Machines Table
 CREATE TABLE machines (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL
 );
 
 -- 1. Users Table
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL DEFAULT '',
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL, -- In production, this should be a hashed password (e.g. bcrypt)
@@ -205,7 +205,7 @@ CREATE TABLE l1_requests (
 
 -- 6a. L1 Attachments Table
 CREATE TABLE l1_attachments (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     change_no VARCHAR(50) NOT NULL REFERENCES l1_requests(change_no) ON UPDATE CASCADE ON DELETE CASCADE,
     field_name VARCHAR(50) NOT NULL,
     file_name VARCHAR(255) NOT NULL,
@@ -228,7 +228,7 @@ CREATE TABLE l2_validation_logs (
 
 -- 7a. L2 Attachments Table
 CREATE TABLE l2_attachments (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     change_no VARCHAR(50) NOT NULL REFERENCES l2_validation_logs(change_no) ON UPDATE CASCADE ON DELETE CASCADE,
     field_name VARCHAR(50) NOT NULL, -- 'weld_test' or 'qa_test'
     file_name VARCHAR(255) NOT NULL,

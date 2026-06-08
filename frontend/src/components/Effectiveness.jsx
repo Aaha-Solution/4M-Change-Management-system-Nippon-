@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, Paperclip, RefreshCw, Search, X, Eye, Save } from 'lucide-react';
+import { Paperclip, RefreshCw, Search, X, Eye, Save } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import {
   createEffectivenessLog,
-  updateEffectivenessLog,
-  deleteEffectivenessLog,
   getEffectivenessAttachment,
   resetEffectivenessLogs,
   getEffectivenessLogs
@@ -27,8 +25,7 @@ export const Effectiveness = ({
   const [effAttachment, setEffAttachment] = useState('');
   const [effStatus, setEffStatus] = useState('');
   const [effQaApproval, setEffQaApproval] = useState('');
-  const [editingEffLogId, setEditingEffLogId] = useState(null);
-  const [deleteEffLogId, setDeleteEffLogId] = useState(null);
+  const [editingEffLogId] = useState(null);
   const [viewingLog, setViewingLog] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
   const [previewFile, setPreviewFile] = useState(null);
@@ -98,7 +95,7 @@ export const Effectiveness = ({
     return formatDateToDDMMYY(dateStr);
   };
 
-  // Add or Edit Effectiveness Log
+  // Add Effectiveness Log
   const handleAddOrEditEff = async (e) => {
     e.preventDefault();
     if (!effChangeNo) {
@@ -130,74 +127,41 @@ export const Effectiveness = ({
     const context = selectedChange ? selectedChange.title : 'External Assessment';
     const reqDate = selectedChange ? selectedChange.date : new Date().toISOString().split('T')[0];
 
-    if (editingEffLogId) {
-      // Edit mode 123
-      const logData = {
-        monthWise: effMonthWise,
-        remarks: effRemarks,
-        attachment: effAttachment,
-        status: effStatus,
-        qaApproval: effQaApproval
-      };
-      try {
-        const response = await updateEffectivenessLog(editingEffLogId, logData, uploadedFilesList);
-        setEffectivenessLogs(prev => prev.map(log => log.id === editingEffLogId ? { ...log, ...response.data.log } : log));
-        logAction('Effectiveness Log Updated', `Modified monitoring metrics for ${effChangeNo}.`);
-        setToastMsg(`Updated observations for ${effChangeNo}`);
-        handleCancelEditing();
-      } catch (err) {
-        console.error("Error updating log:", err);
-        setToastMsg('Failed to update effectiveness log.');
-      }
-    } else {
-      // Create mode
-      const newId = generateEffId();
-      const logData = {
-        id: newId,
-        changeNo: effChangeNo,
-        reqDate: reqDate,
-        context: context,
-        startDate: new Date().toISOString().split('T')[0],
-        monthWise: effMonthWise,
-        remarks: effRemarks,
-        attachment: effAttachment,
-        status: effStatus,
-        qaApproval: effQaApproval
-      };
-      try {
-        const response = await createEffectivenessLog(logData, uploadedFilesList);
-        setEffectivenessLogs(prev => [response.data.log, ...prev]);
-        logAction('Effectiveness Log Created', `Created monitoring observations for change ${effChangeNo}.`);
-        setToastMsg(`Log entry added for ${effChangeNo}`);
+    // Create mode
+    const newId = generateEffId();
+    const logData = {
+      id: newId,
+      changeNo: effChangeNo,
+      reqDate: reqDate,
+      context: context,
+      startDate: new Date().toISOString().split('T')[0],
+      monthWise: effMonthWise,
+      remarks: effRemarks,
+      attachment: effAttachment,
+      status: effStatus,
+      qaApproval: effQaApproval
+    };
+    try {
+      const response = await createEffectivenessLog(logData, uploadedFilesList);
+      setEffectivenessLogs(prev => [response.data.log, ...prev]);
+      logAction('Effectiveness Log Created', `Created monitoring observations for change ${effChangeNo}.`);
+      setToastMsg(`Log entry added for ${effChangeNo}`);
 
-        // Reset form
-        setEffChangeNo('');
-        setEffRemarks('');
-        setEffAttachment('');
-        setEffStatus('');
-        setEffQaApproval('');
-        setUploadedFilesList([]);
-      } catch (err) {
-        console.error("Error creating log:", err);
-        setToastMsg('Failed to create effectiveness log.');
-      }
+      // Reset form
+      setEffChangeNo('');
+      setEffRemarks('');
+      setEffAttachment('');
+      setEffStatus('');
+      setEffQaApproval('');
+      setUploadedFilesList([]);
+    } catch (err) {
+      console.error("Error creating log:", err);
+      setToastMsg('Failed to create effectiveness log.');
     }
   };
 
-  // Edit action
-  const handleSelectRowForEdit = (log) => {
-    setEditingEffLogId(log.id);
-    setEffChangeNo(log.changeNo);
-    setEffMonthWise(log.monthWise);
-    setEffRemarks(log.remarks);
-    setEffAttachment(log.attachment || '');
-    setEffStatus(log.status);
-    setEffQaApproval(log.qaApproval);
-  };
-
-  // Cancel edit
+  // Cancel selection
   const handleCancelEditing = () => {
-    setEditingEffLogId(null);
     setEffChangeNo('');
     setEffMonthWise('2026-05');
     setEffRemarks('');
@@ -215,22 +179,6 @@ export const Effectiveness = ({
     setEffStatus('');
     setEffQaApproval('');
     setUploadedFilesList([]);
-  };
-
-  // Delete effectiveness record
-  const handleDeleteEff = async () => {
-    if (!deleteEffLogId) return;
-    try {
-      await deleteEffectivenessLog(deleteEffLogId);
-      setEffectivenessLogs(prev => prev.filter(log => log.id !== deleteEffLogId));
-      logAction('Effectiveness Log Deleted', `Removed observations record ${deleteEffLogId}`);
-      setToastMsg(`Deleted entry ${deleteEffLogId}`);
-    } catch (err) {
-      console.error('Error deleting log:', err);
-      setToastMsg('Failed to delete effectiveness log.');
-    } finally {
-      setDeleteEffLogId(null);
-    }
   };
 
   // Reset to default logs (calls backend API)
@@ -264,26 +212,15 @@ export const Effectiveness = ({
   const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const selectedChange = changes.find(c => c.id === effChangeNo);
-  const currentLog = effectivenessLogs.find(l => l.id === editingEffLogId);
 
   const isAlreadyValidated = effectivenessLogs.some(
     log => log.changeNo?.toLowerCase().trim() === effChangeNo?.toLowerCase().trim()
   );
 
-  // Derive values for requested date, context, start date
-  let displayReqDate = '';
-  let displayContext = '';
-  let displayStartDate = '';
-
-  if (editingEffLogId && currentLog) {
-    displayReqDate = formatDateShort(currentLog.reqDate);
-    displayContext = currentLog.context;
-    displayStartDate = formatDateShort(currentLog.startDate);
-  } else if (selectedChange) {
-    displayReqDate = formatDateShort(selectedChange.date);
-    displayContext = selectedChange.title;
-    displayStartDate = formatDateShort(selectedChange.date);
-  }
+  // Derive display values for requested date, context, start date
+  const displayReqDate = selectedChange ? formatDateShort(selectedChange.date) : '';
+  const displayContext = selectedChange ? selectedChange.title : '';
+  const displayStartDate = selectedChange ? formatDateShort(selectedChange.date) : '';
 
   return (
     <div className="space-y-[16px] animate-fade-in-up text-slate-800 pb-[40px]">
@@ -298,9 +235,7 @@ export const Effectiveness = ({
         <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px] h-fit">
           <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
             <Save size={16} className="text-[#0066cc]" />
-            <h4 className="text-[13px] font-bold text-slate-900">
-              {editingEffLogId ? 'Edit Monitoring Log' : 'Add Monitoring Log'}
-            </h4>
+            <h4 className="text-[13px] font-bold text-slate-900">Add Monitoring Log</h4>
           </div>
 
           <form onSubmit={handleAddOrEditEff} className="space-y-[14px]">
@@ -639,13 +574,10 @@ export const Effectiveness = ({
                     </tr>
                   ) : (
                     paginatedLogs.map(log => {
-                      const isEditing = editingEffLogId === log.id;
                       return (
                         <tr
                           key={log.id}
-                          className={`hover:bg-slate-50/50 cursor-pointer transition-colors ${isEditing ? 'bg-sky-50/60 hover:bg-sky-50/60 border-l-[3px] border-l-[#0066cc]' : ''
-                            }`}
-                          onClick={() => handleSelectRowForEdit(log)}
+                          className="hover:bg-slate-50/50 transition-colors"
                         >
                           <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
                           <td className="p-[8px] text-slate-500">{formatDateShort(log.reqDate)}</td>
@@ -725,44 +657,7 @@ export const Effectiveness = ({
 
       </div>
 
-      {/* Delete Modal */}
-      {deleteEffLogId && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-sm overflow-hidden animate-fade-in-up">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h4 className="font-heading font-bold text-slate-900">Delete Observation Log</h4>
-              <button onClick={() => setDeleteEffLogId(null)} className="text-slate-450 hover:text-slate-655 cursor-pointer">
-                <X size={16} />
-              </button>
-            </div>
-            <div className="p-5 flex gap-3.5 items-start">
-              <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle size={18} />
-              </div>
-              <div>
-                <h5 className="font-bold text-sm text-slate-950">Are you sure?</h5>
-                <p className="text-xs text-slate-500 mt-1 leading-normal">
-                  This action will permanently delete the monitoring entry for log ID <strong>{deleteEffLogId}</strong>. This cannot be undone.
-                </p>
-              </div>
-            </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-              <button
-                onClick={() => setDeleteEffLogId(null)}
-                className="px-3.5 py-1.5 border border-slate-250 text-slate-500 hover:bg-slate-100 text-xs font-semibold rounded-lg cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteEff}
-                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
-              >
-                Delete Log
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Log Details Modal */}
       {viewingLog && (
