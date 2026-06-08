@@ -798,10 +798,14 @@ export const L1Request = ({
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               >
                 <option value="">— Select Area —</option>
+                <option value="Productivity">Productivity</option>
                 <option value="Quality">Quality</option>
                 <option value="Cost">Cost</option>
                 <option value="Delivery">Delivery</option>
                 <option value="Safety">Safety</option>
+                <option value="Morale">Morale</option>
+                <option value="Environment">Environment</option>
+                <option value="Poka Yoke">Poka Yoke</option>
               </select>
             </div>
 
