@@ -105,6 +105,18 @@ export const Effectiveness = ({
       setToastMsg('Please select a Change Request.');
       return;
     }
+    if (!effMonthWise) {
+      setToastMsg('Please select Month Wise.');
+      return;
+    }
+    if (!effRemarks || !effRemarks.trim()) {
+      setToastMsg('Please enter Observation Remarks.');
+      return;
+    }
+    if (!effAttachment) {
+      setToastMsg('Please upload an Attachment.');
+      return;
+    }
     if (!effStatus) {
       setToastMsg('Please select Effectiveness Status.');
       return;
@@ -254,6 +266,10 @@ export const Effectiveness = ({
   const selectedChange = changes.find(c => c.id === effChangeNo);
   const currentLog = effectivenessLogs.find(l => l.id === editingEffLogId);
 
+  const isAlreadyValidated = effectivenessLogs.some(
+    log => log.changeNo?.toLowerCase().trim() === effChangeNo?.toLowerCase().trim()
+  );
+
   // Derive values for requested date, context, start date
   let displayReqDate = '';
   let displayContext = '';
@@ -290,7 +306,7 @@ export const Effectiveness = ({
           <form onSubmit={handleAddOrEditEff} className="space-y-[14px]">
             {/* 4M CHANGE NO */}
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No *</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
               {editingEffLogId || effChangeNo ? (
                 <input
                   type="text"
@@ -318,7 +334,7 @@ export const Effectiveness = ({
 
             {/* REQUESTED DATE */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date *</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 disabled
@@ -330,7 +346,7 @@ export const Effectiveness = ({
 
             {/* CONTEXT OF CHANGE */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change *</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 disabled
@@ -342,7 +358,7 @@ export const Effectiveness = ({
 
             {/* CHANGE DATE START */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start *</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 disabled
@@ -354,12 +370,12 @@ export const Effectiveness = ({
 
             {/* MONTH WISE */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise *</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise <span className="text-rose-500">*</span></label>
               <input
                 type="month"
                 required
-                disabled={!effChangeNo}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                disabled={!effChangeNo || isAlreadyValidated}
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
                   }`}
                 value={effMonthWise}
                 onChange={(e) => setEffMonthWise(e.target.value)}
@@ -368,13 +384,13 @@ export const Effectiveness = ({
 
             {/* OBSERVATION REMARKS */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Observation Remarks *</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Observation Remarks <span className="text-rose-500">*</span></label>
               <textarea
                 required
-                disabled={!effChangeNo}
+                disabled={!effChangeNo || isAlreadyValidated}
                 rows={3}
                 placeholder="Enter evaluation remarks/results..."
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
                   }`}
                 value={effRemarks}
                 onChange={(e) => setEffRemarks(e.target.value)}
@@ -383,22 +399,23 @@ export const Effectiveness = ({
 
             {/* ATTACHMENTS */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attachments</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attachments <span className="text-rose-500">*</span></label>
               <div className="flex gap-[8px]">
                 <div className="relative flex-1">
                   <input
                     type="text"
+                    required
                     readOnly
-                    disabled={!effChangeNo}
+                    disabled={!effChangeNo || isAlreadyValidated}
                     placeholder="e.g. proof-log.pdf"
-                    className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
+                    className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
                       }`}
                     value={effAttachment}
                   />
                   {effAttachment && (
                     <button
                       type="button"
-                      disabled={!effChangeNo}
+                      disabled={!effChangeNo || isAlreadyValidated}
                       onClick={() => setEffAttachment('')}
                       className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                       title="Clear all attachments"
@@ -407,14 +424,14 @@ export const Effectiveness = ({
                     </button>
                   )}
                 </div>
-                <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 rounded-[6px] text-[12px] font-bold transition-all cursor-pointer ${!effChangeNo ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'
+                <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 rounded-[6px] text-[12px] font-bold transition-all cursor-pointer ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'
                   }`}>
                   <Paperclip size={14} />
                   <span>Upload</span>
                   <input
                     type="file"
                     multiple
-                    disabled={!effChangeNo}
+                    disabled={!effChangeNo || isAlreadyValidated}
                     className="hidden"
                     onChange={async (e) => {
                       const target = e.target;
@@ -469,7 +486,7 @@ export const Effectiveness = ({
                       </span>
                       <button
                         type="button"
-                        disabled={!effChangeNo}
+                        disabled={!effChangeNo || isAlreadyValidated}
                         onClick={() => {
                           const existing = effAttachment.split(',').map(s => s.trim()).filter(Boolean);
                           const updated = existing.filter(f => f !== file).join(', ');
@@ -487,11 +504,11 @@ export const Effectiveness = ({
 
             {/* EFFECTIVENESS STATUS */}
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Status *</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Status <span className="text-rose-500">*</span></label>
               <select
                 required
-                disabled={!effChangeNo}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                disabled={!effChangeNo || isAlreadyValidated}
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
                   }`}
                 value={effStatus}
                 onChange={(e) => setEffStatus(e.target.value)}
@@ -504,11 +521,11 @@ export const Effectiveness = ({
 
             {/* QA APPROVAL DECISION */}
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Approval Decision *</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Approval Decision <span className="text-rose-500">*</span></label>
               <select
                 required
-                disabled={!effChangeNo}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                disabled={!effChangeNo || isAlreadyValidated}
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
                   }`}
                 value={effQaApproval}
                 onChange={(e) => setEffQaApproval(e.target.value)}
@@ -523,11 +540,19 @@ export const Effectiveness = ({
             <div className="space-y-[8px] pt-[4px]">
               <button
                 type="submit"
-                disabled={!effChangeNo}
+                disabled={!effChangeNo || isAlreadyValidated}
                 className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
               >
-                <Save size={14} />
-                <span>{editingEffLogId ? 'Save Changes' : 'Add Log Entry'}</span>
+                {isAlreadyValidated ? (
+                  <span>Log Already Saved</span>
+                ) : !effChangeNo ? (
+                  <span>Select a Request to Evaluate</span>
+                ) : (
+                  <>
+                    <Save size={14} />
+                    <span>Add Log Entry</span>
+                  </>
+                )}
               </button>
               {(editingEffLogId || effChangeNo) && (
                 <button

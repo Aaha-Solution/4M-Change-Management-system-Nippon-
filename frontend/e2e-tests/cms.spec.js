@@ -313,7 +313,12 @@ test.describe('Change Management System E2E Flow', () => {
     await page.locator('div.space-y-1:has-text("4M Change No") select').selectOption(changeId);
     await page.fill('input[type="month"]', '2026-05');
     await page.fill('textarea[placeholder="Enter evaluation remarks/results..."]', 'Observed system performance. Response times normalized and DB replication is stable.');
-    // Note: Attachment input is readOnly (populated via file upload), so we skip it
+    
+    // Upload required file attachment for effectiveness
+    await page.setInputFiles('label:has-text("Attachments") ~ div input[type="file"]', [
+      { name: 'eff-weld-test.pdf', mimeType: 'application/pdf', buffer: Buffer.from('eff file content') }
+    ]);
+
     await page.locator('div.space-y-1:has-text("Effectiveness Status") select').selectOption('Effectiveness Ok');
     await page.locator('div.space-y-1:has-text("QA Approval Decision") select').selectOption('Approved');
     await page.click('button:has-text("Add Log Entry")');
