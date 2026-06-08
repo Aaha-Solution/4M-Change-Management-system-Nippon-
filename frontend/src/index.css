@@ -5,8 +5,8 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-heading: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
 
-  --color-brand-purple: #7c3aed;
-  --color-brand-purple-hover: #6d28d9;
+  --color-brand-purple: #0066cc;
+  --color-brand-purple-hover: #0052a3;
   --color-brand-cyan: #06b6d4;
   --color-bg-primary: #f8fafc;
   --color-bg-secondary: #ffffff;
@@ -28,7 +28,7 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #7c3aed;
+  background: #0066cc;
 }
 
 /* Float Animation */

@@ -385,7 +385,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
           </div>
         </div>
       </aside>
-      {/* 2. Main Content Right Panel */}
+
+      {/* 2. Main Content Right Panel */}
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen min-w-0">
 
         {/* Top Header Bar */}        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-[12px] sm:px-[24px] py-[12px] sm:py-[16px] flex items-center justify-between">

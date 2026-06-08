@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { 
-  Clock, 
-  Loader2, 
-  BarChart3, 
+import {
+  Clock,
+  Loader2,
+  BarChart3,
   LayoutGrid,
   Calendar,
   GitBranch,
   Layers,
   Settings,
-  ShieldAlert
+  ShieldAlert,
+  CheckCircle
 } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
@@ -89,7 +90,7 @@ export const DashboardOverview = ({
     if (filterFromDate) {
       const fD = parseDDMMYYYYToDate(filterFromDate);
       if (fD) {
-        fD.setHours(0,0,0,0);
+        fD.setHours(0, 0, 0, 0);
         const itemD = parseDDMMYYYYToDate(c.date);
         matchesFromDate = itemD && itemD >= fD;
       }
@@ -99,7 +100,7 @@ export const DashboardOverview = ({
     if (filterToDate) {
       const tD = parseDDMMYYYYToDate(filterToDate);
       if (tD) {
-        tD.setHours(23,59,59,999);
+        tD.setHours(23, 59, 59, 999);
         const itemD = parseDDMMYYYYToDate(c.date);
         matchesToDate = itemD && itemD <= tD;
       }
@@ -149,7 +150,7 @@ export const DashboardOverview = ({
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-[8px] p-[12px] bg-slate-50/50 border-y border-slate-100 text-[10px]">
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Month</label>
-        <select 
+        <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
           value={filterMonth}
           onChange={(e) => setFilterMonth(e.target.value)}
@@ -162,7 +163,7 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
-        <CustomDatePicker 
+        <CustomDatePicker
           value={filterFromDate}
           onChange={setFilterFromDate}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
@@ -171,7 +172,7 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <CustomDatePicker 
+        <CustomDatePicker
           value={filterToDate}
           onChange={setFilterToDate}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
@@ -180,7 +181,7 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Person</label>
-        <select 
+        <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
           value={filterPerson}
           onChange={(e) => setFilterPerson(e.target.value)}
@@ -192,7 +193,7 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Process</label>
-        <select 
+        <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
           value={filterProcess}
           onChange={(e) => setFilterProcess(e.target.value)}
@@ -204,7 +205,7 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By M/C No</label>
-        <select 
+        <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
           value={filterMachine}
           onChange={(e) => setFilterMachine(e.target.value)}
@@ -221,7 +222,7 @@ export const DashboardOverview = ({
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-[8px] p-[12px] bg-slate-50/50 border-y border-slate-100 text-[10px]">
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Month</label>
-        <select 
+        <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
           value={filterMonth}
           onChange={(e) => setFilterMonth(e.target.value)}
@@ -234,7 +235,7 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
-        <CustomDatePicker 
+        <CustomDatePicker
           value={filterFromDate}
           onChange={setFilterFromDate}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
@@ -243,7 +244,7 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <CustomDatePicker 
+        <CustomDatePicker
           value={filterToDate}
           onChange={setFilterToDate}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
@@ -252,7 +253,7 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
-        <select 
+        <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
@@ -295,7 +296,7 @@ export const DashboardOverview = ({
       else if (rawDept.includes('HR')) mapped = 'HR';
       else if (rawDept.includes('SAFE')) mapped = 'SAFETY';
       else mapped = 'PRODUCTION'; // fallback
-      
+
       if (counts[mapped] !== undefined) {
         counts[mapped]++;
       }
@@ -315,7 +316,7 @@ export const DashboardOverview = ({
           return (
             <div key={idx} className="flex flex-col items-center w-[9%] group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div 
+              <div
                 className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
                 style={{ height: `${barHeight}%`, minHeight: '4px' }}
               />
@@ -374,7 +375,7 @@ export const DashboardOverview = ({
       else if (p.includes('pott') || p.includes('train')) mapped = 'Pott';
       else if (p.includes('load') || p.includes('gauge')) mapped = 'Load';
       else mapped = 'Wind'; // fallback
-      
+
       counts[mapped]++;
     });
 
@@ -392,7 +393,7 @@ export const DashboardOverview = ({
           return (
             <div key={idx} className="flex flex-col items-center w-[12%] group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div 
+              <div
                 className="w-full bg-[#2e7d32] hover:bg-[#1b5e20] transition-all rounded-t-[2px]"
                 style={{ height: `${barHeight}%`, minHeight: '4px' }}
               />
@@ -426,7 +427,7 @@ export const DashboardOverview = ({
       else if (catStr.includes('mea') || catStr.includes('gauge') || catStr.includes('check') || catStr.includes('repeat')) mapped = 'Mea';
       else if (catStr.includes('mot') || catStr.includes('nature') || catStr.includes('env')) mapped = 'Mot';
       else mapped = 'Met'; // fallback
-      
+
       counts[mapped]++;
     });
 
@@ -454,7 +455,7 @@ export const DashboardOverview = ({
           return (
             <div key={idx} className="flex flex-col items-center w-[12%] group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div 
+              <div
                 className="w-full transition-all rounded-t-[2px]"
                 style={{ height: `${barHeight}%`, minHeight: '4px', backgroundColor: item.color }}
               />
@@ -499,7 +500,7 @@ export const DashboardOverview = ({
           return (
             <div key={idx} className="flex flex-col items-center w-[7%] group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div 
+              <div
                 className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
                 style={{ height: `${barHeight}%`, minHeight: '4px' }}
               />
@@ -556,19 +557,19 @@ export const DashboardOverview = ({
                 {item.rej > 0 && <span className="text-[#f57c00]">{item.rej}</span>}
                 {item.pend > 0 && <span className="text-slate-400">{item.pend}</span>}
               </div>
-              
+
               <div className="flex items-end justify-center gap-[2px] w-full h-[65%]">
-                <div 
-                  className="w-[30%] bg-[#1e60aa] rounded-t-[1px]" 
-                  style={{ height: `${hAppr}%`, minHeight: item.appr > 0 ? '2px' : '0px' }} 
+                <div
+                  className="w-[30%] bg-[#1e60aa] rounded-t-[1px]"
+                  style={{ height: `${hAppr}%`, minHeight: item.appr > 0 ? '2px' : '0px' }}
                 />
-                <div 
-                  className="w-[30%] bg-[#f57c00] rounded-t-[1px]" 
-                  style={{ height: `${hRej}%`, minHeight: item.rej > 0 ? '2px' : '0px' }} 
+                <div
+                  className="w-[30%] bg-[#f57c00] rounded-t-[1px]"
+                  style={{ height: `${hRej}%`, minHeight: item.rej > 0 ? '2px' : '0px' }}
                 />
-                <div 
-                  className="w-[30%] bg-[#b0bec5] rounded-t-[1px]" 
-                  style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }} 
+                <div
+                  className="w-[30%] bg-[#b0bec5] rounded-t-[1px]"
+                  style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }}
                 />
               </div>
 
@@ -587,34 +588,66 @@ export const DashboardOverview = ({
       {/* KPIs Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[20px]">
         {/* Total Requests */}
-        <div className="bg-white border border-slate-200/80 rounded-[6px] p-[20px] shadow-sm">
-          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Requests</h4>
-          <div className="text-[32px] font-bold text-slate-900 mt-[4px]">
-            {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : totalCount}
+        <div className="bg-white border border-slate-200/60 rounded-xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-[#0066cc]" />
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Total Requests</h4>
+              <div className="text-[32px] font-bold text-slate-900 mt-2 font-heading tracking-tight">
+                {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : totalCount}
+              </div>
+            </div>
+            <div className="p-2.5 bg-[#e6f0fa] text-[#0066cc] rounded-lg group-hover:scale-110 transition-transform duration-300">
+              <BarChart3 size={20} />
+            </div>
           </div>
         </div>
 
         {/* Approved */}
-        <div className="bg-white border border-slate-200/80 rounded-[6px] p-[20px] shadow-sm">
-          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Approved</h4>
-          <div className="text-[32px] font-bold text-emerald-600 mt-[4px]">
-            {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : approvedCount}
+        <div className="bg-white border border-slate-200/60 rounded-xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-emerald-500" />
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Approved</h4>
+              <div className="text-[32px] font-bold text-emerald-600 mt-2 font-heading tracking-tight">
+                {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : approvedCount}
+              </div>
+            </div>
+            <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg group-hover:scale-110 transition-transform duration-300">
+              <CheckCircle size={20} />
+            </div>
           </div>
         </div>
 
         {/* Pending Approval */}
-        <div className="bg-white border border-slate-200/80 rounded-[6px] p-[20px] shadow-sm">
-          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pending Approval</h4>
-          <div className="text-[32px] font-bold text-amber-600 mt-[4px]">
-            {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : pendingCount}
+        <div className="bg-white border border-slate-200/60 rounded-xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-amber-500" />
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Pending Approval</h4>
+              <div className="text-[32px] font-bold text-amber-600 mt-2 font-heading tracking-tight">
+                {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : pendingCount}
+              </div>
+            </div>
+            <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg group-hover:scale-110 transition-transform duration-300">
+              <Clock size={20} />
+            </div>
           </div>
         </div>
 
         {/* Rejected */}
-        <div className="bg-white border border-slate-200/80 rounded-[6px] p-[20px] shadow-sm">
-          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Rejected</h4>
-          <div className="text-[32px] font-bold text-rose-600 mt-[4px]">
-            {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : rejectedCount}
+        <div className="bg-white border border-slate-200/60 rounded-xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-rose-500" />
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Rejected</h4>
+              <div className="text-[32px] font-bold text-rose-600 mt-2 font-heading tracking-tight">
+                {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : rejectedCount}
+              </div>
+            </div>
+            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-lg group-hover:scale-110 transition-transform duration-300">
+              <ShieldAlert size={20} />
+            </div>
           </div>
         </div>
       </div>
@@ -627,7 +660,7 @@ export const DashboardOverview = ({
             <h3 className="font-heading text-[18px] font-bold text-slate-900">Plant Change Analytics</h3>
             <BarChart3 size={18} className="text-slate-400" />
           </div>
-          
+
           <div className="flex items-center gap-[12px]">
             {/* Show tab segments ONLY in Tab View mode */}
             {!isGridView && (
@@ -636,20 +669,19 @@ export const DashboardOverview = ({
                   <button
                     key={tab}
                     onClick={() => setActiveAnalyticsTab(tab)}
-                    className={`px-[12px] py-[6px] text-[11px] font-bold rounded-[4px] transition-all cursor-pointer ${
-                      activeAnalyticsTab === tab
-                        ? 'bg-white text-[#1e60aa] shadow-sm' 
+                    className={`px-[12px] py-[6px] text-[11px] font-bold rounded-[4px] transition-all cursor-pointer ${activeAnalyticsTab === tab
+                        ? 'bg-white text-[#1e60aa] shadow-sm'
                         : 'text-slate-500 hover:text-slate-800'
-                    }`}
+                      }`}
                   >
                     {tab}
                   </button>
                 ))}
               </div>
             )}
-            
+
             {/* View Mode Toggle button */}
-            <button 
+            <button
               onClick={() => setIsGridView(!isGridView)}
               className="flex items-center gap-[6px] border border-slate-200 bg-white hover:bg-slate-50 px-[12px] py-[6px] rounded-[6px] text-[11px] font-bold text-slate-600 transition-all cursor-pointer"
             >
@@ -800,12 +832,11 @@ export const DashboardOverview = ({
                       <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.department}</td>
                       <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
                       <td className="p-[16px]">
-                        <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
-                          r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                          r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
-                          r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
-                          'bg-teal-50 border-teal-200 text-teal-700'
-                        }`}>
+                        <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                            r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
+                              r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
+                                'bg-teal-50 border-teal-200 text-teal-700'
+                          }`}>
                           {r.status}
                         </span>
                       </td>
