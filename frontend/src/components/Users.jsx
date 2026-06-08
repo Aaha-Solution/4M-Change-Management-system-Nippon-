@@ -330,7 +330,7 @@ export const Users = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* 1. Left Sidebar: Create User Account */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 relative">
+        <div className="lg:col-span-4 bg-white border border-slate-200/60 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300 space-y-4 relative">
           <div className="absolute inset-x-0 top-0 h-1 bg-[#0066cc] rounded-t-xl" />
           
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
@@ -346,7 +346,7 @@ export const Users = ({
                 type="text"
                 required
                 placeholder="e.g. John Doe"
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                 value={createUserFullName}
                 onChange={(e) => setCreateUserFullName(e.target.value)}
                 disabled={isCreatingUser}
@@ -360,7 +360,7 @@ export const Users = ({
                 type="email"
                 required
                 placeholder="e.g. john.doe@plant.com"
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                 value={createUserEmail}
                 onChange={(e) => setCreateUserEmail(e.target.value)}
                 disabled={isCreatingUser}
@@ -375,7 +375,7 @@ export const Users = ({
                   type={showFormPassword ? 'text' : 'password'}
                   required
                   placeholder="Min 6 characters"
-                  className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                  className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                   value={createUserPassword}
                   onChange={(e) => setCreateUserPassword(e.target.value)}
                   disabled={isCreatingUser}
@@ -467,7 +467,7 @@ export const Users = ({
         {/* 2. Right Panel: Users Directory Table */}
         <div className="lg:col-span-8 space-y-4">
           {/* Search and Filters */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-wrap gap-3 items-center">
+          <div className="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-wrap gap-3 items-center">
             <div className="flex-1 min-w-[200px] relative">
               <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
               <input
@@ -656,7 +656,7 @@ export const Users = ({
                   required
                   autoFocus
                   placeholder="e.g. Lead Engineer"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                   value={newCustomRoleInput}
                   onChange={(e) => setNewCustomRoleInput(e.target.value)}
                 />
@@ -725,7 +725,7 @@ export const Users = ({
                   required
                   autoFocus
                   placeholder="e.g. DevOps Team"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                   value={newCustomDeptInput}
                   onChange={(e) => setNewCustomDeptInput(e.target.value)}
                 />
@@ -796,7 +796,7 @@ export const Users = ({
                   type="text"
                   required
                   placeholder="e.g. John Doe"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                   value={editUserFullName}
                   onChange={(e) => setEditUserFullName(e.target.value)}
                 />
@@ -820,7 +820,7 @@ export const Users = ({
                   <input
                     type={showEditFormPassword ? 'text' : 'password'}
                     placeholder="Leave blank to keep current password"
-                    className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] transition-colors"
+                    className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                     value={editUserPassword}
                     onChange={(e) => setEditUserPassword(e.target.value)}
                   />

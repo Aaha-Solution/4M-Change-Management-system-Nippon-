@@ -694,7 +694,7 @@ export const DashboardOverview = ({
         {/* Toggleable Layout modes */}
         {!isGridView ? (
           /* TAB VIEW (Single Chart Layout) */
-          <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[20px]">
+          <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px]">
             <div className="flex items-center justify-between">
               <h4 className="text-[14px] font-bold text-slate-800">
                 {activeAnalyticsTab === 'Department' && 'Department Wise Change'}
@@ -721,7 +721,7 @@ export const DashboardOverview = ({
             {/* 2x2 Grid of 4 Smaller Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-[20px]">
               {/* 1. Department Wise Change */}
-              <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
+              <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">Department Wise Change</h4>
                   <GitBranch size={14} className="text-slate-400" />
@@ -731,7 +731,7 @@ export const DashboardOverview = ({
               </div>
 
               {/* 2. Process Wise Change */}
-              <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
+              <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">Process Wise Change</h4>
                   <Settings size={14} className="text-slate-400" />
@@ -741,7 +741,7 @@ export const DashboardOverview = ({
               </div>
 
               {/* 3. 6M Category Change */}
-              <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
+              <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">6M Category Change</h4>
                   <Layers size={14} className="text-slate-400" />
@@ -751,7 +751,7 @@ export const DashboardOverview = ({
               </div>
 
               {/* 4. Monthly Change */}
-              <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
+              <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">Monthly Change</h4>
                   <Calendar size={14} className="text-slate-400" />
@@ -762,7 +762,7 @@ export const DashboardOverview = ({
             </div>
 
             {/* 5. Overall Change Approval Status (Full-width Card at bottom of Grid Mode) */}
-            <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
+            <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-[8px]">
                   <h4 className="text-[13px] font-bold text-slate-800">Overall Change Approval Status</h4>
@@ -792,7 +792,7 @@ export const DashboardOverview = ({
       </div>
 
       {/* Recent Change Requests Table */}
-      <div className="bg-white border border-slate-200 rounded-[12px] shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
         <div className="p-[20px] border-b border-slate-100 flex justify-between items-center">
           <h3 className="font-heading text-[18px] font-bold text-slate-900">Recent change requests</h3>
           <Clock size={18} className="text-slate-400" />

@@ -292,7 +292,7 @@ export const L2Validation = ({
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_2.5fr] gap-[24px] animate-fade-in-up text-slate-800">
 
       {/* LEFT COLUMN: Add L2 Validation Log Form */}
-      <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px] h-fit">
+      <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] h-fit">
         <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
           <Save size={16} className="text-[#0066cc]" />
           <h4 className="text-[13px] font-bold text-slate-900">Add L2 Validation Log</h4>
@@ -395,7 +395,7 @@ export const L2Validation = ({
                 setFormStatus(e.target.value);
                 setFieldErrors(prev => ({ ...prev, status: '' }));
               }}
-              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors disabled:cursor-not-allowed text-slate-550 ${
+              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 disabled:cursor-not-allowed text-slate-550 ${
                 fieldErrors.status ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
               }`}
             >
@@ -423,7 +423,7 @@ export const L2Validation = ({
                 setFormRemarks(e.target.value);
                 setFieldErrors(prev => ({ ...prev, remarks: '' }));
               }}
-              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none disabled:cursor-not-allowed text-slate-550 ${
+              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none disabled:cursor-not-allowed text-slate-550 ${
                 fieldErrors.remarks ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
               }`}
             />
@@ -495,7 +495,7 @@ export const L2Validation = ({
         </div>
 
         {/* Table layout */}
-        <div className="bg-white border border-slate-200 rounded-[12px] shadow-sm overflow-hidden">
+        <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>

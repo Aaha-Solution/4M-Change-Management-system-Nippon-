@@ -67,7 +67,7 @@ test.describe('Change Management System Full Lifecycle E2E Flow', () => {
 
     await page.fill('label:has-text("Risk Analysis") + textarea', 'Potential minor startup latency on line 5.');
     await page.fill('label:has-text("Update in SOP / WI / Control Plan / FMEA") + textarea', 'SOP and WI needs to be updated for line 5 operation.');
-    await page.fill('label:has-text("User Dept HOD Approval") + textarea', 'Approved by HOD Ramanan.');
+    await page.fill('label:has-text("User Dept HOD Approval") + textarea', 'Approved by HOD Suriya.');
     await page.locator('label:has-text("Customer Approval Required") + select').selectOption('No');
     await page.fill('label:has-text("Effectiveness Monitoring") + textarea', 'Measured by cycle time checks over 3 days.');
 

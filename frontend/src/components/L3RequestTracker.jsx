@@ -282,7 +282,7 @@ export const L3RequestTracker = ({
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
       
       {/* LEFT COLUMN: Add L3 Approval Log Form */}
-      <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px] h-fit">
+      <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] h-fit">
         <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
           <Save size={16} className="text-[#0066cc]" />
           <h4 className="text-[13px] font-bold text-slate-900">Add L3 Approval Log</h4>
@@ -455,7 +455,7 @@ export const L3RequestTracker = ({
         </div>
 
         {/* Table Matrix */}
-        <div className="bg-white border border-slate-200 rounded-[12px] shadow-sm overflow-hidden">
+        <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse table-fixed min-w-[950px]">
               <thead>

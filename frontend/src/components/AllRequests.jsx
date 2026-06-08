@@ -294,7 +294,7 @@ export const AllRequests = ({
       </div>
 
       {/* Main requests Table card */}
-      <div className="bg-white border border-slate-200 rounded-[12px] shadow-sm overflow-hidden w-full max-w-full min-w-0">
+      <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden w-full max-w-full min-w-0">
         <div className="p-[20px] border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[12px]">
           <div className="flex items-center gap-[8px]">
             <h3 className="font-heading text-[18px] font-bold text-slate-900">All change requests</h3>

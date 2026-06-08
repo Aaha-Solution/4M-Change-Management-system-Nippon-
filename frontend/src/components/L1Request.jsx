@@ -33,7 +33,7 @@ export const L1Request = ({
 
   // Fallback list of users matching seed data if database fetch hasn't completed or returned nothing
   const fallbackUsers = [
-    { name: 'Ramanan Prabakaran', department: 'General', email: 'ramanan.p@plant.com' },
+    { name: 'Suriya Prabakaran', department: 'General', email: 'suriya.p@plant.com' },
     { name: 'Priya Venkat', department: 'PRODUCTION', email: 'priya.v@plant.com' },
     { name: 'Kumar Selvam', department: 'PED', email: 'kumar.s@plant.com' },
     { name: 'Ravi QA', department: 'QAD', email: 'ravi.qa@plant.com' },
@@ -174,13 +174,13 @@ export const L1Request = ({
       if (userEmail.toLowerCase().includes('kumar')) return 'PED';
       if (userEmail.toLowerCase().includes('ravi')) return 'QAD';
       if (userEmail.toLowerCase().includes('priya')) return 'PRODUCTION';
-      if (userEmail.toLowerCase().includes('ramanan')) return 'General';
+      if (userEmail.toLowerCase().includes('suriya')) return 'General';
     }
     return '';
   });
   const [requestBy, setRequestBy] = useState(() => {
     if (userEmail) {
-      if (userEmail.toLowerCase().includes('ramanan')) return 'Ramanan Prabakaran';
+      if (userEmail.toLowerCase().includes('suriya')) return 'Suriya Prabakaran';
       if (userEmail.toLowerCase().includes('priya')) return 'Priya Venkat';
       if (userEmail.toLowerCase().includes('kumar')) return 'Kumar Selvam';
       if (userEmail.toLowerCase().includes('ravi')) return 'Ravi QA';
@@ -524,7 +524,7 @@ export const L1Request = ({
       <form onSubmit={handleSubmit} className="space-y-[24px]">
 
         {/* 1. Identifiers Section */}
-        <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
+        <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Identifiers</h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
@@ -534,7 +534,7 @@ export const L1Request = ({
               <select
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               >
                 <option value="">— Select Unit —</option>
                 <option value="Unit 1">Unit 1 - Chennai</option>
@@ -616,7 +616,7 @@ export const L1Request = ({
         </div>
 
         {/* 2. Request Details Section */}
-        <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
+        <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Request Details</h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
@@ -640,7 +640,7 @@ export const L1Request = ({
                     }
                   }
                 }}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               >
                 <option value="">— Select Department —</option>
                 {[...new Set(['PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY', ...dbDepartments])].map(d => (
@@ -655,7 +655,7 @@ export const L1Request = ({
               <select
                 value={requestBy}
                 onChange={(e) => setRequestBy(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               >
                 <option value="">— Select Name —</option>
                 {filteredUsers.map(u => {
@@ -679,7 +679,7 @@ export const L1Request = ({
                 <select
                   value={processName}
                   onChange={(e) => setProcessName(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                 >
                   <option value="">— Select or Add Process —</option>
                   {[...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])].map(p => (
@@ -708,7 +708,7 @@ export const L1Request = ({
                 placeholder="e.g. Line 3 / Bay B"
                 value={processLine}
                 onChange={(e) => setProcessLine(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               />
             </div>
 
@@ -719,7 +719,7 @@ export const L1Request = ({
                 <select
                   value={machineNo}
                   onChange={(e) => setMachineNo(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                 >
                   <option value="">— Select or Add Machine —</option>
                   {[...new Set([...dbMachines, ...changes.map(c => c.machineNo).filter(Boolean)])].map(m => (
@@ -743,7 +743,7 @@ export const L1Request = ({
         </div>
 
         {/* 3. Change Description Section */}
-        <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
+        <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Change Description</h4>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-[16px]">
@@ -755,7 +755,7 @@ export const L1Request = ({
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 rows={4}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
               />
               <span className="block text-[9px] text-slate-400">{context.length} / 10 min</span>
             </div>
@@ -768,7 +768,7 @@ export const L1Request = ({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
               />
               <span className="block text-[9px] text-slate-400">{description.length} / 20 min</span>
             </div>
@@ -781,7 +781,7 @@ export const L1Request = ({
         </div>
 
         {/* 4. Implementation Timeline Section */}
-        <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
+        <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Implementation Timeline</h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
@@ -791,7 +791,7 @@ export const L1Request = ({
               <select
                 value={improvementArea}
                 onChange={(e) => setImprovementArea(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               >
                 <option value="">— Select Area —</option>
                 <option value="Quality">Quality</option>
@@ -812,7 +812,7 @@ export const L1Request = ({
               <select
                 value={changeType}
                 onChange={(e) => setChangeType(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               >
                 <option value="">— Select —</option>
                 <option value="Permanent">Permanent</option>
@@ -827,7 +827,7 @@ export const L1Request = ({
                 value={dateStart}
                 onChange={setDateStart}
                 containerClassName="sm:max-w-[49%] lg:max-w-full"
-                inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                 buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
             </div>
@@ -840,7 +840,7 @@ export const L1Request = ({
                 value={traceFrom}
                 onChange={(e) => setTraceFrom(e.target.value)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
               />
               <span className="block text-[9px] text-slate-400">{traceFrom.length} / 20 min</span>
             </div>
@@ -857,7 +857,7 @@ export const L1Request = ({
                 value={dateClose}
                 onChange={setDateClose}
                 containerClassName="sm:max-w-[49%] lg:max-w-full"
-                inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                 buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
             </div>
@@ -870,7 +870,7 @@ export const L1Request = ({
                 value={traceTo}
                 onChange={(e) => setTraceTo(e.target.value)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
               />
               <span className="block text-[9px] text-slate-400">{traceTo.length} / 20 min</span>
             </div>
@@ -883,7 +883,7 @@ export const L1Request = ({
         </div>
 
         {/* 5. Risk Analysis Section */}
-        <div className="bg-white border border-slate-200 rounded-[12px] p-[20px] shadow-sm space-y-[16px]">
+        <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Risk Analysis</h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
@@ -895,7 +895,7 @@ export const L1Request = ({
                 value={riskAnalysis}
                 onChange={(e) => setRiskAnalysis(e.target.value)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
               />
             </div>
 
@@ -912,7 +912,7 @@ export const L1Request = ({
                 value={sopUpdate}
                 onChange={(e) => setSopUpdate(e.target.value)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
               />
             </div>
 
@@ -929,7 +929,7 @@ export const L1Request = ({
                 value={hodApproval}
                 onChange={(e) => setHodApproval(e.target.value)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
               />
             </div>
 
@@ -939,7 +939,7 @@ export const L1Request = ({
               <select
                 value={customerApproval}
                 onChange={(e) => setCustomerApproval(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               >
                 <option value="">— Select —</option>
                 <option value="Yes">Yes</option>
@@ -955,7 +955,7 @@ export const L1Request = ({
                 value={effectivenessMonitoring}
                 onChange={(e) => setEffectivenessMonitoring(e.target.value)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] transition-colors resize-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
               />
             </div>
 

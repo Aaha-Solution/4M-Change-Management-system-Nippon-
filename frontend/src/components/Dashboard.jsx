@@ -206,8 +206,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('dashboard')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'dashboard'
-                ? 'bg-sky-50 text-[#0066cc]'
-                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
+                : 'text-slate-600 hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -220,8 +220,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('all-requests')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'all-requests'
-                ? 'bg-sky-50 text-[#0066cc]'
-                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
+                : 'text-slate-600 hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -235,8 +235,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               <button
                 onClick={() => setLevelOpen(!levelOpen)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${(activeTab === 'l1' || activeTab === 'approvals')
-                  ? 'bg-sky-50 text-[#0066cc]'
-                  : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                  ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
+                  : 'text-slate-600 hover:text-[#0066cc] hover:bg-slate-50'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -253,8 +253,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   <button
                     onClick={() => handleTabChange('l1')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'l1'
-                      ? 'bg-sky-50/70 text-[#0066cc]'
-                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                      ? 'bg-gradient-to-r from-sky-50/70 to-[#e6f0fa]/30 text-[#0066cc] border-l-[2.5px] border-[#0066cc] font-semibold'
+                      : 'text-slate-500 hover:text-[#0066cc] hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -267,8 +267,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   <button
                     onClick={() => handleTabChange('approvals')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'approvals'
-                      ? 'bg-sky-50/70 text-[#0066cc]'
-                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                      ? 'bg-gradient-to-r from-sky-50/70 to-[#e6f0fa]/30 text-[#0066cc] border-l-[2.5px] border-[#0066cc] font-semibold'
+                      : 'text-slate-500 hover:text-[#0066cc] hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -281,8 +281,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   <button
                     onClick={() => handleTabChange('l3')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'l3'
-                      ? 'bg-sky-50/70 text-[#0066cc]'
-                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                      ? 'bg-gradient-to-r from-sky-50/70 to-[#e6f0fa]/30 text-[#0066cc] border-l-[2.5px] border-[#0066cc] font-semibold'
+                      : 'text-slate-500 hover:text-[#0066cc] hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -298,8 +298,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('effectiveness')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'effectiveness'
-                ? 'bg-sky-50 text-[#0066cc]'
-                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
+                : 'text-slate-655 hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -312,8 +312,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('notifications')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'notifications'
-                ? 'bg-sky-50 text-[#0066cc]'
-                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
+                : 'text-slate-655 hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -331,8 +331,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('users')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'users'
-                ? 'bg-sky-50 text-[#0066cc]'
-                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
+                : 'text-slate-655 hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -345,8 +345,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             <button
               onClick={() => handleTabChange('settings')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'settings'
-                ? 'bg-sky-50 text-[#0066cc]'
-                : 'text-slate-655 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
+                : 'text-slate-655 hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -362,7 +362,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
         <div className="p-4 border-t border-slate-200 bg-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-sky-100 text-[#0066cc] flex items-center justify-center font-bold text-sm">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-sm shadow-[0_2px_8px_rgba(37,99,235,0.25)]">
                 {(userRole || 'A')[0]}
               </div>
               <div className="text-left">

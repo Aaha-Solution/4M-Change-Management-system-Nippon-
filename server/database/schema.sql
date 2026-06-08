@@ -114,13 +114,8 @@ INSERT INTO machines (name) VALUES
 
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES
-('ramanan.p@plant.com', 'ramanan123', 'Admin', 'Ramanan Prabakaran', 'General', 'Active'),
-('priya.v@plant.com', 'priya123', 'User', 'Priya Venkat', 'PRODUCTION', 'Active'),
-('kumar.s@plant.com', 'kumar123', 'User', 'Kumar Selvam', 'PED', 'Active'),
-('ravi.qa@plant.com', 'ravi123', 'User', 'Ravi QA', 'QAD', 'Active'),
-('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active'),
-('manager@cms.com', 'manager123', 'User', 'Manager User', 'General', 'Active'),
-('requester@cms.com', 'requester123', 'User', 'Requester User', 'General', 'Active');
+('suriya.p@plant.com', 'suriya123', 'Admin', 'Suriya Prabakaran', 'General', 'Active'),
+('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active');
 -- No initial change requests seeded
 
 
@@ -254,20 +249,6 @@ CREATE TABLE l3_approvals (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed one change request for L3 and E2E tests
-INSERT INTO change_requests (id, title, requester, date, priority, status) VALUES
-('4M-2026-1', 'Machine Change in Welding Line A', 'kumar.s@plant.com', '2026-05-20', 'High', 'Pending');
 
-INSERT INTO l1_requests (
-    change_no, unit, requested_time, change_in, dept, request_by, 
-    process_name, process_line, machine_no, description, 
-    improvement_area, change_type, date_start, trace_from, 
-    date_close, trace_to, risk_analysis, sop_update, 
-    hod_approval, customer_approval, effectiveness_monitoring
-) VALUES
-('4M-2026-1', 'Unit 1', '14:30', 'Machine', 'PRODUCTION', 'Kumar Selvam', 'Welding Line A', 'Line A', 'MFG-MC-2011', 'Machine Change in Welding Line A description.', 'Delivery', 'Permanent', '2026-05-20', 'Trace from details...', '2026-05-22', 'Trace to details...', 'Medium risk', 'FMEA updated', 'Approved', 'Yes', 'Welding strength tests');
-
-INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) VALUES
-('4M-2026-1', '20 May', 'Kumar Selvam', 'weld-test.png', 'weld-test.png', 'Accepted', 'Zero alignment issues reported in shift logs.');
 
 

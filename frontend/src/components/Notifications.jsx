@@ -128,7 +128,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
       </div>
 
       {/* Control bar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
+      <div className="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 space-y-4">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           {/* Search */}
           <div className="flex-1 relative max-w-md">
@@ -136,7 +136,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
             <input
               type="text"
               placeholder="Search by ID, title, process, sender..."
-              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc] transition-colors"
+              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

@@ -10,7 +10,7 @@ export const Settings = ({
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+      <div className="bg-white border border-slate-200/60 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300 space-y-4">
         <h4 className="font-heading font-bold text-sm text-slate-900 border-b border-slate-100 pb-2">User Profile</h4>
         <div className="space-y-2 text-xs sm:text-sm">
           <div className="flex justify-between py-1 border-b border-slate-50">
@@ -31,7 +31,7 @@ export const Settings = ({
       </div>
 
       {/* System Config Mock */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+      <div className="bg-white border border-slate-200/60 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300 space-y-4">
         <h4 className="font-heading font-bold text-sm text-slate-900 border-b border-slate-100 pb-2">General Settings</h4>
         <div className="space-y-3">
           <div className="flex justify-between items-center">
