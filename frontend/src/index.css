@@ -81,3 +81,14 @@
 .animate-alert-shake {
   animation: alert-shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
 }
+
+/* Force all uppercase input/form labels to render in black */
+label.uppercase.tracking-wider {
+  color: #000000 !important;
+}
+
+/* Force all table header values to render in black and bold */
+thead th {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
