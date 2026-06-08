@@ -366,27 +366,48 @@ export const Effectiveness = ({
                   <input
                     type="file"
                     multiple
+                    accept="image/*,application/pdf"
                     disabled={!effChangeNo || isAlreadyValidated}
                     className="hidden"
                     onChange={async (e) => {
                       const target = e.target;
                       if (target.files && target.files.length > 0) {
                         const files = Array.from(target.files);
-                        const names = files.map(f => f.name);
+                        
+                        // Validate file type
+                        const allowedFiles = files.filter(file => {
+                          const isImage = file.type.startsWith('image/');
+                          const isPdf = file.type === 'application/pdf';
+                          const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
+                          return (isImage || isPdf) && hasAllowedExt;
+                        });
+
+                        if (allowedFiles.length !== files.length) {
+                          if (setToastMsg) {
+                            setToastMsg('Only PDF and image files are allowed. Invalid files were skipped.');
+                          }
+                        }
+
+                        if (allowedFiles.length === 0) {
+                          target.value = '';
+                          return;
+                        }
+
+                        const names = allowedFiles.map(f => f.name);
 
                         // Reset input value synchronously immediately to allow uploading the same file again
                         target.value = '';
 
                         // Store object URLs for preview
                         const newUrls = {};
-                        files.forEach(file => {
+                        allowedFiles.forEach(file => {
                           newUrls[file.name] = URL.createObjectURL(file);
                         });
                         setFileUrls(prev => ({ ...prev, ...newUrls }));
 
                         // Convert files to base64 for server upload
                         const base64Files = await Promise.all(
-                          files.map(async (file) => ({
+                          allowedFiles.map(async (file) => ({
                             name: file.name,
                             type: file.type || 'application/octet-stream',
                             data: await fileToBase64(file)

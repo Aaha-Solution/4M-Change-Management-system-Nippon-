@@ -467,15 +467,8 @@ export const AllRequests = ({
                         <span className="font-medium text-slate-700">{selectedL1Details.requested_time}</span>
                       </div>
                       <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Priority / Status</span>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                         <div className="flex gap-1.5 items-center mt-0.5">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                            selectedL1Details.priority === 'High' 
-                              ? 'bg-rose-50 border-rose-220 text-rose-700' 
-                              : 'bg-amber-50 border-amber-220 text-amber-700'
-                          }`}>
-                            {selectedL1Details.priority}
-                          </span>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                             selectedL1Details.crStatus === 'Approved' 
                               ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 

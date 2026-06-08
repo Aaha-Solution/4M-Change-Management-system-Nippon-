@@ -345,11 +345,22 @@ export const L2Validation = ({
             <input
               key={`ped-${formChangeNo}`}
               type="file"
+              accept="image/*,application/pdf"
               disabled={isAlreadyValidated}
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
-                  setPedFileObj(e.target.files[0]);
-                  setFieldErrors(prev => ({ ...prev, pedFile: '' }));
+                  const file = e.target.files[0];
+                  const isImage = file.type.startsWith('image/');
+                  const isPdf = file.type === 'application/pdf';
+                  const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
+                  if ((isImage || isPdf) && hasAllowedExt) {
+                    setPedFileObj(file);
+                    setFieldErrors(prev => ({ ...prev, pedFile: '' }));
+                  } else {
+                    setPedFileObj(null);
+                    setFieldErrors(prev => ({ ...prev, pedFile: 'Only PDF and image files are allowed.' }));
+                    e.target.value = '';
+                  }
                 }
               }}
               className={`w-full text-[11px] text-slate-500 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
@@ -370,11 +381,22 @@ export const L2Validation = ({
             <input
               key={`qa-${formChangeNo}`}
               type="file"
+              accept="image/*,application/pdf"
               disabled={isAlreadyValidated}
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
-                  setQaFileObj(e.target.files[0]);
-                  setFieldErrors(prev => ({ ...prev, qaFile: '' }));
+                  const file = e.target.files[0];
+                  const isImage = file.type.startsWith('image/');
+                  const isPdf = file.type === 'application/pdf';
+                  const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
+                  if ((isImage || isPdf) && hasAllowedExt) {
+                    setQaFileObj(file);
+                    setFieldErrors(prev => ({ ...prev, qaFile: '' }));
+                  } else {
+                    setQaFileObj(null);
+                    setFieldErrors(prev => ({ ...prev, qaFile: 'Only PDF and image files are allowed.' }));
+                    e.target.value = '';
+                  }
                 }
               }}
               className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
@@ -710,15 +732,8 @@ export const L2Validation = ({
                     <span className="font-medium text-slate-700">{selectedL1Details.requested_time}</span>
                   </div>
                   <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Priority / Status</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                     <div className="flex gap-1.5 items-center mt-0.5">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                        selectedL1Details.priority === 'High' 
-                          ? 'bg-rose-50 border-rose-220 text-rose-700' 
-                          : 'bg-amber-50 border-amber-220 text-amber-700'
-                      }`}>
-                        {selectedL1Details.priority}
-                      </span>
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                         selectedL1Details.crStatus === 'Approved' 
                           ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
