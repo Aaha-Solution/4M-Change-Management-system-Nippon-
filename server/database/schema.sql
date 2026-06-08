@@ -82,35 +82,7 @@ INSERT INTO roles (name) VALUES
 ('Admin'),
 ('User');
 
--- Seed Departments
-INSERT INTO departments (name) VALUES
-('General'),
-('PED'),
-('QAD'),
-('PRODUCTION'),
-('MAINTENANCE'),
-('PC & L'),
-('MATERIALS'),
-('MARKETING'),
-('HR'),
-('SAFETY');
 
--- Seed Processes
-INSERT INTO processes (name) VALUES 
-('Gold Line'), 
-('Welding Line A'), 
-('Injection Molding B'), 
-('Potting Line'), 
-('Gauge Line');
-
--- Seed Machines
-INSERT INTO machines (name) VALUES 
-('MFG-MC-1042'), 
-('MFG-MC-2011'), 
-('MFG-MC-1033'), 
-('MFG-MC-1044'), 
-('MFG-MC-1045'), 
-('MFG-MC-1046');
 
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES

@@ -46,6 +46,12 @@ export const Users = ({
   const [createUserDept, setCreateUserDept] = useState('');
   const [showFormPassword, setShowFormPassword] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
+
+  // Validation errors for Create User form
+  const [createErrors, setCreateErrors] = useState({});
+
+  // Validation errors for Edit User modal
+  const [editErrors, setEditErrors] = useState({});
   const [userRoleFilter, setUserRoleFilter] = useState('All');
   
   // Pagination State
@@ -119,12 +125,32 @@ export const Users = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const validateCreateForm = () => {
+    const errs = {};
+    if (!createUserFullName.trim()) errs.fullName = 'Full name is required.';
+    if (!createUserEmail.trim()) {
+      errs.email = 'Email address is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createUserEmail.trim())) {
+      errs.email = 'Enter a valid email address.';
+    }
+    if (!createUserPassword.trim()) {
+      errs.password = 'Password is required.';
+    } else if (createUserPassword.trim().length < 6) {
+      errs.password = 'Password must be at least 6 characters.';
+    }
+    if (!createUserRole) errs.role = 'Please select a role.';
+    if (!createUserDept) errs.dept = 'Please select a department.';
+    return errs;
+  };
+
   const handleCreateUser = async (e) => {
     e.preventDefault();
-    if (!createUserFullName.trim() || !createUserEmail.trim() || !createUserPassword.trim() || !createUserRole || !createUserDept) {
-      setToastMsg('Please fill in all fields.');
+    const errs = validateCreateForm();
+    if (Object.keys(errs).length > 0) {
+      setCreateErrors(errs);
       return;
     }
+    setCreateErrors({});
     
     setIsCreatingUser(true);
     try {
@@ -139,12 +165,13 @@ export const Users = ({
       setToastMsg('User account created successfully!');
       logAction('User Registered', `Created account for ${createUserFullName.trim()} (${createUserEmail.trim()}) as ${createUserRole}.`);
       
-      // Clear form
+      // Clear form and errors
       setCreateUserFullName('');
       setCreateUserEmail('');
       setCreateUserPassword('');
       setCreateUserRole('');
       setCreateUserDept('');
+      setCreateErrors({});
       
       // Refresh list
       fetchUsers();
@@ -186,9 +213,26 @@ export const Users = ({
     setShowEditFormPassword(false);
   };
 
+  const validateEditForm = () => {
+    const errs = {};
+    if (!editUserFullName.trim()) errs.fullName = 'Full name is required.';
+    if (editUserPassword.trim() && editUserPassword.trim().length < 6) {
+      errs.password = 'Password must be at least 6 characters.';
+    }
+    if (!editUserRole) errs.role = 'Please select a role.';
+    if (!editUserDept) errs.dept = 'Please select a department.';
+    return errs;
+  };
+
   const executeEditUser = async (e) => {
     e.preventDefault();
     if (!userToEdit) return;
+    const errs = validateEditForm();
+    if (Object.keys(errs).length > 0) {
+      setEditErrors(errs);
+      return;
+    }
+    setEditErrors({});
     try {
       const payload = {
         name: editUserFullName.trim(),
@@ -204,6 +248,7 @@ export const Users = ({
       setToastMsg('User updated successfully.');
       logAction('User Updated', `Modified account for ${editUserFullName.trim()} (${editUserEmail.trim()}).`);
       setUserToEdit(null);
+      setEditErrors({});
       fetchUsers();
     } catch (err) {
       console.error(err);
@@ -338,46 +383,63 @@ export const Users = ({
             <h4 className="font-heading text-sm font-bold text-slate-900">Create User Account</h4>
           </div>
 
-          <form onSubmit={handleCreateUser} className="space-y-4">
+          <form onSubmit={handleCreateUser} className="space-y-4" noValidate>
             {/* Full Name */}
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Full Name *</label>
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Full Name <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
-                required
                 placeholder="e.g. John Doe"
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-4 transition-all duration-200 ${
+                  createErrors.fullName
+                    ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
                 value={createUserFullName}
-                onChange={(e) => setCreateUserFullName(e.target.value)}
+                onChange={(e) => { setCreateUserFullName(e.target.value); if (createErrors.fullName) setCreateErrors(p => ({...p, fullName: ''})); }}
                 disabled={isCreatingUser}
               />
+              {createErrors.fullName && <p className="text-[10px] text-red-500 font-medium mt-0.5">{createErrors.fullName}</p>}
             </div>
 
             {/* Email Address */}
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email Address *</label>
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Email Address <span className="text-red-500">*</span>
+              </label>
               <input
                 type="email"
-                required
                 placeholder="e.g. john.doe@plant.com"
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-4 transition-all duration-200 ${
+                  createErrors.email
+                    ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
                 value={createUserEmail}
-                onChange={(e) => setCreateUserEmail(e.target.value)}
+                onChange={(e) => { setCreateUserEmail(e.target.value); if (createErrors.email) setCreateErrors(p => ({...p, email: ''})); }}
                 disabled={isCreatingUser}
               />
+              {createErrors.email && <p className="text-[10px] text-red-500 font-medium mt-0.5">{createErrors.email}</p>}
             </div>
 
             {/* Password */}
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Password *</label>
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Password <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
                 <input
                   type={showFormPassword ? 'text' : 'password'}
-                  required
                   placeholder="Min 6 characters"
-                  className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                  className={`w-full pl-3 pr-10 py-2 border rounded-lg text-sm outline-none focus:ring-4 transition-all duration-200 ${
+                    createErrors.password
+                      ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                  }`}
                   value={createUserPassword}
-                  onChange={(e) => setCreateUserPassword(e.target.value)}
+                  onChange={(e) => { setCreateUserPassword(e.target.value); if (createErrors.password) setCreateErrors(p => ({...p, password: ''})); }}
                   disabled={isCreatingUser}
                 />
                 <button
@@ -388,17 +450,23 @@ export const Users = ({
                   {showFormPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
+              {createErrors.password && <p className="text-[10px] text-red-500 font-medium mt-0.5">{createErrors.password}</p>}
             </div>
 
             {/* Role Selection */}
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Role *</label>
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Role <span className="text-red-500">*</span>
+              </label>
               <div className="flex gap-2">
                 <select
-                  required
-                  className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                  className={`flex-1 px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
+                    createErrors.role
+                      ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                  }`}
                   value={createUserRole}
-                  onChange={(e) => setCreateUserRole(e.target.value)}
+                  onChange={(e) => { setCreateUserRole(e.target.value); if (createErrors.role) setCreateErrors(p => ({...p, role: ''})); }}
                   disabled={isCreatingUser}
                 >
                   <option value="">Select Role</option>
@@ -416,17 +484,23 @@ export const Users = ({
                   </button>
                 )}
               </div>
+              {createErrors.role && <p className="text-[10px] text-red-500 font-medium mt-0.5">{createErrors.role}</p>}
             </div>
 
             {/* Department Selection */}
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department *</label>
+              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Department <span className="text-red-500">*</span>
+              </label>
               <div className="flex gap-2">
                 <select
-                  required
-                  className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                  className={`flex-1 px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
+                    createErrors.dept
+                      ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                  }`}
                   value={createUserDept}
-                  onChange={(e) => setCreateUserDept(e.target.value)}
+                  onChange={(e) => { setCreateUserDept(e.target.value); if (createErrors.dept) setCreateErrors(p => ({...p, dept: ''})); }}
                   disabled={isCreatingUser}
                 >
                   <option value="">Select Department</option>
@@ -444,6 +518,7 @@ export const Users = ({
                   </button>
                 )}
               </div>
+              {createErrors.dept && <p className="text-[10px] text-red-500 font-medium mt-0.5">{createErrors.dept}</p>}
             </div>
 
             {/* Submit Button */}
@@ -788,23 +863,31 @@ export const Users = ({
             </button>
             <h4 className="font-heading text-lg font-bold text-slate-900 mb-2">Edit User Account</h4>
             <p className="text-slate-500 text-xs mb-4">Modify account details, change role/department, or reset password.</p>
-            <form onSubmit={executeEditUser} className="space-y-4">
+            <form onSubmit={executeEditUser} className="space-y-4" noValidate>
               {/* Full Name */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Full Name *</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
-                  required
                   placeholder="e.g. John Doe"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                  className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-4 transition-all duration-200 ${
+                    editErrors.fullName
+                      ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                  }`}
                   value={editUserFullName}
-                  onChange={(e) => setEditUserFullName(e.target.value)}
+                  onChange={(e) => { setEditUserFullName(e.target.value); if (editErrors.fullName) setEditErrors(p => ({...p, fullName: ''})); }}
                 />
+                {editErrors.fullName && <p className="text-[10px] text-red-500 font-medium mt-0.5">{editErrors.fullName}</p>}
               </div>
 
               {/* Email Address */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email Address *</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="email"
                   disabled
@@ -815,14 +898,18 @@ export const Users = ({
 
               {/* Password */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Password (Optional)</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Password <span className="text-xs text-slate-400 font-normal normal-case">(optional)</span></label>
                 <div className="relative">
                   <input
                     type={showEditFormPassword ? 'text' : 'password'}
                     placeholder="Leave blank to keep current password"
-                    className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                    className={`w-full pl-3 pr-10 py-2 border rounded-lg text-sm outline-none focus:ring-4 transition-all duration-200 ${
+                      editErrors.password
+                        ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                        : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                    }`}
                     value={editUserPassword}
-                    onChange={(e) => setEditUserPassword(e.target.value)}
+                    onChange={(e) => { setEditUserPassword(e.target.value); if (editErrors.password) setEditErrors(p => ({...p, password: ''})); }}
                   />
                   <button
                     type="button"
@@ -832,17 +919,23 @@ export const Users = ({
                     {showEditFormPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
                 </div>
+                {editErrors.password && <p className="text-[10px] text-red-500 font-medium mt-0.5">{editErrors.password}</p>}
               </div>
 
               {/* Role Selection */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Role *</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Role <span className="text-red-500">*</span>
+                </label>
                 <div className="flex gap-2">
                   <select
-                    required
-                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                    className={`flex-1 px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
+                      editErrors.role
+                        ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                        : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                    }`}
                     value={editUserRole}
-                    onChange={(e) => setEditUserRole(e.target.value)}
+                    onChange={(e) => { setEditUserRole(e.target.value); if (editErrors.role) setEditErrors(p => ({...p, role: ''})); }}
                   >
                     <option value="">Select Role</option>
                     {customRoles.map(role => (
@@ -859,17 +952,23 @@ export const Users = ({
                     </button>
                   )}
                 </div>
+                {editErrors.role && <p className="text-[10px] text-red-500 font-medium mt-0.5">{editErrors.role}</p>}
               </div>
 
               {/* Department Selection */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department *</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Department <span className="text-red-500">*</span>
+                </label>
                 <div className="flex gap-2">
                   <select
-                    required
-                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                    className={`flex-1 px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
+                      editErrors.dept
+                        ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                        : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                    }`}
                     value={editUserDept}
-                    onChange={(e) => setEditUserDept(e.target.value)}
+                    onChange={(e) => { setEditUserDept(e.target.value); if (editErrors.dept) setEditErrors(p => ({...p, dept: ''})); }}
                   >
                     <option value="">Select Department</option>
                     {customDepts.map(dept => (
@@ -886,14 +985,16 @@ export const Users = ({
                     </button>
                   )}
                 </div>
+                {editErrors.dept && <p className="text-[10px] text-red-500 font-medium mt-0.5">{editErrors.dept}</p>}
               </div>
 
               {/* Status */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status *</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Status <span className="text-red-500">*</span>
+                </label>
                 <select
-                  required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc]"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                   value={editUserStatus}
                   onChange={(e) => setEditUserStatus(e.target.value)}
                 >
