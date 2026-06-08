@@ -31,16 +31,7 @@ export const L1Request = ({
   const [systemUsers, setSystemUsers] = useState([]);
   const [dbDepartments, setDbDepartments] = useState([]);
 
-  // Fallback list of users matching seed data if database fetch hasn't completed or returned nothing
-  const fallbackUsers = [
-    { name: 'Suriya Prabakaran', department: 'General', email: 'suriya.p@plant.com' },
-    { name: 'Priya Venkat', department: 'PRODUCTION', email: 'priya.v@plant.com' },
-    { name: 'Kumar Selvam', department: 'PED', email: 'kumar.s@plant.com' },
-    { name: 'Ravi QA', department: 'QAD', email: 'ravi.qa@plant.com' },
-    { name: 'Admin User', department: 'General', email: 'admin@cms.com' },
-    { name: 'Manager User', department: 'General', email: 'manager@cms.com' },
-    { name: 'Requester User', department: 'General', email: 'requester@cms.com' }
-  ];
+  // Users, processes, machines, and departments are retrieved solely from the database.
 
   useEffect(() => {
     fetchOptions();
@@ -195,29 +186,10 @@ export const L1Request = ({
   };
 
   // Request Details State
-  const [dept, setDept] = useState(() => {
-    if (userEmail) {
-      if (userEmail.toLowerCase().includes('kumar')) return 'PED';
-      if (userEmail.toLowerCase().includes('ravi')) return 'QAD';
-      if (userEmail.toLowerCase().includes('priya')) return 'PRODUCTION';
-      if (userEmail.toLowerCase().includes('suriya')) return 'General';
-    }
-    return '';
-  });
-  const [requestBy, setRequestBy] = useState(() => {
-    if (userEmail) {
-      if (userEmail.toLowerCase().includes('suriya')) return 'Suriya Prabakaran';
-      if (userEmail.toLowerCase().includes('priya')) return 'Priya Venkat';
-      if (userEmail.toLowerCase().includes('kumar')) return 'Kumar Selvam';
-      if (userEmail.toLowerCase().includes('ravi')) return 'Ravi QA';
-      return userEmail;
-    }
-    return '';
-  });
+  const [dept, setDept] = useState('');
+  const [requestBy, setRequestBy] = useState('');
 
-  const activeUsersList = systemUsers.length > 0 ? systemUsers : fallbackUsers;
-
-  const filteredUsers = activeUsersList.filter(u => {
+  const filteredUsers = systemUsers.filter(u => {
     if (!dept) return true;
     return (u.department || '').toLowerCase() === dept.toLowerCase();
   });
@@ -225,26 +197,38 @@ export const L1Request = ({
   useEffect(() => {
     if (userEmail && systemUsers.length > 0) {
       const currentUser = systemUsers.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
-      if (currentUser && currentUser.department && currentUser.department !== 'General') {
-        setDept(prev => prev || currentUser.department);
+      if (currentUser) {
+        if (currentUser.department) {
+          setDept(currentUser.department);
+        }
+        if (currentUser.name) {
+          setRequestBy(currentUser.name);
+        } else {
+          setRequestBy(currentUser.email);
+        }
       }
     }
   }, [userEmail, systemUsers]);
 
   useEffect(() => {
-    if (dept) {
-      const matchedUsers = (systemUsers.length > 0 ? systemUsers : fallbackUsers).filter(
+    if (dept && systemUsers.length > 0) {
+      const matchedUsers = systemUsers.filter(
         u => (u.department || '').toLowerCase() === dept.toLowerCase()
       );
       if (matchedUsers.length > 0) {
-        setRequestBy(matchedUsers[0].name || matchedUsers[0].email);
+        const currentUser = systemUsers.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
+        if (currentUser && (currentUser.department || '').toLowerCase() === dept.toLowerCase()) {
+          setRequestBy(currentUser.name || currentUser.email);
+        } else {
+          setRequestBy(matchedUsers[0].name || matchedUsers[0].email);
+        }
       } else {
         setRequestBy('');
       }
     } else {
       setRequestBy('');
     }
-  }, [dept, systemUsers]);
+  }, [dept, systemUsers, userEmail]);
 
   const [processName, setProcessName] = useState('');
   const [processLine, setProcessLine] = useState('');
@@ -300,8 +284,8 @@ export const L1Request = ({
       return;
     }
 
-    if (!dept) {
-      setToastMsg('Please select a Department.');
+    if (!dept || !dbDepartments.includes(dept)) {
+      setToastMsg('Please select a valid Department.');
       return;
     }
 
@@ -674,7 +658,7 @@ export const L1Request = ({
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               >
                 <option value="">— Select Department —</option>
-                {[...new Set(['PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY', ...dbDepartments])].map(d => (
+                {dbDepartments.map(d => (
                   <option key={d} value={d}>{d}</option>
                 ))}
               </select>
@@ -702,7 +686,7 @@ export const L1Request = ({
                   className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                 >
                   <option value="">— Select or Add Process —</option>
-                  {[...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])].map(p => (
+                  {dbProcesses.map(p => (
                     <option key={p} value={p}>{p}</option>
                   ))}
                 </select>
@@ -742,7 +726,7 @@ export const L1Request = ({
                   className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                 >
                   <option value="">— Select or Add Machine —</option>
-                  {[...new Set([...dbMachines, ...changes.map(c => c.machineNo).filter(Boolean)])].map(m => (
+                  {dbMachines.map(m => (
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
