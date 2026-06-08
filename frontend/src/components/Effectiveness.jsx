@@ -808,7 +808,7 @@ export const Effectiveness = ({
 
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
-                previewFile.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
+                previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
                   <img
                     src={fileUrls[previewFile]}
                     alt={previewFile}
@@ -859,7 +859,7 @@ export const Effectiveness = ({
                       <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-bold">APPROVED</span>
                     </div>
                   </div>
-                ) : previewFile.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
+                ) : previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
                   <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-md max-w-sm w-full text-center space-y-4 animate-fade-in">
                     <div className="w-16 h-16 bg-teal-50 text-teal-650 rounded-full flex items-center justify-center mx-auto text-3xl">
                       🖼️

@@ -241,15 +241,19 @@ export const L2Validation = ({
 
   const renderL1FilePill = (filename, changeNo) => {
     if (!filename) return null;
+    const files = filename.split(',').map(s => s.trim()).filter(Boolean);
     return (
-      <div className="mt-1 flex items-center gap-2">
-        <span 
-          className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
-          onClick={() => handleViewAttachment(filename, changeNo)}
-        >
-          <Paperclip size={11} className="text-slate-400" />
-          <span className="underline truncate max-w-[200px]">{filename}</span>
-        </span>
+      <div className="mt-1 flex flex-wrap gap-2">
+        {files.map((file, idx) => (
+          <span 
+            key={idx}
+            className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
+            onClick={() => handleViewAttachment(file, changeNo)}
+          >
+            <Paperclip size={11} className="text-slate-400" />
+            <span className="underline truncate max-w-[200px]">{file}</span>
+          </span>
+        ))}
       </div>
     );
   };
@@ -937,7 +941,7 @@ export const L2Validation = ({
             
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
-                previewFile.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
+                previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
                   <img 
                     src={fileUrls[previewFile]} 
                     alt={previewFile} 
@@ -987,7 +991,7 @@ export const L2Validation = ({
                       <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-bold">VERIFIED</span>
                     </div>
                   </div>
-                ) : previewFile.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
+                ) : previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
                   <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-md max-w-sm w-full text-center space-y-4 animate-fade-in">
                     <div className="w-16 h-16 bg-teal-50 text-teal-650 rounded-full flex items-center justify-center mx-auto text-3xl">
                       🖼️
