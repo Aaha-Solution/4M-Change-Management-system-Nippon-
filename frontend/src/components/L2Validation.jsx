@@ -7,7 +7,8 @@ import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 export const L2Validation = ({
   changes,
   setToastMsg,
-  fetchChanges
+  fetchChanges,
+  fetchNotifications
 }) => {
   // Modal states
   const [validationError, setValidationError] = useState('');
@@ -182,6 +183,7 @@ export const L2Validation = ({
       await createL2ValidationLog(logData, attachments);
 
       if (fetchChanges) await fetchChanges();
+      if (fetchNotifications) await fetchNotifications();
 
       if (setToastMsg) {
         setToastMsg(`Successfully saved L2 validation log for ${formChangeNo}`);

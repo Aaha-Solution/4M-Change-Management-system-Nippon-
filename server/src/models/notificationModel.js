@@ -40,6 +40,15 @@ export const clearRead = async () => {
   return { success: true };
 };
 
+export const createNotification = async ({ id, title, details, changeNo, category, dept, timeStr, type, color }) => {
+  await pool.query(
+    `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
+     VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
+    [id, title, details, changeNo || '', category || '', dept || '', timeStr || 'Just now', type || 'Action Required', color || 'blue']
+  );
+  return { id, title, details, changeNo, category, dept, time: timeStr || 'Just now', isRead: false, type: type || 'Action Required', color: color || 'blue' };
+};
+
 export const resetNotifications = async () => {
   const connection = await pool.getConnection();
   try {

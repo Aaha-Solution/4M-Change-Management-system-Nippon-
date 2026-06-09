@@ -423,18 +423,19 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
 
 
 
-            {/* Bell icon - only on dashboard tab */}
-            {activeTab === 'dashboard' && (
-              <button
-                onClick={() => handleTabChange('notifications')}
-                className="relative p-[8px] text-slate-600 hover:text-[#0066cc] bg-slate-100 hover:bg-slate-200/50 rounded-full transition-colors cursor-pointer"
-              >
-                <Bell size={20} />
+            {/* Bell icon - visible on all tabs */}
+            <button
+              onClick={() => handleTabChange('notifications')}
+              className="relative p-[8px] text-slate-600 hover:text-[#0066cc] bg-slate-100 hover:bg-slate-200/50 rounded-full transition-colors cursor-pointer"
+              title="Notifications"
+            >
+              <Bell size={20} />
+              {notifications.filter(n => !n.isRead).length > 0 && (
                 <span className="absolute -top-[2px] -right-[2px] w-[18px] h-[18px] flex items-center justify-center bg-rose-600 text-white font-bold text-[9px] rounded-full border-2 border-white">
-                  1
+                  {notifications.filter(n => !n.isRead).length}
                 </span>
-              </button>
-            )}
+              )}
+            </button>
 
             {/* Sign Out button - always visible */}
             <button
@@ -485,6 +486,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                 userRole={userRole}
                 setToastMsg={setToastMsg}
                 fetchChanges={fetchChanges}
+                fetchNotifications={fetchNotifications}
               />
             )}
 

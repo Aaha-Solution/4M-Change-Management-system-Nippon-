@@ -85,9 +85,9 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
     const matchesSearch =
       alert.title.toLowerCase().includes(search.toLowerCase()) ||
       alert.details.toLowerCase().includes(search.toLowerCase()) ||
-      alert.changeNo.toLowerCase().includes(search.toLowerCase()) ||
-      alert.category.toLowerCase().includes(search.toLowerCase()) ||
-      alert.dept.toLowerCase().includes(search.toLowerCase());
+      (alert.changeNo && alert.changeNo.toLowerCase().includes(search.toLowerCase())) ||
+      (alert.category && alert.category.toLowerCase().includes(search.toLowerCase())) ||
+      (alert.dept && alert.dept.toLowerCase().includes(search.toLowerCase()));
 
     if (!matchesSearch) return false;
 
@@ -106,13 +106,29 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
   const countSystem = alerts.filter(a => a.type === 'System Logs').length;
   const countRead = alerts.filter(a => a.isRead).length;
 
-  const getTagColor = (category) => {
-    const cat = category.toUpperCase();
-    if (cat === 'MACHINE') return 'bg-purple-50 text-purple-700 border-purple-100';
-    if (cat === 'METHOD') return 'bg-amber-50 text-amber-700 border-amber-100';
-    if (cat === 'MATERIAL') return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-    if (cat === 'MAN') return 'bg-sky-50 text-sky-700 border-sky-100';
-    return 'bg-slate-50 text-slate-700 border-slate-100';
+  // Color mapping for notification accent bars and badges
+  const getAccentColor = (color) => {
+    switch (color) {
+      case 'green': return { bar: 'bg-emerald-500', badge: 'bg-emerald-600', badgeText: 'text-white', icon: 'text-emerald-600', iconBg: 'bg-emerald-50', actionBtn: 'text-emerald-600 hover:text-emerald-700' };
+      case 'red': return { bar: 'bg-rose-500', badge: 'bg-rose-600', badgeText: 'text-white', icon: 'text-rose-600', iconBg: 'bg-rose-50', actionBtn: 'text-rose-600 hover:text-rose-700' };
+      case 'orange': return { bar: 'bg-amber-500', badge: 'bg-amber-600', badgeText: 'text-white', icon: 'text-amber-600', iconBg: 'bg-amber-50', actionBtn: 'text-amber-600 hover:text-amber-700' };
+      case 'blue':
+      default: return { bar: 'bg-indigo-500', badge: 'bg-indigo-600', badgeText: 'text-white', icon: 'text-indigo-600', iconBg: 'bg-indigo-50', actionBtn: 'text-indigo-600 hover:text-indigo-700' };
+    }
+  };
+
+  // Determine which icon to use based on notification type/category
+  const getNotifIcon = (alert) => {
+    if (alert.type === 'System Logs') return <Activity size={18} />;
+    if (alert.id && alert.id.startsWith('L2-NOTIF')) return <FileText size={18} />;
+    return <Layers size={18} />;
+  };
+
+  // Determine the level badge text
+  const getLevelBadge = (alert) => {
+    if (alert.id && alert.id.startsWith('L2-NOTIF')) return 'L2 VALIDATION';
+    if (alert.id && alert.id.startsWith('ALR-')) return 'SYSTEM';
+    return 'NOTIFICATION';
   };
 
   return (
@@ -131,7 +147,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
             <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
             <input
               type="text"
-              placeholder="Search by ID, title, process, sender..."
+              placeholder="Search by ID, title, department, category..."
               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -140,7 +156,20 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-2">
-            
+            <button
+              onClick={handleMarkAllRead}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all cursor-pointer"
+            >
+              <CheckCheck size={14} />
+              <span>Mark All Read</span>
+            </button>
+            <button
+              onClick={handleClearRead}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-600 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 transition-all cursor-pointer"
+            >
+              <Trash2 size={14} />
+              <span>Clear Read</span>
+            </button>
           </div>
         </div>
 
@@ -148,6 +177,9 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
         <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
           {[
             { id: 'All', label: 'All Alerts', count: countAll, badgeColor: 'bg-blue-600 text-white' },
+            { id: 'Unread', label: 'Unread', count: countUnread, badgeColor: 'bg-rose-600 text-white' },
+            { id: 'Action', label: 'Action Required', count: countAction, badgeColor: 'bg-amber-600 text-white' },
+            { id: 'System', label: 'System Logs', count: countSystem, badgeColor: 'bg-slate-600 text-white' },
             { id: 'Read', label: 'Read', count: countRead, badgeColor: 'bg-slate-155 text-slate-700' }
           ].map(tab => (
             <button
@@ -171,129 +203,105 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
       <div className="space-y-4">
         {filteredAlerts.length === 0 ? (
           <div className="bg-white border border-slate-200 rounded-xl p-10 text-center text-slate-400 text-xs">
-            No notifications matches the current filter settings.
+            No notifications match the current filter settings.
           </div>
         ) : (
-          filteredAlerts.map(alert => {
-            return (
-              <div className="mt-12 space-y-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-white px-4">Live Activity Streams</span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-                </div>
+          <>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-4">Live Activity Streams</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+            </div>
 
-                <div className="grid grid-cols-1 gap-6">
-                  {/* L1 Notification Card: Production/Machine */}
-                  <div className="relative group overflow-hidden bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
-                    <div className="p-4">
+            <div className="grid grid-cols-1 gap-4">
+              {filteredAlerts.map(alert => {
+                const colors = getAccentColor(alert.color);
+                return (
+                  <div
+                    key={alert.id}
+                    className={`relative group overflow-hidden bg-white rounded-xl border shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 ${alert.isRead ? 'border-slate-150 opacity-75' : 'border-slate-200'}`}
+                  >
+                    {/* Accent bar */}
+                    <div className={`absolute top-0 left-0 w-1 h-full ${colors.bar}`}></div>
+
+                    <div className="p-4 pl-5">
+                      {/* Header row */}
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
-                            <Layers size={18} />
+                          <div className={`p-1.5 ${colors.iconBg} ${colors.icon} rounded-lg`}>
+                            {getNotifIcon(alert)}
                           </div>
                           <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[9px] font-black bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow-sm">L1 DATA</span>
-                              <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">#4M-2026-1</span>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`text-[9px] font-black ${colors.badge} ${colors.badgeText} px-1.5 py-0.5 rounded shadow-sm`}>
+                                {getLevelBadge(alert)}
+                              </span>
+                              {alert.changeNo && (
+                                <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
+                                  #{alert.changeNo}
+                                </span>
+                              )}
+                              {alert.dept && (
+                                <span className="text-[9px] font-bold bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">
+                                  {alert.dept}
+                                </span>
+                              )}
+                              {!alert.isRead && (
+                                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" title="Unread"></span>
+                              )}
                             </div>
-                            <h3 className="text-sm font-bold text-slate-900 mt-0.5">Machine Change Authorization</h3>
+                            <h3 className="text-sm font-bold text-slate-900 mt-0.5">{alert.title}</h3>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end">
+                        <div className="flex flex-col items-end gap-1">
                           <div className="flex items-center gap-1 text-slate-400">
                             <Clock size={10} />
-                            <span className="text-[9px] font-bold">14:30 Today</span>
+                            <span className="text-[9px] font-bold">{alert.time}</span>
                           </div>
+                          {alert.category && alert.category !== 'GENERAL' && (
+                            <span className="text-[8px] font-black uppercase tracking-wider bg-slate-50 text-slate-400 px-1.5 py-0.5 rounded border border-slate-100">
+                              {alert.category}
+                            </span>
+                          )}
                         </div>
                       </div>
 
+                      {/* Details */}
                       <div className="bg-slate-50 rounded-lg p-2.5 mb-3 border border-slate-100">
-                        <div className="flex items-center gap-2 text-[11px] font-bold text-slate-700">
-                          <Activity size={12} className="text-indigo-500" />
-                          <span>Impacted Asset: <span className="text-indigo-600">Welding Line A</span></span>
-                        </div>
-                        <p className="text-[11px] text-slate-600 mt-1">
-                          Initiated by <span className="font-bold text-slate-900 underline decoration-indigo-200">Kumar Selvam</span> for machine <strong className="text-slate-900">MFG-MC-2011</strong> (Unit 1).
-                        </p>
+                        <p className="text-[11px] text-slate-600 leading-relaxed">{alert.details}</p>
                       </div>
 
+                      {/* Action buttons */}
                       <div className="flex justify-between items-center bg-white pt-1">
                         <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-600 border border-white shadow-sm">KS</div>
-                          <span className="text-[9px] font-bold text-slate-500">Requester</span>
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold border border-white shadow-sm ${alert.isRead ? 'bg-slate-200 text-slate-600' : `${colors.badge} ${colors.badgeText}`}`}>
+                            {alert.type === 'Action Required' ? '!' : '✓'}
+                          </div>
+                          <span className="text-[9px] font-bold text-slate-500">{alert.type}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <button className="flex items-center gap-1 text-[9px] font-black text-slate-500 hover:text-slate-700 transition-colors uppercase tracking-wider">
-                            <Check size={10} /> Mark Read
+                          <button
+                            onClick={() => toggleReadStatus(alert.id)}
+                            className="flex items-center gap-1 text-[9px] font-black text-slate-500 hover:text-slate-700 transition-colors uppercase tracking-wider cursor-pointer"
+                          >
+                            {alert.isRead ? <><Mail size={10} /> Mark Unread</> : <><Check size={10} /> Mark Read</>}
                           </button>
-                          <button className="flex items-center gap-1 text-[9px] font-black text-indigo-600 hover:text-indigo-700 transition-colors uppercase tracking-wider group-hover:gap-1.5">
-                            View Details <ExternalLink size={10} />
+                          <button
+                            onClick={() => handleDeleteAlert(alert.id)}
+                            className="flex items-center gap-1 text-[9px] font-black text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-wider cursor-pointer"
+                          >
+                            <Trash2 size={10} /> Delete
                           </button>
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  {/* L2 Notification Card: Documents/Approval */}
-                  <div className="relative group overflow-hidden bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
-                    <div className="p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
-                            <FileText size={18} />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[9px] font-black bg-emerald-600 text-white px-1.5 py-0.5 rounded shadow-sm">L2 DATA</span>
-                              <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">#4M-2026-2</span>
-                            </div>
-                            <h3 className="text-sm font-bold text-slate-900 mt-0.5">Validation Logs Accepted</h3>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end">
-                          <div className="flex items-center gap-1 text-slate-400">
-                            <Clock size={10} />
-                            <span className="text-[9px] font-bold">13:23 Today</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-slate-50 rounded-lg p-2.5 mb-3 border border-slate-100">
-                        <div className="flex items-center gap-2 text-[11px] font-bold text-slate-700">
-                          <User size={12} className="text-emerald-500" />
-                          <span>Validated by <span className="text-emerald-600">Kumar Selvam</span> for <span className="font-mono font-bold text-emerald-700 tracking-tighter">4M-2026-1</span></span>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-center bg-white pt-1">
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[9px] font-bold text-white border border-white shadow-sm">KS</div>
-                          <span className="text-[9px] font-bold text-emerald-600">Validated</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button className="flex items-center gap-1 text-[9px] font-black text-slate-500 hover:text-slate-700 transition-colors uppercase tracking-wider">
-                            <Check size={10} /> Mark Read
-                          </button>
-                          <button className="flex items-center gap-1 text-[9px] font-black text-emerald-600 hover:text-emerald-700 transition-colors uppercase tracking-wider group-hover:gap-1.5">
-                            View Details <ExternalLink size={10} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-             
-            );
-          })
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
-
-      {/* L1 & L2 Specific Data Section */}
-    
     </div>
   );
 };

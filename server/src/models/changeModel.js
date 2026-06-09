@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { sendMail } from '../config/email.js';
 
 export const getChanges = async () => {
   const [rows] = await pool.query(
@@ -229,7 +230,134 @@ export const addL2ValidationLog = async (logData, attachments) => {
       }
     }
 
+    // --- Create notifications for other department people ---
+    // Get the L1 request details for context
+    const [l1Rows] = await connection.query(
+      `SELECT dept, change_in, request_by, process_name, machine_no FROM l1_requests WHERE change_no = ?`,
+      [changeNo]
+    );
+
+    const l1Dept = l1Rows.length > 0 ? l1Rows[0].dept : '';
+    const changeIn = l1Rows.length > 0 ? l1Rows[0].change_in : '';
+    const requestBy = l1Rows.length > 0 ? l1Rows[0].request_by : requester;
+    const processName = l1Rows.length > 0 ? l1Rows[0].process_name : '';
+    const machineNo = l1Rows.length > 0 ? l1Rows[0].machine_no : '';
+
+    // Get all distinct departments from users (excluding the requester's own department)
+    const [deptRows] = await connection.query(
+      `SELECT DISTINCT department FROM users WHERE department != '' AND department IS NOT NULL AND LOWER(department) != LOWER(?)`,
+      [l1Dept || '']
+    );
+
+    const statusLabel = status === 'Accepted' ? 'Accepted' : 'Rejected';
+    const statusColor = status === 'Accepted' ? 'green' : 'red';
+    const now = new Date();
+    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
+
+    for (const deptRow of deptRows) {
+      const dept = deptRow.department;
+      const notifId = `L2-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`;
+      const title = `L2 Validation ${statusLabel} – ${changeNo}`;
+      const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${statusLabel.toLowerCase()} at L2 validation by ${requestBy}.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} Your department (${dept}) review is now required at L3.`;
+
+      await connection.query(
+        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
+         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
+        [notifId, title, details, changeNo, changeIn || 'GENERAL', dept, timeStr, 'Action Required', statusColor]
+      );
+    }
+
     await connection.commit();
+
+    // Trigger emails asynchronously after transaction is committed
+    (async () => {
+      try {
+        const [users] = await pool.query(
+          `SELECT email, name, department FROM users WHERE department != '' AND department IS NOT NULL AND LOWER(department) != LOWER(?)`,
+          [l1Dept || '']
+        );
+
+        if (users && users.length > 0) {
+          const statusLabel = status === 'Accepted' ? 'Accepted' : 'Rejected';
+          const themeColor = status === 'Accepted' ? '#10b981' : '#ef4444';
+          const bgLight = status === 'Accepted' ? '#f0fdf4' : '#fef2f2';
+
+          for (const user of users) {
+            const emailSubject = `[4M CMS] Action Required: L3 Review for ${changeNo}`;
+            const emailHtml = `
+              <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <div style="background-color: ${themeColor}; color: white; padding: 24px; text-align: center;">
+                  <h1 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">Change Management System</h1>
+                  <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase;">L2 Validation Alert</p>
+                </div>
+                <div style="padding: 24px; background-color: #ffffff;">
+                  <h2 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 600;">Hello ${user.name || 'User'},</h2>
+                  <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+                    A change request has been evaluated at <strong>L2 Validation</strong> and is now pending your department's review at <strong>L3</strong>.
+                  </p>
+                  <div style="background-color: ${bgLight}; border-left: 4px solid ${themeColor}; padding: 16px; margin: 20px 0; border-radius: 4px;">
+                    <div style="font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600;">Validation Status</div>
+                    <div style="font-size: 18px; font-weight: 700; color: ${themeColor}; margin-top: 2px;">L2 Status: ${statusLabel}</div>
+                  </div>
+                  <h3 style="color: #334155; font-size: 14px; font-weight: 650; margin-bottom: 8px; border-bottom: 1px solid #edf2f7; padding-bottom: 6px;">Details of Change</h3>
+                  <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+                    <tr>
+                      <td style="padding: 8px 0; color: #64748b; font-size: 13px; width: 35%;">Change Request #</td>
+                      <td style="padding: 8px 0; color: #1e293b; font-size: 13px; font-weight: 600;">${changeNo}</td>
+                    </tr>
+                    ${changeIn ? `
+                    <tr>
+                      <td style="padding: 8px 0; color: #64748b; font-size: 13px;">Change Category</td>
+                      <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${changeIn}</td>
+                    </tr>` : ''}
+                    ${processName ? `
+                    <tr>
+                      <td style="padding: 8px 0; color: #64748b; font-size: 13px;">Process Name</td>
+                      <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${processName}</td>
+                    </tr>` : ''}
+                    ${machineNo ? `
+                    <tr>
+                      <td style="padding: 8px 0; color: #64748b; font-size: 13px;">Machine No</td>
+                      <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${machineNo}</td>
+                    </tr>` : ''}
+                    <tr>
+                      <td style="padding: 8px 0; color: #64748b; font-size: 13px;">L2 Evaluated By</td>
+                      <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${requestBy}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px 0; color: #64748b; font-size: 13px;">Target Department</td>
+                      <td style="padding: 8px 0; color: #1e293b; font-size: 13px; font-weight: 600;">${user.department}</td>
+                    </tr>
+                    ${remarks ? `
+                    <tr>
+                      <td style="padding: 8px 0; color: #64748b; font-size: 13px; vertical-align: top;">Remarks</td>
+                      <td style="padding: 8px 0; color: #475569; font-size: 13px; line-height: 1.4; background-color: #f8fafc; border-radius: 4px; padding-left: 8px; border-left: 2px solid #cbd5e1;">${remarks}</td>
+                    </tr>` : ''}
+                  </table>
+                  <div style="text-align: center; margin: 32px 0 12px 0;">
+                    <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
+                      Go to Dashboard
+                    </a>
+                  </div>
+                </div>
+                <div style="background-color: #f8fafc; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9;">
+                  This is an automated notification from the 4M Change Management System. Please do not reply directly to this email.
+                </div>
+              </div>
+            `;
+
+            await sendMail({
+              to: user.email,
+              subject: emailSubject,
+              html: emailHtml
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error sending email notifications after transaction commit:', err);
+      }
+    })();
+
     return logData;
   } catch (error) {
     await connection.rollback();
