@@ -27,7 +27,7 @@ import {
 export const Notifications = ({ setToastMsg, notifications, setNotifications, fetchNotifications }) => {
   const alerts = notifications || [];
   const [search, setSearch] = useState('');
-  const [activeFilterTab, setActiveFilterTab] = useState('All'); // 'All' | 'Unread' | 'Action' | 'System' | 'Read'
+  const [activeFilterTab, setActiveFilterTab] = useState('All'); // 'All' | 'Unread'
 
   useEffect(() => {
     fetchNotifications();
@@ -92,9 +92,6 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
     if (!matchesSearch) return false;
 
     if (activeFilterTab === 'Unread') return !alert.isRead;
-    if (activeFilterTab === 'Read') return alert.isRead;
-    if (activeFilterTab === 'Action') return alert.type === 'Action Required';
-    if (activeFilterTab === 'System') return alert.type === 'System Logs';
 
     return true;
   });
