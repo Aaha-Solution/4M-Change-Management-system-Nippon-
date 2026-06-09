@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, RotateCcw, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
-import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment } from '../api/apiRoutes';
+import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getUsers } from '../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 
 export const L3RequestTracker = ({
@@ -70,22 +70,53 @@ export const L3RequestTracker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Map database department to L3 acting department
+  const mapDbDeptToL3Dept = (dbDept) => {
+    if (!dbDept) return 'Quality';
+    const dept = dbDept.trim().toLowerCase();
+    if (dept === 'qad' || dept === 'quality') return 'Quality';
+    if (dept === 'ped') return 'PED';
+    if (dept === 'production') return 'Production';
+    if (dept === 'maintenance') return 'Maintenance';
+    if (dept === 'pc & l' || dept === 'pcl') return 'PC & L';
+    if (dept === 'materials') return 'Materials';
+    if (dept === 'marketing') return 'Marketing';
+    if (dept === 'hr' || dept === 'safety' || dept === 'hr & safety') return 'HR & Safety';
+    return 'Quality'; // Fallback
+  };
+
   // Map logged-in user email/role to initial acting department
   useEffect(() => {
-    if (userEmail) {
-      const email = userEmail.toLowerCase();
-      if (email.includes('ravi.qa')) {
-        setActingDept('Quality');
-      } else if (email.includes('kumar.s')) {
-        setActingDept('Production');
-      } else if (email.includes('ped')) {
-        setActingDept('PED');
-      } else if (email.includes('manager')) {
-        setActingDept('Production');
-      } else {
-        setActingDept('Quality');
+    const resolveUserDept = async () => {
+      if (!userEmail) return;
+      try {
+        const response = await getUsers();
+        const usersList = response.data || [];
+        const currentUser = usersList.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
+        if (currentUser && currentUser.department) {
+          const mapped = mapDbDeptToL3Dept(currentUser.department);
+          setActingDept(mapped);
+        } else {
+          // Fallback to legacy hardcoded check if user not found in DB
+          const email = userEmail.toLowerCase();
+          if (email.includes('ravi.qa')) {
+            setActingDept('Quality');
+          } else if (email.includes('kumar.s')) {
+            setActingDept('Production');
+          } else if (email.includes('ped')) {
+            setActingDept('PED');
+          } else if (email.includes('manager')) {
+            setActingDept('Production');
+          } else {
+            setActingDept('Quality');
+          }
+        }
+      } catch (err) {
+        console.error('Error resolving user department for L3:', err);
       }
-    }
+    };
+
+    resolveUserDept();
   }, [userEmail]);
 
   // Dynamic form status prefill based on selected change request and acting department
@@ -290,13 +321,6 @@ export const L3RequestTracker = ({
         </div>
 
         <form onSubmit={handleSaveApproval} className="space-y-[14px]">
-          {/* LOGGED-IN USER ROLE DISPLAY */}
-          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[10px_12px] mb-[4px] select-none">
-            <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-[2px]">LOGGED-IN USER ROLE</div>
-            <div className="text-[14px] font-bold text-[#0066cc]">
-              {actingDept === 'Production' ? 'Production HOD' : actingDept === 'Unit Head' ? 'Plant Unit Head' : `${actingDept} Approver`}
-            </div>
-          </div>
 
           {selectedChangeId && !isL2Accepted && (
             <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
@@ -309,7 +333,7 @@ export const L3RequestTracker = ({
 
           {/* Acting Department (Admin) Select dropdown */}
           {(userRole === 'Admin' || userRole === 'Administrator' || (userRole && userRole.toLowerCase() === 'admin')) && (
-            <div className="relative w-0 h-0 opacity-0 pointer-events-none overflow-hidden">
+            <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Acting Department (Admin) <span className="text-rose-500">*</span></label>
               <select
                 value={actingDept}
