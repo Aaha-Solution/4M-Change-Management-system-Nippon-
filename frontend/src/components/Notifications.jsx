@@ -102,9 +102,6 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
   // Calculate counts dynamically
   const countAll = alerts.length;
   const countUnread = alerts.filter(a => !a.isRead).length;
-  const countAction = alerts.filter(a => a.type === 'Action Required').length;
-  const countSystem = alerts.filter(a => a.type === 'System Logs').length;
-  const countRead = alerts.filter(a => a.isRead).length;
 
   // Color mapping for notification accent bars and badges
   const getAccentColor = (color) => {
@@ -177,10 +174,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
         <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
           {[
             { id: 'All', label: 'All Alerts', count: countAll, badgeColor: 'bg-blue-600 text-white' },
-            { id: 'Unread', label: 'Unread', count: countUnread, badgeColor: 'bg-rose-600 text-white' },
-            { id: 'Action', label: 'Action Required', count: countAction, badgeColor: 'bg-amber-600 text-white' },
-            { id: 'System', label: 'System Logs', count: countSystem, badgeColor: 'bg-slate-600 text-white' },
-            { id: 'Read', label: 'Read', count: countRead, badgeColor: 'bg-slate-155 text-slate-700' }
+            { id: 'Unread', label: 'Unread', count: countUnread, badgeColor: 'bg-rose-600 text-white' }
           ].map(tab => (
             <button
               key={tab.id}
