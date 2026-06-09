@@ -2,7 +2,8 @@ import * as notificationModel from '../models/notificationModel.js';
 
 export const getNotifications = async (req, res) => {
   try {
-    const list = await notificationModel.getNotifications();
+    const { email, role } = req.user;
+    const list = await notificationModel.getNotifications(email, role);
     res.status(200).json(list);
   } catch (error) {
     console.error('Error in getNotifications controller:', error);
@@ -26,7 +27,8 @@ export const toggleRead = async (req, res) => {
 
 export const markAllRead = async (req, res) => {
   try {
-    await notificationModel.markAllRead();
+    const { email, role } = req.user;
+    await notificationModel.markAllRead(email, role);
     res.status(200).json({ message: 'All notifications marked as read.' });
   } catch (error) {
     console.error('Error in markAllRead controller:', error);
@@ -47,7 +49,8 @@ export const deleteNotification = async (req, res) => {
 
 export const clearRead = async (req, res) => {
   try {
-    await notificationModel.clearRead();
+    const { email, role } = req.user;
+    await notificationModel.clearRead(email, role);
     res.status(200).json({ message: 'Read notifications cleared.' });
   } catch (error) {
     console.error('Error in clearRead controller:', error);

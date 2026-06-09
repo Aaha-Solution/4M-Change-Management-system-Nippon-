@@ -1,11 +1,24 @@
 import pool from '../config/db.js';
 
-export const getNotifications = async () => {
-  const [rows] = await pool.query(
-    `SELECT id, title, details, change_no as changeNo, category, dept, time_str as time, is_read as isRead, type, color 
-     FROM notifications 
-     ORDER BY created_at DESC`
-  );
+export const getNotifications = async (email, role) => {
+  let query = `
+    SELECT id, title, details, change_no as changeNo, category, dept, time_str as time, is_read as isRead, type, color 
+    FROM notifications
+  `;
+  const params = [];
+
+  if (role && !role.toLowerCase().includes('admin')) {
+    const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
+    const department = userRows.length > 0 ? userRows[0].department : '';
+    if (department) {
+      query += ` WHERE LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL `;
+      params.push(department);
+    }
+  }
+
+  query += ` ORDER BY created_at DESC `;
+
+  const [rows] = await pool.query(query, params);
   // Convert 1/0 to true/false for isRead
   return rows.map(r => ({ ...r, isRead: !!r.isRead }));
 };
@@ -25,8 +38,20 @@ export const toggleReadStatus = async (id) => {
   return rows.length > 0 ? { ...rows[0], isRead: !!rows[0].isRead } : null;
 };
 
-export const markAllRead = async () => {
-  await pool.query(`UPDATE notifications SET is_read = TRUE`);
+export const markAllRead = async (email, role) => {
+  let query = `UPDATE notifications SET is_read = TRUE`;
+  const params = [];
+
+  if (role && !role.toLowerCase().includes('admin')) {
+    const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
+    const department = userRows.length > 0 ? userRows[0].department : '';
+    if (department) {
+      query += ` WHERE LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL`;
+      params.push(department);
+    }
+  }
+
+  await pool.query(query, params);
   return { success: true };
 };
 
@@ -35,8 +60,20 @@ export const deleteNotification = async (id) => {
   return { id };
 };
 
-export const clearRead = async () => {
-  await pool.query(`DELETE FROM notifications WHERE is_read = TRUE`);
+export const clearRead = async (email, role) => {
+  let query = `DELETE FROM notifications WHERE is_read = TRUE`;
+  const params = [];
+
+  if (role && !role.toLowerCase().includes('admin')) {
+    const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
+    const department = userRows.length > 0 ? userRows[0].department : '';
+    if (department) {
+      query += ` AND (LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`;
+      params.push(department);
+    }
+  }
+
+  await pool.query(query, params);
   return { success: true };
 };
 
