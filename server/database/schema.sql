@@ -223,6 +223,7 @@ CREATE TABLE l3_approvals (
     marketing VARCHAR(50) NOT NULL DEFAULT 'Pending',
     hr VARCHAR(50) NOT NULL DEFAULT 'Pending',
     safety VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    unit_head VARCHAR(50) NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
 );

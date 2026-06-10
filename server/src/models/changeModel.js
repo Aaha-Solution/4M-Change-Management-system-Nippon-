@@ -17,6 +17,7 @@ export const getChanges = async () => {
         AND l3.marketing IN ('Approved', 'Rejected')
         AND l3.hr IN ('Approved', 'Rejected')
         AND l3.safety IN ('Approved', 'Rejected')
+        AND l3.unit_head IN ('Approved', 'Rejected')
         AND cr.status != 'Completed'
     `);
   } catch (err) {
@@ -41,7 +42,8 @@ export const getChanges = async () => {
                   AND l3.materials = 'Approved' 
                   AND l3.marketing = 'Approved' 
                   AND l3.hr = 'Approved' 
-                  AND l3.safety = 'Approved' THEN 1 ELSE 0 END as isL3Approved
+                  AND l3.safety = 'Approved' 
+                  AND l3.unit_head = 'Approved' THEN 1 ELSE 0 END as isL3Approved
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
@@ -417,7 +419,8 @@ export const getL3Approvals = async () => {
             COALESCE(l.materials, 'Pending') as materials,
             COALESCE(l.marketing, 'Pending') as marketing,
             COALESCE(l.hr, 'Pending') as hr,
-            COALESCE(l.safety, 'Pending') as safety
+            COALESCE(l.safety, 'Pending') as safety,
+            COALESCE(l.unit_head, 'Pending') as unitHead
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
@@ -431,7 +434,7 @@ export const getL3Approvals = async () => {
 export const addL3ApprovalLog = async (logData) => {
   const { 
     changeNo, date, requester, 
-    ped, quality, production, maintenance, pcl, materials, marketing, hr, safety 
+    ped, quality, production, maintenance, pcl, materials, marketing, hr, safety, unitHead 
   } = logData;
   const connection = await pool.getConnection();
   try {
@@ -454,8 +457,8 @@ export const addL3ApprovalLog = async (logData) => {
     await connection.query(
       `INSERT INTO l3_approvals (
         change_no, date, requester, ped, quality, production, 
-        maintenance, pcl, materials, marketing, hr, safety
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        maintenance, pcl, materials, marketing, hr, safety, unit_head
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         date = VALUES(date),
         requester = VALUES(requester),
@@ -467,12 +470,13 @@ export const addL3ApprovalLog = async (logData) => {
         materials = VALUES(materials),
         marketing = VALUES(marketing),
         hr = VALUES(hr),
-        safety = VALUES(safety)`,
+        safety = VALUES(safety),
+        unit_head = VALUES(unit_head)`,
       [
         changeNo, date, requester, 
         ped || 'Pending', quality || 'Pending', production || 'Pending', 
         maintenance || 'Pending', pcl || 'Pending', materials || 'Pending', 
-        marketing || 'Pending', hr || 'Pending', safety || 'Pending'
+        marketing || 'Pending', hr || 'Pending', safety || 'Pending', unitHead || 'Pending'
       ]
     );
 
@@ -485,7 +489,8 @@ export const addL3ApprovalLog = async (logData) => {
       ['Approved', 'Rejected'].includes(materials) &&
       ['Approved', 'Rejected'].includes(marketing) &&
       ['Approved', 'Rejected'].includes(hr) &&
-      ['Approved', 'Rejected'].includes(safety);
+      ['Approved', 'Rejected'].includes(safety) &&
+      ['Approved', 'Rejected'].includes(unitHead);
 
     if (allDecided) {
       await connection.query(
