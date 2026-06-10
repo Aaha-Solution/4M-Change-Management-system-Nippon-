@@ -8,6 +8,7 @@ export const getChanges = async () => {
             DATE_FORMAT(c.date, '%b %d, %Y') as date, c.priority, c.status,
             l1.dept, l1.process_name as processName, l1.machine_no as machineNo, l1.change_in as changeIn,
             l1.request_by as requestBy,
+            c.requester as requesterEmail,
             v.status as l2Status
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
@@ -160,7 +161,8 @@ export const getL2ValidationLogs = async () => {
   const [rows] = await pool.query(
     `SELECT v.change_no as changeNo, v.validation_date as date, 
             COALESCE(l1.request_by, u.name, v.requester) as requester, 
-            v.weld_test as weldTest, v.qa_test as qaTest, v.status, v.remarks 
+            v.weld_test as weldTest, v.qa_test as qaTest, v.status, v.remarks,
+            c.requester as requesterEmail
      FROM l2_validation_logs v
      LEFT JOIN l1_requests l1 ON v.change_no = l1.change_no
      LEFT JOIN change_requests c ON v.change_no = c.id

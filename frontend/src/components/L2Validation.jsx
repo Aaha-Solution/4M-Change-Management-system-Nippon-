@@ -6,6 +6,9 @@ import { formatDateToDDMMYYYY } from '../utils/dateUtils';
 
 export const L2Validation = ({
   changes,
+  userRole,
+  userEmail,
+  userDept,
   setToastMsg,
   fetchChanges,
   fetchNotifications
@@ -268,6 +271,7 @@ export const L2Validation = ({
       changeNo: change.id,
       date: change.date,
       requester: change.requestBy || change.requester || savedLog?.requester || 'Unknown',
+      requesterEmail: change.requesterEmail || savedLog?.requesterEmail || '',
       weldTest: savedLog?.weldTest || '-',
       qaTest: savedLog?.qaTest || '-',
       status: savedLog?.status || 'Pending',
@@ -275,6 +279,17 @@ export const L2Validation = ({
       isPending: !savedLog
     };
   });
+
+  const matchedChange = changes?.find(c => c.id.toLowerCase().trim() === formChangeNo.toLowerCase().trim());
+  const isRaisedByUser = matchedChange && userEmail && 
+    matchedChange.requesterEmail?.toLowerCase().trim() === userEmail.toLowerCase().trim();
+
+  const isQualityOrAdmin = userRole?.toLowerCase().includes('admin') || 
+    userDept?.toLowerCase() === 'quality' || 
+    userDept?.toLowerCase() === 'qad' || 
+    userDept?.toLowerCase() === 'qa';
+
+  const canEdit = isQualityOrAdmin && !isRaisedByUser;
 
   // Filter logic
   const filteredLogs = tableLogs.filter(log => {
@@ -300,6 +315,24 @@ export const L2Validation = ({
           <Save size={16} className="text-[#0066cc]" />
           <h4 className="text-[13px] font-bold text-slate-900">Add L2 Validation Log</h4>
         </div>
+
+        {formChangeNo && isRaisedByUser && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+            <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Notice:</span> You raised this change request. For separation of duties, you cannot perform L2 validation on your own request.
+            </div>
+          </div>
+        )}
+
+        {formChangeNo && !isRaisedByUser && !isQualityOrAdmin && (
+          <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+            <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Notice:</span> L2 validation is restricted to Quality department team members only.
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSaveLog} className="space-y-[14px]">
           {/* 4M CHANGE NO */}
@@ -345,7 +378,7 @@ export const L2Validation = ({
               key={`ped-${formChangeNo}`}
               type="file"
               accept="image/*,application/pdf"
-              disabled={isAlreadyValidated}
+              disabled={isAlreadyValidated || !canEdit}
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
                   const file = e.target.files[0];
@@ -381,7 +414,7 @@ export const L2Validation = ({
               key={`qa-${formChangeNo}`}
               type="file"
               accept="image/*,application/pdf"
-              disabled={isAlreadyValidated}
+              disabled={isAlreadyValidated || !canEdit}
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
                   const file = e.target.files[0];
@@ -415,7 +448,7 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
             <select
               value={formStatus}
-              disabled={isAlreadyValidated}
+              disabled={isAlreadyValidated || !canEdit}
               onChange={(e) => {
                 setFormStatus(e.target.value);
                 setFieldErrors(prev => ({ ...prev, status: '' }));
@@ -443,7 +476,7 @@ export const L2Validation = ({
               placeholder="Enter Remarks..."
               rows={3}
               value={formRemarks}
-              disabled={isAlreadyValidated}
+              disabled={isAlreadyValidated || !canEdit}
               onChange={(e) => {
                 setFormRemarks(e.target.value);
                 setFieldErrors(prev => ({ ...prev, remarks: '' }));
@@ -463,7 +496,7 @@ export const L2Validation = ({
           {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting || isAlreadyValidated || !formChangeNo.trim()}
+            disabled={isSubmitting || isAlreadyValidated || !formChangeNo.trim() || !canEdit}
             className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-60 border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
@@ -475,6 +508,10 @@ export const L2Validation = ({
               <span>Log Already Saved</span>
             ) : !formChangeNo.trim() ? (
               <span>Select a Request to Validate</span>
+            ) : isRaisedByUser ? (
+              <span>Disabled: Raised by You</span>
+            ) : !isQualityOrAdmin ? (
+              <span>Quality Department Only</span>
             ) : (
               <>
                 <Save size={14} />
