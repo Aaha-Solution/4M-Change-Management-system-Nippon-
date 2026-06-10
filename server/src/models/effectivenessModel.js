@@ -31,51 +31,6 @@ const ensureTablesExist = async () => {
         FOREIGN KEY (log_id) REFERENCES effectiveness_logs(id) ON UPDATE CASCADE ON DELETE CASCADE
       )
     `);
-
-    // Check if empty, if so, seed defaults
-    const [rows] = await pool.query('SELECT COUNT(*) as count FROM effectiveness_logs');
-    if (rows[0].count === 0) {
-      console.log('Seeding default effectiveness logs...');
-      // Ensure the change requests CHG-8901 and CHG-8895 exist or create them if not present to prevent FK failure
-      const [existingCHG1] = await pool.query("SELECT id FROM change_requests WHERE id = 'CHG-8901'");
-      if (existingCHG1.length === 0) {
-        await pool.query(
-          "INSERT IGNORE INTO change_requests (id, title, requester, date, priority, status) VALUES ('CHG-8901', 'Integrate Auth0 SSO provider for corporate domain', 'admin@cms.com', '2026-05-19', 'High', 'Completed')"
-        );
-      }
-      const [existingCHG2] = await pool.query("SELECT id FROM change_requests WHERE id = 'CHG-8895'");
-      if (existingCHG2.length === 0) {
-        await pool.query(
-          "INSERT IGNORE INTO change_requests (id, title, requester, date, priority, status) VALUES ('CHG-8895', 'Resolve security vulnerability CVE-2026-3392', 'admin@cms.com', '2026-05-15', 'High', 'Completed')"
-        );
-      }
-
-      // Ensure corresponding L2 validation logs exist so they show up in validation tables
-      await pool.query(
-        `INSERT IGNORE INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) VALUES
-         ('CHG-8901', '19/05/2026', 'admin@cms.com', 'sso-verification-report.pdf', 'sso-verification-report.pdf', 'Accepted', 'SSO integration successfully verified. Token refresh intervals and domain constraints are fully operational.'),
-         ('CHG-8895', '15/05/2026', 'admin@cms.com', 'cve-scan-results.txt', 'cve-scan-results.txt', 'Accepted', 'Patch applied to all production instances. Vulnerability scan reports clean status.')`
-      );
-
-      // Ensure corresponding L3 approvals exist so they show up in L3 Request Tracker
-      await pool.query(
-        `INSERT IGNORE INTO l3_approvals (change_no, date, requester, ped, quality, production, maintenance, pcl, materials, marketing, hr, safety) VALUES
-         ('CHG-8901', '19 May', 'admin@cms.com', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved'),
-         ('CHG-8895', '15 May', 'admin@cms.com', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved')`
-      );
-
-      await pool.query(
-        `INSERT IGNORE INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval) VALUES
-         ('EFF-8901', 'CHG-8901', '2026-05-19', 'Integrate Auth0 SSO provider for corporate domain', '2026-05-20', '2026-05', 'SSO integration successfully verified. Token refresh intervals and domain constraints are fully operational. Zero authentication latency observed.', 'sso-verification-report.pdf', 'Effectiveness Ok', 'Approved'),
-         ('EFF-8895', 'CHG-8895', '2026-05-15', 'Resolve security vulnerability CVE-2026-3392', '2026-05-16', '2026-05', 'Patch applied to all production instances. Vulnerability scan reports clean status. Compliance certification updated.', 'cve-scan-results.txt', 'Effectiveness Ok', 'Approved')`
-      );
-      
-      await pool.query(
-        `INSERT IGNORE INTO effectiveness_attachments (log_id, file_name, file_data, file_type) VALUES
-         ('EFF-8901', 'sso-verification-report.pdf', 'U1NPIFZlcmlmaWNhdGlvbiBSZXBvcnQgQ29udGVudHM=', 'application/pdf'),
-         ('EFF-8895', 'cve-scan-results.txt', 'Q1ZFLTIwMjYtMzM5MiBQYXRjaGVkIGFuZCBWZXJpZmllZA==', 'text/plain')`
-      );
-    }
   } catch (err) {
     console.error('Error ensuring and seeding effectiveness tables:', err);
   }
