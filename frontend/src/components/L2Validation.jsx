@@ -289,7 +289,7 @@ export const L2Validation = ({
     userDept?.toLowerCase() === 'qad' || 
     userDept?.toLowerCase() === 'qa';
 
-  const canEdit = isQualityOrAdmin && !isRaisedByUser;
+  const canEdit = isQualityOrAdmin;
 
   // Filter logic
   const filteredLogs = tableLogs.filter(log => {
@@ -316,11 +316,11 @@ export const L2Validation = ({
           <h4 className="text-[13px] font-bold text-slate-900">Add L2 Validation Log</h4>
         </div>
 
-        {formChangeNo && isRaisedByUser && (
+        {formChangeNo && isRaisedByUser && !isQualityOrAdmin && (
           <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Notice:</span> You raised this change request. For separation of duties, you cannot perform L2 validation on your own request.
+              <span className="font-bold">Notice:</span> You raised this change request. L2 validation is restricted to Quality department team members only.
             </div>
           </div>
         )}
@@ -508,8 +508,6 @@ export const L2Validation = ({
               <span>Log Already Saved</span>
             ) : !formChangeNo.trim() ? (
               <span>Select a Request to Validate</span>
-            ) : isRaisedByUser ? (
-              <span>Disabled: Raised by You</span>
             ) : !isQualityOrAdmin ? (
               <span>Quality Department Only</span>
             ) : (

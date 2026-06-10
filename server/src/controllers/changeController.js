@@ -99,15 +99,6 @@ export const createL2ValidationLog = async (req, res) => {
           return res.status(403).json({ error: 'Access Denied: L2 validation is restricted to Quality department team members only.' });
         }
       }
-
-      // Check if user is the requester of this change request
-      const [changeRows] = await pool.query('SELECT requester FROM change_requests WHERE id = ?', [logData.changeNo]);
-      if (changeRows.length > 0) {
-        const changeRequester = changeRows[0].requester;
-        if (changeRequester && changeRequester.toLowerCase() === userEmail.toLowerCase()) {
-          return res.status(403).json({ error: 'Access Denied: You cannot perform L2 validation on a change request that you raised.' });
-        }
-      }
     }
 
     const newLog = await changeModel.addL2ValidationLog(logData, attachments);
