@@ -243,12 +243,12 @@ export const Effectiveness = ({
                   value={effChangeNo}
                   onChange={(e) => handleSelectChangeNo(e.target.value)}
                 >
-                  <option value="">Select Approved Change</option>
-                  {changes.filter(c => c.status === 'Approved' || c.status === 'Completed').map(c => (
+                  <option value="">Select Completed Change (L3 Approved)</option>
+                  {changes.filter(c => c.status === 'Completed').map(c => (
                     <option key={c.id} value={c.id}>{c.id} - {c.title.substring(0, 30)}...</option>
                   ))}
-                  {changes.filter(c => c.status === 'Approved' || c.status === 'Completed').length === 0 && (
-                    <option value="CHG-DEMO">No Approved Changes (Create DEMO)</option>
+                  {changes.filter(c => c.status === 'Completed').length === 0 && (
+                    <option value="CHG-DEMO">No L3 Approved Changes</option>
                   )}
                 </select>
               )}

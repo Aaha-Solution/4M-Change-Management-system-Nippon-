@@ -2,6 +2,27 @@ import pool from '../config/db.js';
 import { sendMail } from '../config/email.js';
 
 export const getChanges = async () => {
+  // Self-healing: auto-complete any change requests that have all 9 L3 approvals set to 'Approved'
+  try {
+    await pool.query(`
+      UPDATE change_requests cr
+      INNER JOIN l3_approvals l3 ON cr.id = l3.change_no
+      SET cr.status = 'Completed'
+      WHERE l3.ped = 'Approved'
+        AND l3.quality = 'Approved'
+        AND l3.production = 'Approved'
+        AND l3.maintenance = 'Approved'
+        AND l3.pcl = 'Approved'
+        AND l3.materials = 'Approved'
+        AND l3.marketing = 'Approved'
+        AND l3.hr = 'Approved'
+        AND l3.safety = 'Approved'
+        AND cr.status != 'Completed'
+    `);
+  } catch (err) {
+    console.error('Error auto-completing L3 requests in getChanges:', err);
+  }
+
   const [rows] = await pool.query(
     `SELECT c.id, c.title, 
             COALESCE(l1.request_by, u.name, c.requester) as requester, 
@@ -442,6 +463,35 @@ export const addL3ApprovalLog = async (logData) => {
         marketing || 'Pending', hr || 'Pending', safety || 'Pending'
       ]
     );
+
+    const allApproved = 
+      (ped || 'Pending') === 'Approved' &&
+      (quality || 'Pending') === 'Approved' &&
+      (production || 'Pending') === 'Approved' &&
+      (maintenance || 'Pending') === 'Approved' &&
+      (pcl || 'Pending') === 'Approved' &&
+      (materials || 'Pending') === 'Approved' &&
+      (marketing || 'Pending') === 'Approved' &&
+      (hr || 'Pending') === 'Approved' &&
+      (safety || 'Pending') === 'Approved';
+
+    if (allApproved) {
+      await connection.query(
+        `UPDATE change_requests SET status = 'Completed' WHERE id = ?`,
+        [changeNo]
+      );
+    } else {
+      const [crRow] = await connection.query(
+        `SELECT status FROM change_requests WHERE id = ?`,
+        [changeNo]
+      );
+      if (crRow.length > 0 && crRow[0].status === 'Completed') {
+        await connection.query(
+          `UPDATE change_requests SET status = 'Approved' WHERE id = ?`,
+          [changeNo]
+        );
+      }
+    }
 
     await connection.commit();
     return logData;
