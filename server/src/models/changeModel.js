@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import { sendMail } from '../config/email.js';
+import { broadcast } from '../config/websocket.js';
 
 export const getChanges = async () => {
   // Self-healing: auto-complete any change requests that have all 9 L3 approvals set to 'Approved' or 'Rejected'
@@ -63,6 +64,8 @@ export const addChange = async (title, requester, priority) => {
     [newId, title, requester, priority || 'Medium', status]
   );
   
+  broadcast({ type: 'REFRESH_CHANGES' });
+  
   return {
     id: newId,
     title,
@@ -78,6 +81,7 @@ export const updateChangeStatus = async (id, status) => {
     'UPDATE change_requests SET status = ? WHERE id = ?',
     [status, id]
   );
+  broadcast({ type: 'REFRESH_CHANGES' });
   return { id, status };
 };
 
@@ -176,6 +180,7 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
     }
 
     await connection.commit();
+    broadcast({ type: 'REFRESH_CHANGES' });
     return {
       id: changeNo,
       title,
@@ -305,6 +310,8 @@ export const addL2ValidationLog = async (logData, attachments) => {
     }
 
     await connection.commit();
+    broadcast({ type: 'REFRESH_CHANGES' });
+    broadcast({ type: 'REFRESH_NOTIFICATIONS' });
 
     // Trigger emails asynchronously after transaction is committed
     (async () => {
@@ -511,6 +518,7 @@ export const addL3ApprovalLog = async (logData) => {
     }
 
     await connection.commit();
+    broadcast({ type: 'REFRESH_CHANGES' });
     return logData;
   } catch (error) {
     await connection.rollback();

@@ -189,6 +189,62 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     }
   }, [toastMsg]);
 
+  // WebSocket real-time updates integration
+  useEffect(() => {
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.hostname}:5001/ws`;
+    
+    let socket;
+    let reconnectTimeout;
+    
+    const connect = () => {
+      socket = new WebSocket(wsUrl);
+      
+      socket.onopen = () => {
+        console.log('🔌 Connected to WebSocket server');
+      };
+      
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('📩 Received WebSocket message:', data);
+          if (data.type === 'REFRESH_CHANGES') {
+            fetchChanges();
+          } else if (data.type === 'REFRESH_NOTIFICATIONS') {
+            fetchNotifications();
+          } else if (data.type === 'REFRESH_EFFECTIVENESS') {
+            fetchEffectiveness();
+          }
+        } catch (err) {
+          console.error('Error parsing WebSocket message:', err);
+        }
+      };
+      
+      socket.onclose = () => {
+        console.log('🔌 WebSocket disconnected. Reconnecting in 3 seconds...');
+        reconnectTimeout = setTimeout(connect, 3000);
+      };
+      
+      socket.onerror = (err) => {
+        console.error('⚠️ WebSocket error:', err);
+        socket.close();
+      };
+    };
+    
+    connect();
+    
+    return () => {
+      if (socket) {
+        socket.onclose = null; // Prevent reconnect on cleanup
+        socket.close();
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
 
   // Helper to handle tab select

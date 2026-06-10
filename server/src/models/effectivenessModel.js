@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { broadcast } from '../config/websocket.js';
 
 // Self-healing: Ensure effectiveness tables exist on load
 const ensureTablesExist = async () => {
@@ -92,6 +93,7 @@ export const createLog = async (logData, attachments) => {
     }
     
     await connection.commit();
+    broadcast({ type: 'REFRESH_EFFECTIVENESS' });
     return logData;
   } catch (error) {
     await connection.rollback();
@@ -144,6 +146,7 @@ export const updateLog = async (id, logData, attachments) => {
     }
     
     await connection.commit();
+    broadcast({ type: 'REFRESH_EFFECTIVENESS' });
     
     const [rows] = await connection.query(
       `SELECT e.id, e.change_no as changeNo, 
@@ -168,6 +171,7 @@ export const updateLog = async (id, logData, attachments) => {
 
 export const deleteLog = async (id) => {
   await pool.query('DELETE FROM effectiveness_logs WHERE id = ?', [id]);
+  broadcast({ type: 'REFRESH_EFFECTIVENESS' });
   return { id };
 };
 
@@ -188,6 +192,7 @@ export const resetLogsToDefaults = async () => {
     await connection.query('DELETE FROM effectiveness_attachments');
     await connection.query('DELETE FROM effectiveness_logs');
     await connection.commit();
+    broadcast({ type: 'REFRESH_EFFECTIVENESS' });
   } catch (error) {
     await connection.rollback();
     throw error;

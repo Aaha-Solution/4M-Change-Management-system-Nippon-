@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { broadcast } from '../config/websocket.js';
 
 export const getNotifications = async (email, role) => {
   let query = `
@@ -35,6 +36,7 @@ export const toggleReadStatus = async (id) => {
      WHERE id = ?`,
     [id]
   );
+  broadcast({ type: 'REFRESH_NOTIFICATIONS' });
   return rows.length > 0 ? { ...rows[0], isRead: !!rows[0].isRead } : null;
 };
 
@@ -52,11 +54,13 @@ export const markAllRead = async (email, role) => {
   }
 
   await pool.query(query, params);
+  broadcast({ type: 'REFRESH_NOTIFICATIONS' });
   return { success: true };
 };
 
 export const deleteNotification = async (id) => {
   await pool.query(`DELETE FROM notifications WHERE id = ?`, [id]);
+  broadcast({ type: 'REFRESH_NOTIFICATIONS' });
   return { id };
 };
 
@@ -74,6 +78,7 @@ export const clearRead = async (email, role) => {
   }
 
   await pool.query(query, params);
+  broadcast({ type: 'REFRESH_NOTIFICATIONS' });
   return { success: true };
 };
 
@@ -83,6 +88,7 @@ export const createNotification = async ({ id, title, details, changeNo, categor
      VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
     [id, title, details, changeNo || '', category || '', dept || '', timeStr || 'Just now', type || 'Action Required', color || 'blue']
   );
+  broadcast({ type: 'REFRESH_NOTIFICATIONS' });
   return { id, title, details, changeNo, category, dept, time: timeStr || 'Just now', isRead: false, type: type || 'Action Required', color: color || 'blue' };
 };
 
@@ -101,6 +107,7 @@ export const resetNotifications = async () => {
       ('ALR-006', 'SSO Certificate Re-signature Done', 'SSO provider Auth0 corporate domain certificate updated and verified.', '4M-2026-230', 'SYSTEM', 'IT', '4 days ago', TRUE, 'System Logs', 'green')
     `);
     await connection.commit();
+    broadcast({ type: 'REFRESH_NOTIFICATIONS' });
   } catch (error) {
     await connection.rollback();
     throw error;
