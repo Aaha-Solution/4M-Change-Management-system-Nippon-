@@ -1,5 +1,90 @@
 import pool from '../config/db.js';
 
+// Self-healing: Ensure effectiveness tables exist on load
+const ensureTablesExist = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS effectiveness_logs (
+        id VARCHAR(50) PRIMARY KEY,
+        change_no VARCHAR(50) NOT NULL,
+        req_date DATE NOT NULL,
+        context VARCHAR(255) NOT NULL DEFAULT '',
+        start_date DATE NOT NULL,
+        month_wise VARCHAR(20) NOT NULL DEFAULT '',
+        remarks TEXT,
+        attachment VARCHAR(255) NOT NULL DEFAULT '',
+        status VARCHAR(50) NOT NULL DEFAULT '',
+        qa_approval VARCHAR(50) NOT NULL DEFAULT '',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
+      )
+    `);
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS effectiveness_attachments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        log_id VARCHAR(50) NOT NULL,
+        file_name VARCHAR(255) NOT NULL,
+        file_data LONGTEXT NOT NULL,
+        file_type VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (log_id) REFERENCES effectiveness_logs(id) ON UPDATE CASCADE ON DELETE CASCADE
+      )
+    `);
+
+    // Check if empty, if so, seed defaults
+    const [rows] = await pool.query('SELECT COUNT(*) as count FROM effectiveness_logs');
+    if (rows[0].count === 0) {
+      console.log('Seeding default effectiveness logs...');
+      // Ensure the change requests CHG-8901 and CHG-8895 exist or create them if not present to prevent FK failure
+      const [existingCHG1] = await pool.query("SELECT id FROM change_requests WHERE id = 'CHG-8901'");
+      if (existingCHG1.length === 0) {
+        await pool.query(
+          "INSERT IGNORE INTO change_requests (id, title, requester, date, priority, status) VALUES ('CHG-8901', 'Integrate Auth0 SSO provider for corporate domain', 'admin@cms.com', '2026-05-19', 'High', 'Completed')"
+        );
+      }
+      const [existingCHG2] = await pool.query("SELECT id FROM change_requests WHERE id = 'CHG-8895'");
+      if (existingCHG2.length === 0) {
+        await pool.query(
+          "INSERT IGNORE INTO change_requests (id, title, requester, date, priority, status) VALUES ('CHG-8895', 'Resolve security vulnerability CVE-2026-3392', 'admin@cms.com', '2026-05-15', 'High', 'Completed')"
+        );
+      }
+
+      // Ensure corresponding L2 validation logs exist so they show up in validation tables
+      await pool.query(
+        `INSERT IGNORE INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) VALUES
+         ('CHG-8901', '19/05/2026', 'admin@cms.com', 'sso-verification-report.pdf', 'sso-verification-report.pdf', 'Accepted', 'SSO integration successfully verified. Token refresh intervals and domain constraints are fully operational.'),
+         ('CHG-8895', '15/05/2026', 'admin@cms.com', 'cve-scan-results.txt', 'cve-scan-results.txt', 'Accepted', 'Patch applied to all production instances. Vulnerability scan reports clean status.')`
+      );
+
+      // Ensure corresponding L3 approvals exist so they show up in L3 Request Tracker
+      await pool.query(
+        `INSERT IGNORE INTO l3_approvals (change_no, date, requester, ped, quality, production, maintenance, pcl, materials, marketing, hr, safety) VALUES
+         ('CHG-8901', '19 May', 'admin@cms.com', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved'),
+         ('CHG-8895', '15 May', 'admin@cms.com', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved')`
+      );
+
+      await pool.query(
+        `INSERT IGNORE INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval) VALUES
+         ('EFF-8901', 'CHG-8901', '2026-05-19', 'Integrate Auth0 SSO provider for corporate domain', '2026-05-20', '2026-05', 'SSO integration successfully verified. Token refresh intervals and domain constraints are fully operational. Zero authentication latency observed.', 'sso-verification-report.pdf', 'Effectiveness Ok', 'Approved'),
+         ('EFF-8895', 'CHG-8895', '2026-05-15', 'Resolve security vulnerability CVE-2026-3392', '2026-05-16', '2026-05', 'Patch applied to all production instances. Vulnerability scan reports clean status. Compliance certification updated.', 'cve-scan-results.txt', 'Effectiveness Ok', 'Approved')`
+      );
+      
+      await pool.query(
+        `INSERT IGNORE INTO effectiveness_attachments (log_id, file_name, file_data, file_type) VALUES
+         ('EFF-8901', 'sso-verification-report.pdf', 'U1NPIFZlcmlmaWNhdGlvbiBSZXBvcnQgQ29udGVudHM=', 'application/pdf'),
+         ('EFF-8895', 'cve-scan-results.txt', 'Q1ZFLTIwMjYtMzM5MiBQYXRjaGVkIGFuZCBWZXJpZmllZA==', 'text/plain')`
+      );
+    }
+  } catch (err) {
+    console.error('Error ensuring and seeding effectiveness tables:', err);
+  }
+};
+
+// Execute immediately when model is loaded
+ensureTablesExist();
+
+
 const parseToISODate = (dateStr) => {
   if (!dateStr) return null;
   const d = new Date(dateStr);
@@ -12,10 +97,15 @@ const parseToISODate = (dateStr) => {
 
 export const getLogs = async () => {
   const [rows] = await pool.query(
-    `SELECT id, change_no as changeNo, DATE_FORMAT(req_date, '%Y-%m-%d') as reqDate, context, 
-     DATE_FORMAT(start_date, '%Y-%m-%d') as startDate, month_wise as monthWise, remarks, attachment, status, qa_approval as qaApproval 
-     FROM effectiveness_logs 
-     ORDER BY created_at DESC`
+    `SELECT e.id, e.change_no as changeNo, 
+            DATE_FORMAT(COALESCE(c.date, e.req_date), '%Y-%m-%d') as reqDate, 
+            COALESCE(c.title, e.context) as context, 
+            DATE_FORMAT(COALESCE(l1.date_start, e.start_date, c.date), '%Y-%m-%d') as startDate, 
+            e.month_wise as monthWise, e.remarks, e.attachment, e.status, e.qa_approval as qaApproval 
+     FROM effectiveness_logs e
+     LEFT JOIN change_requests c ON e.change_no = c.id
+     LEFT JOIN l1_requests l1 ON e.change_no = l1.change_no
+     ORDER BY e.created_at DESC`
   );
   return rows;
 };
@@ -101,10 +191,15 @@ export const updateLog = async (id, logData, attachments) => {
     await connection.commit();
     
     const [rows] = await connection.query(
-      `SELECT id, change_no as changeNo, DATE_FORMAT(req_date, '%Y-%m-%d') as reqDate, context, 
-       DATE_FORMAT(start_date, '%Y-%m-%d') as startDate, month_wise as monthWise, remarks, attachment, status, qa_approval as qaApproval 
-       FROM effectiveness_logs 
-       WHERE id = ?`,
+      `SELECT e.id, e.change_no as changeNo, 
+              DATE_FORMAT(COALESCE(c.date, e.req_date), '%Y-%m-%d') as reqDate, 
+              COALESCE(c.title, e.context) as context, 
+              DATE_FORMAT(COALESCE(l1.date_start, e.start_date, c.date), '%Y-%m-%d') as startDate, 
+              e.month_wise as monthWise, e.remarks, e.attachment, e.status, e.qa_approval as qaApproval 
+       FROM effectiveness_logs e
+       LEFT JOIN change_requests c ON e.change_no = c.id
+       LEFT JOIN l1_requests l1 ON e.change_no = l1.change_no
+       WHERE e.id = ?`,
       [id]
     );
     return rows.length > 0 ? rows[0] : { id, ...logData };
@@ -137,6 +232,20 @@ export const resetLogsToDefaults = async () => {
     await connection.beginTransaction();
     await connection.query('DELETE FROM effectiveness_attachments');
     await connection.query('DELETE FROM effectiveness_logs');
+
+    // Seed default L2 validation logs
+    await connection.query(
+      `INSERT IGNORE INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) VALUES
+       ('CHG-8901', '19/05/2026', 'admin@cms.com', 'sso-verification-report.pdf', 'sso-verification-report.pdf', 'Accepted', 'SSO integration successfully verified. Token refresh intervals and domain constraints are fully operational.'),
+       ('CHG-8895', '15/05/2026', 'admin@cms.com', 'cve-scan-results.txt', 'cve-scan-results.txt', 'Accepted', 'Patch applied to all production instances. Vulnerability scan reports clean status.')`
+    );
+
+    // Seed default L3 approvals
+    await connection.query(
+      `INSERT IGNORE INTO l3_approvals (change_no, date, requester, ped, quality, production, maintenance, pcl, materials, marketing, hr, safety) VALUES
+       ('CHG-8901', '19 May', 'admin@cms.com', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved'),
+       ('CHG-8895', '15 May', 'admin@cms.com', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved', 'Approved')`
+    );
     
     // Seed default logs
     await connection.query(

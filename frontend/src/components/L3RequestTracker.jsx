@@ -8,7 +8,8 @@ export const L3RequestTracker = ({
   userEmail,
   userRole,
   logAction,
-  setToastMsg
+  setToastMsg,
+  fetchChanges
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingLogs, setIsFetchingLogs] = useState(false);
@@ -207,6 +208,9 @@ export const L3RequestTracker = ({
       }
 
       await fetchLogs();
+      if (fetchChanges) {
+        await fetchChanges();
+      }
       handleCancelEdit();
     } catch (err) {
       console.error(err);

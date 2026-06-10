@@ -530,6 +530,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                 userRole={userRole}
                 logAction={logAction}
                 setToastMsg={setToastMsg}
+                fetchChanges={fetchChanges}
               />
             )}
 

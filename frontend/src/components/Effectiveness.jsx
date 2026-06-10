@@ -125,7 +125,8 @@ export const Effectiveness = ({
 
     const selectedChange = changes.find(c => c.id === effChangeNo);
     const context = selectedChange ? selectedChange.title : 'External Assessment';
-    const reqDate = selectedChange ? selectedChange.date : new Date().toISOString().split('T')[0];
+    const reqDate = selectedChange ? (selectedChange.rawDate || selectedChange.date) : new Date().toISOString().split('T')[0];
+    const startDate = selectedChange ? (selectedChange.dateStart || selectedChange.rawDate || selectedChange.date) : new Date().toISOString().split('T')[0];
 
     // Create mode
     const newId = generateEffId();
@@ -134,7 +135,7 @@ export const Effectiveness = ({
       changeNo: effChangeNo,
       reqDate: reqDate,
       context: context,
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: startDate,
       monthWise: effMonthWise,
       remarks: effRemarks,
       attachment: effAttachment,
@@ -205,9 +206,9 @@ export const Effectiveness = ({
   );
 
   // Derive display values for requested date, context, start date
-  const displayReqDate = selectedChange ? formatDateShort(selectedChange.date) : '';
+  const displayReqDate = selectedChange ? formatDateShort(selectedChange.rawDate || selectedChange.date) : '';
   const displayContext = selectedChange ? selectedChange.title : '';
-  const displayStartDate = selectedChange ? formatDateShort(selectedChange.date) : '';
+  const displayStartDate = selectedChange ? formatDateShort(selectedChange.dateStart || selectedChange.rawDate || selectedChange.date) : '';
 
   return (
     <div className="space-y-[16px] animate-fade-in-up text-slate-800 pb-[40px]">
@@ -244,10 +245,10 @@ export const Effectiveness = ({
                   onChange={(e) => handleSelectChangeNo(e.target.value)}
                 >
                   <option value="">Select Completed Change (L3 Approved)</option>
-                  {changes.filter(c => c.status === 'Completed').map(c => (
+                  {changes.filter(c => c.isL3Approved).map(c => (
                     <option key={c.id} value={c.id}>{c.id} - {c.title.substring(0, 30)}...</option>
                   ))}
-                  {changes.filter(c => c.status === 'Completed').length === 0 && (
+                  {changes.filter(c => c.isL3Approved).length === 0 && (
                     <option value="CHG-DEMO">No L3 Approved Changes</option>
                   )}
                 </select>

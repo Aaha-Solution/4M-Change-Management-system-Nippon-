@@ -2,21 +2,21 @@ import pool from '../config/db.js';
 import { sendMail } from '../config/email.js';
 
 export const getChanges = async () => {
-  // Self-healing: auto-complete any change requests that have all 9 L3 approvals set to 'Approved'
+  // Self-healing: auto-complete any change requests that have all 9 L3 approvals set to 'Approved' or 'Rejected'
   try {
     await pool.query(`
       UPDATE change_requests cr
       INNER JOIN l3_approvals l3 ON cr.id = l3.change_no
       SET cr.status = 'Completed'
-      WHERE l3.ped = 'Approved'
-        AND l3.quality = 'Approved'
-        AND l3.production = 'Approved'
-        AND l3.maintenance = 'Approved'
-        AND l3.pcl = 'Approved'
-        AND l3.materials = 'Approved'
-        AND l3.marketing = 'Approved'
-        AND l3.hr = 'Approved'
-        AND l3.safety = 'Approved'
+      WHERE l3.ped IN ('Approved', 'Rejected')
+        AND l3.quality IN ('Approved', 'Rejected')
+        AND l3.production IN ('Approved', 'Rejected')
+        AND l3.maintenance IN ('Approved', 'Rejected')
+        AND l3.pcl IN ('Approved', 'Rejected')
+        AND l3.materials IN ('Approved', 'Rejected')
+        AND l3.marketing IN ('Approved', 'Rejected')
+        AND l3.hr IN ('Approved', 'Rejected')
+        AND l3.safety IN ('Approved', 'Rejected')
         AND cr.status != 'Completed'
     `);
   } catch (err) {
@@ -30,11 +30,23 @@ export const getChanges = async () => {
             l1.dept, l1.process_name as processName, l1.machine_no as machineNo, l1.change_in as changeIn,
             l1.request_by as requestBy,
             c.requester as requesterEmail,
-            v.status as l2Status
+            v.status as l2Status,
+            DATE_FORMAT(c.date, '%Y-%m-%d') as rawDate,
+            DATE_FORMAT(l1.date_start, '%Y-%m-%d') as dateStart,
+            CASE WHEN l3.ped = 'Approved' 
+                  AND l3.quality = 'Approved' 
+                  AND l3.production = 'Approved' 
+                  AND l3.maintenance = 'Approved' 
+                  AND l3.pcl = 'Approved' 
+                  AND l3.materials = 'Approved' 
+                  AND l3.marketing = 'Approved' 
+                  AND l3.hr = 'Approved' 
+                  AND l3.safety = 'Approved' THEN 1 ELSE 0 END as isL3Approved
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
      LEFT JOIN l2_validation_logs v ON c.id = v.change_no
+     LEFT JOIN l3_approvals l3 ON c.id = l3.change_no
      ORDER BY c.created_at DESC`
   );
   return rows;
@@ -464,18 +476,18 @@ export const addL3ApprovalLog = async (logData) => {
       ]
     );
 
-    const allApproved = 
-      (ped || 'Pending') === 'Approved' &&
-      (quality || 'Pending') === 'Approved' &&
-      (production || 'Pending') === 'Approved' &&
-      (maintenance || 'Pending') === 'Approved' &&
-      (pcl || 'Pending') === 'Approved' &&
-      (materials || 'Pending') === 'Approved' &&
-      (marketing || 'Pending') === 'Approved' &&
-      (hr || 'Pending') === 'Approved' &&
-      (safety || 'Pending') === 'Approved';
+    const allDecided = 
+      ['Approved', 'Rejected'].includes(ped) &&
+      ['Approved', 'Rejected'].includes(quality) &&
+      ['Approved', 'Rejected'].includes(production) &&
+      ['Approved', 'Rejected'].includes(maintenance) &&
+      ['Approved', 'Rejected'].includes(pcl) &&
+      ['Approved', 'Rejected'].includes(materials) &&
+      ['Approved', 'Rejected'].includes(marketing) &&
+      ['Approved', 'Rejected'].includes(hr) &&
+      ['Approved', 'Rejected'].includes(safety);
 
-    if (allApproved) {
+    if (allDecided) {
       await connection.query(
         `UPDATE change_requests SET status = 'Completed' WHERE id = ?`,
         [changeNo]
