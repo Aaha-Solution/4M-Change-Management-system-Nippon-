@@ -1,6 +1,7 @@
 import pool from '../config/db.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { broadcast } from '../config/websocket.js';
 
 dotenv.config();
 
@@ -125,6 +126,8 @@ export const signup = async (req, res) => {
       [normalizedEmail, password, assignedRole, assignedName, assignedDept]
     );
 
+    broadcast({ type: 'REFRESH_USERS' });
+
     const token = jwt.sign(
       { email, role: assignedRole },
       JWT_SECRET,
@@ -147,6 +150,7 @@ export const deleteUser = async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query('DELETE FROM users WHERE id = ?', [id]);
+    broadcast({ type: 'REFRESH_USERS' });
     return res.status(200).json({ message: 'User deleted successfully.' });
   } catch (error) {
     console.error('Error in deleteUser controller:', error);
@@ -182,6 +186,8 @@ export const updateUser = async (req, res) => {
         [name || '', normalizedEmail, role, department || '', status || 'Active', id]
       );
     }
+
+    broadcast({ type: 'REFRESH_USERS' });
 
     return res.status(200).json({ message: 'User updated successfully.' });
   } catch (error) {

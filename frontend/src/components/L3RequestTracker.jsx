@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Search, RotateCcw, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar } from 'lucide-react';
+import { Save, Search, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getUsers } from '../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../utils/dateUtils';

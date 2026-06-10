@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { broadcast } from '../config/websocket.js';
 
 // Roles
 export const getRoles = async (req, res) => {
@@ -24,6 +25,7 @@ export const addRole = async (req, res) => {
       return res.status(409).json({ error: 'Role already exists.' });
     }
     await pool.query('INSERT INTO roles (name) VALUES (?)', [trimmed]);
+    broadcast({ type: 'REFRESH_USERS' });
     return res.status(201).json({ message: 'Role added successfully.', name: trimmed });
   } catch (error) {
     console.error('Error adding role:', error);
@@ -35,6 +37,7 @@ export const deleteRole = async (req, res) => {
   const { name } = req.params;
   try {
     await pool.query('DELETE FROM roles WHERE name = ?', [name]);
+    broadcast({ type: 'REFRESH_USERS' });
     return res.status(200).json({ message: 'Role deleted successfully.' });
   } catch (error) {
     console.error('Error deleting role:', error);
@@ -66,6 +69,7 @@ export const addDepartment = async (req, res) => {
       return res.status(409).json({ error: 'Department already exists.' });
     }
     await pool.query('INSERT INTO departments (name) VALUES (?)', [trimmed]);
+    broadcast({ type: 'REFRESH_USERS' });
     return res.status(201).json({ message: 'Department added successfully.', name: trimmed });
   } catch (error) {
     console.error('Error adding department:', error);
@@ -77,6 +81,7 @@ export const deleteDepartment = async (req, res) => {
   const { name } = req.params;
   try {
     await pool.query('DELETE FROM departments WHERE name = ?', [name]);
+    broadcast({ type: 'REFRESH_USERS' });
     return res.status(200).json({ message: 'Department deleted successfully.' });
   } catch (error) {
     console.error('Error deleting department:', error);

@@ -33,6 +33,7 @@ const Users = lazy(() => import('./Users').then(m => ({ default: m.Users })));
 const Settings = lazy(() => import('./Settings').then(m => ({ default: m.Settings })));
 const Notifications = lazy(() => import('./Notifications').then(m => ({ default: m.Notifications })));
 import nipponLogo from '../assets/Nippon Logo.png';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const navigate = useNavigate();
@@ -164,20 +165,21 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchUserDept = async () => {
-      if (!userEmail) return;
-      try {
-        const response = await getUsers();
-        const usersList = response.data || [];
-        const currentUser = usersList.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
-        if (currentUser && currentUser.department) {
-          setUserDept(currentUser.department);
-        }
-      } catch (err) {
-        console.error('Error fetching user department:', err);
+  const fetchUserDept = async () => {
+    if (!userEmail) return;
+    try {
+      const response = await getUsers();
+      const usersList = response.data || [];
+      const currentUser = usersList.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
+      if (currentUser && currentUser.department) {
+        setUserDept(currentUser.department);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching user department:', err);
+    }
+  };
+
+  useEffect(() => {
     fetchUserDept();
   }, [userEmail]);
 
@@ -190,60 +192,18 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   }, [toastMsg]);
 
   // WebSocket real-time updates integration
-  useEffect(() => {
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${window.location.hostname}:5001/ws`;
-    
-    let socket;
-    let reconnectTimeout;
-    
-    const connect = () => {
-      socket = new WebSocket(wsUrl);
-      
-      socket.onopen = () => {
-        console.log('🔌 Connected to WebSocket server');
-      };
-      
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('📩 Received WebSocket message:', data);
-          if (data.type === 'REFRESH_CHANGES') {
-            fetchChanges();
-          } else if (data.type === 'REFRESH_NOTIFICATIONS') {
-            fetchNotifications();
-          } else if (data.type === 'REFRESH_EFFECTIVENESS') {
-            fetchEffectiveness();
-          }
-        } catch (err) {
-          console.error('Error parsing WebSocket message:', err);
-        }
-      };
-      
-      socket.onclose = () => {
-        console.log('🔌 WebSocket disconnected. Reconnecting in 3 seconds...');
-        reconnectTimeout = setTimeout(connect, 3000);
-      };
-      
-      socket.onerror = (err) => {
-        console.error('⚠️ WebSocket error:', err);
-        socket.close();
-      };
-    };
-    
-    connect();
-    
-    return () => {
-      if (socket) {
-        socket.onclose = null; // Prevent reconnect on cleanup
-        socket.close();
-      }
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useWebSocket((data) => {
+    console.log('📩 Received WebSocket message in Dashboard:', data);
+    if (data.type === 'REFRESH_CHANGES') {
+      fetchChanges();
+    } else if (data.type === 'REFRESH_NOTIFICATIONS') {
+      fetchNotifications();
+    } else if (data.type === 'REFRESH_EFFECTIVENESS') {
+      fetchEffectiveness();
+    } else if (data.type === 'REFRESH_USERS') {
+      fetchUserDept();
+    }
+  });
 
 
 

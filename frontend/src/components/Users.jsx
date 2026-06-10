@@ -19,12 +19,12 @@ import {
   EyeOff,
   Loader2,
   Plus,
-  RefreshCw,
   Search,
   Trash2,
   Users as UsersIcon,
   X
 } from 'lucide-react';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 export const Users = ({
   userRole,
@@ -124,6 +124,16 @@ export const Users = ({
     fetchDepartments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // WebSocket real-time updates for Users/Roles/Depts
+  useWebSocket((data) => {
+    console.log('📩 Received WebSocket message in Users:', data);
+    if (data.type === 'REFRESH_USERS') {
+      fetchUsers();
+      fetchRoles();
+      fetchDepartments();
+    }
+  });
 
   const validateCreateForm = () => {
     const errs = {};
