@@ -81,7 +81,8 @@ export const L3RequestTracker = ({
     if (dept === 'pc & l' || dept === 'pcl') return 'PC & L';
     if (dept === 'materials') return 'Materials';
     if (dept === 'marketing') return 'Marketing';
-    if (dept === 'hr' || dept === 'safety' || dept === 'hr & safety') return 'HR & Safety';
+    if (dept === 'hr') return 'HR';
+    if (dept === 'safety') return 'Safety';
     return 'Quality'; // Fallback
   };
 
@@ -132,8 +133,8 @@ export const L3RequestTracker = ({
         else if (actingDept === 'PC & L') currentStatus = currentLog.pcl;
         else if (actingDept === 'Materials') currentStatus = currentLog.materials;
         else if (actingDept === 'Marketing') currentStatus = currentLog.marketing;
-        else if (actingDept === 'HR & Safety') currentStatus = currentLog.hrSafety;
-        else if (actingDept === 'Unit Head') currentStatus = currentLog.unitHead;
+        else if (actingDept === 'HR') currentStatus = currentLog.hr;
+        else if (actingDept === 'Safety') currentStatus = currentLog.safety;
         
         setFormStatus(currentStatus || 'Pending');
       }
@@ -191,8 +192,8 @@ export const L3RequestTracker = ({
       pcl: actingDept === 'PC & L' ? formStatus : currentLog.pcl,
       materials: actingDept === 'Materials' ? formStatus : currentLog.materials,
       marketing: actingDept === 'Marketing' ? formStatus : currentLog.marketing,
-      hrSafety: actingDept === 'HR & Safety' ? formStatus : currentLog.hrSafety,
-      unitHead: actingDept === 'Unit Head' ? formStatus : currentLog.unitHead
+      hr: actingDept === 'HR' ? formStatus : currentLog.hr,
+      safety: actingDept === 'Safety' ? formStatus : currentLog.safety
     };
 
     try {
@@ -284,8 +285,7 @@ export const L3RequestTracker = ({
       log.requester.toLowerCase().includes(q);
 
     const matchesStatus = statusFilter === 'All' || 
-      log.production === statusFilter || 
-      log.unitHead === statusFilter;
+      log.production === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -304,8 +304,8 @@ export const L3RequestTracker = ({
     else if (actingDept === 'PC & L') deptStatus = currentChangeLog.pcl;
     else if (actingDept === 'Materials') deptStatus = currentChangeLog.materials;
     else if (actingDept === 'Marketing') deptStatus = currentChangeLog.marketing;
-    else if (actingDept === 'HR & Safety') deptStatus = currentChangeLog.hrSafety;
-    else if (actingDept === 'Unit Head') deptStatus = currentChangeLog.unitHead;
+    else if (actingDept === 'HR') deptStatus = currentChangeLog.hr;
+    else if (actingDept === 'Safety') deptStatus = currentChangeLog.safety;
 
     isAlreadyValidated = deptStatus && deptStatus !== 'Pending';
   }
@@ -347,8 +347,8 @@ export const L3RequestTracker = ({
                 <option value="PC & L">PC & L</option>
                 <option value="Materials">Materials</option>
                 <option value="Marketing">Marketing</option>
-                <option value="HR & Safety">HR & Safety</option>
-                <option value="Unit Head">Unit Head</option>
+                <option value="HR">HR</option>
+                <option value="Safety">Safety</option>
               </select>
             </div>
           )}
@@ -489,8 +489,8 @@ export const L3RequestTracker = ({
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[75px]">PC & L</th>
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[85px]">Materials</th>
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[85px]">Marketing</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[90px]">HR & Safety</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[85px]">Unit Head</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[75px]">HR</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[75px]">Safety</th>
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[65px]">Actions</th>
                 </tr>
               </thead>
@@ -534,8 +534,8 @@ export const L3RequestTracker = ({
                           { val: log.pcl, type: 'pcl' },
                           { val: log.materials, type: 'materials' },
                           { val: log.marketing, type: 'marketing' },
-                          { val: log.hrSafety, type: 'hrSafety' },
-                          { val: log.unitHead, type: 'unitHead' }
+                          { val: log.hr, type: 'hr' },
+                          { val: log.safety, type: 'safety' }
                         ].map((cell, cIdx) => {
                           const status = cell.val;
                           const isAccepted = status === 'Accepted' || status === 'Approved';
@@ -962,8 +962,8 @@ export const L3RequestTracker = ({
                       { label: 'PC & L', value: selectedLog.pcl },
                       { label: 'Materials', value: selectedLog.materials },
                       { label: 'Marketing', value: selectedLog.marketing },
-                      { label: 'HR & Safety', value: selectedLog.hrSafety },
-                      { label: 'Unit Head', value: selectedLog.unitHead }
+                      { label: 'HR', value: selectedLog.hr },
+                      { label: 'Safety', value: selectedLog.safety }
                     ].map((dept, index) => {
                       const status = dept.value;
                       const isAccepted = status === 'Accepted' || status === 'Approved';

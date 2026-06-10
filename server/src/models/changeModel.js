@@ -381,8 +381,8 @@ export const getL3Approvals = async () => {
             COALESCE(l.pcl, 'Pending') as pcl,
             COALESCE(l.materials, 'Pending') as materials,
             COALESCE(l.marketing, 'Pending') as marketing,
-            COALESCE(l.hr_safety, 'Pending') as hrSafety,
-            COALESCE(l.unit_head, 'Pending') as unitHead
+            COALESCE(l.hr, 'Pending') as hr,
+            COALESCE(l.safety, 'Pending') as safety
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
@@ -396,7 +396,7 @@ export const getL3Approvals = async () => {
 export const addL3ApprovalLog = async (logData) => {
   const { 
     changeNo, date, requester, 
-    ped, quality, production, maintenance, pcl, materials, marketing, hrSafety, unitHead 
+    ped, quality, production, maintenance, pcl, materials, marketing, hr, safety 
   } = logData;
   const connection = await pool.getConnection();
   try {
@@ -411,25 +411,15 @@ export const addL3ApprovalLog = async (logData) => {
     if (existing.length === 0) {
       await connection.query(
         `INSERT INTO change_requests (id, title, requester, date, priority, status) 
-         VALUES (?, ?, ?, CURDATE(), 'Medium', ?)`,
-        [changeNo, `[L3 Auto] Approval for ${changeNo}`, 'admin@cms.com', unitHead === 'Approved' ? 'Approved' : 'Pending']
-      );
-    } else if (unitHead === 'Approved') {
-      await connection.query(
-        `UPDATE change_requests SET status = 'Approved' WHERE id = ?`,
-        [changeNo]
-      );
-    } else if (unitHead === 'Rejected') {
-      await connection.query(
-        `UPDATE change_requests SET status = 'Evaluating' WHERE id = ?`,
-        [changeNo]
+         VALUES (?, ?, ?, CURDATE(), 'Medium', 'Pending')`,
+        [changeNo, `[L3 Auto] Approval for ${changeNo}`, 'admin@cms.com']
       );
     }
 
     await connection.query(
       `INSERT INTO l3_approvals (
         change_no, date, requester, ped, quality, production, 
-        maintenance, pcl, materials, marketing, hr_safety, unit_head
+        maintenance, pcl, materials, marketing, hr, safety
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         date = VALUES(date),
@@ -441,13 +431,13 @@ export const addL3ApprovalLog = async (logData) => {
         pcl = VALUES(pcl),
         materials = VALUES(materials),
         marketing = VALUES(marketing),
-        hr_safety = VALUES(hr_safety),
-        unit_head = VALUES(unit_head)`,
+        hr = VALUES(hr),
+        safety = VALUES(safety)`,
       [
         changeNo, date, requester, 
         ped || 'Pending', quality || 'Pending', production || 'Pending', 
         maintenance || 'Pending', pcl || 'Pending', materials || 'Pending', 
-        marketing || 'Pending', hrSafety || 'Pending', unitHead || 'Pending'
+        marketing || 'Pending', hr || 'Pending', safety || 'Pending'
       ]
     );
 

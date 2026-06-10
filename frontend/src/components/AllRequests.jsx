@@ -151,8 +151,8 @@ export const AllRequests = ({
         pcl: 'Pending',
         materials: 'Pending',
         marketing: 'Pending',
-        hrSafety: 'Pending',
-        unitHead: 'Pending'
+        hr: 'Pending',
+        safety: 'Pending'
       });
 
       setActiveTab('l1');
@@ -759,11 +759,11 @@ export const AllRequests = ({
                       { label: 'Quality', value: selectedLog.quality },
                       { label: 'Production', value: selectedLog.production },
                       { label: 'Maintenance', value: selectedLog.maintenance },
-                      { label: 'PC & L', value: selectedLog.ped }, // Fallback to ped if pcl missing, but wait, server lists pcl. Let's make sure it handles both.
+                      { label: 'PC & L', value: selectedLog.pcl },
                       { label: 'Materials', value: selectedLog.materials },
                       { label: 'Marketing', value: selectedLog.marketing },
-                      { label: 'HR & Safety', value: selectedLog.hrSafety },
-                      { label: 'Unit Head', value: selectedLog.unitHead }
+                      { label: 'HR', value: selectedLog.hr },
+                      { label: 'Safety', value: selectedLog.safety }
                     ].map((dept, index) => {
                       // Map label to the corresponding property in selectedLog safely
                       const propMap = {
@@ -774,8 +774,8 @@ export const AllRequests = ({
                         'PC & L': selectedLog.pcl || selectedLog.ped,
                         'Materials': selectedLog.materials,
                         'Marketing': selectedLog.marketing,
-                        'HR & Safety': selectedLog.hrSafety,
-                        'Unit Head': selectedLog.unitHead
+                        'HR': selectedLog.hr,
+                        'Safety': selectedLog.safety
                       };
                       const status = propMap[dept.label] || 'Pending';
                       const isAccepted = status === 'Accepted' || status === 'Approved';

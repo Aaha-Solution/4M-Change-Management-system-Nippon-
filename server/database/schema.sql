@@ -216,8 +216,8 @@ CREATE TABLE l3_approvals (
     pcl VARCHAR(50) NOT NULL DEFAULT 'Pending',
     materials VARCHAR(50) NOT NULL DEFAULT 'Pending',
     marketing VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    hr_safety VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    unit_head VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    hr VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    safety VARCHAR(50) NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
