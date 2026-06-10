@@ -143,16 +143,6 @@ export const L1Request = ({
     syncTime();
   }, []);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const syncedNow = new Date(Date.now() + timeOffset);
-      const hrs = String(syncedNow.getHours()).padStart(2, '0');
-      const mins = String(syncedNow.getMinutes()).padStart(2, '0');
-      setRequestedTime(`${hrs}:${mins}`);
-      setRequestedDate(formatDateToDDMMYYYY(syncedNow));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeOffset]);
   const [changeIn, setChangeIn] = useState({
     Man: false,
     Machine: false,
@@ -606,11 +596,11 @@ export const L1Request = ({
                   value={requestedTime}
                   className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[54px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-medium"
                 />
-                <span className="absolute right-[8px] bg-indigo-50 border border-indigo-100 text-indigo-700 text-[9px] font-bold rounded px-[6px] py-[2px] uppercase select-none">
-                  Live
+                <span className="absolute right-[8px] bg-slate-50 border border-slate-200 text-slate-600 text-[9px] font-bold rounded px-[6px] py-[2px] uppercase select-none">
+                  Captured
                 </span>
               </div>
-              <span className="block text-[9px] text-slate-400 mt-[2px]">Current time, auto-captured</span>
+              <span className="block text-[9px] text-slate-400 mt-[2px]">Auto-captured on load</span>
             </div>
           </div>
 
