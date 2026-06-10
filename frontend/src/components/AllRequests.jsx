@@ -152,7 +152,8 @@ export const AllRequests = ({
         materials: 'Pending',
         marketing: 'Pending',
         hr: 'Pending',
-        safety: 'Pending'
+        safety: 'Pending',
+        unitHead: 'Pending'
       });
 
       setActiveTab('l1');
@@ -763,7 +764,8 @@ export const AllRequests = ({
                       { label: 'Materials', value: selectedLog.materials },
                       { label: 'Marketing', value: selectedLog.marketing },
                       { label: 'HR', value: selectedLog.hr },
-                      { label: 'Safety', value: selectedLog.safety }
+                      { label: 'Safety', value: selectedLog.safety },
+                      { label: 'Unit Head', value: selectedLog.unitHead }
                     ].map((dept, index) => {
                       // Map label to the corresponding property in selectedLog safely
                       const propMap = {
@@ -775,7 +777,8 @@ export const AllRequests = ({
                         'Materials': selectedLog.materials,
                         'Marketing': selectedLog.marketing,
                         'HR': selectedLog.hr,
-                        'Safety': selectedLog.safety
+                        'Safety': selectedLog.safety,
+                        'Unit Head': selectedLog.unitHead || selectedLog.unit_head
                       };
                       const status = propMap[dept.label] || 'Pending';
                       const isAccepted = status === 'Accepted' || status === 'Approved';

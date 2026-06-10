@@ -84,6 +84,7 @@ export const L3RequestTracker = ({
     if (dept === 'marketing') return 'Marketing';
     if (dept === 'hr') return 'HR';
     if (dept === 'safety') return 'Safety';
+    if (dept === 'unit head' || dept === 'unit_head') return 'Unit Head';
     return 'Quality'; // Fallback
   };
 
@@ -136,6 +137,7 @@ export const L3RequestTracker = ({
         else if (actingDept === 'Marketing') currentStatus = currentLog.marketing;
         else if (actingDept === 'HR') currentStatus = currentLog.hr;
         else if (actingDept === 'Safety') currentStatus = currentLog.safety;
+        else if (actingDept === 'Unit Head') currentStatus = currentLog.unitHead;
         
         setFormStatus(currentStatus || 'Pending');
       }
@@ -194,7 +196,8 @@ export const L3RequestTracker = ({
       materials: actingDept === 'Materials' ? formStatus : currentLog.materials,
       marketing: actingDept === 'Marketing' ? formStatus : currentLog.marketing,
       hr: actingDept === 'HR' ? formStatus : currentLog.hr,
-      safety: actingDept === 'Safety' ? formStatus : currentLog.safety
+      safety: actingDept === 'Safety' ? formStatus : currentLog.safety,
+      unitHead: actingDept === 'Unit Head' ? formStatus : currentLog.unitHead
     };
 
     try {
@@ -310,6 +313,7 @@ export const L3RequestTracker = ({
     else if (actingDept === 'Marketing') deptStatus = currentChangeLog.marketing;
     else if (actingDept === 'HR') deptStatus = currentChangeLog.hr;
     else if (actingDept === 'Safety') deptStatus = currentChangeLog.safety;
+    else if (actingDept === 'Unit Head') deptStatus = currentChangeLog.unitHead;
 
     isAlreadyValidated = deptStatus && deptStatus !== 'Pending';
   }
@@ -353,6 +357,7 @@ export const L3RequestTracker = ({
                 <option value="Marketing">Marketing</option>
                 <option value="HR">HR</option>
                 <option value="Safety">Safety</option>
+                <option value="Unit Head">Unit Head</option>
               </select>
             </div>
           )}
@@ -480,28 +485,29 @@ export const L3RequestTracker = ({
         {/* Table Matrix */}
         <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse table-fixed min-w-[950px]">
+            <table className="w-full text-left border-collapse table-fixed min-w-[1020px]">
               <thead>
                 <tr className="bg-[#fdfaf5] border-b border-slate-150 text-[10px]">
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[105px]">4M Change No</th>
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[90px]">Requested Date</th>
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Change Request By</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[75px]">PED</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[75px]">Quality</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[85px]">Production</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[85px]">Maintenance</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[75px]">PC & L</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[85px]">Materials</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[85px]">Marketing</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[75px]">HR</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[75px]">Safety</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">PED</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">Quality</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Production</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Maintenance</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">PC & L</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Materials</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Marketing</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">HR</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">Safety</th>
+                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[85px]">Unit Head</th>
                   <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[65px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-[11px]">
                 {isFetchingLogs ? (
                   <tr>
-                    <td colSpan={13} className="text-center py-[48px] text-slate-400">
+                    <td colSpan={14} className="text-center py-[48px] text-slate-400">
                       <div className="flex flex-col items-center justify-center gap-[8px]">
                         <Loader2 className="animate-spin text-[#0066cc]" size={20} />
                         <span>Fetching approvals data...</span>
@@ -510,7 +516,7 @@ export const L3RequestTracker = ({
                   </tr>
                 ) : filteredLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={13} className="text-center py-[48px] text-slate-400">
+                    <td colSpan={14} className="text-center py-[48px] text-slate-400">
                       No L3 validation approval records found.
                     </td>
                   </tr>
@@ -539,7 +545,8 @@ export const L3RequestTracker = ({
                           { val: log.materials, type: 'materials' },
                           { val: log.marketing, type: 'marketing' },
                           { val: log.hr, type: 'hr' },
-                          { val: log.safety, type: 'safety' }
+                          { val: log.safety, type: 'safety' },
+                          { val: log.unitHead, type: 'unitHead' }
                         ].map((cell, cIdx) => {
                           const status = cell.val;
                           const isAccepted = status === 'Accepted' || status === 'Approved';
@@ -967,7 +974,8 @@ export const L3RequestTracker = ({
                       { label: 'Materials', value: selectedLog.materials },
                       { label: 'Marketing', value: selectedLog.marketing },
                       { label: 'HR', value: selectedLog.hr },
-                      { label: 'Safety', value: selectedLog.safety }
+                      { label: 'Safety', value: selectedLog.safety },
+                      { label: 'Unit Head', value: selectedLog.unitHead }
                     ].map((dept, index) => {
                       const status = dept.value;
                       const isAccepted = status === 'Accepted' || status === 'Approved';

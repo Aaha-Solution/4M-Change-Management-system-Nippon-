@@ -81,7 +81,8 @@ CREATE INDEX idx_change_requests_requester ON change_requests(requester);
 -- Seed Roles
 INSERT INTO roles (name) VALUES
 ('Admin'),
-('User');
+('User'),
+('Hod');
 
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES
