@@ -1,4 +1,5 @@
 import * as changeModel from '../models/changeModel.js';
+import pool from '../config/db.js';
 
 export const getAllChanges = async (req, res) => {
   try {
@@ -81,12 +82,25 @@ export const getL2ValidationLogs = async (req, res) => {
 
 export const createL2ValidationLog = async (req, res) => {
   const { logData, attachments } = req.body;
+  const userEmail = req.user?.email;
 
   if (!logData || !logData.changeNo || !logData.date || !logData.requester || !logData.status || !logData.remarks) {
     return res.status(400).json({ error: 'Required L2 validation log data fields are missing.' });
   }
 
   try {
+    if (userEmail) {
+      const [userRows] = await pool.query('SELECT department, role FROM users WHERE email = ?', [userEmail]);
+      if (userRows.length > 0) {
+        const user = userRows[0];
+        const dept = (user.department || '').toLowerCase();
+        const role = (user.role || '').toLowerCase();
+        if (role !== 'admin' && role !== 'administrator' && dept !== 'quality' && dept !== 'qad' && dept !== 'qa') {
+          return res.status(403).json({ error: 'Access Denied: L2 validation is restricted to Quality department team members only.' });
+        }
+      }
+    }
+
     const newLog = await changeModel.addL2ValidationLog(logData, attachments);
     res.status(201).json({
       message: 'L2 Validation log created successfully',

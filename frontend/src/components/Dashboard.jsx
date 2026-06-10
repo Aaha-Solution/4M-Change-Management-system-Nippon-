@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getChanges, getEffectivenessLogs, getNotifications } from '../api/apiRoutes';
+import { getChanges, getEffectivenessLogs, getNotifications, getUsers } from '../api/apiRoutes';
 import { getSyncedDate } from '../utils/timeSync';
 import {
   LogOut,
@@ -40,6 +40,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [levelOpen, setLevelOpen] = useState(true);
   const [notifications, setNotifications] = useState([]);
+  const [userDept, setUserDept] = useState('');
 
   const handleLocalSignOut = () => {
     logAction('Sign Out', 'User logged out of the system.');
@@ -163,6 +164,23 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
+  useEffect(() => {
+    const fetchUserDept = async () => {
+      if (!userEmail) return;
+      try {
+        const response = await getUsers();
+        const usersList = response.data || [];
+        const currentUser = usersList.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
+        if (currentUser && currentUser.department) {
+          setUserDept(currentUser.department);
+        }
+      } catch (err) {
+        console.error('Error fetching user department:', err);
+      }
+    };
+    fetchUserDept();
+  }, [userEmail]);
+
   // Clear toast notifications
   useEffect(() => {
     if (toastMsg) {
@@ -266,18 +284,23 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                   </button>
 
                   {/* L2 */}
-                  <button
-                    onClick={() => handleTabChange('approvals')}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'approvals'
-                      ? 'bg-gradient-to-r from-sky-50/70 to-[#e6f0fa]/30 text-[#0066cc] border-l-[2.5px] border-[#0066cc] font-semibold'
-                      : 'text-slate-500 hover:text-[#0066cc] hover:bg-slate-50'
-                      }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <CheckCheck size={14} className={activeTab === 'approvals' ? 'text-[#0066cc]' : 'text-slate-400'} />
-                      <span>L2</span>
-                    </div>
-                  </button>
+                  {(userRole?.toLowerCase().includes('admin') || 
+                    userDept.toLowerCase() === 'quality' || 
+                    userDept.toLowerCase() === 'qad' || 
+                    userDept.toLowerCase() === 'qa') && (
+                    <button
+                      onClick={() => handleTabChange('approvals')}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'approvals'
+                        ? 'bg-gradient-to-r from-sky-50/70 to-[#e6f0fa]/30 text-[#0066cc] border-l-[2.5px] border-[#0066cc] font-semibold'
+                        : 'text-slate-505 hover:text-[#0066cc] hover:bg-slate-50'
+                        }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <CheckCheck size={14} className={activeTab === 'approvals' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                        <span>L2</span>
+                      </div>
+                    </button>
+                  )}
 
                   {/* L3 */}
                   <button
@@ -481,13 +504,30 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
 
             {/* TAB: APPROVALS */}
             {activeTab === 'approvals' && (
-              <L2Validation
-                changes={changes}
-                userRole={userRole}
-                setToastMsg={setToastMsg}
-                fetchChanges={fetchChanges}
-                fetchNotifications={fetchNotifications}
-              />
+              (userRole?.toLowerCase().includes('admin') || 
+               userDept.toLowerCase() === 'quality' || 
+               userDept.toLowerCase() === 'qad' || 
+               userDept.toLowerCase() === 'qa') ? (
+                <L2Validation
+                  changes={changes}
+                  userRole={userRole}
+                  setToastMsg={setToastMsg}
+                  fetchChanges={fetchChanges}
+                  fetchNotifications={fetchNotifications}
+                />
+              ) : (
+                <div className="bg-white border border-slate-200 rounded-xl p-8 text-center max-w-md mx-auto shadow-sm space-y-4 my-8 animate-fade-in-up">
+                  <div className="w-12 h-12 bg-rose-50 border border-rose-200 rounded-full flex items-center justify-center text-rose-500 mx-auto">
+                    <AlertTriangle size={24} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-850">Access Denied</h4>
+                    <p className="text-slate-500 text-xs mt-1 leading-relaxed">
+                      L2 validation and approvals are restricted to members of the Quality department team only.
+                    </p>
+                  </div>
+                </div>
+              )
             )}
 
             {/* TAB: L1 REQUEST */}
