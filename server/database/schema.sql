@@ -62,11 +62,12 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE TABLE change_requests (
     id VARCHAR(50) PRIMARY KEY, -- e.g. 'CHG-8902'
     title VARCHAR(255) NOT NULL,
-    requester VARCHAR(255) NOT NULL REFERENCES users(email) ON UPDATE CASCADE ON DELETE RESTRICT,
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    requester VARCHAR(255) NOT NULL,
+    date DATE NOT NULL DEFAULT (CURRENT_DATE),
     priority VARCHAR(20) NOT NULL CHECK (priority IN ('Low', 'Medium', 'High')),
     status VARCHAR(30) NOT NULL CHECK (status IN ('Pending', 'Evaluating', 'Approved', 'Completed')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (requester) REFERENCES users(email) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 -- Create index on status and requester for filtering/lookups
@@ -82,8 +83,6 @@ INSERT INTO roles (name) VALUES
 ('Admin'),
 ('User');
 
-
-
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES
 ('suriya.p@plant.com', 'suriya123', 'Admin', 'Suriya Prabakaran', 'General', 'Active'),
@@ -94,7 +93,7 @@ INSERT INTO users (email, password, role, name, department, status) VALUES
 -- 3. Effectiveness Logs Table
 CREATE TABLE effectiveness_logs (
     id VARCHAR(50) PRIMARY KEY, -- e.g. 'EFF-001'
-    change_no VARCHAR(50) NOT NULL REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    change_no VARCHAR(50) NOT NULL,
     req_date DATE NOT NULL,
     context VARCHAR(255) NOT NULL DEFAULT '',
     start_date DATE NOT NULL,
@@ -103,17 +102,19 @@ CREATE TABLE effectiveness_logs (
     attachment VARCHAR(255) NOT NULL DEFAULT '',
     status VARCHAR(50) NOT NULL DEFAULT '',
     qa_approval VARCHAR(50) NOT NULL DEFAULT '',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 4. Effectiveness Attachments Table
 CREATE TABLE effectiveness_attachments (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    log_id VARCHAR(50) NOT NULL REFERENCES effectiveness_logs(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    log_id VARCHAR(50) NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     file_data LONGTEXT NOT NULL, -- stores base64 data
     file_type VARCHAR(100) NOT NULL, -- e.g. 'application/pdf', 'image/png'
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (log_id) REFERENCES effectiveness_logs(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 5. Notifications Table
@@ -139,7 +140,7 @@ CREATE TABLE notifications (
 
 -- 6. L1 Requests Table
 CREATE TABLE l1_requests (
-    change_no VARCHAR(50) PRIMARY KEY REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    change_no VARCHAR(50) PRIMARY KEY,
     unit VARCHAR(100) NOT NULL,
     requested_time VARCHAR(20) NOT NULL,
     change_in VARCHAR(255) NOT NULL DEFAULT '',
@@ -167,46 +168,50 @@ CREATE TABLE l1_requests (
     file_risk VARCHAR(255) NOT NULL DEFAULT '',
     file_sop VARCHAR(255) NOT NULL DEFAULT '',
     file_effectiveness VARCHAR(255) NOT NULL DEFAULT '',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 6a. L1 Attachments Table
 CREATE TABLE l1_attachments (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    change_no VARCHAR(50) NOT NULL REFERENCES l1_requests(change_no) ON UPDATE CASCADE ON DELETE CASCADE,
+    change_no VARCHAR(50) NOT NULL,
     field_name VARCHAR(50) NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     file_data LONGTEXT NOT NULL,
     file_type VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (change_no) REFERENCES l1_requests(change_no) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 7. L2 Validation Logs Table
 CREATE TABLE l2_validation_logs (
-    change_no VARCHAR(50) PRIMARY KEY REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    change_no VARCHAR(50) PRIMARY KEY,
     validation_date VARCHAR(50) NOT NULL,
     requester VARCHAR(255) NOT NULL,
     weld_test VARCHAR(255) NOT NULL DEFAULT '',
     qa_test VARCHAR(255) NOT NULL DEFAULT '',
     status VARCHAR(50) NOT NULL,
     remarks TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 7a. L2 Attachments Table
 CREATE TABLE l2_attachments (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    change_no VARCHAR(50) NOT NULL REFERENCES l2_validation_logs(change_no) ON UPDATE CASCADE ON DELETE CASCADE,
+    change_no VARCHAR(50) NOT NULL,
     field_name VARCHAR(50) NOT NULL, -- 'weld_test' or 'qa_test'
     file_name VARCHAR(255) NOT NULL,
     file_data LONGTEXT NOT NULL,
     file_type VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (change_no) REFERENCES l2_validation_logs(change_no) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- 8. L3 Approvals Table
 CREATE TABLE l3_approvals (
-    change_no VARCHAR(50) PRIMARY KEY REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    change_no VARCHAR(50) PRIMARY KEY,
     date VARCHAR(50) NOT NULL,
     requester VARCHAR(255) NOT NULL,
     ped VARCHAR(50) NOT NULL DEFAULT 'Pending',
@@ -218,9 +223,6 @@ CREATE TABLE l3_approvals (
     marketing VARCHAR(50) NOT NULL DEFAULT 'Pending',
     hr VARCHAR(50) NOT NULL DEFAULT 'Pending',
     safety VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
-
-
-
-
