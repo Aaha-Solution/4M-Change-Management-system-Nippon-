@@ -21,4 +21,31 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+// Transparent GET Request Deduplicator
+// This prevents concurrent identical GET requests from firing duplicate network requests.
+const originalGet = axiosInstance.get;
+const pendingGetRequests = new Map();
+
+axiosInstance.get = function (url, config) {
+  // Only deduplicate standard GET requests (e.g., skip blob/attachments response types)
+  const isBlob = config && config.responseType === 'blob';
+  if (isBlob) {
+    return originalGet.call(this, url, config);
+  }
+
+  const key = `${url}:${JSON.stringify(config || '')}`;
+  if (pendingGetRequests.has(key)) {
+    console.log(`[Deduplicator] Deduplicating active GET request: ${url}`);
+    return pendingGetRequests.get(key);
+  }
+
+  const promise = originalGet.call(this, url, config)
+    .finally(() => {
+      pendingGetRequests.delete(key);
+    });
+
+  pendingGetRequests.set(key, promise);
+  return promise;
+};
+
 export default axiosInstance;
