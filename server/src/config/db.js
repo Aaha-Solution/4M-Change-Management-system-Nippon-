@@ -34,22 +34,6 @@ const pool = mysql.createPool({
       )
     `);
 
-    // Seed default files for 4M-2026-1 if not already present
-    const [existing] = await connection.query(
-      'SELECT id FROM l2_attachments WHERE change_no = ?',
-      ['4M-2026-1']
-    );
-    if (existing.length === 0) {
-      const dummyBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-      await connection.query(
-        `INSERT INTO l2_attachments (change_no, field_name, file_name, file_data, file_type) VALUES 
-         (?, 'weld_test', 'weld-test.png', ?, 'image/png'),
-         (?, 'qa_test', 'weld-test.png', ?, 'image/png')`,
-        ['4M-2026-1', dummyBase64, '4M-2026-1', dummyBase64]
-      );
-      console.log('✅ Seeded default L2 attachments successfully.');
-    }
-
     connection.release();
   } catch (error) {
     console.error('❌ Error connecting to MySQL database:', error.message);
