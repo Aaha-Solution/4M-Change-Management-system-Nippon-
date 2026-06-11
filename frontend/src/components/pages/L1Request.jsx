@@ -252,6 +252,12 @@ export const L1Request = ({
     const area = (improvementArea || '').toLowerCase();
     if (area !== lastAreaRef.current) {
       lastAreaRef.current = area;
+      setErrors(prev => {
+        if (prev.improvementTable) {
+          return { ...prev, improvementTable: '' };
+        }
+        return prev;
+      });
       if (['cost', 'productivity', 'quality'].includes(area)) {
         let defaultRows = [];
         if (area === 'cost') {
@@ -276,8 +282,23 @@ export const L1Request = ({
     }
   }, [improvementArea, changeNo]);
 
+  const checkTableCompleteness = (tableData) => {
+    const area = (improvementArea || '').toLowerCase();
+    if (!tableData || tableData.length === 0) return false;
+    for (const row of tableData) {
+      if (area === 'cost') {
+        if (!row.date || !row.monthlySave || !row.annualSave || !row.roi) return false;
+      } else if (area === 'productivity') {
+        if (!row.date || !row.currentProd || !row.improvedProd) return false;
+      } else if (area === 'quality') {
+        if (!row.date || !row.currentPpm || !row.reducedPpm) return false;
+      }
+    }
+    return true;
+  };
+
   const handleUpdateCell = (rowIndex, field, value) => {
-    setImprovementTableData(prev => prev.map((row, idx) => {
+    const updatedList = improvementTableData.map((row, idx) => {
       if (idx !== rowIndex) return row;
       const updated = { ...row, [field]: value };
       if (field === 'monthlySave') {
@@ -289,7 +310,17 @@ export const L1Request = ({
         }
       }
       return updated;
-    }));
+    });
+    setImprovementTableData(updatedList);
+
+    if (checkTableCompleteness(updatedList)) {
+      setErrors(prev => {
+        if (prev.improvementTable) {
+          return { ...prev, improvementTable: '' };
+        }
+        return prev;
+      });
+    }
   };
 
   const handleAddRow = () => {
@@ -302,11 +333,21 @@ export const L1Request = ({
     } else if (area === 'quality') {
       newRow = { changeNo: changeNo, date: '', currentPpm: '', reducedPpm: '' };
     }
-    setImprovementTableData(prev => [...prev, newRow]);
+    const updatedList = [...improvementTableData, newRow];
+    setImprovementTableData(updatedList);
   };
 
   const handleDeleteRow = (rowIndex) => {
-    setImprovementTableData(prev => prev.filter((_, idx) => idx !== rowIndex));
+    const updatedList = improvementTableData.filter((_, idx) => idx !== rowIndex);
+    setImprovementTableData(updatedList);
+    if (checkTableCompleteness(updatedList)) {
+      setErrors(prev => {
+        if (prev.improvementTable) {
+          return { ...prev, improvementTable: '' };
+        }
+        return prev;
+      });
+    }
   };
 
 
@@ -373,6 +414,36 @@ export const L1Request = ({
 
     if (!improvementArea) {
       newErrors.improvementArea = 'Please select a Change Improvement Area.';
+    } else {
+      const area = improvementArea.toLowerCase();
+      if (['cost', 'productivity', 'quality'].includes(area)) {
+        if (!improvementTableData || improvementTableData.length === 0) {
+          newErrors.improvementTable = `Please fill the ${improvementArea} Table data.`;
+        } else {
+          let isTableIncomplete = false;
+          for (const row of improvementTableData) {
+            if (area === 'cost') {
+              if (!row.date || !row.monthlySave || !row.annualSave || !row.roi) {
+                isTableIncomplete = true;
+                break;
+              }
+            } else if (area === 'productivity') {
+              if (!row.date || !row.currentProd || !row.improvedProd) {
+                isTableIncomplete = true;
+                break;
+              }
+            } else if (area === 'quality') {
+              if (!row.date || !row.currentPpm || !row.reducedPpm) {
+                isTableIncomplete = true;
+                break;
+              }
+            }
+          }
+          if (isTableIncomplete) {
+            newErrors.improvementTable = `Please fill in all fields in the ${improvementArea} Table.`;
+          }
+        }
+      }
     }
 
     if (!changeType) {
@@ -960,17 +1031,22 @@ export const L1Request = ({
             {/* UPLOAD SUPPORTING FILES */}
             <div className="space-y-[4px]">
               {['cost', 'productivity', 'quality'].includes(improvementArea.toLowerCase()) && (
-                <div className="pb-[4px]">
+                <div className="pb-[4px]" id="improvementTable">
                   <button
                     type="button"
                     onClick={() => {
                       setIsImprovementModalOpen(true);
                     }}
-                    className="flex items-center gap-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[16px] py-[8px] rounded-[6px] text-[12px] font-bold shadow-sm transition-all transform active:scale-[0.98] cursor-pointer"
+                    className={`flex items-center gap-[8px] px-[16px] py-[8px] rounded-[6px] text-[12px] font-bold shadow-sm transition-all transform active:scale-[0.98] cursor-pointer ${
+                      errors.improvementTable
+                        ? 'bg-rose-50 border border-rose-500 text-rose-600 hover:bg-rose-100'
+                        : 'bg-[#0066cc] hover:bg-[#0052a3] text-white'
+                    }`}
                   >
                     <Plus size={14} />
                     <span>{improvementArea} Table</span>
                   </button>
+                  {errors.improvementTable && <span className="text-rose-500 text-[10px] block mt-[4px]">{errors.improvementTable}</span>}
                 </div>
               )}
               {renderAttachmentInput("Upload Supporting Files", fileImprovement, setFileImprovement, "file-improvement-input", "fileImprovement", true)}
