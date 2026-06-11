@@ -7,7 +7,7 @@ export const getL3Approvals = async () => {
             DATE_FORMAT(c.date, '%e %b') as date, 
             COALESCE(l1.request_by, u.name, c.requester) as requester,
             COALESCE(l1.dept, u.department) as raisedDept,
-            COALESCE(v.status, 'Pending') as l2Decision,
+            v.status as l2Decision,
             v.remarks as l2Remarks,
             COALESCE(l.ped, 'Pending') as ped,
             COALESCE(l.quality, 'Pending') as quality,
@@ -22,7 +22,7 @@ export const getL3Approvals = async () => {
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
-     LEFT JOIN l2_validation_logs v ON c.id = v.change_no
+     INNER JOIN l2_validation_logs v ON c.id = v.change_no
      LEFT JOIN l3_approvals l ON c.id = l.change_no
      ORDER BY c.created_at DESC`
   );

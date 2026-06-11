@@ -199,7 +199,10 @@ export const L3RequestTracker = ({
       return;
     }
 
-
+    if (currentLog.l2Decision !== 'Accepted') {
+      setValidationError(`Error: Change Request ${currentLog.changeNo} cannot be signed off at L3 because L2 validation is not Accepted (Current L2 Status: ${currentLog.l2Decision || 'Pending'}).`);
+      return;
+    }
 
     setIsSubmitting(true);
     setValidationError('');
@@ -382,7 +385,7 @@ export const L3RequestTracker = ({
   const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const currentChangeLog = selectedChangeId ? approvalLogs.find(log => log.changeNo === selectedChangeId) : null;
-  const isL2Accepted = true;
+  const isL2Accepted = !selectedChangeId || currentChangeLog?.l2Decision === 'Accepted';
   let isAlreadyValidated = false;
   if (currentChangeLog) {
     let deptStatus = 'Pending';
@@ -432,7 +435,7 @@ export const L3RequestTracker = ({
 
   const canEdit = isAdmin || (isHOD && userMappedDept === mappedRaisedDept);
 
-  const selectedLogL2Accepted = true;
+  const selectedLogL2Accepted = !selectedLog || selectedLog.l2Decision === 'Accepted';
 
   const getSelectedLogUserStatus = () => {
     if (!selectedLog) return '';
