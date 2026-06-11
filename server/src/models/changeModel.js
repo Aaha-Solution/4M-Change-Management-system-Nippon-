@@ -258,14 +258,19 @@ export const addL2ValidationLog = async (logData, attachments) => {
 
     // Save L2 attachments if any
     if (attachments && attachments.length > 0) {
-      for (const file of attachments) {
-        // Delete previous attachment for this field before inserting new one
+      // Collect all unique field names being uploaded
+      const fieldNames = [...new Set(attachments.map(f => f.fieldName))];
+      // Delete all existing attachments for each field being replaced
+      for (const fieldName of fieldNames) {
         await connection.query(
           `DELETE FROM l2_attachments WHERE change_no = ? AND field_name = ?`,
-          [changeNo, file.fieldName]
+          [changeNo, fieldName]
         );
+      }
+      // Insert all new files
+      for (const file of attachments) {
         await connection.query(
-          `INSERT INTO l2_attachments (change_no, field_name, file_name, file_data, file_type) 
+          `INSERT INTO l2_attachments (change_no, field_name, file_name, file_data, file_type) \
            VALUES (?, ?, ?, ?, ?)`,
           [changeNo, file.fieldName, file.name, file.data, file.type]
         );

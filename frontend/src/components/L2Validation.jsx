@@ -38,8 +38,8 @@ export const L2Validation = ({
   const [fieldErrors, setFieldErrors] = useState({});
 
   // File Upload states
-  const [pedFileObj, setPedFileObj] = useState(null);
-  const [qaFileObj, setQaFileObj] = useState(null);
+  const [pedFiles, setPedFiles] = useState([]);
+  const [qaFiles, setQaFiles] = useState([]);
 
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -103,8 +103,8 @@ export const L2Validation = ({
   useEffect(() => {
     // Clear field-level errors and file selections whenever the selected record changes
     setFieldErrors({});
-    setPedFileObj(null);
-    setQaFileObj(null);
+    setPedFiles([]);
+    setQaFiles([]);
 
     if (formChangeNo) {
       // Sync date/requester from changes list
@@ -137,8 +137,8 @@ export const L2Validation = ({
     const errors = {};
     if (!formStatus) errors.status = 'Please select a validation status.';
     if (!formRemarks.trim()) errors.remarks = 'Remarks are required.';
-    if (!pedFileObj) errors.pedFile = 'PED attachment is required.';
-    if (!qaFileObj) errors.qaFile = 'QA attachment is required.';
+    if (pedFiles.length === 0) errors.pedFile = 'PED attachment is required.';
+    if (qaFiles.length === 0) errors.qaFile = 'QA attachment is required.';
     if (!formDate.trim() || !formRequester.trim()) {
       setValidationError('Change request data is missing. Please select a valid row from the table.');
       return;
@@ -154,21 +154,21 @@ export const L2Validation = ({
     setIsSubmitting(true);
     try {
       const attachments = [];
-      if (pedFileObj) {
-        const base64Data = await fileToBase64(pedFileObj);
+      for (const file of pedFiles) {
+        const base64Data = await fileToBase64(file);
         attachments.push({
           fieldName: 'weld_test',
-          name: pedFileObj.name,
-          type: pedFileObj.type || 'application/octet-stream',
+          name: file.name,
+          type: file.type || 'application/octet-stream',
           data: base64Data
         });
       }
-      if (qaFileObj) {
-        const base64Data = await fileToBase64(qaFileObj);
+      for (const file of qaFiles) {
+        const base64Data = await fileToBase64(file);
         attachments.push({
           fieldName: 'qa_test',
-          name: qaFileObj.name,
-          type: qaFileObj.type || 'application/octet-stream',
+          name: file.name,
+          type: file.type || 'application/octet-stream',
           data: base64Data
         });
       }
@@ -177,8 +177,8 @@ export const L2Validation = ({
         changeNo: formChangeNo.trim(),
         date: formDate.trim(),
         requester: formRequester.trim(),
-        weldTest: pedFileObj ? pedFileObj.name : '',
-        qaTest: qaFileObj ? qaFileObj.name : '',
+        weldTest: pedFiles.map(f => f.name).join(', '),
+        qaTest: qaFiles.map(f => f.name).join(', '),
         status: formStatus,
         remarks: formRemarks.trim()
       };
@@ -195,8 +195,8 @@ export const L2Validation = ({
       await fetchLogs();
 
       // Clear file upload states
-      setPedFileObj(null);
-      setQaFileObj(null);
+      setPedFiles([]);
+      setQaFiles([]);
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Error saving L2 validation log to database.';
@@ -289,7 +289,7 @@ export const L2Validation = ({
     userDept?.toLowerCase() === 'qad' || 
     userDept?.toLowerCase() === 'qa';
 
-  const canEdit = isQualityOrAdmin;
+  const canEdit = isQualityOrAdmin || isRaisedByUser;
 
   // Filter logic
   const filteredLogs = tableLogs.filter(log => {
@@ -317,10 +317,10 @@ export const L2Validation = ({
         </div>
 
         {formChangeNo && isRaisedByUser && !isQualityOrAdmin && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-            <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+            <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Notice:</span> You raised this change request. L2 validation is restricted to Quality department team members only.
+              <span className="font-bold">Notice:</span> You raised this change request and can submit the L2 validation log.
             </div>
           </div>
         )}
@@ -329,7 +329,7 @@ export const L2Validation = ({
           <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Notice:</span> L2 validation is restricted to Quality department team members only.
+              <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request or Quality department members.
             </div>
           </div>
         )}
@@ -377,28 +377,59 @@ export const L2Validation = ({
             <input
               key={`ped-${formChangeNo}`}
               type="file"
+              multiple
               accept="image/*,application/pdf"
-              disabled={isAlreadyValidated || !canEdit}
+              disabled={!formChangeNo.trim() || isAlreadyValidated || !canEdit}
               onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  const file = e.target.files[0];
-                  const isImage = file.type.startsWith('image/');
-                  const isPdf = file.type === 'application/pdf';
-                  const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
-                  if ((isImage || isPdf) && hasAllowedExt) {
-                    setPedFileObj(file);
-                    setFieldErrors(prev => ({ ...prev, pedFile: '' }));
+                if (e.target.files && e.target.files.length > 0) {
+                  const validFiles = [];
+                  let hasInvalid = false;
+                  Array.from(e.target.files).forEach(file => {
+                    const isImage = file.type.startsWith('image/');
+                    const isPdf = file.type === 'application/pdf';
+                    const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
+                    if ((isImage || isPdf) && hasAllowedExt) {
+                      validFiles.push(file);
+                    } else {
+                      hasInvalid = true;
+                    }
+                  });
+                  if (hasInvalid) {
+                    setFieldErrors(prev => ({ ...prev, pedFile: 'Some files were skipped (only PDF and image files are allowed).' }));
                   } else {
-                    setPedFileObj(null);
-                    setFieldErrors(prev => ({ ...prev, pedFile: 'Only PDF and image files are allowed.' }));
-                    e.target.value = '';
+                    setFieldErrors(prev => ({ ...prev, pedFile: '' }));
                   }
+                  setPedFiles(prev => [...prev, ...validFiles]);
+                  e.target.value = '';
                 }
               }}
               className={`w-full text-[11px] text-slate-500 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
                 fieldErrors.pedFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
               }`}
             />
+            {/* Selected PED file chips */}
+            {pedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-[6px] mt-1">
+                {pedFiles.map((file, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-[5px] bg-[#e6f0fa] border border-[#b2d1f0] text-[#0066cc] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
+                  >
+                    <Paperclip size={10} className="shrink-0" />
+                    <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
+                    {formChangeNo.trim() && !isAlreadyValidated && canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => setPedFiles(prev => prev.filter((_, i) => i !== idx))}
+                        className="ml-[2px] hover:bg-[#b2d1f0] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
+                      >
+                        <X size={9} />
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
             {fieldErrors.pedFile && (
               <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
                 <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
@@ -413,28 +444,59 @@ export const L2Validation = ({
             <input
               key={`qa-${formChangeNo}`}
               type="file"
+              multiple
               accept="image/*,application/pdf"
-              disabled={isAlreadyValidated || !canEdit}
+              disabled={!formChangeNo.trim() || isAlreadyValidated || !canEdit}
               onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  const file = e.target.files[0];
-                  const isImage = file.type.startsWith('image/');
-                  const isPdf = file.type === 'application/pdf';
-                  const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
-                  if ((isImage || isPdf) && hasAllowedExt) {
-                    setQaFileObj(file);
-                    setFieldErrors(prev => ({ ...prev, qaFile: '' }));
+                if (e.target.files && e.target.files.length > 0) {
+                  const validFiles = [];
+                  let hasInvalid = false;
+                  Array.from(e.target.files).forEach(file => {
+                    const isImage = file.type.startsWith('image/');
+                    const isPdf = file.type === 'application/pdf';
+                    const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
+                    if ((isImage || isPdf) && hasAllowedExt) {
+                      validFiles.push(file);
+                    } else {
+                      hasInvalid = true;
+                    }
+                  });
+                  if (hasInvalid) {
+                    setFieldErrors(prev => ({ ...prev, qaFile: 'Some files were skipped (only PDF and image files are allowed).' }));
                   } else {
-                    setQaFileObj(null);
-                    setFieldErrors(prev => ({ ...prev, qaFile: 'Only PDF and image files are allowed.' }));
-                    e.target.value = '';
+                    setFieldErrors(prev => ({ ...prev, qaFile: '' }));
                   }
+                  setQaFiles(prev => [...prev, ...validFiles]);
+                  e.target.value = '';
                 }
               }}
               className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
                 fieldErrors.qaFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
               }`}
             />
+            {/* Selected QA file chips */}
+            {qaFiles.length > 0 && (
+              <div className="flex flex-wrap gap-[6px] mt-1">
+                {qaFiles.map((file, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-[5px] bg-[#e6f0fa] border border-[#b2d1f0] text-[#0066cc] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
+                  >
+                    <Paperclip size={10} className="shrink-0" />
+                    <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
+                    {formChangeNo.trim() && !isAlreadyValidated && canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => setQaFiles(prev => prev.filter((_, i) => i !== idx))}
+                        className="ml-[2px] hover:bg-[#b2d1f0] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
+                      >
+                        <X size={9} />
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
             {fieldErrors.qaFile && (
               <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
                 <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
@@ -448,7 +510,7 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
             <select
               value={formStatus}
-              disabled={isAlreadyValidated || !canEdit}
+              disabled={!formChangeNo.trim() || isAlreadyValidated || !canEdit}
               onChange={(e) => {
                 setFormStatus(e.target.value);
                 setFieldErrors(prev => ({ ...prev, status: '' }));
@@ -476,7 +538,7 @@ export const L2Validation = ({
               placeholder="Enter Remarks..."
               rows={3}
               value={formRemarks}
-              disabled={isAlreadyValidated || !canEdit}
+              disabled={!formChangeNo.trim() || isAlreadyValidated || !canEdit}
               onChange={(e) => {
                 setFormRemarks(e.target.value);
                 setFieldErrors(prev => ({ ...prev, remarks: '' }));
@@ -508,8 +570,8 @@ export const L2Validation = ({
               <span>Log Already Saved</span>
             ) : !formChangeNo.trim() ? (
               <span>Select a Request to Validate</span>
-            ) : !isQualityOrAdmin ? (
-              <span>Quality Department Only</span>
+            ) : !canEdit ? (
+              <span>Access Restricted</span>
             ) : (
               <>
                 <Save size={14} />
@@ -595,28 +657,44 @@ export const L2Validation = ({
                       <td className="p-[12px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
                       <td className="p-[12px] font-medium text-slate-700">{log.requester}</td>
                       <td className="p-[12px]">
-                        <span 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewAttachment(log.weldTest, log.changeNo, 'L2');
-                          }}
-                          className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
-                        >
-                          <Paperclip size={12} className="text-slate-400" />
-                          <span className="underline truncate max-w-[120px]">{log.weldTest}</span>
-                        </span>
+                        <div className="flex flex-wrap gap-[4px]">
+                          {(log.weldTest && log.weldTest !== '-'
+                            ? log.weldTest.split(',').map(s => s.trim()).filter(Boolean)
+                            : [log.weldTest || '-']
+                          ).map((fname, fi) => (
+                            <span
+                              key={fi}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewAttachment(fname, log.changeNo, 'L2');
+                              }}
+                              className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
+                            >
+                              <Paperclip size={12} className="text-slate-400" />
+                              <span className="underline truncate max-w-[120px]">{fname}</span>
+                            </span>
+                          ))}
+                        </div>
                       </td>
                       <td className="p-[12px]">
-                        <span 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewAttachment(log.qaTest, log.changeNo, 'L2');
-                          }}
-                          className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
-                        >
-                          <Paperclip size={12} className="text-slate-400" />
-                          <span className="underline truncate max-w-[120px]">{log.qaTest}</span>
-                        </span>
+                        <div className="flex flex-wrap gap-[4px]">
+                          {(log.qaTest && log.qaTest !== '-'
+                            ? log.qaTest.split(',').map(s => s.trim()).filter(Boolean)
+                            : [log.qaTest || '-']
+                          ).map((fname, fi) => (
+                            <span
+                              key={fi}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewAttachment(fname, log.changeNo, 'L2');
+                              }}
+                              className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
+                            >
+                              <Paperclip size={12} className="text-slate-400" />
+                              <span className="underline truncate max-w-[120px]">{fname}</span>
+                            </span>
+                          ))}
+                        </div>
                       </td>
                       <td className="p-[12px]">
                         <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${

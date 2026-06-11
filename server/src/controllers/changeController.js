@@ -95,8 +95,25 @@ export const createL2ValidationLog = async (req, res) => {
         const user = userRows[0];
         const dept = (user.department || '').toLowerCase();
         const role = (user.role || '').toLowerCase();
-        if (role !== 'admin' && role !== 'administrator' && dept !== 'quality' && dept !== 'qad' && dept !== 'qa') {
-          return res.status(403).json({ error: 'Access Denied: L2 validation is restricted to Quality department team members only.' });
+        const isQualityOrAdmin =
+          role === 'admin' || role === 'administrator' ||
+          dept === 'quality' || dept === 'qad' || dept === 'qa';
+
+        if (!isQualityOrAdmin) {
+          // Also allow the person who originally raised this change request
+          const [crRows] = await pool.query(
+            'SELECT requester FROM change_requests WHERE id = ?',
+            [logData.changeNo]
+          );
+          const isRequester =
+            crRows.length > 0 &&
+            crRows[0].requester?.toLowerCase().trim() === userEmail.toLowerCase().trim();
+
+          if (!isRequester) {
+            return res.status(403).json({
+              error: 'Access Denied: L2 validation can only be submitted by the person who raised the change request or Quality department members.'
+            });
+          }
         }
       }
     }
