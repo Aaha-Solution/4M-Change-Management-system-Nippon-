@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { parseDDMMYYYYToDate } from '../utils/dateUtils';
+import { parseDDMMYYYYToDate } from '../../utils/dateUtils';
 
 export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", inputClassName = "", buttonClassName = "", containerClassName = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
