@@ -27,37 +27,60 @@ export const addL2ValidationLog = async (logData, attachments) => {
       `SELECT status FROM l2_validation_logs WHERE change_no = ?`,
       [changeNo]
     );
+
     if (existingL2.length > 0) {
-      throw new Error(`L2 validation log already exists for change request ${changeNo} and cannot be updated.`);
-    }
+      if (status === 'Accepted') {
+        await connection.query(
+          `UPDATE change_requests SET status = 'Approved' WHERE id = ?`,
+          [changeNo]
+        );
+      } else if (status === 'Rejected') {
+        await connection.query(
+          `UPDATE change_requests SET status = 'Evaluating' WHERE id = ?`,
+          [changeNo]
+        );
+      }
 
-    const [existing] = await connection.query(
-      `SELECT id FROM change_requests WHERE id = ?`,
-      [changeNo]
-    );
-    if (existing.length === 0) {
       await connection.query(
-        `INSERT INTO change_requests (id, title, requester, date, priority, status) 
-         VALUES (?, ?, ?, CURDATE(), 'Medium', ?)`,
-        [changeNo, `[L2 Auto] Validation for ${changeNo}`, 'admin@cms.com', status === 'Accepted' ? 'Approved' : 'Pending']
+        `UPDATE l2_validation_logs 
+         SET validation_date = ?, 
+             requester = ?, 
+             weld_test = COALESCE(NULLIF(?, ''), weld_test), 
+             qa_test = COALESCE(NULLIF(?, ''), qa_test), 
+             status = COALESCE(NULLIF(?, ''), status), 
+             remarks = COALESCE(NULLIF(?, ''), remarks)
+         WHERE change_no = ?`,
+        [date, requester, weldTest || '', qaTest || '', status || '', remarks || '', changeNo]
       );
-    } else if (status === 'Accepted') {
-      await connection.query(
-        `UPDATE change_requests SET status = 'Approved' WHERE id = ?`,
+    } else {
+      const [existing] = await connection.query(
+        `SELECT id FROM change_requests WHERE id = ?`,
         [changeNo]
       );
-    } else if (status === 'Rejected') {
+      if (existing.length === 0) {
+        await connection.query(
+          `INSERT INTO change_requests (id, title, requester, date, priority, status) 
+           VALUES (?, ?, ?, CURDATE(), 'Medium', ?)`,
+          [changeNo, `[L2 Auto] Validation for ${changeNo}`, 'admin@cms.com', status === 'Accepted' ? 'Approved' : 'Pending']
+        );
+      } else if (status === 'Accepted') {
+        await connection.query(
+          `UPDATE change_requests SET status = 'Approved' WHERE id = ?`,
+          [changeNo]
+        );
+      } else if (status === 'Rejected') {
+        await connection.query(
+          `UPDATE change_requests SET status = 'Evaluating' WHERE id = ?`,
+          [changeNo]
+        );
+      }
+
       await connection.query(
-        `UPDATE change_requests SET status = 'Evaluating' WHERE id = ?`,
-        [changeNo]
+        `INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [changeNo, date, requester, weldTest || '', qaTest || '', status || 'Pending', remarks || '']
       );
     }
-
-    await connection.query(
-      `INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [changeNo, date, requester, weldTest || '', qaTest || '', status, remarks]
-    );
 
     // Save L2 attachments — bulk delete per field then insert all
     if (attachments && attachments.length > 0) {

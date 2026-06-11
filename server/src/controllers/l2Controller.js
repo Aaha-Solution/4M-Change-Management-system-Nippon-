@@ -15,36 +15,72 @@ export const createL2ValidationLog = async (req, res) => {
   const { logData, attachments } = req.body;
   const userEmail = req.user?.email;
 
-  if (!logData || !logData.changeNo || !logData.date || !logData.requester || !logData.status || !logData.remarks) {
+  if (!logData || !logData.changeNo || !logData.date || !logData.requester) {
     return res.status(400).json({ error: 'Required L2 validation log data fields are missing.' });
   }
 
   try {
-    // Access control: allow Quality/Admin OR the person who raised the change request
+    let isQuality = false;
+    let isQualityOrAdmin = false;
+    let isRequester = false;
+
     if (userEmail) {
       const [userRows] = await pool.query('SELECT department, role FROM users WHERE email = ?', [userEmail]);
       if (userRows.length > 0) {
         const user = userRows[0];
         const dept = (user.department || '').toLowerCase();
         const role = (user.role || '').toLowerCase();
-        const isQualityOrAdmin =
-          role === 'admin' || role === 'administrator' ||
-          dept === 'quality' || dept === 'qad' || dept === 'qa';
+        isQuality = dept === 'quality' || dept === 'qad' || dept === 'qa';
+        isQualityOrAdmin =
+          role === 'admin' || role === 'administrator' || isQuality;
+      }
 
-        if (!isQualityOrAdmin) {
-          const [crRows] = await pool.query(
-            'SELECT requester FROM change_requests WHERE id = ?',
-            [logData.changeNo]
-          );
-          const isRequester =
-            crRows.length > 0 &&
-            crRows[0].requester?.toLowerCase().trim() === userEmail.toLowerCase().trim();
+      const [crRows] = await pool.query(
+        'SELECT requester FROM change_requests WHERE id = ?',
+        [logData.changeNo]
+      );
+      isRequester =
+        crRows.length > 0 &&
+        crRows[0].requester?.toLowerCase().trim() === userEmail.toLowerCase().trim();
 
-          if (!isRequester) {
-            return res.status(403).json({
-              error: 'Access Denied: L2 validation can only be submitted by the person who raised the change request or Quality department members.'
-            });
-          }
+      if (!isQualityOrAdmin && !isRequester) {
+        return res.status(403).json({
+          error: 'Access Denied: L2 validation can only be submitted by the person who raised the change request or Quality department members.'
+        });
+      }
+    }
+
+    // Verify permissions per field if log already exists
+    const [existingL2] = await pool.query(
+      `SELECT status, weld_test, qa_test, remarks FROM l2_validation_logs WHERE change_no = ?`,
+      [logData.changeNo]
+    );
+
+    if (existingL2.length > 0) {
+      const current = existingL2[0];
+      
+      // Only Quality is allowed to set/change QA validation details (status, remarks, qa_test)
+      if (!isQuality) {
+        if ((logData.status && logData.status !== current.status) || 
+            (logData.remarks && logData.remarks !== current.remarks) || 
+            (attachments && attachments.some(a => a.fieldName === 'qa_test'))) {
+          return res.status(403).json({ error: 'Access Denied: Only Quality department members are allowed to update L2 validation status, remarks, or QA attachments.' });
+        }
+      }
+      
+      // Only the requester is allowed to update PED attachments
+      if (!isRequester) {
+        if (attachments && attachments.some(a => a.fieldName === 'weld_test')) {
+          return res.status(403).json({ error: 'Access Denied: Only the creator of the change request is allowed to update the PED attachment.' });
+        }
+      }
+    } else {
+      // For new log inserts, a non-Quality user cannot set status, remarks, or QA files
+      if (!isQuality) {
+        if ((logData.status && logData.status !== 'Pending') || 
+            (logData.remarks && logData.remarks !== '') || 
+            (attachments && attachments.some(a => a.fieldName === 'qa_test'))) {
+          return res.status(403).json({ error: 'Access Denied: Only Quality department members are allowed to set L2 validation status, remarks, and QA attachments.' });
         }
       }
     }

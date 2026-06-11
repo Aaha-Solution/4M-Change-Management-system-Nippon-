@@ -135,10 +135,26 @@ export const L2Validation = ({
 
     // Per-field validation
     const errors = {};
-    if (!formStatus) errors.status = 'Please select a validation status.';
-    if (!formRemarks.trim()) errors.remarks = 'Remarks are required.';
-    if (pedFiles.length === 0) errors.pedFile = 'PED attachment is required.';
-    if (qaFiles.length === 0) errors.qaFile = 'QA attachment is required.';
+    const existingLog = validationLogs.find(
+      log => log.changeNo?.toLowerCase().trim() === formChangeNo.toLowerCase().trim()
+    );
+
+    if (isQuality) {
+      if (!formStatus) errors.status = 'Please select a validation status.';
+      if (!formRemarks.trim()) errors.remarks = 'Remarks are required.';
+      const hasQaInDb = existingLog && existingLog.qaTest && existingLog.qaTest !== '-';
+      if (qaFiles.length === 0 && !hasQaInDb) {
+        errors.qaFile = 'QA attachment is required.';
+      }
+    }
+
+    if (isRaisedByUser) {
+      const hasPedInDb = existingLog && existingLog.weldTest && existingLog.weldTest !== '-';
+      if (pedFiles.length === 0 && !hasPedInDb) {
+        errors.pedFile = 'PED attachment is required.';
+      }
+    }
+
     if (!formDate.trim() || !formRequester.trim()) {
       setValidationError('Change request data is missing. Please select a valid row from the table.');
       return;
@@ -284,12 +300,13 @@ export const L2Validation = ({
   const isRaisedByUser = matchedChange && userEmail && 
     matchedChange.requesterEmail?.toLowerCase().trim() === userEmail.toLowerCase().trim();
 
-  const isQualityOrAdmin = userRole?.toLowerCase().includes('admin') || 
-    userDept?.toLowerCase() === 'quality' || 
-    userDept?.toLowerCase() === 'qad' || 
-    userDept?.toLowerCase() === 'qa';
+  const isQuality = userDept && (
+    userDept.toLowerCase() === 'quality' || 
+    userDept.toLowerCase() === 'qad' || 
+    userDept.toLowerCase() === 'qa'
+  );
 
-  const canEdit = isQualityOrAdmin || isRaisedByUser;
+  const canEdit = isQuality || isRaisedByUser;
 
   // Filter logic
   const filteredLogs = tableLogs.filter(log => {
@@ -316,16 +333,34 @@ export const L2Validation = ({
           <h4 className="text-[13px] font-bold text-slate-900">Add L2 Validation Log</h4>
         </div>
 
-        {formChangeNo && isRaisedByUser && !isQualityOrAdmin && (
+        {formChangeNo && isRaisedByUser && !isQuality && (
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Notice:</span> You raised this change request and can submit the L2 validation log.
+              <span className="font-bold">Notice:</span> You raised this change request. You are authorized to upload the <span className="font-semibold">Requester Validation (PED) Attachment</span>. Quality department will review and complete the validation.
             </div>
           </div>
         )}
 
-        {formChangeNo && !isRaisedByUser && !isQualityOrAdmin && (
+        {formChangeNo && !isRaisedByUser && isQuality && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+            <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Notice:</span> You are logged in as Quality. You are authorized to complete the L2 validation status, remarks, and upload the <span className="font-semibold">QA Setup Verification Attachment</span>.
+            </div>
+          </div>
+        )}
+
+        {formChangeNo && isRaisedByUser && isQuality && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+            <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Notice:</span> You are the creator of this change request and a Quality member. You have full permissions to update all L2 validation fields.
+            </div>
+          </div>
+        )}
+
+        {formChangeNo && !isRaisedByUser && !isQuality && (
           <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
             <div>
@@ -379,7 +414,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || isAlreadyValidated || !canEdit}
+              disabled={!formChangeNo.trim() || !isRaisedByUser}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -403,7 +438,7 @@ export const L2Validation = ({
                   e.target.value = '';
                 }
               }}
-              className={`w-full text-[11px] text-slate-500 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+              className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
                 fieldErrors.pedFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
               }`}
             />
@@ -417,7 +452,7 @@ export const L2Validation = ({
                   >
                     <Paperclip size={10} className="shrink-0" />
                     <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
-                    {formChangeNo.trim() && !isAlreadyValidated && canEdit && (
+                    {formChangeNo.trim() && isRaisedByUser && (
                       <button
                         type="button"
                         onClick={() => setPedFiles(prev => prev.filter((_, i) => i !== idx))}
@@ -446,7 +481,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || isAlreadyValidated || !canEdit}
+              disabled={!formChangeNo.trim() || !isQuality}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -470,7 +505,7 @@ export const L2Validation = ({
                   e.target.value = '';
                 }
               }}
-              className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+              className={`w-full text-[11px] text-slate-555 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
                 fieldErrors.qaFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
               }`}
             />
@@ -484,7 +519,7 @@ export const L2Validation = ({
                   >
                     <Paperclip size={10} className="shrink-0" />
                     <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
-                    {formChangeNo.trim() && !isAlreadyValidated && canEdit && (
+                    {formChangeNo.trim() && isQuality && (
                       <button
                         type="button"
                         onClick={() => setQaFiles(prev => prev.filter((_, i) => i !== idx))}
@@ -504,18 +539,18 @@ export const L2Validation = ({
               </p>
             )}
           </div>
-
+ 
           {/* APPROVER VALIDATION STATUS */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
             <select
               value={formStatus}
-              disabled={!formChangeNo.trim() || isAlreadyValidated || !canEdit}
+              disabled={!formChangeNo.trim() || !isQuality}
               onChange={(e) => {
                 setFormStatus(e.target.value);
                 setFieldErrors(prev => ({ ...prev, status: '' }));
               }}
-              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 disabled:cursor-not-allowed text-slate-550 ${
+              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 disabled:cursor-not-allowed text-slate-555 ${
                 fieldErrors.status ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
               }`}
             >
@@ -530,7 +565,7 @@ export const L2Validation = ({
               </p>
             )}
           </div>
-
+ 
           {/* REMARKS */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remarks <span className="text-rose-500">*</span></label>
@@ -538,12 +573,12 @@ export const L2Validation = ({
               placeholder="Enter Remarks..."
               rows={3}
               value={formRemarks}
-              disabled={!formChangeNo.trim() || isAlreadyValidated || !canEdit}
+              disabled={!formChangeNo.trim() || !isQuality}
               onChange={(e) => {
                 setFormRemarks(e.target.value);
                 setFieldErrors(prev => ({ ...prev, remarks: '' }));
               }}
-              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none disabled:cursor-not-allowed text-slate-550 ${
+              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none disabled:cursor-not-allowed text-slate-555 ${
                 fieldErrors.remarks ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
               }`}
             />
@@ -558,7 +593,7 @@ export const L2Validation = ({
           {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting || isAlreadyValidated || !formChangeNo.trim() || !canEdit}
+            disabled={isSubmitting || !formChangeNo.trim() || !canEdit}
             className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-60 border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
@@ -567,7 +602,10 @@ export const L2Validation = ({
                 <span>Saving Validation Log...</span>
               </>
             ) : isAlreadyValidated ? (
-              <span>Log Already Saved</span>
+              <>
+                <Save size={14} />
+                <span>Update Validation Log</span>
+              </>
             ) : !formChangeNo.trim() ? (
               <span>Select a Request to Validate</span>
             ) : !canEdit ? (
