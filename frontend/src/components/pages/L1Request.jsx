@@ -502,6 +502,22 @@ export const L1Request = ({
       newErrors.customerApproval = 'Please select if Customer Approval is Required.';
     }
 
+    if (!fileDesc) {
+      newErrors.fileDesc = 'Supporting file for Change Description is required.';
+    }
+
+    if (!fileImprovement) {
+      newErrors.fileImprovement = 'Supporting file for Timeline is required.';
+    }
+
+    if (!fileTraceTo) {
+      newErrors.fileTraceTo = 'Supporting file for Traceability (To) is required.';
+    }
+
+    if (!fileRisk) {
+      newErrors.fileRisk = 'Supporting file for Risk Analysis is required.';
+    }
+
     return newErrors;
   };
 
@@ -578,8 +594,9 @@ export const L1Request = ({
   };
 
   const renderAttachmentInput = (label, value, setValue, inputId, fieldName, isRequired = false) => {
+    const hasError = errors[fieldName];
     return (
-      <div className="space-y-[4px]">
+      <div className="space-y-[4px]" id={fieldName}>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label} {isRequired && <span className="text-rose-500">*</span>}</label>
         <div className="flex gap-[8px] max-w-[400px]">
           <div className="relative flex-1">
@@ -587,7 +604,11 @@ export const L1Request = ({
               type="text"
               readOnly
               placeholder="e.g. proof-log.pdf, image.png"
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] select-none text-slate-500"
+              className={`w-full bg-slate-50 border rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none transition-all duration-200 select-none ${
+                hasError
+                  ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10 text-rose-700'
+                  : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10 text-slate-500'
+              }`}
               value={value}
             />
             {value && (
@@ -596,6 +617,7 @@ export const L1Request = ({
                 onClick={() => {
                   setValue('');
                   setUploadedFilesList(prev => prev.filter(f => f.fieldName !== fieldName));
+                  if (hasError) setErrors(prev => ({ ...prev, [fieldName]: '' }));
                 }}
                 className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                 title="Clear all attachments"
@@ -604,7 +626,11 @@ export const L1Request = ({
               </button>
             )}
           </div>
-          <label className="flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 hover:bg-slate-50 text-[#0066cc] bg-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none">
+          <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none ${
+            hasError
+              ? 'border-rose-300 bg-rose-50/10 hover:bg-rose-50/20 text-rose-600'
+              : 'border-slate-200 bg-white hover:bg-slate-50 text-[#0066cc]'
+          }`}>
             <Upload size={12} />
             <span>Upload</span>
             <input
@@ -640,6 +666,7 @@ export const L1Request = ({
                   const existing = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
                   const updated = Array.from(new Set([...existing, ...names])).join(', ');
                   setValue(updated);
+                  if (hasError) setErrors(prev => ({ ...prev, [fieldName]: '' }));
                 }
               }}
             />
@@ -661,6 +688,7 @@ export const L1Request = ({
                     const updated = existing.filter(f => f !== file).join(', ');
                     setValue(updated);
                     setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === fieldName && f.name === file)));
+                    if (hasError) setErrors(prev => ({ ...prev, [fieldName]: '' }));
                   }}
                   className="text-slate-450 hover:text-rose-650 font-bold ml-[2px] cursor-pointer text-[12px]"
                 >
@@ -670,6 +698,7 @@ export const L1Request = ({
             ))}
           </div>
         )}
+        {hasError && <span className="text-rose-500 text-[10px] block mt-[2px]">{hasError}</span>}
       </div>
     );
   };
