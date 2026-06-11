@@ -20,6 +20,18 @@ export const L1Request = ({
   setToastMsg
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const handleFieldChange = (field, value, setter) => {
+    setter(value);
+    if (errors[field]) {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isMachineModalOpen, setIsMachineModalOpen] = useState(false);
   const [tempProcessName, setTempProcessName] = useState('');
@@ -281,6 +293,13 @@ export const L1Request = ({
       if (!isAlreadyChecked) {
         newState[name] = true;
       }
+      if (errors.changeIn) {
+        setErrors(prevErrs => {
+          const next = { ...prevErrs };
+          delete next.changeIn;
+          return next;
+        });
+      }
       return newState;
     });
   };
@@ -289,124 +308,137 @@ export const L1Request = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const newErrors = {};
+
     if (!unit) {
-      setToastMsg('Please select a Unit.');
-      return;
+      newErrors.unit = 'Please select a Unit.';
     }
 
     const selectedChangesIn = Object.keys(changeIn).filter(k => changeIn[k]).join(', ');
     if (!selectedChangesIn) {
-      setToastMsg('Please select at least one Change In option.');
-      return;
+      newErrors.changeIn = 'Please select at least one Change In option.';
     }
 
     if (!dept) {
-      setToastMsg('Please select a Department.');
-      return;
+      newErrors.dept = 'Please select a Department.';
     }
 
     if (!requestBy) {
-      setToastMsg('Please select a Requester Name.');
-      return;
+      newErrors.requestBy = 'Please select a Requester Name.';
     }
 
     if (!processName || !processName.trim()) {
-      setToastMsg('Please select a Process Name.');
-      return;
+      newErrors.processName = 'Please select a Process Name.';
     }
 
     if (!processLine || !processLine.trim()) {
-      setToastMsg('Please enter a Process Line.');
-      return;
+      newErrors.processLine = 'Please enter a Process Line.';
     }
 
     if (!machineNo || !machineNo.trim()) {
-      setToastMsg('Please select a Machine No.');
-      return;
+      newErrors.machineNo = 'Please select a Machine No.';
     }
 
     if (!context || context.trim().length < 10) {
-      setToastMsg('Context of Change must be at least 10 characters.');
-      return;
+      newErrors.context = 'Context of Change must be at least 10 characters.';
     }
 
     if (!description || description.trim().length < 20) {
-      setToastMsg('Detailed Change Description must be at least 20 characters.');
-      return;
+      newErrors.description = 'Detailed Change Description must be at least 20 characters.';
+    }
+
+    if (!fileDesc) {
+      newErrors.fileDesc = 'Please upload supporting files for Change Description.';
     }
 
     if (!improvementArea) {
-      setToastMsg('Please select a Change Improvement Area.');
-      return;
+      newErrors.improvementArea = 'Please select a Change Improvement Area.';
+    }
+
+    if (!fileImprovement) {
+      newErrors.fileImprovement = 'Please upload supporting files for Change Improvement Area.';
     }
 
     if (!changeType) {
-      setToastMsg('Please select a Permanent / Temporary Change option.');
-      return;
+      newErrors.changeType = 'Please select a Permanent / Temporary Change option.';
     }
 
     if (!dateStart || !dateStart.trim()) {
-      setToastMsg('Please enter an Implement / Change Date Start.');
-      return;
-    }
-
-    const parsedRequestDate = parseDDMMYYYYToDate(requestedDate);
-    const parsedDateStart = parseDDMMYYYYToDate(dateStart);
-    if (parsedDateStart && parsedRequestDate) {
-      const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
-      const dRequest = new Date(parsedRequestDate.getFullYear(), parsedRequestDate.getMonth(), parsedRequestDate.getDate());
-      if (dStart < dRequest) {
-        setToastMsg('Implement / Change Date Start should be >= Change Request Date.');
-        return;
+      newErrors.dateStart = 'Please enter an Implement / Change Date Start.';
+    } else {
+      const parsedRequestDate = parseDDMMYYYYToDate(requestedDate);
+      const parsedDateStart = parseDDMMYYYYToDate(dateStart);
+      if (parsedDateStart && parsedRequestDate) {
+        const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
+        const dRequest = new Date(parsedRequestDate.getFullYear(), parsedRequestDate.getMonth(), parsedRequestDate.getDate());
+        if (dStart < dRequest) {
+          newErrors.dateStart = 'Implement / Change Date Start should be >= Change Request Date.';
+        }
       }
     }
 
     if (!traceFrom || traceFrom.trim().length < 20) {
-      setToastMsg('Part Traceability Details (From Changes) must be at least 20 characters.');
-      return;
+      newErrors.traceFrom = 'Part Traceability Details (From Changes) must be at least 20 characters.';
     }
 
     if (!dateClose || !dateClose.trim()) {
-      setToastMsg('Please enter a Change Date Close.');
-      return;
-    }
-
-    const parsedDateClose = parseDDMMYYYYToDate(dateClose);
-    if (parsedDateClose && parsedDateStart) {
-      const dClose = new Date(parsedDateClose.getFullYear(), parsedDateClose.getMonth(), parsedDateClose.getDate());
-      const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
-      if (dClose < dStart) {
-        setToastMsg('Change Date Close should be >= Implement / Change Date Start.');
-        return;
+      newErrors.dateClose = 'Please enter a Change Date Close.';
+    } else {
+      const parsedDateClose = parseDDMMYYYYToDate(dateClose);
+      const parsedDateStart = parseDDMMYYYYToDate(dateStart);
+      if (parsedDateClose && parsedDateStart) {
+        const dClose = new Date(parsedDateClose.getFullYear(), parsedDateClose.getMonth(), parsedDateClose.getDate());
+        const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
+        if (dClose < dStart) {
+          newErrors.dateClose = 'Change Date Close should be >= Implement / Change Date Start.';
+        }
       }
     }
 
     if (!traceTo || traceTo.trim().length < 20) {
-      setToastMsg('Part Traceability Details (To Changes) must be at least 20 characters.');
-      return;
+      newErrors.traceTo = 'Part Traceability Details (To Changes) must be at least 20 characters.';
+    }
+
+    if (!fileTraceTo) {
+      newErrors.fileTraceTo = 'Please upload supporting files for Part Traceability (To Changes).';
     }
 
     if (!riskAnalysis || !riskAnalysis.trim()) {
-      setToastMsg('Please enter a Risk Analysis.');
-      return;
+      newErrors.riskAnalysis = 'Please enter a Risk Analysis.';
+    }
+
+    if (!fileRisk) {
+      newErrors.fileRisk = 'Please upload supporting files for Risk Analysis.';
     }
 
     if (!sopUpdate || !sopUpdate.trim()) {
-      setToastMsg('Please describe the Update in SOP / WI / Control Plan / FMEA.');
-      return;
+      newErrors.sopUpdate = 'Please describe the Update in SOP / WI / Control Plan / FMEA.';
     }
 
     if (!hodApproval || !hodApproval.trim()) {
-      setToastMsg('Please describe the User Dept HOD Approval.');
-      return;
+      newErrors.hodApproval = 'Please describe the User Dept HOD Approval.';
     }
 
     if (!customerApproval) {
-      setToastMsg('Please select if Customer Approval is Required.');
+      newErrors.customerApproval = 'Please select if Customer Approval is Required.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setToastMsg('Please fix the validation errors before submitting.');
+      
+      const firstErrorKey = Object.keys(newErrors)[0];
+      const errorElement = document.getElementById(firstErrorKey);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+          errorElement.focus();
+        }, 300);
+      }
       return;
     }
 
-
+    setErrors({});
     setIsSubmitting(true);
 
     const l1Data = {
@@ -461,16 +493,22 @@ export const L1Request = ({
   };
 
   const renderAttachmentInput = (label, value, setValue, inputId, fieldName, isRequired = false) => {
+    const hasError = errors[fieldName];
     return (
       <div className="space-y-[4px]">
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label} {isRequired && <span className="text-rose-500">*</span>}</label>
         <div className="flex gap-[8px]">
           <div className="relative flex-1">
             <input
+              id={fieldName}
               type="text"
               readOnly
               placeholder="e.g. proof-log.pdf"
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] select-none text-slate-500"
+              className={`w-full bg-slate-50 border rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none select-none text-slate-500 transition-all duration-200 ${
+                hasError 
+                  ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                  : 'border-slate-200 focus:border-[#0066cc]'
+              }`}
               value={value}
             />
             {value && (
@@ -479,6 +517,13 @@ export const L1Request = ({
                 onClick={() => {
                   setValue('');
                   setUploadedFilesList(prev => prev.filter(f => f.fieldName !== fieldName));
+                  if (errors[fieldName]) {
+                    setErrors(prev => {
+                      const next = { ...prev };
+                      delete next[fieldName];
+                      return next;
+                    });
+                  }
                 }}
                 className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                 title="Clear all attachments"
@@ -487,7 +532,9 @@ export const L1Request = ({
               </button>
             )}
           </div>
-          <label className="flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 hover:bg-slate-50 text-[#0066cc] bg-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none">
+          <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border hover:bg-slate-50 text-[#0066cc] bg-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none ${
+            hasError ? 'border-rose-500' : 'border-slate-200'
+          }`}>
             <Upload size={12} />
             <span>Upload</span>
             <input
@@ -523,11 +570,20 @@ export const L1Request = ({
                   const existing = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
                   const updated = Array.from(new Set([...existing, ...names])).join(', ');
                   setValue(updated);
+
+                  if (errors[fieldName]) {
+                    setErrors(prev => {
+                      const next = { ...prev };
+                      delete next[fieldName];
+                      return next;
+                    });
+                  }
                 }
               }}
             />
           </label>
         </div>
+        {hasError && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{hasError}</p>}
 
         {/* Selected File Pills */}
         {value && (
@@ -544,6 +600,15 @@ export const L1Request = ({
                     const updated = existing.filter(f => f !== file).join(', ');
                     setValue(updated);
                     setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === fieldName && f.name === file)));
+                    if (updated === '' && isRequired) {
+                      // Let handleSubmit handle empty validation if they delete all
+                    } else if (errors[fieldName]) {
+                      setErrors(prev => {
+                        const next = { ...prev };
+                        delete next[fieldName];
+                        return next;
+                      });
+                    }
                   }}
                   className="text-slate-450 hover:text-rose-650 font-bold ml-[2px] cursor-pointer text-[12px]"
                 >
@@ -577,15 +642,21 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit <span className="text-rose-500">*</span></label>
               <select
+                id="unit"
                 value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => handleFieldChange('unit', e.target.value, setUnit)}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 ${
+                  errors.unit 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               >
                 <option value="">— Select Unit —</option>
                 <option value="Unit 1">Unit 1 - Chennai</option>
                 <option value="Unit 2">Unit 2 - Hosur</option>
                 <option value="Unit 3">Unit 3 - Madurai</option>
               </select>
+              {errors.unit && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.unit}</p>}
             </div>
 
             {/* 4M CHANGE NO */}
@@ -642,7 +713,7 @@ export const L1Request = ({
           </div>
 
           {/* CHANGE IN */}
-          <div className="space-y-[6px] pt-[8px]">
+          <div className="space-y-[6px] pt-[8px]" id="changeIn">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In <span className="text-rose-500">*</span></label>
             <div className="flex flex-wrap gap-x-[16px] gap-y-[8px] text-[12px] text-slate-700 font-medium select-none">
               {Object.keys(changeIn).map(key => (
@@ -657,6 +728,7 @@ export const L1Request = ({
                 </label>
               ))}
             </div>
+            {errors.changeIn && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.changeIn}</p>}
           </div>
         </div>
 
@@ -669,27 +741,37 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request Dept <span className="text-rose-500">*</span></label>
               <select
+                id="dept"
                 value={dept}
-                onChange={(e) => setDept(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => handleFieldChange('dept', e.target.value, setDept)}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 ${
+                  errors.dept 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               >
                 <option value="">— Select Department —</option>
                 {[...new Set(['PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY', ...dbDepartments])].map(d => (
                   <option key={d} value={d}>{d}</option>
                 ))}
               </select>
+              {errors.dept && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.dept}</p>}
             </div>
 
             {/* CHANGE REQUEST BY */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
               <input
+                id="requestBy"
                 type="text"
                 readOnly
                 value={requestBy}
                 placeholder="Select Department to populate"
-                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 font-semibold cursor-not-allowed"
+                className={`w-full bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 font-semibold cursor-not-allowed transition-all duration-200 ${
+                  errors.requestBy ? 'border-rose-500' : 'border-slate-200'
+                }`}
               />
+              {errors.requestBy && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.requestBy}</p>}
             </div>
 
             {/* PROCESS NAME */}
@@ -697,9 +779,14 @@ export const L1Request = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name <span className="text-rose-500">*</span></label>
               <div className="flex gap-[8px]">
                 <select
+                  id="processName"
                   value={processName}
-                  onChange={(e) => setProcessName(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                  onChange={(e) => handleFieldChange('processName', e.target.value, setProcessName)}
+                  className={`flex-1 bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 ${
+                    errors.processName 
+                      ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                  }`}
                 >
                   <option value="">— Select or Add Process —</option>
                   {[...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])].map(p => (
@@ -718,18 +805,25 @@ export const L1Request = ({
                   <Plus size={16} />
                 </button>
               </div>
+              {errors.processName && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.processName}</p>}
             </div>
 
             {/* PROCESS LINE */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line <span className="text-rose-500">*</span></label>
               <input
+                id="processLine"
                 type="text"
                 placeholder="e.g. Line 3 / Bay B"
                 value={processLine}
-                onChange={(e) => setProcessLine(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => handleFieldChange('processLine', e.target.value, setProcessLine)}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 ${
+                  errors.processLine 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               />
+              {errors.processLine && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.processLine}</p>}
             </div>
 
             {/* MACHINE NO */}
@@ -737,9 +831,14 @@ export const L1Request = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No <span className="text-rose-500">*</span></label>
               <div className="flex gap-[8px] sm:max-w-[49%] lg:max-w-[24.4%]">
                 <select
+                  id="machineNo"
                   value={machineNo}
-                  onChange={(e) => setMachineNo(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                  onChange={(e) => handleFieldChange('machineNo', e.target.value, setMachineNo)}
+                  className={`flex-1 bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 ${
+                    errors.machineNo 
+                      ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                  }`}
                 >
                   <option value="">— Select or Add Machine —</option>
                   {[...new Set([...dbMachines, ...changes.map(c => c.machineNo).filter(Boolean)])].map(m => (
@@ -758,6 +857,7 @@ export const L1Request = ({
                   <Plus size={16} />
                 </button>
               </div>
+              {errors.machineNo && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.machineNo}</p>}
             </div>
           </div>
         </div>
@@ -771,26 +871,42 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change <span className="text-rose-500">*</span></label>
               <textarea
+                id="context"
                 placeholder="Brief description of WHY this change is needed (min 10 characters)..."
                 value={context}
-                onChange={(e) => setContext(e.target.value)}
+                onChange={(e) => handleFieldChange('context', e.target.value, setContext)}
                 rows={4}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 resize-none ${
+                  errors.context 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               />
-              <span className="block text-[9px] text-slate-400">{context.length} / 10 min</span>
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>{context.length} / 10 min</span>
+                {errors.context && <span className="font-medium text-rose-500">{errors.context}</span>}
+              </div>
             </div>
 
             {/* DETAILED CHANGE DESCRIPTION */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Detailed Change Description <span className="text-rose-500">*</span></label>
               <textarea
+                id="description"
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => handleFieldChange('description', e.target.value, setDescription)}
                 rows={4}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 resize-none ${
+                  errors.description 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               />
-              <span className="block text-[9px] text-slate-400">{description.length} / 20 min</span>
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>{description.length} / 20 min</span>
+                {errors.description && <span className="font-medium text-rose-500">{errors.description}</span>}
+              </div>
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -809,9 +925,14 @@ export const L1Request = ({
             <div className="space-y-[4px] sm:col-span-1 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Improvement Area <span className="text-rose-500">*</span></label>
               <select
+                id="improvementArea"
                 value={improvementArea}
-                onChange={(e) => setImprovementArea(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => handleFieldChange('improvementArea', e.target.value, setImprovementArea)}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 ${
+                  errors.improvementArea 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               >
                 <option value="">— Select Area —</option>
                 <option value="Quality">Quality</option>
@@ -819,6 +940,7 @@ export const L1Request = ({
                 <option value="Delivery">Delivery</option>
                 <option value="Safety">Safety</option>
               </select>
+              {errors.improvementArea && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.improvementArea}</p>}
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -830,39 +952,59 @@ export const L1Request = ({
             <div className="space-y-[4px] sm:col-span-1 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Permanent / Temporary Change <span className="text-rose-500">*</span></label>
               <select
+                id="changeType"
                 value={changeType}
-                onChange={(e) => setChangeType(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => handleFieldChange('changeType', e.target.value, setChangeType)}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 ${
+                  errors.changeType 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               >
                 <option value="">— Select —</option>
                 <option value="Permanent">Permanent</option>
                 <option value="Temporary">Temporary</option>
               </select>
+              {errors.changeType && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.changeType}</p>}
             </div>
 
             {/* IMPLEMENT / CHANGE DATE START */}
             <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start <span className="text-rose-500">*</span></label>
               <CustomDatePicker
+                id="dateStart"
                 value={dateStart}
-                onChange={setDateStart}
+                onChange={(val) => handleFieldChange('dateStart', val, setDateStart)}
                 containerClassName="sm:max-w-[49%] lg:max-w-full"
-                inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none transition-all duration-200 ${
+                  errors.dateStart 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
                 buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
+              {errors.dateStart && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.dateStart}</p>}
             </div>
 
             {/* PART TRACEABILITY DETAILS (FROM CHANGES) */}
             <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes) <span className="text-rose-500">*</span></label>
               <textarea
+                id="traceFrom"
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={traceFrom}
-                onChange={(e) => setTraceFrom(e.target.value)}
+                onChange={(e) => handleFieldChange('traceFrom', e.target.value, setTraceFrom)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 resize-none ${
+                  errors.traceFrom 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               />
-              <span className="block text-[9px] text-slate-400">{traceFrom.length} / 20 min</span>
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>{traceFrom.length} / 20 min</span>
+                {errors.traceFrom && <span className="font-medium text-rose-500">{errors.traceFrom}</span>}
+              </div>
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -874,25 +1016,39 @@ export const L1Request = ({
             <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close <span className="text-rose-500">*</span></label>
               <CustomDatePicker
+                id="dateClose"
                 value={dateClose}
-                onChange={setDateClose}
+                onChange={(val) => handleFieldChange('dateClose', val, setDateClose)}
                 containerClassName="sm:max-w-[49%] lg:max-w-full"
-                inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none transition-all duration-200 ${
+                  errors.dateClose 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
                 buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
+              {errors.dateClose && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.dateClose}</p>}
             </div>
 
             {/* PART TRACEABILITY DETAILS (TO CHANGES) */}
             <div className="space-y-[4px] sm:col-span-2 lg:col-span-2">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (To Changes) <span className="text-rose-500">*</span></label>
               <textarea
+                id="traceTo"
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={traceTo}
-                onChange={(e) => setTraceTo(e.target.value)}
+                onChange={(e) => handleFieldChange('traceTo', e.target.value, setTraceTo)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 resize-none ${
+                  errors.traceTo 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               />
-              <span className="block text-[9px] text-slate-400">{traceTo.length} / 20 min</span>
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>{traceTo.length} / 20 min</span>
+                {errors.traceTo && <span className="font-medium text-rose-500">{errors.traceTo}</span>}
+              </div>
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -911,12 +1067,18 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis <span className="text-rose-500">*</span></label>
               <textarea
+                id="riskAnalysis"
                 placeholder="Describe potential risks, their likelihood, impact, and mitigation measures..."
                 value={riskAnalysis}
-                onChange={(e) => setRiskAnalysis(e.target.value)}
+                onChange={(e) => handleFieldChange('riskAnalysis', e.target.value, setRiskAnalysis)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 resize-none ${
+                  errors.riskAnalysis 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               />
+              {errors.riskAnalysis && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.riskAnalysis}</p>}
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -928,12 +1090,18 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Update in SOP / WI / Control Plan / FMEA <span className="text-rose-500">*</span></label>
               <textarea
+                id="sopUpdate"
                 placeholder="Describe the updates required in SOP, Work Instructions, Control Plan, FMEA, etc..."
                 value={sopUpdate}
-                onChange={(e) => setSopUpdate(e.target.value)}
+                onChange={(e) => handleFieldChange('sopUpdate', e.target.value, setSopUpdate)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 resize-none ${
+                  errors.sopUpdate 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               />
+              {errors.sopUpdate && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.sopUpdate}</p>}
             </div>
 
             {/* Click to upload updated documents */}
@@ -945,29 +1113,39 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">User Dept HOD Approval <span className="text-rose-500">*</span></label>
               <textarea
+                id="hodApproval"
                 placeholder="Describe HOD review comments, approval status, or conditions..."
                 value={hodApproval}
-                onChange={(e) => setHodApproval(e.target.value)}
+                onChange={(e) => handleFieldChange('hodApproval', e.target.value, setHodApproval)}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 resize-none ${
+                  errors.hodApproval 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               />
+              {errors.hodApproval && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.hodApproval}</p>}
             </div>
 
             {/* CUSTOMER APPROVAL REQUIRED */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required <span className="text-rose-500">*</span></label>
               <select
+                id="customerApproval"
                 value={customerApproval}
-                onChange={(e) => setCustomerApproval(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => handleFieldChange('customerApproval', e.target.value, setCustomerApproval)}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 ${
+                  errors.customerApproval 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+                }`}
               >
                 <option value="">— Select —</option>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
+              {errors.customerApproval && <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.customerApproval}</p>}
             </div>
-
-
           </div>
         </div>
 

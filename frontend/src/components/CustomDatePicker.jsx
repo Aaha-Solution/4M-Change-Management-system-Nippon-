@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseDDMMYYYYToDate } from '../utils/dateUtils';
 
-export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", inputClassName = "", buttonClassName = "", containerClassName = "" }) => {
+export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", inputClassName = "", buttonClassName = "", containerClassName = "", id, ...props }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(() => {
     if (value) {
@@ -66,6 +66,7 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
   return (
     <div className={`relative w-full ${containerClassName}`}>
       <input 
+        id={id}
         type="text" 
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
@@ -79,6 +80,7 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
         }}
         className={`w-full outline-none placeholder-slate-350 text-slate-700 cursor-pointer ${inputClassName}`}
         value={value}
+        {...props}
       />
       <button
         type="button"
