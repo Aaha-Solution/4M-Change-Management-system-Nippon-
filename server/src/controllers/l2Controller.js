@@ -99,9 +99,17 @@ export const createL2ValidationLog = async (req, res) => {
 export const getL2Details = async (req, res) => {
   const { changeNo } = req.params;
   try {
-    const details = await l2Model.getL2Details(changeNo);
+    let details = await l2Model.getL2Details(changeNo);
     if (!details) {
-      return res.status(404).json({ error: 'L2 validation log not found' });
+      details = {
+        changeNo,
+        date: '-',
+        requester: '-',
+        weldTest: '-',
+        qaTest: '-',
+        status: 'Pending',
+        remarks: 'L2 validation log has not been initialized yet.'
+      };
     }
     res.status(200).json(details);
   } catch (error) {
