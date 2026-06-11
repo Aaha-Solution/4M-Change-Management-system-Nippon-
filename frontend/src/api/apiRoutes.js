@@ -8,4 +8,6 @@ export * from './notificationsApi';
 export * from './processesApi';
 export * from './machinesApi';
 export * from './timeApi';
+export * from './hodApprovalsApi';
+
 

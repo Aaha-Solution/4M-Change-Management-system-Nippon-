@@ -7,6 +7,7 @@ import l3Routes from './l3Routes.js';
 import effectivenessRoutes from './effectivenessRoutes.js';
 import notificationRoutes from './notificationRoutes.js';
 import optionRoutes from './optionRoutes.js';
+import hodApprovalRoutes from './hodApprovalRoutes.js';
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use(l3Routes);
 router.use(effectivenessRoutes);
 router.use(notificationRoutes);
 router.use(optionRoutes);
+router.use(hodApprovalRoutes);
 
 export default router;

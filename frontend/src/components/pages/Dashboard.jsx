@@ -27,6 +27,7 @@ const DashboardOverview = lazy(() => import('./DashboardOverview').then(m => ({ 
 const AllRequests = lazy(() => import('./AllRequests').then(m => ({ default: m.AllRequests })));
 const L1Request = lazy(() => import('./L1Request').then(m => ({ default: m.L1Request })));
 const L3RequestTracker = lazy(() => import('./L3RequestTracker').then(m => ({ default: m.L3RequestTracker })));
+const AllApprovals = lazy(() => import('./AllApprovals').then(m => ({ default: m.AllApprovals })));
 const L2Validation = lazy(() => import('./L2Validation').then(m => ({ default: m.L2Validation })));
 const Effectiveness = lazy(() => import('./Effectiveness').then(m => ({ default: m.Effectiveness })));
 const Users = lazy(() => import('./Users').then(m => ({ default: m.Users })));
@@ -275,8 +276,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               </div>
             </button>
 
-            {/* All Approvals (HOD Only) */}
-            {isHOD && (
+            {/* All Approvals (HOD & Admin) */}
+            {(isHOD || isAdmin) && (
               <button
                 onClick={() => handleTabChange('all-approvals')}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'all-approvals'
@@ -565,9 +566,23 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               />
             )}
 
-            {/* TAB: L3 REQUEST TRACKER */}
-            {(activeTab === 'l3' || activeTab === 'all-approvals') && (
+            {/* TAB: L3 REQUEST TRACKER (Admin / L3 sub-menu) */}
+            {activeTab === 'l3' && (
               <L3RequestTracker
+                userEmail={userEmail}
+                userRole={userRole}
+                userDept={userDept}
+                logAction={logAction}
+                setToastMsg={setToastMsg}
+                fetchChanges={fetchChanges}
+                autoOpenChangeNo={autoOpenChangeNo}
+                clearAutoOpen={() => setAutoOpenChangeNo(null)}
+              />
+            )}
+
+            {/* TAB: ALL APPROVALS (HOD dedicated view) */}
+            {activeTab === 'all-approvals' && (
+              <AllApprovals
                 userEmail={userEmail}
                 userRole={userRole}
                 userDept={userDept}
