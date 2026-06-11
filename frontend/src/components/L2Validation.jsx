@@ -33,6 +33,17 @@ export const L2Validation = ({
   // Inline field validation errors
   const [fieldErrors, setFieldErrors] = useState({});
 
+  const handleFieldChange = (field, value, setter) => {
+    setter(value);
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
   // File Upload states
   const [pedFileObj, setPedFileObj] = useState(null);
   const [qaFileObj, setQaFileObj] = useState(null);
@@ -142,6 +153,15 @@ export const L2Validation = ({
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      
+      const firstErrorKey = Object.keys(errors)[0];
+      const errorElement = document.getElementById(firstErrorKey);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+          errorElement.focus();
+        }, 300);
+      }
       return;
     }
 
@@ -339,6 +359,7 @@ export const L2Validation = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requester Validation(PED) Attachment <span className="text-rose-500">*</span></label>
             <input
+              id="pedFile"
               key={`ped-${formChangeNo}`}
               type="file"
               disabled={isAlreadyValidated}
@@ -348,15 +369,12 @@ export const L2Validation = ({
                   setFieldErrors(prev => ({ ...prev, pedFile: '' }));
                 }
               }}
-              className={`w-full text-[11px] text-slate-500 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
-                fieldErrors.pedFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
+              className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+                fieldErrors.pedFile ? 'border-rose-500 border rounded-[6px] p-1' : 'file:border-slate-200'
               }`}
             />
             {fieldErrors.pedFile && (
-              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
-                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
-                {fieldErrors.pedFile}
-              </p>
+              <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{fieldErrors.pedFile}</p>
             )}
           </div>
 
@@ -364,6 +382,7 @@ export const L2Validation = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Set Up Verification(QA) Attachment <span className="text-rose-500">*</span></label>
             <input
+              id="qaFile"
               key={`qa-${formChangeNo}`}
               type="file"
               disabled={isAlreadyValidated}
@@ -374,14 +393,11 @@ export const L2Validation = ({
                 }
               }}
               className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
-                fieldErrors.qaFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
+                fieldErrors.qaFile ? 'border-rose-500 border rounded-[6px] p-1' : 'file:border-slate-200'
               }`}
             />
             {fieldErrors.qaFile && (
-              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
-                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
-                {fieldErrors.qaFile}
-              </p>
+              <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{fieldErrors.qaFile}</p>
             )}
           </div>
 
@@ -389,14 +405,14 @@ export const L2Validation = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
             <select
+              id="status"
               value={formStatus}
               disabled={isAlreadyValidated}
-              onChange={(e) => {
-                setFormStatus(e.target.value);
-                setFieldErrors(prev => ({ ...prev, status: '' }));
-              }}
-              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 disabled:cursor-not-allowed text-slate-550 ${
-                fieldErrors.status ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+              onChange={(e) => handleFieldChange('status', e.target.value, setFormStatus)}
+              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 disabled:cursor-not-allowed text-slate-550 ${
+                fieldErrors.status 
+                  ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                  : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
               }`}
             >
               <option value="">Select Status</option>
@@ -404,10 +420,7 @@ export const L2Validation = ({
               <option value="Rejected">Rejected</option>
             </select>
             {fieldErrors.status && (
-              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
-                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
-                {fieldErrors.status}
-              </p>
+              <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{fieldErrors.status}</p>
             )}
           </div>
 
@@ -415,23 +428,20 @@ export const L2Validation = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remarks <span className="text-rose-500">*</span></label>
             <textarea
+              id="remarks"
               placeholder="Enter Remarks..."
               rows={3}
               value={formRemarks}
               disabled={isAlreadyValidated}
-              onChange={(e) => {
-                setFormRemarks(e.target.value);
-                setFieldErrors(prev => ({ ...prev, remarks: '' }));
-              }}
-              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none disabled:cursor-not-allowed text-slate-550 ${
-                fieldErrors.remarks ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+              onChange={(e) => handleFieldChange('remarks', e.target.value, setFormRemarks)}
+              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 resize-none disabled:cursor-not-allowed text-slate-550 ${
+                fieldErrors.remarks 
+                  ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                  : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
               }`}
             />
             {fieldErrors.remarks && (
-              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
-                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
-                {fieldErrors.remarks}
-              </p>
+              <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{fieldErrors.remarks}</p>
             )}
           </div>
 

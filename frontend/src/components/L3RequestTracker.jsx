@@ -34,6 +34,18 @@ export const L3RequestTracker = ({
   const [formDate, setFormDate] = useState('');
   const [formRequester, setFormRequester] = useState('');
   const [formStatus, setFormStatus] = useState('');
+  const [errors, setErrors] = useState({});
+
+  const handleFieldChange = (field, value, setter) => {
+    setter(value);
+    if (errors[field]) {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
 
   // Acting Department mapping
   const [actingDept, setActingDept] = useState('Quality');
@@ -112,6 +124,7 @@ export const L3RequestTracker = ({
   // Click row to select it
   const handleSelectRow = (log) => {
     setValidationError('');
+    setErrors({});
     setSelectedChangeId(log.changeNo);
     setFormChangeNo(log.changeNo);
     setFormDate(formatDateToDDMMYYYY(log.date));
@@ -124,15 +137,35 @@ export const L3RequestTracker = ({
     setFormDate('');
     setFormRequester('');
     setFormStatus('');
+    setErrors({});
   };
 
   const handleSaveApproval = async (e) => {
     e.preventDefault();
 
-    if (!selectedChangeId || !formChangeNo.trim() || !formStatus) {
-      setValidationError('Please select a change request and choose an approval status.');
+    const newErrors = {};
+    if (!formChangeNo.trim()) {
+      newErrors.changeNo = 'Please select a change request from the table.';
+    }
+    if (!formStatus) {
+      newErrors.status = 'Please choose an approval status.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Focus first error element
+      const firstErrorKey = Object.keys(newErrors)[0];
+      const errorElement = document.getElementById(firstErrorKey);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+          errorElement.focus();
+        }, 300);
+      }
       return;
     }
+
+    setErrors({});
 
     // Find the log in state
     const currentLog = approvalLogs.find(log => log.changeNo === formChangeNo);
@@ -332,12 +365,18 @@ export const L3RequestTracker = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
             <input 
+              id="changeNo"
               type="text" 
               placeholder="Click a row to select"
               value={formChangeNo}
               disabled
-              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
+              className={`w-full bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none transition-all duration-200 ${
+                errors.changeNo ? 'border-rose-500' : 'border-slate-200'
+              }`}
             />
+            {errors.changeNo && (
+              <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.changeNo}</p>
+            )}
           </div>
 
           {/* REQUESTED DATE */}
@@ -368,16 +407,24 @@ export const L3RequestTracker = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approval Status <span className="text-rose-500">*</span></label>
             <select 
+              id="status"
               value={formStatus} 
               disabled={!selectedChangeId || isAlreadyValidated || !isL2Accepted}
-              onChange={(e) => setFormStatus(e.target.value)}
-              className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
+              onChange={(e) => handleFieldChange('status', e.target.value, setFormStatus)}
+              className={`w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none transition-all duration-200 cursor-pointer ${
+                errors.status 
+                  ? 'border-rose-500 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10' 
+                  : 'border-slate-200 focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10'
+              }`}
             >
               <option value="">Select Status</option>
               <option value="Approved">Approved</option>
               <option value="Pending">Pending</option>
               <option value="Rejected">Rejected</option>
             </select>
+            {errors.status && (
+              <p className="text-[10px] font-medium text-rose-500 mt-[2px]">{errors.status}</p>
+            )}
           </div>
 
           {/* Submit / Cancel row */}
