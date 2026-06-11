@@ -213,9 +213,12 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
 
 
 
+  const [autoOpenChangeNo, setAutoOpenChangeNo] = useState(null);
+
   // Helper to handle tab select
-  const handleTabChange = (tabId) => {
+  const handleTabChange = (tabId, payloadChangeNo = null) => {
     setActiveTab(tabId);
+    setAutoOpenChangeNo(payloadChangeNo);
     setMobileMenuOpen(false);
   };
 
@@ -571,6 +574,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                 logAction={logAction}
                 setToastMsg={setToastMsg}
                 fetchChanges={fetchChanges}
+                autoOpenChangeNo={autoOpenChangeNo}
+                clearAutoOpen={() => setAutoOpenChangeNo(null)}
               />
             )}
 
@@ -592,6 +597,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                 notifications={notifications}
                 setNotifications={setNotifications}
                 fetchNotifications={fetchNotifications}
+                userRole={userRole}
+                onTabChange={handleTabChange}
               />
             )}
 

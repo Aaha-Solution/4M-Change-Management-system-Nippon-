@@ -24,7 +24,7 @@ import {
 } from '../../api/apiRoutes';
 
 
-export const Notifications = ({ setToastMsg, notifications, setNotifications, fetchNotifications }) => {
+export const Notifications = ({ setToastMsg, notifications, setNotifications, fetchNotifications, userRole, onTabChange }) => {
   const alerts = notifications || [];
   const [search, setSearch] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('All'); // 'All' | 'Unread'
@@ -210,7 +210,24 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                 return (
                   <div
                     key={alert.id}
-                    className={`relative group overflow-hidden bg-white rounded-xl border shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 ${alert.isRead ? 'border-slate-150 opacity-75' : 'border-slate-200'}`}
+                    onClick={() => {
+                      if (alert.changeNo) {
+                        if (!alert.isRead) {
+                          toggleReadStatus(alert.id);
+                        }
+                        const isHOD = userRole && (
+                          userRole.toLowerCase().includes('hod') ||
+                          userRole.toLowerCase().includes('unit head') ||
+                          userRole.toLowerCase().includes('unit_head') ||
+                          userRole.toLowerCase().includes('manager')
+                        );
+                        const targetTab = isHOD ? 'all-approvals' : 'l3';
+                        if (onTabChange) {
+                          onTabChange(targetTab, alert.changeNo);
+                        }
+                      }
+                    }}
+                    className={`relative group overflow-hidden bg-white rounded-xl border shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 ${alert.changeNo ? 'cursor-pointer' : ''} ${alert.isRead ? 'border-slate-150 opacity-75' : 'border-slate-200'}`}
                   >
                     {/* Accent bar */}
                     <div className={`absolute top-0 left-0 w-1 h-full ${colors.bar}`}></div>
@@ -272,13 +289,19 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                         </div>
                         <div className="flex items-center gap-3">
                           <button
-                            onClick={() => toggleReadStatus(alert.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleReadStatus(alert.id);
+                            }}
                             className="flex items-center gap-1 text-[9px] font-black text-slate-500 hover:text-slate-700 transition-colors uppercase tracking-wider cursor-pointer"
                           >
                             {alert.isRead ? <><Mail size={10} /> Mark Unread</> : <><Check size={10} /> Mark Read</>}
                           </button>
                           <button
-                            onClick={() => handleDeleteAlert(alert.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteAlert(alert.id);
+                            }}
                             className="flex items-center gap-1 text-[9px] font-black text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-wider cursor-pointer"
                           >
                             <Trash2 size={10} /> Delete

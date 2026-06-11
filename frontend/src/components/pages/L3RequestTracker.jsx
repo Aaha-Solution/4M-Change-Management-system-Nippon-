@@ -10,7 +10,9 @@ export const L3RequestTracker = ({
   userDept,
   logAction,
   setToastMsg,
-  fetchChanges
+  fetchChanges,
+  autoOpenChangeNo,
+  clearAutoOpen
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingLogs, setIsFetchingLogs] = useState(false);
@@ -71,6 +73,22 @@ export const L3RequestTracker = ({
     fetchLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (autoOpenChangeNo && approvalLogs.length > 0) {
+      const log = approvalLogs.find(l => l.changeNo === autoOpenChangeNo);
+      if (log) {
+        // Auto-select the row to populate the form on the left
+        handleSelectRow(log);
+        // Auto-open the details popup
+        handleViewDetails(log);
+        // Clear the state so it doesn't open again on re-renders
+        if (clearAutoOpen) {
+          clearAutoOpen();
+        }
+      }
+    }
+  }, [autoOpenChangeNo, approvalLogs]);
 
   // Map database department to L3 acting department
   const mapDbDeptToL3Dept = (dbDept) => {
@@ -231,6 +249,68 @@ export const L3RequestTracker = ({
 
 
 
+  const handleModalDecision = async (status) => {
+    if (!selectedLog) return;
+    
+    setIsSubmitting(true);
+    setValidationError('');
+
+    const updatedLog = {
+      changeNo: selectedLog.changeNo,
+      date: selectedLog.date,
+      requester: selectedLog.requester,
+      ped: actingDept === 'PED' ? status : selectedLog.ped,
+      quality: actingDept === 'Quality' ? status : selectedLog.quality,
+      production: actingDept === 'Production' ? status : selectedLog.production,
+      maintenance: actingDept === 'Maintenance' ? status : selectedLog.maintenance,
+      pcl: actingDept === 'PC & L' ? status : selectedLog.pcl,
+      materials: actingDept === 'Materials' ? status : selectedLog.materials,
+      marketing: actingDept === 'Marketing' ? status : selectedLog.marketing,
+      hr: actingDept === 'HR' ? status : selectedLog.hr,
+      safety: actingDept === 'Safety' ? status : selectedLog.safety,
+      unitHead: actingDept === 'Unit Head' ? status : selectedLog.unitHead
+    };
+
+    try {
+      await createL3Approval(updatedLog);
+      
+      if (setToastMsg) {
+        setToastMsg(`Successfully saved ${actingDept} approval status as ${status} for ${selectedLog.changeNo}`);
+      }
+      if (logAction) {
+        logAction('L3 Log Saved', `Successfully logged L3 approval status: "${status}" for department: ${actingDept} and Change No: ${selectedLog.changeNo}`);
+      }
+
+      await fetchLogs();
+      if (fetchChanges) {
+        await fetchChanges();
+      }
+      
+      // Update selectedLog state in-place so view refreshes immediately
+      setSelectedLog(prev => ({
+        ...prev,
+        ped: actingDept === 'PED' ? status : prev.ped,
+        quality: actingDept === 'Quality' ? status : prev.quality,
+        production: actingDept === 'Production' ? status : prev.production,
+        maintenance: actingDept === 'Maintenance' ? status : prev.maintenance,
+        pcl: actingDept === 'PC & L' ? status : prev.pcl,
+        materials: actingDept === 'Materials' ? status : prev.materials,
+        marketing: actingDept === 'Marketing' ? status : prev.marketing,
+        hr: actingDept === 'HR' ? status : prev.hr,
+        safety: actingDept === 'Safety' ? status : prev.safety,
+        unitHead: actingDept === 'Unit Head' ? status : prev.unitHead
+      }));
+      
+      handleCancelEdit();
+    } catch (err) {
+      console.error(err);
+      const errMsg = err.response?.data?.error || 'Error saving L3 approval log to database.';
+      if (setToastMsg) setToastMsg(errMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleViewDetails = async (log) => {
     setIsFetchingDetails(true);
     try {
@@ -354,6 +434,30 @@ export const L3RequestTracker = ({
   const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
 
   const canEdit = isAdmin || (isHOD && userMappedDept === mappedRaisedDept);
+
+  const selectedLogL2Accepted = !selectedLog || selectedLog.l2Decision === 'Accepted';
+
+  const getSelectedLogUserStatus = () => {
+    if (!selectedLog) return '';
+    let status = 'Pending';
+    if (actingDept === 'PED') status = selectedLog.ped;
+    else if (actingDept === 'Quality') status = selectedLog.quality;
+    else if (actingDept === 'Production') status = selectedLog.production;
+    else if (actingDept === 'Maintenance') status = selectedLog.maintenance;
+    else if (actingDept === 'PC & L') status = selectedLog.pcl;
+    else if (actingDept === 'Materials') status = selectedLog.materials;
+    else if (actingDept === 'Marketing') status = selectedLog.marketing;
+    else if (actingDept === 'HR') status = selectedLog.hr;
+    else if (actingDept === 'Safety') status = selectedLog.safety;
+    else if (actingDept === 'Unit Head') status = selectedLog.unitHead;
+    return status;
+  };
+
+  const selectedLogAlreadyValidated = selectedLog && getSelectedLogUserStatus() !== 'Pending';
+
+  const selectedLogRaisedDept = selectedLog ? selectedLog.raisedDept : '';
+  const selectedLogMappedRaisedDept = mapDbDeptToL3Dept(selectedLogRaisedDept);
+  const canEditModal = isAdmin || (isHOD && userMappedDept === selectedLogMappedRaisedDept);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
@@ -1052,10 +1156,50 @@ export const L3RequestTracker = ({
             </div>
 
             {/* Footer */}
-            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end">
+            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                {selectedLog && canEditModal && selectedLogL2Accepted && !selectedLogAlreadyValidated && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-500 mr-1">Your Approval Status ({actingDept}):</span>
+                    <button
+                      onClick={() => handleModalDecision('Approved')}
+                      disabled={isSubmitting}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-750 disabled:opacity-50 text-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1"
+                    >
+                      <CheckCircle2 size={13} />
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleModalDecision('Rejected')}
+                      disabled={isSubmitting}
+                      className="px-3 py-1.5 bg-rose-600 hover:bg-rose-750 disabled:opacity-50 text-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1"
+                    >
+                      <X size={13} />
+                      Reject
+                    </button>
+                  </div>
+                )}
+                {selectedLog && selectedLogAlreadyValidated && (
+                  <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 border border-emerald-150 px-2.5 py-1.5 rounded-lg">
+                    <CheckCircle2 size={13} className="text-emerald-500" />
+                    <span>You signed off this request as: <span className="font-extrabold uppercase">{getSelectedLogUserStatus()}</span></span>
+                  </span>
+                )}
+                {selectedLog && !selectedLogL2Accepted && (
+                  <span className="text-[11px] font-semibold text-rose-500 bg-rose-50 border border-rose-150 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                    <AlertTriangle size={13} className="text-rose-500" />
+                    <span>L3 Sign-off blocked (L2 Validation is {selectedLog.l2Decision || 'Pending'})</span>
+                  </span>
+                )}
+                {selectedLog && selectedLogL2Accepted && !canEditModal && (
+                  <span className="text-[11px] font-semibold text-slate-500 bg-slate-100/60 border border-slate-200 px-2.5 py-1.5 rounded-lg">
+                    Not Authorized to sign off (Only HOD of {selectedLogMappedRaisedDept} department or Admin)
+                  </span>
+                )}
+              </div>
               <button 
                 onClick={() => setSelectedLog(null)}
-                className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
+                className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap self-end sm:self-auto"
               >
                 Close Details
               </button>
