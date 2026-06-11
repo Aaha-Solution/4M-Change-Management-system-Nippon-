@@ -246,7 +246,14 @@ export const L1Request = ({
   const [effectivenessMonitoring, setEffectivenessMonitoring] = useState('None');
   const [improvementTableData, setImprovementTableData] = useState([]);
   const [isImprovementModalOpen, setIsImprovementModalOpen] = useState(false);
+  const [modalError, setModalError] = useState('');
   const lastAreaRef = useRef('');
+
+  useEffect(() => {
+    if (!isImprovementModalOpen) {
+      setModalError('');
+    }
+  }, [isImprovementModalOpen]);
 
   useEffect(() => {
     const area = (improvementArea || '').toLowerCase();
@@ -350,7 +357,19 @@ export const L1Request = ({
     }
   };
 
-
+  const handleDoneClick = () => {
+    if (!checkTableCompleteness(improvementTableData)) {
+      setModalError('Please fill in all empty fields marked in red.');
+      setErrors(prev => ({
+        ...prev,
+        improvementTable: `Please fill in all fields in the ${improvementArea} Table.`
+      }));
+      return;
+    }
+    setModalError('');
+    setErrors(prev => ({ ...prev, improvementTable: '' }));
+    setIsImprovementModalOpen(false);
+  };
 
   const handleCheckboxChange = (name) => {
     setChangeIn(prev => ({
@@ -1578,7 +1597,9 @@ export const L1Request = ({
                             type="date"
                             value={row.date}
                             onChange={(e) => handleUpdateCell(idx, 'date', e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                            className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                              modalError && !row.date ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                            }`}
                           />
                         </td>
                         {(improvementArea || '').toLowerCase() === 'cost' && (
@@ -1589,7 +1610,9 @@ export const L1Request = ({
                                 placeholder="0"
                                 value={row.monthlySave}
                                 onChange={(e) => handleUpdateCell(idx, 'monthlySave', e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  modalError && !row.monthlySave ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
                               />
                             </td>
                             <td className="p-[8px]">
@@ -1598,7 +1621,9 @@ export const L1Request = ({
                                 placeholder="0"
                                 value={row.annualSave}
                                 onChange={(e) => handleUpdateCell(idx, 'annualSave', e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  modalError && !row.annualSave ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
                               />
                             </td>
                             <td className="p-[8px]">
@@ -1607,7 +1632,9 @@ export const L1Request = ({
                                 placeholder="e.g. 6 Months"
                                 value={row.roi}
                                 onChange={(e) => handleUpdateCell(idx, 'roi', e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  modalError && !row.roi ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
                               />
                             </td>
                           </>
@@ -1620,7 +1647,9 @@ export const L1Request = ({
                                 placeholder="0"
                                 value={row.currentProd}
                                 onChange={(e) => handleUpdateCell(idx, 'currentProd', e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  modalError && !row.currentProd ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
                               />
                             </td>
                             <td className="p-[8px]">
@@ -1629,7 +1658,9 @@ export const L1Request = ({
                                 placeholder="0"
                                 value={row.improvedProd}
                                 onChange={(e) => handleUpdateCell(idx, 'improvedProd', e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  modalError && !row.improvedProd ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
                               />
                             </td>
                           </>
@@ -1642,7 +1673,9 @@ export const L1Request = ({
                                 placeholder="0"
                                 value={row.currentPpm}
                                 onChange={(e) => handleUpdateCell(idx, 'currentPpm', e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  modalError && !row.currentPpm ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
                               />
                             </td>
                             <td className="p-[8px]">
@@ -1651,7 +1684,9 @@ export const L1Request = ({
                                 placeholder="0"
                                 value={row.reducedPpm}
                                 onChange={(e) => handleUpdateCell(idx, 'reducedPpm', e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  modalError && !row.reducedPpm ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
                               />
                             </td>
                           </>
@@ -1682,10 +1717,18 @@ export const L1Request = ({
               </button>
             </div>
 
-            <div className="bg-slate-50 px-[24px] py-[14px] border-t border-slate-100 flex items-center justify-end gap-[12px]">
+            <div className="bg-slate-50 px-[24px] py-[14px] border-t border-slate-100 flex items-center justify-between gap-[12px]">
+              <div className="text-rose-600 text-[11.5px] font-bold">
+                {modalError && (
+                  <span className="flex items-center gap-[6px]">
+                    <AlertTriangle size={14} className="text-rose-500 shrink-0" />
+                    {modalError}
+                  </span>
+                )}
+              </div>
               <button
                 type="button"
-                onClick={() => setIsImprovementModalOpen(false)}
+                onClick={handleDoneClick}
                 className="bg-[#0066cc] hover:bg-[#0052a3] text-white px-[20px] py-[8px] rounded-[6px] text-[12px] font-bold shadow-sm transition-colors cursor-pointer"
               >
                 Done
