@@ -20,6 +20,14 @@ const pool = mysql.createPool({
     const connection = await pool.getConnection();
     console.log('✅ Connected to MySQL database successfully.');
     
+    // Ensure max_allowed_packet is high enough for base64 file uploads (prevent ECONNRESET)
+    try {
+      await connection.query('SET GLOBAL max_allowed_packet = 67108864');
+      console.log('✅ Set GLOBAL max_allowed_packet to 64MB.');
+    } catch (err) {
+      console.warn('⚠️ Could not set global max_allowed_packet:', err.message);
+    }
+
     // Ensure l2_attachments table exists
     await connection.query(`
       CREATE TABLE IF NOT EXISTS l2_attachments (
