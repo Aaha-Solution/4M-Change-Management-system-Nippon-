@@ -6,6 +6,7 @@ export const getL3Approvals = async () => {
     `SELECT c.id as changeNo, 
             DATE_FORMAT(c.date, '%e %b') as date, 
             COALESCE(l1.request_by, u.name, c.requester) as requester,
+            COALESCE(l1.dept, u.department) as raisedDept,
             v.status as l2Decision,
             v.remarks as l2Remarks,
             COALESCE(l.ped, 'Pending') as ped,
@@ -133,19 +134,48 @@ export const addL3ApprovalLog = async (logData) => {
       ]
     );
 
-    const allDecided =
-      ['Approved', 'Rejected'].includes(ped) &&
-      ['Approved', 'Rejected'].includes(quality) &&
-      ['Approved', 'Rejected'].includes(production) &&
-      ['Approved', 'Rejected'].includes(maintenance) &&
-      ['Approved', 'Rejected'].includes(pcl) &&
-      ['Approved', 'Rejected'].includes(materials) &&
-      ['Approved', 'Rejected'].includes(marketing) &&
-      ['Approved', 'Rejected'].includes(hr) &&
-      ['Approved', 'Rejected'].includes(safety) &&
-      ['Approved', 'Rejected'].includes(unitHead);
+    // Fetch raisedDept
+    const [crRows] = await connection.query(
+      `SELECT COALESCE(l1.dept, u.department) as raisedDept
+       FROM change_requests c
+       LEFT JOIN l1_requests l1 ON c.id = l1.change_no
+       LEFT JOIN users u ON c.requester = u.email
+       WHERE c.id = ?`,
+      [changeNo]
+    );
+    const raisedDept = crRows.length > 0 ? crRows[0].raisedDept : '';
 
-    if (allDecided) {
+    const mapDbDeptToL3Dept = (dbDept) => {
+      if (!dbDept) return 'Quality';
+      const dept = dbDept.trim().toLowerCase();
+      if (dept === 'qad' || dept === 'quality') return 'Quality';
+      if (dept === 'ped') return 'PED';
+      if (dept === 'production') return 'Production';
+      if (dept === 'maintenance') return 'Maintenance';
+      if (dept === 'pc & l' || dept === 'pcl') return 'PC & L';
+      if (dept === 'materials') return 'Materials';
+      if (dept === 'marketing') return 'Marketing';
+      if (dept === 'hr') return 'HR';
+      if (dept === 'safety') return 'Safety';
+      if (dept === 'unit head' || dept === 'unit_head') return 'Unit Head';
+      return 'Quality';
+    };
+
+    const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
+
+    let isSpecificDecided = false;
+    if (mappedRaisedDept === 'PED') isSpecificDecided = ['Approved', 'Rejected'].includes(ped);
+    else if (mappedRaisedDept === 'Quality') isSpecificDecided = ['Approved', 'Rejected'].includes(quality);
+    else if (mappedRaisedDept === 'Production') isSpecificDecided = ['Approved', 'Rejected'].includes(production);
+    else if (mappedRaisedDept === 'Maintenance') isSpecificDecided = ['Approved', 'Rejected'].includes(maintenance);
+    else if (mappedRaisedDept === 'PC & L') isSpecificDecided = ['Approved', 'Rejected'].includes(pcl);
+    else if (mappedRaisedDept === 'Materials') isSpecificDecided = ['Approved', 'Rejected'].includes(materials);
+    else if (mappedRaisedDept === 'Marketing') isSpecificDecided = ['Approved', 'Rejected'].includes(marketing);
+    else if (mappedRaisedDept === 'HR') isSpecificDecided = ['Approved', 'Rejected'].includes(hr);
+    else if (mappedRaisedDept === 'Safety') isSpecificDecided = ['Approved', 'Rejected'].includes(safety);
+    else if (mappedRaisedDept === 'Unit Head') isSpecificDecided = ['Approved', 'Rejected'].includes(unitHead);
+
+    if (isSpecificDecided) {
       await connection.query(
         `UPDATE change_requests SET status = 'Completed' WHERE id = ?`,
         [changeNo]
