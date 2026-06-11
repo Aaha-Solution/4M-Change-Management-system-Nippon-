@@ -20,6 +20,7 @@ export const L1Request = ({
   setToastMsg
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isMachineModalOpen, setIsMachineModalOpen] = useState(false);
   const [tempProcessName, setTempProcessName] = useState('');
@@ -317,129 +318,141 @@ export const L1Request = ({
     }));
   };
 
+  const handleHodApprovalToggle = (deptName) => {
+    const selected = hodApproval ? hodApproval.split(',').map(s => s.trim()).filter(Boolean) : [];
+    let updated;
+    if (selected.includes(deptName)) {
+      updated = selected.filter(s => s !== deptName);
+    } else {
+      updated = [...selected, deptName];
+    }
+    setHodApproval(updated.join(', '));
+    if (errors.hodApproval) setErrors(prev => ({ ...prev, hodApproval: '' }));
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+
+  const validateForm = () => {
+    const newErrors = {};
 
     if (!unit) {
-      setToastMsg('Please select a Unit.');
-      return;
+      newErrors.unit = 'Unit is required.';
     }
 
     const selectedChangesIn = Object.keys(changeIn).filter(k => changeIn[k]).join(', ');
     if (!selectedChangesIn) {
-      setToastMsg('Please select at least one Change In option.');
-      return;
+      newErrors.changeIn = 'Please select at least one Option.';
     }
 
     if (!dept || !dbDepartments.includes(dept)) {
-      setToastMsg('Please select a valid Department.');
-      return;
+      newErrors.dept = 'Please select a valid Department.';
     }
 
     if (!requestBy) {
-      setToastMsg('Please select a Requester Name.');
-      return;
+      newErrors.requestBy = 'Requester Name is required.';
     }
 
     if (!processName || !processName.trim()) {
-      setToastMsg('Please select a Process Name.');
-      return;
+      newErrors.processName = 'Please select a Process Name.';
     }
 
     if (!processLine || !processLine.trim()) {
-      setToastMsg('Please enter a Process Line.');
-      return;
+      newErrors.processLine = 'Please enter a Process Line.';
     }
 
     if (!machineNo || !machineNo.trim()) {
-      setToastMsg('Please select a Machine No.');
-      return;
+      newErrors.machineNo = 'Please select a Machine No.';
     }
 
     if (!context || context.trim().length < 10) {
-      setToastMsg('Context of Change must be at least 10 characters.');
-      return;
+      newErrors.context = 'Context of Change must be at least 10 characters.';
     }
 
     if (!description || description.trim().length < 20) {
-      setToastMsg('Detailed Change Description must be at least 20 characters.');
-      return;
+      newErrors.description = 'Detailed description must be at least 20 characters.';
     }
 
     if (!improvementArea) {
-      setToastMsg('Please select a Change Improvement Area.');
-      return;
+      newErrors.improvementArea = 'Please select a Change Improvement Area.';
     }
 
     if (!changeType) {
-      setToastMsg('Please select a Permanent / Temporary Change option.');
-      return;
+      newErrors.changeType = 'Please select a Permanent / Temporary option.';
     }
 
     if (!dateStart || !dateStart.trim()) {
-      setToastMsg('Please enter an Implement / Change Date Start.');
-      return;
-    }
-
-    const parsedRequestDate = parseDDMMYYYYToDate(requestedDate);
-    const parsedDateStart = parseDDMMYYYYToDate(dateStart);
-    if (parsedDateStart && parsedRequestDate) {
-      const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
-      const dRequest = new Date(parsedRequestDate.getFullYear(), parsedRequestDate.getMonth(), parsedRequestDate.getDate());
-      if (dStart < dRequest) {
-        setToastMsg('Implement / Change Date Start should be >= Change Request Date.');
-        return;
+      newErrors.dateStart = 'Please enter an Implement / Change Date Start.';
+    } else {
+      const parsedRequestDate = parseDDMMYYYYToDate(requestedDate);
+      const parsedDateStart = parseDDMMYYYYToDate(dateStart);
+      if (parsedDateStart && parsedRequestDate) {
+        const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
+        const dRequest = new Date(parsedRequestDate.getFullYear(), parsedRequestDate.getMonth(), parsedRequestDate.getDate());
+        if (dStart < dRequest) {
+          newErrors.dateStart = 'Start Date should be >= Change Request Date.';
+        }
       }
     }
 
     if (!traceFrom || traceFrom.trim().length < 20) {
-      setToastMsg('Part Traceability Details (From Changes) must be at least 20 characters.');
-      return;
+      newErrors.traceFrom = 'Part Traceability Details (From) must be at least 20 characters.';
     }
 
     if (!dateClose || !dateClose.trim()) {
-      setToastMsg('Please enter a Change Date Close.');
-      return;
-    }
-
-    const parsedDateClose = parseDDMMYYYYToDate(dateClose);
-    if (parsedDateClose && parsedDateStart) {
-      const dClose = new Date(parsedDateClose.getFullYear(), parsedDateClose.getMonth(), parsedDateClose.getDate());
-      const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
-      if (dClose < dStart) {
-        setToastMsg('Change Date Close should be >= Implement / Change Date Start.');
-        return;
+      newErrors.dateClose = 'Please enter a Change Date Close.';
+    } else {
+      const parsedDateStart = parseDDMMYYYYToDate(dateStart);
+      const parsedDateClose = parseDDMMYYYYToDate(dateClose);
+      if (parsedDateClose && parsedDateStart) {
+        const dClose = new Date(parsedDateClose.getFullYear(), parsedDateClose.getMonth(), parsedDateClose.getDate());
+        const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
+        if (dClose < dStart) {
+          newErrors.dateClose = 'Close Date should be >= Start Date.';
+        }
       }
     }
 
     if (!traceTo || traceTo.trim().length < 20) {
-      setToastMsg('Part Traceability Details (To Changes) must be at least 20 characters.');
-      return;
+      newErrors.traceTo = 'Part Traceability (To) must be at least 20 characters.';
     }
 
     if (!riskAnalysis || !riskAnalysis.trim()) {
-      setToastMsg('Please enter a Risk Analysis.');
-      return;
+      newErrors.riskAnalysis = 'Please enter a Risk Analysis.';
     }
 
     if (!sopUpdate || !sopUpdate.trim()) {
-      setToastMsg('Please describe the Update in SOP / WI / Control Plan / FMEA.');
-      return;
+      newErrors.sopUpdate = 'Please describe the Update in SOP / WI / Control Plan / FMEA.';
     }
 
     if (!hodApproval || !hodApproval.trim()) {
-      setToastMsg('Please select the User Dept HOD Approval.');
-      return;
+      newErrors.hodApproval = 'Please select the User Dept HOD Approval.';
     }
 
     if (!customerApproval) {
-      setToastMsg('Please select if Customer Approval is Required.');
+      newErrors.customerApproval = 'Please select if Customer Approval is Required.';
+    }
+
+    return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      setToastMsg('Please fix the errors before submitting.');
+      const firstErrorKey = Object.keys(formErrors)[0];
+      const errorElement = document.getElementById(firstErrorKey);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return;
     }
 
-
+    setErrors({});
     setIsSubmitting(true);
+
+    const selectedChangesIn = Object.keys(changeIn).filter(k => changeIn[k]).join(', ');
 
     const l1Data = {
       changeNo,
@@ -610,15 +623,24 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit <span className="text-rose-500">*</span></label>
               <select
+                id="unit"
                 value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => {
+                  setUnit(e.target.value);
+                  if (errors.unit) setErrors(prev => ({ ...prev, unit: '' }));
+                }}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                  errors.unit 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               >
                 <option value="">— Select Unit —</option>
                 <option value="UNIT-Pdy">UNIT-Pdy</option>
                 <option value="UNIT-Klk">UNIT-Klk</option>
                 <option value="UNIT-Che">UNIT-Che</option>
               </select>
+              {errors.unit && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.unit}</span>}
             </div>
 
             {/* 4M CHANGE NO */}
@@ -675,7 +697,7 @@ export const L1Request = ({
           </div>
 
           {/* CHANGE IN */}
-          <div className="space-y-[6px] pt-[8px]">
+          <div className="space-y-[6px] pt-[8px]" id="changeIn">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In <span className="text-rose-500">*</span></label>
             <div className="flex flex-wrap gap-x-[16px] gap-y-[8px] text-[12px] text-slate-700 font-medium select-none">
               {Object.keys(changeIn).map(key => (
@@ -683,13 +705,17 @@ export const L1Request = ({
                   <input
                     type="checkbox"
                     checked={changeIn[key]}
-                    onChange={() => handleCheckboxChange(key)}
+                    onChange={() => {
+                      handleCheckboxChange(key);
+                      if (errors.changeIn) setErrors(prev => ({ ...prev, changeIn: '' }));
+                    }}
                     className="w-[14px] h-[14px] rounded border-slate-300 text-[#0066cc] focus:ring-[#0066cc]"
                   />
                   <span>{key}</span>
                 </label>
               ))}
             </div>
+            {errors.changeIn && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.changeIn}</span>}
           </div>
         </div>
 
@@ -702,15 +728,24 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request Dept <span className="text-rose-500">*</span></label>
               <select
+                id="dept"
                 value={dept}
-                onChange={(e) => setDept(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => {
+                  setDept(e.target.value);
+                  if (errors.dept) setErrors(prev => ({ ...prev, dept: '' }));
+                }}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                  errors.dept 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               >
                 <option value="">— Select Department —</option>
                 {dbDepartments.map(d => (
                   <option key={d} value={d}>{d}</option>
                 ))}
               </select>
+              {errors.dept && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.dept}</span>}
             </div>
 
             {/* CHANGE REQUEST BY */}
@@ -719,10 +754,16 @@ export const L1Request = ({
               <input
                 type="text"
                 readOnly
+                id="requestBy"
                 value={requestBy}
                 placeholder="Select Department to populate"
-                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 font-semibold cursor-not-allowed"
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none font-semibold cursor-not-allowed ${
+                  errors.requestBy
+                    ? 'border-rose-500 bg-rose-50/20 text-rose-700'
+                    : 'border-slate-200 bg-slate-100 text-slate-550'
+                }`}
               />
+              {errors.requestBy && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.requestBy}</span>}
             </div>
 
             {/* PROCESS NAME */}
@@ -730,9 +771,17 @@ export const L1Request = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name <span className="text-rose-500">*</span></label>
               <div className="flex gap-[8px]">
                 <select
+                  id="processName"
                   value={processName}
-                  onChange={(e) => setProcessName(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                  onChange={(e) => {
+                    setProcessName(e.target.value);
+                    if (errors.processName) setErrors(prev => ({ ...prev, processName: '' }));
+                  }}
+                  className={`flex-1 bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                    errors.processName 
+                      ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                  }`}
                 >
                   <option value="">— Select or Add Process —</option>
                   {dbProcesses.map(p => (
@@ -751,6 +800,7 @@ export const L1Request = ({
                   <Plus size={16} />
                 </button>
               </div>
+              {errors.processName && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.processName}</span>}
             </div>
 
             {/* PROCESS LINE */}
@@ -758,11 +808,20 @@ export const L1Request = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line <span className="text-rose-500">*</span></label>
               <input
                 type="text"
+                id="processLine"
                 placeholder="e.g. Line 3 / Bay B"
                 value={processLine}
-                onChange={(e) => setProcessLine(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => {
+                  setProcessLine(e.target.value);
+                  if (errors.processLine) setErrors(prev => ({ ...prev, processLine: '' }));
+                }}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                  errors.processLine 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               />
+              {errors.processLine && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.processLine}</span>}
             </div>
 
             {/* MACHINE NO */}
@@ -770,9 +829,17 @@ export const L1Request = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No <span className="text-rose-500">*</span></label>
               <div className="flex gap-[8px] sm:max-w-[49%] lg:max-w-[24.4%]">
                 <select
+                  id="machineNo"
                   value={machineNo}
-                  onChange={(e) => setMachineNo(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                  onChange={(e) => {
+                    setMachineNo(e.target.value);
+                    if (errors.machineNo) setErrors(prev => ({ ...prev, machineNo: '' }));
+                  }}
+                  className={`flex-1 bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                    errors.machineNo 
+                      ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                  }`}
                 >
                   <option value="">— Select or Add Machine —</option>
                   {dbMachines.map(m => (
@@ -791,6 +858,7 @@ export const L1Request = ({
                   <Plus size={16} />
                 </button>
               </div>
+              {errors.machineNo && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.machineNo}</span>}
             </div>
           </div>
         </div>
@@ -804,26 +872,48 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change <span className="text-rose-500">*</span></label>
               <textarea
+                id="context"
                 placeholder="Brief description of WHY this change is needed (min 10 characters)..."
                 value={context}
-                onChange={(e) => setContext(e.target.value)}
+                onChange={(e) => {
+                  setContext(e.target.value);
+                  if (errors.context) setErrors(prev => ({ ...prev, context: '' }));
+                }}
                 rows={4}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 resize-none ${
+                  errors.context 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               />
-              <span className="block text-[9px] text-slate-400">{context.length} / 10 min</span>
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>{context.length} / 10 min</span>
+                {errors.context && <span className="text-rose-500 font-bold">{errors.context}</span>}
+              </div>
             </div>
 
             {/* DETAILED CHANGE DESCRIPTION */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Detailed Change Description <span className="text-rose-500">*</span></label>
               <textarea
+                id="description"
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
+                }}
                 rows={4}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 resize-none ${
+                  errors.description 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               />
-              <span className="block text-[9px] text-slate-400">{description.length} / 20 min</span>
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>{description.length} / 20 min</span>
+                {errors.description && <span className="text-rose-500 font-bold">{errors.description}</span>}
+              </div>
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -842,9 +932,17 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Improvement Area <span className="text-rose-500">*</span></label>
               <select
+                id="improvementArea"
                 value={improvementArea}
-                onChange={(e) => setImprovementArea(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => {
+                  setImprovementArea(e.target.value);
+                  if (errors.improvementArea) setErrors(prev => ({ ...prev, improvementArea: '' }));
+                }}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                  errors.improvementArea 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               >
                 <option value="">— Select Area —</option>
                 <option value="Productivity">Productivity</option>
@@ -856,6 +954,7 @@ export const L1Request = ({
                 <option value="Environment">Environment</option>
                 <option value="Poka Yoke">Poka Yoke</option>
               </select>
+              {errors.improvementArea && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.improvementArea}</span>}
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -881,39 +980,68 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Permanent / Temporary Change <span className="text-rose-500">*</span></label>
               <select
+                id="changeType"
                 value={changeType}
-                onChange={(e) => setChangeType(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => {
+                  setChangeType(e.target.value);
+                  if (errors.changeType) setErrors(prev => ({ ...prev, changeType: '' }));
+                }}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                  errors.changeType 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               >
                 <option value="">— Select —</option>
                 <option value="Permanent">Permanent</option>
                 <option value="Temporary">Temporary</option>
               </select>
+              {errors.changeType && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.changeType}</span>}
             </div>
 
             {/* IMPLEMENT / CHANGE DATE START */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start <span className="text-rose-500">*</span></label>
               <CustomDatePicker
+                id="dateStart"
                 value={dateStart}
-                onChange={setDateStart}
+                onChange={(val) => {
+                  setDateStart(val);
+                  if (errors.dateStart) setErrors(prev => ({ ...prev, dateStart: '' }));
+                }}
                 containerClassName=""
-                inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                  errors.dateStart 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
                 buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
+              {errors.dateStart && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.dateStart}</span>}
             </div>
 
             {/* PART TRACEABILITY DETAILS (FROM CHANGES) */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes) <span className="text-rose-500">*</span></label>
               <textarea
+                id="traceFrom"
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={traceFrom}
-                onChange={(e) => setTraceFrom(e.target.value)}
+                onChange={(e) => {
+                  setTraceFrom(e.target.value);
+                  if (errors.traceFrom) setErrors(prev => ({ ...prev, traceFrom: '' }));
+                }}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 resize-none ${
+                  errors.traceFrom 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               />
-              <span className="block text-[9px] text-slate-400">{traceFrom.length} / 20 min</span>
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>{traceFrom.length} / 20 min</span>
+                {errors.traceFrom && <span className="text-rose-500 font-bold">{errors.traceFrom}</span>}
+              </div>
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -925,25 +1053,45 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close <span className="text-rose-500">*</span></label>
               <CustomDatePicker
+                id="dateClose"
                 value={dateClose}
-                onChange={setDateClose}
+                onChange={(val) => {
+                  setDateClose(val);
+                  if (errors.dateClose) setErrors(prev => ({ ...prev, dateClose: '' }));
+                }}
                 containerClassName=""
-                inputClassName="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                  errors.dateClose 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
                 buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
+              {errors.dateClose && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.dateClose}</span>}
             </div>
 
             {/* PART TRACEABILITY DETAILS (TO CHANGES) */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (To Changes) <span className="text-rose-500">*</span></label>
               <textarea
+                id="traceTo"
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={traceTo}
-                onChange={(e) => setTraceTo(e.target.value)}
+                onChange={(e) => {
+                  setTraceTo(e.target.value);
+                  if (errors.traceTo) setErrors(prev => ({ ...prev, traceTo: '' }));
+                }}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 resize-none ${
+                  errors.traceTo 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               />
-              <span className="block text-[9px] text-slate-400">{traceTo.length} / 20 min</span>
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>{traceTo.length} / 20 min</span>
+                {errors.traceTo && <span className="text-rose-500 font-bold">{errors.traceTo}</span>}
+              </div>
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -962,12 +1110,21 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis <span className="text-rose-500">*</span></label>
               <textarea
+                id="riskAnalysis"
                 placeholder="Describe potential risks, their likelihood, impact, and mitigation measures..."
                 value={riskAnalysis}
-                onChange={(e) => setRiskAnalysis(e.target.value)}
+                onChange={(e) => {
+                  setRiskAnalysis(e.target.value);
+                  if (errors.riskAnalysis) setErrors(prev => ({ ...prev, riskAnalysis: '' }));
+                }}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 resize-none ${
+                  errors.riskAnalysis 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               />
+              {errors.riskAnalysis && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.riskAnalysis}</span>}
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -979,12 +1136,21 @@ export const L1Request = ({
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Update in SOP / WI / Control Plan / FMEA <span className="text-rose-500">*</span></label>
               <textarea
+                id="sopUpdate"
                 placeholder="Describe the updates required in SOP, Work Instructions, Control Plan, FMEA, etc..."
                 value={sopUpdate}
-                onChange={(e) => setSopUpdate(e.target.value)}
+                onChange={(e) => {
+                  setSopUpdate(e.target.value);
+                  if (errors.sopUpdate) setErrors(prev => ({ ...prev, sopUpdate: '' }));
+                }}
                 rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 resize-none ${
+                  errors.sopUpdate 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               />
+              {errors.sopUpdate && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.sopUpdate}</span>}
             </div>
 
             {/* Click to upload updated documents */}
@@ -993,54 +1159,68 @@ export const L1Request = ({
             </div>
 
             {/* USER DEPT HOD APPROVAL */}
-            <div className="space-y-[6px]">
+            <div className="space-y-[6px]" id="hodApproval">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">User Dept HOD Approval <span className="text-rose-500">*</span></label>
               {dbDepartments.length > 0 ? (
                 <div className="flex flex-wrap gap-[10px] pt-[4px]">
-                  {dbDepartments.map((deptName) => (
-                    <label 
-                      key={deptName} 
-                      className={`flex items-center gap-[8px] py-[6px] px-[12px] border rounded-[6px] cursor-pointer hover:bg-slate-50 transition-all w-fit ${
-                        hodApproval === deptName 
-                          ? 'border-[#0066cc] bg-[#0066cc]/5' 
-                          : 'border-slate-200 bg-white'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="hodApproval"
-                        value={deptName}
-                        checked={hodApproval === deptName}
-                        onChange={(e) => setHodApproval(e.target.value)}
-                        className="w-[14px] h-[14px] text-[#0066cc] focus:ring-[#0066cc]"
-                      />
-                      <div className="text-[12px] flex items-center">
-                        <span className="inline-block bg-slate-100 border border-slate-250 text-slate-500 rounded px-[6px] py-[1px] text-[9px] font-bold uppercase">
-                          {deptName}
-                        </span>
-                      </div>
-                    </label>
-                  ))}
+                  {dbDepartments.map((deptName) => {
+                    const selectedDepts = hodApproval ? hodApproval.split(',').map(s => s.trim()).filter(Boolean) : [];
+                    const isChecked = selectedDepts.includes(deptName);
+                    return (
+                      <label 
+                        key={deptName} 
+                        className={`flex items-center gap-[8px] py-[6px] px-[12px] border rounded-[6px] cursor-pointer hover:bg-slate-50 transition-all w-fit select-none ${
+                          isChecked 
+                            ? 'border-[#0066cc] bg-[#0066cc]/5' 
+                            : errors.hodApproval
+                            ? 'border-rose-300 bg-rose-50/10'
+                            : 'border-slate-200 bg-white'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleHodApprovalToggle(deptName)}
+                          className="w-[14px] h-[14px] rounded border-slate-300 text-[#0066cc] focus:ring-[#0066cc]"
+                        />
+                        <div className="text-[12px] flex items-center">
+                          <span className="inline-block bg-slate-100 border border-slate-250 text-slate-500 rounded px-[6px] py-[1px] text-[9px] font-bold uppercase">
+                            {deptName}
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-slate-400 text-[12px] italic bg-slate-50 border border-slate-200 rounded-[6px] p-3 text-center">
                   No departments found.
                 </div>
               )}
+              {errors.hodApproval && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.hodApproval}</span>}
             </div>
 
             {/* CUSTOMER APPROVAL REQUIRED */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required <span className="text-rose-500">*</span></label>
               <select
+                id="customerApproval"
                 value={customerApproval}
-                onChange={(e) => setCustomerApproval(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                onChange={(e) => {
+                  setCustomerApproval(e.target.value);
+                  if (errors.customerApproval) setErrors(prev => ({ ...prev, customerApproval: '' }));
+                }}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                  errors.customerApproval 
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
               >
                 <option value="">— Select —</option>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
+              {errors.customerApproval && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.customerApproval}</span>}
             </div>
 
 
