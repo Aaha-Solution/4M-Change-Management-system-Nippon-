@@ -518,6 +518,10 @@ export const L1Request = ({
       newErrors.fileRisk = 'Supporting file for Risk Analysis is required.';
     }
 
+    if (!fileSop) {
+      newErrors.fileSop = 'Supporting files for SOP/WI/Control Plan/FMEA are required.';
+    }
+
     return newErrors;
   };
 
@@ -1260,7 +1264,7 @@ export const L1Request = ({
 
             {/* Click to upload updated documents */}
             <div>
-              {renderAttachmentInput("Upload Supporting Files (SOP, WI, Control Plan, FMEA)", fileSop, setFileSop, "file-sop-input", "fileSop")}
+              {renderAttachmentInput("Upload Supporting Files (SOP, WI, Control Plan, FMEA)", fileSop, setFileSop, "file-sop-input", "fileSop", true)}
             </div>
 
             {/* USER DEPT HOD APPROVAL */}
