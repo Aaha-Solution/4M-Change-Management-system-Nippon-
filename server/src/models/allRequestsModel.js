@@ -2,23 +2,27 @@ import pool from '../config/db.js';
 import { broadcast } from '../config/websocket.js';
 
 export const getChanges = async () => {
-  // Self-healing: auto-complete any change requests that have all L3 approvals set
+  // Self-healing: auto-complete any change requests that have their specific L3 raised department approval set
   try {
     await pool.query(`
       UPDATE change_requests cr
       INNER JOIN l3_approvals l3 ON cr.id = l3.change_no
+      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
+      LEFT JOIN users u ON cr.requester = u.email
       SET cr.status = 'Completed'
-      WHERE l3.ped IN ('Approved', 'Rejected')
-        AND l3.quality IN ('Approved', 'Rejected')
-        AND l3.production IN ('Approved', 'Rejected')
-        AND l3.maintenance IN ('Approved', 'Rejected')
-        AND l3.pcl IN ('Approved', 'Rejected')
-        AND l3.materials IN ('Approved', 'Rejected')
-        AND l3.marketing IN ('Approved', 'Rejected')
-        AND l3.hr IN ('Approved', 'Rejected')
-        AND l3.safety IN ('Approved', 'Rejected')
-        AND l3.unit_head IN ('Approved', 'Rejected')
-        AND cr.status != 'Completed'
+      WHERE cr.status != 'Completed'
+        AND (
+          (LOWER(COALESCE(l1.dept, u.department)) IN ('quality', 'qad', 'qa') AND l3.quality IN ('Approved', 'Rejected'))
+          OR (LOWER(COALESCE(l1.dept, u.department)) = 'ped' AND l3.ped IN ('Approved', 'Rejected'))
+          OR (LOWER(COALESCE(l1.dept, u.department)) = 'production' AND l3.production IN ('Approved', 'Rejected'))
+          OR (LOWER(COALESCE(l1.dept, u.department)) = 'maintenance' AND l3.maintenance IN ('Approved', 'Rejected'))
+          OR (LOWER(COALESCE(l1.dept, u.department)) IN ('pc & l', 'pcl') AND l3.pcl IN ('Approved', 'Rejected'))
+          OR (LOWER(COALESCE(l1.dept, u.department)) = 'materials' AND l3.materials IN ('Approved', 'Rejected'))
+          OR (LOWER(COALESCE(l1.dept, u.department)) = 'marketing' AND l3.marketing IN ('Approved', 'Rejected'))
+          OR (LOWER(COALESCE(l1.dept, u.department)) = 'hr' AND l3.hr IN ('Approved', 'Rejected'))
+          OR (LOWER(COALESCE(l1.dept, u.department)) = 'safety' AND l3.safety IN ('Approved', 'Rejected'))
+          OR (LOWER(COALESCE(l1.dept, u.department)) IN ('unit head', 'unit_head') AND l3.unit_head IN ('Approved', 'Rejected'))
+        )
     `);
   } catch (err) {
     console.error('Error auto-completing L3 requests in getChanges:', err);
