@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { initTimeSync } from './utils/timeSync';
 
-const Login = lazy(() => import('./components/Login').then(m => ({ default: m.Login })));
-const Dashboard = lazy(() => import('./components/Dashboard').then(m => ({ default: m.Dashboard })));
+const Login = lazy(() => import('./components/pages/Login').then(m => ({ default: m.Login })));
+const Dashboard = lazy(() => import('./components/pages/Dashboard').then(m => ({ default: m.Dashboard })));
 
 const PageLoader = () => (
   <div className="w-screen h-screen flex flex-col items-center justify-center bg-slate-50 gap-3">

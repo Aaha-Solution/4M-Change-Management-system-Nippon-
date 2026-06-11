@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../api/apiRoutes';
-import bgImage from '../assets/background-image.JPG';
-import nipponLogo from '../assets/Nippon Logo.png';
+import { login } from '../../api/apiRoutes';
+import bgImage from '../../assets/background-image.JPG';
+import nipponLogo from '../../assets/Nippon Logo.png';
 import {
   Mail,
   Lock,

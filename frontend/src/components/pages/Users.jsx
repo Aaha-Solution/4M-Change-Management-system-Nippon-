@@ -11,7 +11,7 @@ import {
   addDepartment,
   deleteDepartment,
   updateUser
-} from '../api/apiRoutes';
+} from '../../api/apiRoutes';
 import {
   AlertTriangle,
   Edit,
@@ -24,7 +24,7 @@ import {
   Users as UsersIcon,
   X
 } from 'lucide-react';
-import { useWebSocket } from '../hooks/useWebSocket';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 export const Users = ({
   userRole,

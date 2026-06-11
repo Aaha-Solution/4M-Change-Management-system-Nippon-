@@ -21,7 +21,7 @@ import {
   markAllNotificationsRead,
   clearReadNotifications,
   deleteNotification
-} from '../api/apiRoutes';
+} from '../../api/apiRoutes';
 
 
 export const Notifications = ({ setToastMsg, notifications, setNotifications, fetchNotifications }) => {

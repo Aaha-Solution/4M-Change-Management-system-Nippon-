@@ -12,10 +12,10 @@ import {
   CheckCircle
 } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
-import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
-import { getSyncedDate } from '../utils/timeSync';
-import { CustomDatePicker } from './CustomDatePicker';
-import { getProcesses, getMachines } from '../api/apiRoutes';
+import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../../utils/dateUtils';
+import { getSyncedDate } from '../../utils/timeSync';
+import { CustomDatePicker } from '../ui/CustomDatePicker';
+import { getProcesses, getMachines } from '../../api/apiRoutes';
 
 
 export const DashboardOverview = ({

@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getChanges, getEffectivenessLogs, getNotifications, getUsers } from '../api/apiRoutes';
-import { getSyncedDate } from '../utils/timeSync';
+import { getChanges, getEffectivenessLogs, getNotifications, getUsers } from '../../api/apiRoutes';
+import { getSyncedDate } from '../../utils/timeSync';
 import {
   LogOut,
   GitPullRequest,
@@ -32,8 +32,8 @@ const Effectiveness = lazy(() => import('./Effectiveness').then(m => ({ default:
 const Users = lazy(() => import('./Users').then(m => ({ default: m.Users })));
 const Settings = lazy(() => import('./Settings').then(m => ({ default: m.Settings })));
 const Notifications = lazy(() => import('./Notifications').then(m => ({ default: m.Notifications })));
-import nipponLogo from '../assets/Nippon Logo.png';
-import { useWebSocket } from '../hooks/useWebSocket';
+import nipponLogo from '../../assets/Nippon Logo.png';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const navigate = useNavigate();

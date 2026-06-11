@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
-import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment } from '../api/apiRoutes';
-import { formatDateToDDMMYYYY } from '../utils/dateUtils';
+import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment } from '../../api/apiRoutes';
+import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 
 export const L2Validation = ({
   changes,

@@ -6,8 +6,8 @@ import {
   getEffectivenessAttachment,
   resetEffectivenessLogs,
   getEffectivenessLogs
-} from '../api/apiRoutes';
-import { formatDateToDDMMYY } from '../utils/dateUtils';
+} from '../../api/apiRoutes';
+import { formatDateToDDMMYY } from '../../utils/dateUtils';
 
 const generateEffId = () => `EFF-${Date.now().toString().substring(7)}`;
 

@@ -7,9 +7,9 @@ import {
   Trash2,
   AlertTriangle
 } from 'lucide-react';
-import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo, getUsers, getDepartments, getServerTime } from '../api/apiRoutes';
-import { CustomDatePicker } from './CustomDatePicker';
-import { formatDateToDDMMYYYY, parseDDMMYYYYToDate } from '../utils/dateUtils';
+import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo, getUsers, getDepartments, getServerTime } from '../../api/apiRoutes';
+import { CustomDatePicker } from '../ui/CustomDatePicker';
+import { formatDateToDDMMYYYY, parseDDMMYYYYToDate } from '../../utils/dateUtils';
 
 export const L1Request = ({
   userEmail,
