@@ -152,6 +152,10 @@ export const L3RequestTracker = ({
     setFormChangeNo(log.changeNo);
     setFormDate(formatDateToDDMMYYYY(log.date));
     setFormRequester(log.requester);
+    if (log.raisedDept) {
+      const mapped = mapDbDeptToL3Dept(log.raisedDept);
+      setActingDept(mapped);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -346,7 +350,10 @@ export const L3RequestTracker = ({
 
   const userMappedDept = getUserMappedDept();
 
-  const canEdit = isAdmin || (isHOD && userMappedDept === actingDept);
+  const raisedDept = currentChangeLog ? currentChangeLog.raisedDept : '';
+  const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
+
+  const canEdit = isAdmin || (isHOD && userMappedDept === mappedRaisedDept);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
@@ -373,7 +380,7 @@ export const L3RequestTracker = ({
             <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
               <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
               <div>
-                <span className="font-bold">Not Authorized:</span> Only the HOD of the <span className="font-bold uppercase">{actingDept}</span> department or an Administrator can sign off on this L3 approval. (Your Department: <span className="font-bold uppercase">{userMappedDept || 'None'}</span>, Role: <span className="font-bold uppercase">{userRole || 'User'}</span>)
+                <span className="font-bold">Not Authorized:</span> This change request was raised by the <span className="font-bold uppercase">{mappedRaisedDept}</span> department. Only the HOD of that department or an Administrator can sign off. (Your Department: <span className="font-bold uppercase">{userMappedDept || 'None'}</span>, Role: <span className="font-bold uppercase">{userRole || 'User'}</span>)
               </div>
             </div>
           )}
