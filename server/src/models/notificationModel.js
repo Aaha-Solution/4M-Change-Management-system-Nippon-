@@ -8,19 +8,34 @@ export const getNotifications = async (email, role) => {
   `;
   const params = [];
 
-  if (role && !role.toLowerCase().includes('admin')) {
+  const roleLower = (role || '').toLowerCase();
+  const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
+  const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
+
+  if (!isAdmin) {
     const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
     const department = userRows.length > 0 ? userRows[0].department : '';
+    
+    let conditions = [];
     if (department) {
-      query += ` WHERE LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL `;
+      conditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
       params.push(department);
+    } else {
+      conditions.push(`(dept = '' OR dept IS NULL)`);
+    }
+
+    if (!isHOD) {
+      conditions.push(`id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%'`);
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ` + conditions.join(' AND ');
     }
   }
 
   query += ` ORDER BY created_at DESC `;
 
   const [rows] = await pool.query(query, params);
-  // Convert 1/0 to true/false for isRead
   return rows.map(r => ({ ...r, isRead: !!r.isRead }));
 };
 
@@ -44,12 +59,28 @@ export const markAllRead = async (email, role) => {
   let query = `UPDATE notifications SET is_read = TRUE`;
   const params = [];
 
-  if (role && !role.toLowerCase().includes('admin')) {
+  const roleLower = (role || '').toLowerCase();
+  const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
+  const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
+
+  if (!isAdmin) {
     const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
     const department = userRows.length > 0 ? userRows[0].department : '';
+    
+    let conditions = [];
     if (department) {
-      query += ` WHERE LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL`;
+      conditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
       params.push(department);
+    } else {
+      conditions.push(`(dept = '' OR dept IS NULL)`);
+    }
+
+    if (!isHOD) {
+      conditions.push(`id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%'`);
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ` + conditions.join(' AND ');
     }
   }
 
@@ -68,12 +99,28 @@ export const clearRead = async (email, role) => {
   let query = `DELETE FROM notifications WHERE is_read = TRUE`;
   const params = [];
 
-  if (role && !role.toLowerCase().includes('admin')) {
+  const roleLower = (role || '').toLowerCase();
+  const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
+  const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
+
+  if (!isAdmin) {
     const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
     const department = userRows.length > 0 ? userRows[0].department : '';
+    
+    let conditions = [];
     if (department) {
-      query += ` AND (LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`;
+      conditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
       params.push(department);
+    } else {
+      conditions.push(`(dept = '' OR dept IS NULL)`);
+    }
+
+    if (!isHOD) {
+      conditions.push(`id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%'`);
+    }
+
+    if (conditions.length > 0) {
+      query += ` AND ` + conditions.join(' AND ');
     }
   }
 
