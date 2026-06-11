@@ -184,6 +184,13 @@ export const L1Request = ({
     return (u.department || '').toLowerCase() === dept.toLowerCase();
   });
 
+  const displayHods = (() => {
+    const hods = systemUsers.filter(u => (u.role || '').toLowerCase() === 'hod');
+    if (!dept) return hods;
+    const deptHods = hods.filter(u => (u.department || '').toLowerCase() === dept.toLowerCase());
+    return deptHods.length > 0 ? deptHods : hods;
+  })();
+
   useEffect(() => {
     if (userEmail && systemUsers.length > 0) {
       const currentUser = systemUsers.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
@@ -428,7 +435,7 @@ export const L1Request = ({
     }
 
     if (!hodApproval || !hodApproval.trim()) {
-      setToastMsg('Please describe the User Dept HOD Approval.');
+      setToastMsg('Please select the User Dept HOD Approval.');
       return;
     }
 
@@ -988,15 +995,43 @@ export const L1Request = ({
             </div>
 
             {/* USER DEPT HOD APPROVAL */}
-            <div className="space-y-[4px]">
+            <div className="space-y-[6px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">User Dept HOD Approval <span className="text-rose-500">*</span></label>
-              <textarea
-                placeholder="Describe HOD review comments, approval status, or conditions..."
-                value={hodApproval}
-                onChange={(e) => setHodApproval(e.target.value)}
-                rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none"
-              />
+              {displayHods.length > 0 ? (
+                <div className="flex flex-wrap gap-[10px] pt-[4px]">
+                  {displayHods.map((hod) => {
+                    const value = hod.name || hod.email;
+                    return (
+                      <label 
+                        key={hod.email} 
+                        className={`flex items-center gap-[8px] py-[6px] px-[12px] border rounded-[6px] cursor-pointer hover:bg-slate-50 transition-all w-fit ${
+                          hodApproval === value 
+                            ? 'border-[#0066cc] bg-[#0066cc]/5' 
+                            : 'border-slate-200 bg-white'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="hodApproval"
+                          value={value}
+                          checked={hodApproval === value}
+                          onChange={(e) => setHodApproval(e.target.value)}
+                          className="w-[14px] h-[14px] text-[#0066cc] focus:ring-[#0066cc]"
+                        />
+                        <div className="text-[12px] flex items-center">
+                          <span className="inline-block bg-slate-100 border border-slate-250 text-slate-500 rounded px-[6px] py-[1px] text-[9px] font-bold uppercase">
+                            {hod.department || 'General'}
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-slate-400 text-[12px] italic bg-slate-50 border border-slate-200 rounded-[6px] p-3 text-center">
+                  No HODs found. Please add HODs in Users management or select a department.
+                </div>
+              )}
             </div>
 
             {/* CUSTOMER APPROVAL REQUIRED */}
