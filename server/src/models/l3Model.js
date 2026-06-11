@@ -51,6 +51,62 @@ export const addL3ApprovalLog = async (logData) => {
       );
     }
 
+    // Fetch existing L3 approval before update to detect HOD decision changes
+    const [existingL3Rows] = await connection.query(
+      `SELECT ped, quality, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead
+       FROM l3_approvals WHERE change_no = ?`,
+      [changeNo]
+    );
+
+    let updatedDeptField = null;
+    let newDecision = null;
+
+    if (existingL3Rows.length > 0) {
+      const dbL3 = existingL3Rows[0];
+      const fields = [
+        { key: 'ped', db: dbL3.ped, label: 'PED' },
+        { key: 'quality', db: dbL3.quality, label: 'Quality' },
+        { key: 'production', db: dbL3.production, label: 'Production' },
+        { key: 'maintenance', db: dbL3.maintenance, label: 'Maintenance' },
+        { key: 'pcl', db: dbL3.pcl, label: 'PC & L' },
+        { key: 'materials', db: dbL3.materials, label: 'Materials' },
+        { key: 'marketing', db: dbL3.marketing, label: 'Marketing' },
+        { key: 'hr', db: dbL3.hr, label: 'HR' },
+        { key: 'safety', db: dbL3.safety, label: 'Safety' },
+        { key: 'unitHead', db: dbL3.unitHead, label: 'Unit Head' }
+      ];
+
+      for (const field of fields) {
+        const incomingVal = logData[field.key];
+        if (incomingVal && incomingVal !== 'Pending' && incomingVal !== field.db) {
+          updatedDeptField = field.label;
+          newDecision = incomingVal;
+          break;
+        }
+      }
+    } else {
+      const fields = [
+        { key: 'ped', val: ped, label: 'PED' },
+        { key: 'quality', val: quality, label: 'Quality' },
+        { key: 'production', val: production, label: 'Production' },
+        { key: 'maintenance', val: maintenance, label: 'Maintenance' },
+        { key: 'pcl', val: pcl, label: 'PC & L' },
+        { key: 'materials', val: materials, label: 'Materials' },
+        { key: 'marketing', val: marketing, label: 'Marketing' },
+        { key: 'hr', val: hr, label: 'HR' },
+        { key: 'safety', val: safety, label: 'Safety' },
+        { key: 'unitHead', val: unitHead, label: 'Unit Head' }
+      ];
+
+      for (const field of fields) {
+        if (field.val && field.val !== 'Pending') {
+          updatedDeptField = field.label;
+          newDecision = field.val;
+          break;
+        }
+      }
+    }
+
     await connection.query(
       `INSERT INTO l3_approvals (
         change_no, date, requester, ped, quality, production, 
@@ -107,8 +163,35 @@ export const addL3ApprovalLog = async (logData) => {
       }
     }
 
+    // Insert L3 decision notification to the original requesting department
+    if (updatedDeptField && newDecision) {
+      const [l1Rows] = await connection.query(
+        `SELECT dept, change_in FROM l1_requests WHERE change_no = ?`,
+        [changeNo]
+      );
+      const l1Dept = l1Rows.length > 0 ? l1Rows[0].dept : '';
+      const changeIn = l1Rows.length > 0 ? l1Rows[0].change_in : '';
+
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
+
+      if (l1Dept) {
+        const notifId = `L3-DECISION-NOTIF-${changeNo}-${l1Dept.replace(/\s+/g, '_')}-${Date.now()}`;
+        const title = `L3 Approval ${newDecision} by ${updatedDeptField} – ${changeNo}`;
+        const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD.`;
+        const color = newDecision === 'Approved' ? 'green' : 'red';
+
+        await connection.query(
+          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
+           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
+          [notifId, title, details, changeNo, changeIn || 'GENERAL', l1Dept, timeStr, 'System Logs', color]
+        );
+      }
+    }
+
     await connection.commit();
     broadcast({ type: 'REFRESH_CHANGES' });
+    broadcast({ type: 'REFRESH_NOTIFICATIONS' });
     return logData;
   } catch (error) {
     await connection.rollback();
