@@ -42,6 +42,12 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
   const [levelOpen, setLevelOpen] = useState(true);
   const [notifications, setNotifications] = useState([]);
   const [userDept, setUserDept] = useState('');
+  const isHOD = userRole && (
+    userRole.toLowerCase().includes('hod') ||
+    userRole.toLowerCase().includes('unit head') ||
+    userRole.toLowerCase().includes('unit_head') ||
+    userRole.toLowerCase().includes('manager')
+  );
 
   const handleLocalSignOut = () => {
     logAction('Sign Out', 'User logged out of the system.');
@@ -266,11 +272,27 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               </div>
             </button>
 
+            {/* All Approvals (HOD Only) */}
+            {isHOD && (
+              <button
+                onClick={() => handleTabChange('all-approvals')}
+                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'all-approvals'
+                  ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
+                  : 'text-slate-600 hover:text-[#0066cc] hover:bg-slate-50'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <CheckCheck size={18} className={activeTab === 'all-approvals' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                  <span>All Approvals</span>
+                </div>
+              </button>
+            )}
+
             {/* Level Expandable */}
             <div className="space-y-0.5">
               <button
                 onClick={() => setLevelOpen(!levelOpen)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${(activeTab === 'l1' || activeTab === 'approvals')
+                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${(activeTab === 'l1' || activeTab === 'approvals' || activeTab === 'l3')
                   ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
                   : 'text-slate-600 hover:text-[#0066cc] hover:bg-slate-50'
                   }`}
@@ -446,7 +468,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                       activeTab === 'l1' ? 'New L1 Change Request' :
                         activeTab === 'l3' ? 'L3 Request Tracker & Final Approval' :
                           activeTab === 'all-requests' ? 'All Change Requests' :
-                            activeTab.replace('-', ' ')}
+                            activeTab === 'all-approvals' ? 'All Approvals' :
+                              activeTab.replace('-', ' ')}
               </h2>
             </div>
           </div>
@@ -540,7 +563,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
             )}
 
             {/* TAB: L3 REQUEST TRACKER */}
-            {activeTab === 'l3' && (
+            {(activeTab === 'l3' || activeTab === 'all-approvals') && (
               <L3RequestTracker
                 userEmail={userEmail}
                 userRole={userRole}

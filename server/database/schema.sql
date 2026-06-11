@@ -84,10 +84,31 @@ INSERT INTO roles (name) VALUES
 ('User'),
 ('Hod');
 
+-- Seed Departments
+INSERT INTO departments (name) VALUES
+('PED'),
+('QAD'),
+('PRODUCTION'),
+('MAINTENANCE'),
+('PC & L'),
+('MATERIALS'),
+('MARKETING'),
+('HR'),
+('SAFETY');
+
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES
 ('suriya.p@plant.com', 'suriya123', 'Admin', 'Suriya Prabakaran', 'General', 'Active'),
-('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active');
+('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active'),
+('vetrivel@cms.com', '123', 'Hod', 'Mr. Vetrivel', 'PED', 'Active'),
+('ramasamy@cms.com', '123', 'Hod', 'Mr. Ramasamy', 'QAD', 'Active'),
+('dhanaraj@cms.com', '123', 'Hod', 'Mr. Dhanaraj', 'PRODUCTION', 'Active'),
+('anandhan@cms.com', '123', 'Hod', 'Mr. Anandhan', 'MAINTENANCE', 'Active'),
+('shanmugam@cms.com', '123', 'Hod', 'Mr. Shanmugam', 'PC & L', 'Active'),
+('arumugam@cms.com', '123', 'Hod', 'Mr. Arumugam', 'MATERIALS', 'Active'),
+('velmurugan@cms.com', '123', 'Hod', 'Mr. Velmurugan', 'MARKETING', 'Active'),
+('sathish@cms.com', '123', 'Hod', 'Mr. Sathish', 'HR', 'Active'),
+('sakthivel@cms.com', '123', 'Hod', 'Mr. Sakthivel', 'SAFETY', 'Active');
 -- No initial change requests seeded
 
 
