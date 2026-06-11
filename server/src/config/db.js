@@ -34,6 +34,17 @@ const pool = mysql.createPool({
       )
     `);
 
+    // Ensure improvement_table_data column exists in l1_requests table
+    try {
+      const [columns] = await connection.query("SHOW COLUMNS FROM l1_requests LIKE 'improvement_table_data'");
+      if (columns.length === 0) {
+        await connection.query("ALTER TABLE l1_requests ADD COLUMN improvement_table_data LONGTEXT NULL");
+        console.log('✅ Added column improvement_table_data to l1_requests table.');
+      }
+    } catch (err) {
+      console.error('⚠️ Error adding improvement_table_data column:', err.message);
+    }
+
     connection.release();
   } catch (error) {
     console.error('❌ Error connecting to MySQL database:', error.message);

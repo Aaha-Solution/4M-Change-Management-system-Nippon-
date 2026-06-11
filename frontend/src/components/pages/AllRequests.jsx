@@ -551,6 +551,89 @@ export const AllRequests = ({
                           {selectedL1Details.improvement_area}
                         </div>
                         {selectedL1Details.file_improvement && renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no)}
+
+                        {/* TABLE VIEW FOR IMPROVEMENT DATA */}
+                        {(() => {
+                          if (!selectedL1Details.improvement_table_data) return null;
+                          let tableData = [];
+                          try {
+                            tableData = JSON.parse(selectedL1Details.improvement_table_data);
+                          } catch (e) {
+                            return null;
+                          }
+                          if (!Array.isArray(tableData) || tableData.length === 0) return null;
+
+                          const area = (selectedL1Details.improvement_area || '').toLowerCase();
+                          const hasCost = area === 'cost';
+                          const hasProductivity = area === 'productivity';
+                          const hasQuality = area === 'quality';
+
+                          if (!hasCost && !hasProductivity && !hasQuality) return null;
+
+                          return (
+                            <div className="mt-3 border border-slate-200 rounded-[8px] overflow-hidden bg-white">
+                              <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 text-[10px] font-bold text-slate-650 uppercase tracking-wider">
+                                {hasCost ? 'Cost Saving Data' : hasProductivity ? 'Productivity Improvement Data' : 'Quality Improvement Data'}
+                              </div>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse text-[11px]">
+                                  <thead>
+                                    <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
+                                      <th className="p-2">4M #</th>
+                                      <th className="p-2">Date</th>
+                                      {hasCost && (
+                                        <>
+                                          <th className="p-2">Save/Month</th>
+                                          <th className="p-2">Save/Annum</th>
+                                          <th className="p-2">ROI</th>
+                                        </>
+                                      )}
+                                      {hasProductivity && (
+                                        <>
+                                          <th className="p-2">Current</th>
+                                          <th className="p-2">Improved</th>
+                                        </>
+                                      )}
+                                      {hasQuality && (
+                                        <>
+                                          <th className="p-2">Current PPM</th>
+                                          <th className="p-2">Reduced PPM</th>
+                                        </>
+                                      )}
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100">
+                                    {tableData.map((row, idx) => (
+                                      <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
+                                        <td className="p-2 font-mono font-medium">{row.changeNo}</td>
+                                        <td className="p-2">{row.date || '-'}</td>
+                                        {hasCost && (
+                                          <>
+                                            <td className="p-2 font-semibold">Rs. {row.monthlySave || '0'}</td>
+                                            <td className="p-2 font-semibold">Rs. {row.annualSave || '0'}</td>
+                                            <td className="p-2">{row.roi || '-'}</td>
+                                          </>
+                                        )}
+                                        {hasProductivity && (
+                                          <>
+                                            <td className="p-2">{row.currentProd || '0'} nos</td>
+                                            <td className="p-2 font-semibold">{row.improvedProd || '0'} nos</td>
+                                          </>
+                                        )}
+                                        {hasQuality && (
+                                          <>
+                                            <td className="p-2">{row.currentPpm || '0'}</td>
+                                            <td className="p-2 font-semibold">{row.reducedPpm || '0'}</td>
+                                          </>
+                                        )}
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
 

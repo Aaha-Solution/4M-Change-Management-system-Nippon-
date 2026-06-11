@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Upload,
   Loader2,
@@ -242,6 +242,70 @@ export const L1Request = ({
   const [hodApproval, setHodApproval] = useState('');
   const [customerApproval, setCustomerApproval] = useState('');
   const [effectivenessMonitoring, setEffectivenessMonitoring] = useState('None');
+  const [improvementTableData, setImprovementTableData] = useState([]);
+  const [isImprovementModalOpen, setIsImprovementModalOpen] = useState(false);
+  const lastAreaRef = useRef('');
+
+  useEffect(() => {
+    const area = (improvementArea || '').toLowerCase();
+    if (area !== lastAreaRef.current) {
+      lastAreaRef.current = area;
+      if (['cost', 'productivity', 'quality'].includes(area)) {
+        let defaultRows = [];
+        if (area === 'cost') {
+          defaultRows = [
+            { changeNo: changeNo, date: '', monthlySave: '', annualSave: '', roi: '' }
+          ];
+        } else if (area === 'productivity') {
+          defaultRows = [
+            { changeNo: changeNo, date: '', currentProd: '', improvedProd: '' }
+          ];
+        } else if (area === 'quality') {
+          defaultRows = [
+            { changeNo: changeNo, date: '', currentPpm: '', reducedPpm: '' }
+          ];
+        }
+        setImprovementTableData(defaultRows);
+      } else {
+        setImprovementTableData([]);
+      }
+    } else {
+      setImprovementTableData(prev => prev.map(row => ({ ...row, changeNo: row.changeNo || changeNo })));
+    }
+  }, [improvementArea, changeNo]);
+
+  const handleUpdateCell = (rowIndex, field, value) => {
+    setImprovementTableData(prev => prev.map((row, idx) => {
+      if (idx !== rowIndex) return row;
+      const updated = { ...row, [field]: value };
+      if (field === 'monthlySave') {
+        const val = parseFloat(value);
+        if (!isNaN(val)) {
+          updated.annualSave = String(val * 12);
+        } else {
+          updated.annualSave = '';
+        }
+      }
+      return updated;
+    }));
+  };
+
+  const handleAddRow = () => {
+    const area = (improvementArea || '').toLowerCase();
+    let newRow = {};
+    if (area === 'cost') {
+      newRow = { changeNo: changeNo, date: '', monthlySave: '', annualSave: '', roi: '' };
+    } else if (area === 'productivity') {
+      newRow = { changeNo: changeNo, date: '', currentProd: '', improvedProd: '' };
+    } else if (area === 'quality') {
+      newRow = { changeNo: changeNo, date: '', currentPpm: '', reducedPpm: '' };
+    }
+    setImprovementTableData(prev => [...prev, newRow]);
+  };
+
+  const handleDeleteRow = (rowIndex) => {
+    setImprovementTableData(prev => prev.filter((_, idx) => idx !== rowIndex));
+  };
 
 
 
@@ -405,7 +469,8 @@ export const L1Request = ({
       fileTraceTo,
       fileRisk,
       fileSop,
-      fileEffectiveness
+      fileEffectiveness,
+      improvementTableData
     };
 
     try {
@@ -790,6 +855,20 @@ export const L1Request = ({
 
             {/* UPLOAD SUPPORTING FILES */}
             <div className="space-y-[4px]">
+              {['cost', 'productivity', 'quality'].includes(improvementArea.toLowerCase()) && (
+                <div className="pb-[4px]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsImprovementModalOpen(true);
+                    }}
+                    className="flex items-center gap-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[16px] py-[8px] rounded-[6px] text-[12px] font-bold shadow-sm transition-all transform active:scale-[0.98] cursor-pointer"
+                  >
+                    <Plus size={14} />
+                    <span>{improvementArea} Table</span>
+                  </button>
+                </div>
+              )}
               {renderAttachmentInput("Upload Supporting Files", fileImprovement, setFileImprovement, "file-improvement-input", "fileImprovement", true)}
             </div>
 
@@ -1113,6 +1192,184 @@ export const L1Request = ({
                 className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-[10px] rounded-[8px] text-[13px] font-bold transition-colors shadow-sm"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic Table Input Modal */}
+      {isImprovementModalOpen && ['cost', 'productivity', 'quality'].includes((improvementArea || '').toLowerCase()) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsImprovementModalOpen(false)} />
+          <div className="relative bg-white w-full max-w-[850px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 max-h-[85vh] overflow-hidden animate-fade-in-up">
+            <div className="bg-slate-50 px-[24px] py-[16px] border-b border-slate-100 flex items-center justify-between rounded-t-[16px]">
+              <h4 className="text-[14px] font-bold text-slate-800 uppercase tracking-wider">
+                {(improvementArea || '').toLowerCase() === 'cost' ? 'Cost Saving Data Table' : 
+                 (improvementArea || '').toLowerCase() === 'productivity' ? 'Productivity Improvement Data Table' : 
+                 'Quality Improvement Data Table'}
+              </h4>
+              <button onClick={() => setIsImprovementModalOpen(false)} className="p-[4px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-[24px] overflow-y-auto space-y-[16px]">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left border-collapse min-w-[650px] text-[12px]">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
+                      <th className="p-[10px] w-[150px]">4M #</th>
+                      <th className="p-[10px] w-[160px]">Implementation Date</th>
+                      {(improvementArea || '').toLowerCase() === 'cost' && (
+                        <>
+                          <th className="p-[10px]">Total Cost Saved / month (Rs)</th>
+                          <th className="p-[10px]">Total Cost Saved / Annum (Rs)</th>
+                          <th className="p-[10px]">ROI (Rs)</th>
+                        </>
+                      )}
+                      {(improvementArea || '').toLowerCase() === 'productivity' && (
+                        <>
+                          <th className="p-[10px]">Current Productivity (nos)</th>
+                          <th className="p-[10px]">Productivity Improved (nos)</th>
+                        </>
+                      )}
+                      {(improvementArea || '').toLowerCase() === 'quality' && (
+                        <>
+                          <th className="p-[10px]">Current PPM</th>
+                          <th className="p-[10px]">Reduced PPM</th>
+                        </>
+                      )}
+                      <th className="p-[10px] w-[50px] text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {improvementTableData.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50/50">
+                        <td className="p-[8px]">
+                          <input
+                            type="text"
+                            value={row.changeNo}
+                            onChange={(e) => handleUpdateCell(idx, 'changeNo', e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                          />
+                        </td>
+                        <td className="p-[8px]">
+                          <input
+                            type="date"
+                            value={row.date}
+                            onChange={(e) => handleUpdateCell(idx, 'date', e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                          />
+                        </td>
+                        {(improvementArea || '').toLowerCase() === 'cost' && (
+                          <>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.monthlySave}
+                                onChange={(e) => handleUpdateCell(idx, 'monthlySave', e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                              />
+                            </td>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.annualSave}
+                                onChange={(e) => handleUpdateCell(idx, 'annualSave', e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                              />
+                            </td>
+                            <td className="p-[8px]">
+                              <input
+                                type="text"
+                                placeholder="e.g. 6 Months"
+                                value={row.roi}
+                                onChange={(e) => handleUpdateCell(idx, 'roi', e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                              />
+                            </td>
+                          </>
+                        )}
+                        {(improvementArea || '').toLowerCase() === 'productivity' && (
+                          <>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.currentProd}
+                                onChange={(e) => handleUpdateCell(idx, 'currentProd', e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                              />
+                            </td>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.improvedProd}
+                                onChange={(e) => handleUpdateCell(idx, 'improvedProd', e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                              />
+                            </td>
+                          </>
+                        )}
+                        {(improvementArea || '').toLowerCase() === 'quality' && (
+                          <>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.currentPpm}
+                                onChange={(e) => handleUpdateCell(idx, 'currentPpm', e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                              />
+                            </td>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.reducedPpm}
+                                onChange={(e) => handleUpdateCell(idx, 'reducedPpm', e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                              />
+                            </td>
+                          </>
+                        )}
+                        <td className="p-[8px] text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRow(idx)}
+                            className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-rose-600 transition-colors"
+                            title="Delete Row"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleAddRow}
+                className="flex items-center gap-[6px] px-[12px] py-[6px] border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-[6px] text-[11px] font-bold shadow-sm transition-colors cursor-pointer select-none w-fit"
+              >
+                <Plus size={12} />
+                <span>Add Row</span>
+              </button>
+            </div>
+
+            <div className="bg-slate-50 px-[24px] py-[14px] border-t border-slate-100 flex items-center justify-end gap-[12px]">
+              <button
+                type="button"
+                onClick={() => setIsImprovementModalOpen(false)}
+                className="bg-[#0066cc] hover:bg-[#0052a3] text-white px-[20px] py-[8px] rounded-[6px] text-[12px] font-bold shadow-sm transition-colors cursor-pointer"
+              >
+                Done
               </button>
             </div>
           </div>

@@ -22,7 +22,7 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
     dateClose, traceTo, riskAnalysis, sopUpdate,
     hodApproval, customerApproval, effectivenessMonitoring,
     fileDesc, fileImprovement, fileTraceFrom, fileTraceTo,
-    fileRisk, fileSop, fileEffectiveness
+    fileRisk, fileSop, fileEffectiveness, improvementTableData
   } = l1Data;
 
   const status = 'Pending';
@@ -38,6 +38,8 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
       [changeNo, title, userEmail, priority, status]
     );
 
+    const serializedTableData = improvementTableData ? JSON.stringify(improvementTableData) : null;
+
     await connection.query(
       `INSERT INTO l1_requests (
         change_no, unit, requested_time, change_in, dept, request_by, 
@@ -46,8 +48,8 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
         date_close, trace_to, risk_analysis, sop_update, 
         hod_approval, customer_approval, effectiveness_monitoring,
         file_desc, file_improvement, file_trace_from, file_trace_to,
-        file_risk, file_sop, file_effectiveness
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        file_risk, file_sop, file_effectiveness, improvement_table_data
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         changeNo, unit, requestedTime, changeIn || '', dept, requestBy,
         processName, processLine, machineNo, description,
@@ -55,7 +57,8 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
         formatDateToSql(dateClose), traceTo, riskAnalysis, sopUpdate,
         hodApproval, customerApproval, effectivenessMonitoring,
         fileDesc || '', fileImprovement || '', fileTraceFrom || '', fileTraceTo || '',
-        fileRisk || '', fileSop || '', fileEffectiveness || ''
+        fileRisk || '', fileSop || '', fileEffectiveness || '',
+        serializedTableData
       ]
     );
 
