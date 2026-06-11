@@ -7,6 +7,7 @@ import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 export const L3RequestTracker = ({
   userEmail,
   userRole,
+  userDept,
   logAction,
   setToastMsg,
   fetchChanges
@@ -318,6 +319,35 @@ export const L3RequestTracker = ({
     isAlreadyValidated = deptStatus && deptStatus !== 'Pending';
   }
 
+  const isAdmin = userRole && (
+    userRole.toLowerCase() === 'admin' || 
+    userRole.toLowerCase() === 'administrator'
+  );
+
+  const isHOD = userRole && (
+    userRole.toLowerCase().includes('hod') || 
+    userRole.toLowerCase().includes('unit head') || 
+    userRole.toLowerCase().includes('unit_head') ||
+    userRole.toLowerCase().includes('manager')
+  );
+
+  const getUserMappedDept = () => {
+    if (userDept) return mapDbDeptToL3Dept(userDept);
+    
+    // Fallback to email hardcoding
+    if (!userEmail) return '';
+    const email = userEmail.toLowerCase();
+    if (email.includes('ravi.qa')) return 'Quality';
+    if (email.includes('kumar.s')) return 'Production';
+    if (email.includes('ped')) return 'PED';
+    if (email.includes('manager')) return 'Production';
+    return 'Quality';
+  };
+
+  const userMappedDept = getUserMappedDept();
+
+  const canEdit = isAdmin || (isHOD && userMappedDept === actingDept);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
       
@@ -335,6 +365,15 @@ export const L3RequestTracker = ({
               <AlertTriangle size={14} className="shrink-0 mt-0.5 text-rose-600" />
               <div>
                 <span className="font-bold">L3 Sign-off Blocked:</span> This request has not passed L2 validation (Current L2 Status: <span className="font-bold uppercase">{currentChangeLog?.l2Decision || 'Pending'}</span>). L3 approvals can only be submitted for accepted L2 requests.
+              </div>
+            </div>
+          )}
+
+          {selectedChangeId && isL2Accepted && !canEdit && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+              <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
+              <div>
+                <span className="font-bold">Not Authorized:</span> Only the HOD of the <span className="font-bold uppercase">{actingDept}</span> department or an Administrator can sign off on this L3 approval. (Your Department: <span className="font-bold uppercase">{userMappedDept || 'None'}</span>, Role: <span className="font-bold uppercase">{userRole || 'User'}</span>)
               </div>
             </div>
           )}
@@ -403,7 +442,7 @@ export const L3RequestTracker = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approval Status <span className="text-rose-500">*</span></label>
             <select 
               value={formStatus} 
-              disabled={!selectedChangeId || isAlreadyValidated || !isL2Accepted}
+              disabled={!selectedChangeId || isAlreadyValidated || !isL2Accepted || !canEdit}
               onChange={(e) => setFormStatus(e.target.value)}
               className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
             >
@@ -418,7 +457,7 @@ export const L3RequestTracker = ({
           <div className="space-y-[8px] pt-[4px]">
             <button 
               type="submit" 
-              disabled={isSubmitting || !selectedChangeId || isAlreadyValidated || !isL2Accepted}
+              disabled={isSubmitting || !selectedChangeId || isAlreadyValidated || !isL2Accepted || !canEdit}
               className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
             >
               {isSubmitting ? (
@@ -432,6 +471,8 @@ export const L3RequestTracker = ({
                 <span>Select a Request to Approve</span>
               ) : !isL2Accepted ? (
                 <span className="truncate">L3 Sign-off Disabled (L2 {currentChangeLog?.l2Decision || 'Pending'})</span>
+              ) : !canEdit ? (
+                <span>Not Authorized to Approve</span>
               ) : (
                 <>
                   <Save size={14} />

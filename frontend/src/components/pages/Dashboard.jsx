@@ -544,6 +544,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               <L3RequestTracker
                 userEmail={userEmail}
                 userRole={userRole}
+                userDept={userDept}
                 logAction={logAction}
                 setToastMsg={setToastMsg}
                 fetchChanges={fetchChanges}
