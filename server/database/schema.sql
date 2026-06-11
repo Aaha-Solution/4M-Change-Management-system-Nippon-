@@ -169,6 +169,7 @@ CREATE TABLE l1_requests (
     file_risk VARCHAR(255) NOT NULL DEFAULT '',
     file_sop VARCHAR(255) NOT NULL DEFAULT '',
     file_effectiveness VARCHAR(255) NOT NULL DEFAULT '',
+    improvement_table_data LONGTEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
