@@ -132,7 +132,11 @@ export const DashboardOverview = ({
 
     let displayStatus = c.status;
     if (c.status === 'Pending' || c.status === 'Evaluating') {
-      displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
+      if (c.hodStatus === 'Approved') {
+        displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
+      } else {
+        displayStatus = 'Pending L1 HOD';
+      }
     }
     if (c.status === 'Completed') displayStatus = 'Closed';
 
@@ -861,6 +865,7 @@ export const DashboardOverview = ({
                       <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
                       <td className="p-[16px]">
                         <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                            r.status === 'Pending L1 HOD' ? 'bg-blue-50 border-blue-200 text-blue-700' :
                             r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
                               r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
                                 'bg-teal-50 border-teal-200 text-teal-700'

@@ -50,7 +50,11 @@ export const AllRequests = ({
 
     let displayStatus = c.status;
     if (c.status === 'Pending' || c.status === 'Evaluating') {
-      displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
+      if (c.hodStatus === 'Approved') {
+        displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
+      } else {
+        displayStatus = 'Pending L1 HOD';
+      }
     }
     if (c.status === 'Completed') displayStatus = 'Closed';
 
@@ -143,10 +147,11 @@ export const AllRequests = ({
       setSelectedL2Details(l2Res.data);
 
       const matchedL3 = l3Res.data?.find(log => log.changeNo === request.id);
-      setSelectedLog(matchedL3 || {
+      const newLogData = matchedL3 ? { ...matchedL3, hodStatus: request.hodStatus } : {
         changeNo: request.id,
         requester: request.requester,
         date: request.rawDate,
+        hodStatus: request.hodStatus,
         ped: 'Pending',
         quality: 'Pending',
         production: 'Pending',
@@ -157,7 +162,8 @@ export const AllRequests = ({
         hr: 'Pending',
         safety: 'Pending',
         unitHead: 'Pending'
-      });
+      };
+      setSelectedLog(newLogData);
 
       setActiveTab('l1');
     } catch (err) {
@@ -384,6 +390,7 @@ export const AllRequests = ({
                     <td className="p-[16px]">
                       <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
                         r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                        r.status === 'Pending L1 HOD' ? 'bg-blue-50 border-blue-200 text-blue-700' :
                         r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
                         r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
                         'bg-teal-50 border-teal-200 text-teal-700'
@@ -463,26 +470,30 @@ export const AllRequests = ({
               >
                 1. L1 Request Details
               </button>
-              <button
-                onClick={() => setActiveTab('l2')}
-                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
-                  activeTab === 'l2' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
-              >
-                2. L2 Validation Details
-              </button>
-              <button
-                onClick={() => setActiveTab('l3')}
-                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
-                  activeTab === 'l3' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
-              >
-                3. L3 Approval Matrix
-              </button>
+              {selectedLog?.hodStatus === 'Approved' && (
+                <button
+                  onClick={() => setActiveTab('l2')}
+                  className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'l2' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  2. L2 Validation Details
+                </button>
+              )}
+              {selectedLog?.hodStatus === 'Approved' && (
+                <button
+                  onClick={() => setActiveTab('l3')}
+                  className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'l3' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  3. L3 Approval Details
+                </button>
+              )}
             </div>
 
             {/* Content */}
