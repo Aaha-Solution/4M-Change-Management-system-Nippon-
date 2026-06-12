@@ -553,6 +553,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                 setToastMsg={setToastMsg}
                 fetchChanges={fetchChanges}
                 fetchNotifications={fetchNotifications}
+                autoOpenChangeNo={autoOpenChangeNo}
+                clearAutoOpen={() => setAutoOpenChangeNo(null)}
               />
             )}
 

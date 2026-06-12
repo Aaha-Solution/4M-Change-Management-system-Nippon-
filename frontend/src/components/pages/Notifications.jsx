@@ -222,7 +222,12 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                           userRole.toLowerCase().includes('manager')
                         );
                         const isAdmin = userRole && userRole.toLowerCase().includes('admin');
-                        const targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'l3';
+                        
+                        let targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'l3';
+                        if (alert.id && alert.id.startsWith('L2-ACTION')) {
+                          targetTab = 'approvals';
+                        }
+                        
                         if (onTabChange) {
                           onTabChange(targetTab, alert.changeNo);
                         }

@@ -112,7 +112,7 @@ export const saveHodApproval = async ({ changeNo, hodEmail, hodDept, status, rem
 
     // Fetch requester email to notify them
     const [crRows] = await connection.query(
-      `SELECT cr.requester, COALESCE(l1.dept, u.department) as raisedDept, l1.change_in as changeIn
+      `SELECT cr.requester, COALESCE(l1.dept, u.department) as raisedDept, u.department as userDept, l1.change_in as changeIn
        FROM change_requests cr
        LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
        LEFT JOIN users u ON cr.requester = u.email
@@ -121,7 +121,7 @@ export const saveHodApproval = async ({ changeNo, hodEmail, hodDept, status, rem
     );
 
     if (crRows.length > 0) {
-      const { requester, raisedDept, changeIn } = crRows[0];
+      const { requester, raisedDept, userDept, changeIn } = crRows[0];
       const now = new Date();
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
       const notifId = `HOD-DECISION-${changeNo}-${hodDept.replace(/\s+/g, '_')}-${Date.now()}`;
@@ -134,6 +134,18 @@ export const saveHodApproval = async ({ changeNo, hodEmail, hodDept, status, rem
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?)`,
         [notifId, title, details, changeNo, changeIn || 'GENERAL', raisedDept || '', timeStr, color]
       );
+
+      // If approved, add an Action Required notification for the requester to fill L2
+      if (status === 'Approved') {
+        const actionNotifId = `L2-ACTION-${changeNo}-${Date.now()}`;
+        const actionTitle = `L1 Approved - Proceed to L2 Validation`;
+        const actionDetails = `Your Change Request ${changeNo} has been approved by the HOD. Please proceed to L2.`;
+        await connection.query(
+          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
+           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue')`,
+          [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', userDept || raisedDept || '', timeStr]
+        );
+      }
     }
 
     await connection.commit();
