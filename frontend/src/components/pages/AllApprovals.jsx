@@ -297,7 +297,7 @@ export const AllApprovals = ({
               {card.icon}
             </div>
             <div className={`text-3xl font-black ${card.text}`}>{card.value}</div>
-            <div className="text-xs font-semibold text-slate-500 mt-0.5">{card.label}</div>
+            <div className="text-xs font-semibold text-rose-600 mt-0.5">{card.label}</div>
           </div>
         ))}
       </div>
