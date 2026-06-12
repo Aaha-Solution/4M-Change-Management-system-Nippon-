@@ -460,7 +460,7 @@ export const Users = ({
                   onClick={() => setShowFormPassword(!showFormPassword)}
                   className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-650 cursor-pointer"
                 >
-                  {showFormPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                  {showFormPassword ? <Eye size={14} /> : <EyeOff size={14} />}
                 </button>
               </div>
               {createErrors.password && <p className="text-[10px] text-red-500 font-medium mt-0.5">{createErrors.password}</p>}
@@ -932,7 +932,7 @@ export const Users = ({
                     onClick={() => setShowEditFormPassword(!showEditFormPassword)}
                     className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-655 cursor-pointer"
                   >
-                    {showEditFormPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {showEditFormPassword ? <Eye size={14} /> : <EyeOff size={14} />}
                   </button>
                 </div>
                 {editErrors.password && <p className="text-[10px] text-red-500 font-medium mt-0.5">{editErrors.password}</p>}
