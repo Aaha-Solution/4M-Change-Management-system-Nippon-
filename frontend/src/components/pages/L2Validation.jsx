@@ -188,7 +188,7 @@ export const L2Validation = ({
         const base64Data = await fileToBase64(file);
         attachments.push({
           fieldName: 'weld_test',
-          name: file.name,
+          name: file.name.replace(/,/g, '_'),
           type: file.type || 'application/octet-stream',
           data: base64Data
         });
@@ -197,7 +197,7 @@ export const L2Validation = ({
         const base64Data = await fileToBase64(file);
         attachments.push({
           fieldName: 'qa_test',
-          name: file.name,
+          name: file.name.replace(/,/g, '_'),
           type: file.type || 'application/octet-stream',
           data: base64Data
         });

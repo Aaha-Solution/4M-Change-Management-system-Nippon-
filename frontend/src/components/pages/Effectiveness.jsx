@@ -406,7 +406,7 @@ export const Effectiveness = ({
                         // Convert files to base64 for server upload
                         const base64Files = await Promise.all(
                           allowedFiles.map(async (file) => ({
-                            name: file.name,
+                            name: file.name.replace(/,/g, '_'),
                             type: file.type || 'application/octet-stream',
                             data: await fileToBase64(file)
                           }))

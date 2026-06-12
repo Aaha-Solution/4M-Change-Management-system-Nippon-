@@ -665,7 +665,7 @@ export const L1Request = ({
                 const target = e.target;
                 if (target.files && target.files.length > 0) {
                   const files = Array.from(target.files);
-                  const names = files.map(f => f.name);
+                  const names = files.map(f => f.name.replace(/,/g, '_'));
 
                   // Reset input value synchronously immediately to allow uploading the same file again
                   target.value = '';
@@ -673,7 +673,7 @@ export const L1Request = ({
                   // Convert files to base64 for server upload
                   const base64Files = await Promise.all(
                     files.map(async (file) => ({
-                      name: file.name,
+                      name: file.name.replace(/,/g, '_'),
                       type: file.type || 'application/octet-stream',
                       data: await fileToBase64(file),
                       fieldName
