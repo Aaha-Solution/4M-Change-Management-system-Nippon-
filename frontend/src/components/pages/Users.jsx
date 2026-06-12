@@ -345,15 +345,8 @@ export const Users = ({
     }
   };
 
-  // Initials for Avatar
-  const getAvatarStyles = (role) => {
-    const r = role.toLowerCase();
-    if (r.includes('admin')) return 'bg-blue-900 text-white';
-    if (r.includes('hod') || r.includes('manager')) return 'bg-purple-650 text-white';
-    if (r.includes('operator')) return 'bg-emerald-650 text-white';
-    if (r.includes('qa')) return 'bg-lime-600 text-white';
-    return 'bg-slate-200 text-slate-800';
-  };
+  // Initials for Avatar — same colour for all roles
+  const getAvatarStyles = () => 'bg-[#0066cc] text-white';
 
   // Role Badge styling
   const getRoleBadgeStyles = (role) => {
