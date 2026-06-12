@@ -9,18 +9,21 @@ import {
   Layers,
   Settings,
   ShieldAlert,
-  CheckCircle
+  CheckCircle,
+  Download
 } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../../utils/dateUtils';
 import { getSyncedDate } from '../../utils/timeSync';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
 import { getProcesses, getMachines } from '../../api/apiRoutes';
+import { exportDashboardRequestsPDF } from '../../utils/pdfExport';
 
 
 export const DashboardOverview = ({
   changes,
-  isFetchingChanges
+  isFetchingChanges,
+  setToastMsg
 }) => {
   const [isGridView, setIsGridView] = useState(false);
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Department');
@@ -145,6 +148,19 @@ export const DashboardOverview = ({
 
   const allTableRows = formattedDbChanges;
   const paginatedTableRows = allTableRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const handleExportPDF = () => {
+    exportDashboardRequestsPDF(filteredChanges, {
+      month: filterMonth,
+      fromDate: filterFromDate,
+      toDate: filterToDate,
+      person: filterPerson,
+      process: filterProcess,
+      machine: filterMachine,
+      status: filterStatus
+    }, setToastMsg);
+  };
+
 
   // Helper filters render
   const renderFilters = () => (
@@ -794,10 +810,21 @@ export const DashboardOverview = ({
 
       {/* Recent Change Requests Table */}
       <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-        <div className="p-[20px] border-b border-slate-100 flex justify-between items-center">
-          <h3 className="font-heading text-[18px] font-bold text-slate-900">Recent change requests</h3>
-          <Clock size={18} className="text-slate-400" />
+        <div className="p-[20px] border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="flex items-center gap-2">
+            <h3 className="font-heading text-[18px] font-bold text-slate-900">Recent change requests</h3>
+            <Clock size={18} className="text-slate-400" />
+          </div>
+          <button
+            onClick={handleExportPDF}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
+            title="Export filtered dashboard requests to PDF"
+          >
+            <Download size={12} />
+            <span>Export PDF</span>
+          </button>
         </div>
+
 
         <div className="overflow-x-auto">
           {isFetchingChanges ? (

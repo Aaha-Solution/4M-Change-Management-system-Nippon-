@@ -530,6 +530,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                 changes={changes}
                 isFetchingChanges={isFetchingChanges}
                 onTabChange={handleTabChange}
+                setToastMsg={setToastMsg}
               />
             )}
 

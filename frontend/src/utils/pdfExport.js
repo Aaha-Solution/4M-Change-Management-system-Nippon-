@@ -851,3 +851,140 @@ export const exportUsersListPDF = (filteredUsers, filtersInfo = {}, setToastMsg)
   }
 };
 
+/**
+ * Exports the Dashboard's filtered change requests to a landscape A4 PDF.
+ * @param {Array} filteredChanges 
+ * @param {Object} filtersInfo 
+ * @param {Function} setToastMsg 
+ */
+export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, setToastMsg) => {
+  try {
+    if (!filteredChanges || filteredChanges.length === 0) {
+      setToastMsg?.('No data available to export.');
+      return;
+    }
+
+    const {
+      month = 'All',
+      fromDate = '',
+      toDate = '',
+      person = 'All',
+      process = 'All',
+      machine = 'All',
+      status = 'All'
+    } = filtersInfo;
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: 'a4'
+    });
+
+    const headers = [['SL. NO.', 'CHANGE NO.', 'MACHINE NO.', 'DEPARTMENT', 'REQUEST DATE', 'STATUS']];
+
+    const tableData = filteredChanges.map((item, idx) => {
+      let displayStatus = item.status;
+      if (item.status === 'Pending' || item.status === 'Evaluating') {
+        displayStatus = item.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
+      }
+      if (item.status === 'Completed') displayStatus = 'Closed';
+
+      return [
+        idx + 1,
+        item.id,
+        item.machineNo || '-',
+        item.dept || item.department || 'PRODUCTION',
+        item.date ? formatDateToDDMMYYYY(item.date) : '-',
+        displayStatus
+      ];
+    });
+
+    // Title & Branding (Blue theme)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(0, 102, 204); // #0066cc
+    doc.text('4M Change Management System - Dashboard Overview Log', 40, 45);
+
+    // Metadata details
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate-500
+    doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
+
+    const filterParts = [];
+    if (month !== 'All') filterParts.push(`Month: "${month}"`);
+    if (fromDate) filterParts.push(`From: "${fromDate}"`);
+    if (toDate) filterParts.push(`To: "${toDate}"`);
+    if (person !== 'All') filterParts.push(`Person: "${person.split('@')[0]}"`);
+    if (process !== 'All') filterParts.push(`Process: "${process}"`);
+    if (machine !== 'All') filterParts.push(`Machine: "${machine}"`);
+    if (status !== 'All') filterParts.push(`Status: "${status}"`);
+
+    const filterText = filterParts.length > 0 
+      ? `Active Filters -> ${filterParts.join(', ')}`
+      : 'Active Filters -> None';
+
+    doc.text(filterText, 40, 75);
+
+    // AutoTable generator
+    autoTable(doc, {
+      startY: 90,
+      head: headers,
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [0, 102, 204],
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'left'
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: [51, 65, 85] // Slate-700
+      },
+      columnStyles: {
+        0: { cellWidth: 60 },  // SL. NO.
+        1: { cellWidth: 130, fontStyle: 'bold' },  // CHANGE NO.
+        2: { cellWidth: 120 }, // MACHINE NO.
+        3: { cellWidth: 160 }, // DEPARTMENT
+        4: { cellWidth: 140 }, // REQUEST DATE
+        5: { cellWidth: 150 }  // STATUS
+      },
+      margin: { top: 40, bottom: 40, left: 40, right: 40 },
+      didDrawPage: (data) => {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184); // Slate-400
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
+        doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL DASHBOARD OVERVIEW LOGS', 40, doc.internal.pageSize.height - 20);
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 5 && data.row.index > 0) {
+          const val = data.cell.text[0];
+          if (val === 'Approved') {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Rejected') {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Pending L2' || val === 'Pending') {
+            data.cell.styles.textColor = [217, 119, 6]; // Amber
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Closed') {
+            data.cell.styles.textColor = [100, 116, 139]; // Slate-500
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+
+    doc.save(`4M_Dashboard_Requests_${formatDateToDDMMYYYY(getSyncedDate()).replace(/\//g, '-')}.pdf`);
+    setToastMsg?.('PDF exported successfully!');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    setToastMsg?.('Error generating PDF export.');
+  }
+};
+
+
