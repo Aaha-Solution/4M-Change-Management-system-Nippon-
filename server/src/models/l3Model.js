@@ -205,6 +205,7 @@ export const addL3ApprovalLog = async (logData) => {
       const now = new Date();
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
 
+      let notifIdToSend = null;
       if (l1Dept) {
         const notifId = `L3-DECISION-NOTIF-${changeNo}-${l1Dept.replace(/\s+/g, '_')}-${Date.now()}`;
         const title = `L3 Approval ${newDecision} by ${updatedDeptField} – ${changeNo}`;
@@ -216,12 +217,20 @@ export const addL3ApprovalLog = async (logData) => {
            VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
           [notifId, title, details, changeNo, changeIn || 'GENERAL', l1Dept, timeStr, 'System Logs', color]
         );
+        notifIdToSend = notifId;
       }
     }
 
     await connection.commit();
     broadcast({ type: 'REFRESH_CHANGES' });
     broadcast({ type: 'REFRESH_NOTIFICATIONS' });
+
+    // Send email notification asynchronously after commit
+    if (notifIdToSend) {
+      const { sendEmailForNotification } = await import('./notificationModel.js');
+      sendEmailForNotification(notifIdToSend).catch(err => console.error('Error sending L3 decision notification email:', err));
+    }
+
     return logData;
   } catch (error) {
     await connection.rollback();

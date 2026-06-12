@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText, Download } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
-import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment } from '../../api/apiRoutes';
+import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment, getL2Details, getL3Approvals } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
-import { exportL2ValidationLogsPDF } from '../../utils/pdfExport';
+import { exportL2ValidationLogsPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 
 export const L2Validation = ({
   changes,
@@ -21,6 +21,8 @@ export const L2Validation = ({
 
   // L1 Details Modal states
   const [selectedL1Details, setSelectedL1Details] = useState(null);
+  const [selectedL2Details, setSelectedL2Details] = useState(null);
+  const [selectedLog, setSelectedLog] = useState(null);
   const [isFetchingL1, setIsFetchingL1] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
@@ -241,14 +243,53 @@ export const L2Validation = ({
   const handleViewL1Details = async (changeNo) => {
     setIsFetchingL1(true);
     try {
-      const response = await getL1Details(changeNo);
-      setSelectedL1Details(response.data);
+      const [l1Res, l2Res, l3Res] = await Promise.all([
+        getL1Details(changeNo),
+        getL2Details(changeNo).catch(() => ({ data: null })),
+        getL3Approvals().catch(() => ({ data: [] }))
+      ]);
+      setSelectedL1Details(l1Res.data);
+      setSelectedL2Details(l2Res.data);
+      
+      const matchedChange = changes?.find(c => c.id === changeNo);
+      const hodStatus = matchedChange ? matchedChange.hodStatus : 'Pending';
+      const requester = matchedChange ? matchedChange.requester : '';
+      const date = matchedChange ? matchedChange.date : '';
+      
+      const matchedL3 = l3Res.data?.find(log => log.changeNo === changeNo);
+      const newLogData = matchedL3 ? { ...matchedL3, hodStatus } : {
+        changeNo: changeNo,
+        requester: requester,
+        date: date,
+        hodStatus: hodStatus,
+        ped: 'Pending',
+        quality: 'Pending',
+        production: 'Pending',
+        maintenance: 'Pending',
+        pcl: 'Pending',
+        materials: 'Pending',
+        marketing: 'Pending',
+        hr: 'Pending',
+        safety: 'Pending',
+        unitHead: 'Pending'
+      };
+      setSelectedLog(newLogData);
     } catch (err) {
       console.error(err);
-      if (setToastMsg) setToastMsg('Error loading L1 change request details.');
+      if (setToastMsg) setToastMsg('Error loading change request details.');
     } finally {
       setIsFetchingL1(false);
     }
+  };
+
+  const handleExportRequestDetailsPDF = () => {
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, setToastMsg);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedL1Details(null);
+    setSelectedL2Details(null);
+    setSelectedLog(null);
   };
 
   const handleViewAttachment = async (filename, changeNo, type = 'L1') => {
@@ -877,7 +918,7 @@ export const L2Validation = ({
                 </div>
               </div>
               <button
-                onClick={() => setSelectedL1Details(null)}
+                onClick={handleCloseModal}
                 className="p-[6px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
               >
                 <X size={18} />
@@ -1082,9 +1123,17 @@ export const L2Validation = ({
             </div>
 
             {/* Footer */}
-            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end">
+            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px]">
+              <button 
+                onClick={handleExportRequestDetailsPDF}
+                className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
+                title="Export this request's full details (L1, L2, L3) as PDF"
+              >
+                <Download size={14} />
+                <span>Export PDF</span>
+              </button>
               <button
-                onClick={() => setSelectedL1Details(null)}
+                onClick={handleCloseModal}
                 className="px-[16px] py-[8px] bg-white border border-slate-200 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
               >
                 Close

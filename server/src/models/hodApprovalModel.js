@@ -120,6 +120,8 @@ export const saveHodApproval = async ({ changeNo, hodEmail, hodDept, status, rem
       [changeNo]
     );
 
+    const notifIds = [];
+
     if (crRows.length > 0) {
       const { requester, raisedDept, userDept, changeIn } = crRows[0];
       const now = new Date();
@@ -134,6 +136,7 @@ export const saveHodApproval = async ({ changeNo, hodEmail, hodDept, status, rem
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?)`,
         [notifId, title, details, changeNo, changeIn || 'GENERAL', raisedDept || '', timeStr, color]
       );
+      notifIds.push(notifId);
 
       // If approved, add an Action Required notification for the requester to fill L2
       if (status === 'Approved') {
@@ -145,6 +148,7 @@ export const saveHodApproval = async ({ changeNo, hodEmail, hodDept, status, rem
            VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue')`,
           [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', userDept || raisedDept || '', timeStr]
         );
+        notifIds.push(actionNotifId);
       }
     }
 
@@ -153,6 +157,12 @@ export const saveHodApproval = async ({ changeNo, hodEmail, hodDept, status, rem
     // Broadcast real-time update to all connected clients
     broadcast({ type: 'REFRESH_CHANGES' });
     broadcast({ type: 'REFRESH_NOTIFICATIONS' });
+
+    // Send email notifications asynchronously after commit
+    const { sendEmailForNotification } = await import('./notificationModel.js');
+    for (const id of notifIds) {
+      sendEmailForNotification(id).catch(err => console.error('Error sending HOD decision notification email:', err));
+    }
 
     return { changeNo, hodEmail, hodDept, status, remarks };
   } catch (error) {

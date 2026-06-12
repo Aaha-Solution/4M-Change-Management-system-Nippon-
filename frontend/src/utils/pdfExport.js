@@ -1008,7 +1008,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       format: 'a4'
     });
 
-    const headers = [['SL. NO.', 'CHANGE NO.', 'REQ. DATE', 'CONTEXT', 'START DATE', 'MONTH', 'STATUS', 'QA DECISION', 'REMARKS']];
+    const headers = [['SL. NO.', 'CHANGE NO.', 'REQ. DATE', 'CONTEXT', 'START DATE', 'MONTH', 'EFFECTIVENESS STATUS', 'QA DECISION', 'REMARKS']];
 
     const tableData = filteredLogs.map((item, idx) => {
       // Month-Wise mapping function
@@ -1100,12 +1100,12 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
         0: { cellWidth: 40 },  // SL. NO.
         1: { cellWidth: 80, fontStyle: 'bold' },  // CHANGE NO.
         2: { cellWidth: 70 },  // REQ. DATE
-        3: { cellWidth: 130 }, // CONTEXT
+        3: { cellWidth: 120 }, // CONTEXT
         4: { cellWidth: 70 },  // START DATE
         5: { cellWidth: 70 },  // MONTH
-        6: { cellWidth: 100 }, // STATUS
+        6: { cellWidth: 120 }, // EFFECTIVENESS STATUS
         7: { cellWidth: 80 },  // QA DECISION
-        8: { cellWidth: 120 }  // REMARKS
+        8: { cellWidth: 110 }  // REMARKS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {

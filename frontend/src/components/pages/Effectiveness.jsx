@@ -597,7 +597,7 @@ export const Effectiveness = ({
           {/* Logs Table Card */}
           <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse table-fixed min-w-[1050px]">
+              <table className="w-full text-left border-collapse table-fixed min-w-[1080px]">
                 <thead>
                   <tr className="bg-[#fdfaf5] border-b border-slate-150 text-[10px]">
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">4M Change No</th>
@@ -607,7 +607,7 @@ export const Effectiveness = ({
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[90px]">Month Wise</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[170px]">Remarks</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Attachment</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Status</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[140px]">Effectiveness Status</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">QA Approval</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[65px]">Actions</th>
                   </tr>

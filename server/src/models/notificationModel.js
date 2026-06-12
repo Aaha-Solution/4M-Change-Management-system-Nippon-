@@ -129,6 +129,103 @@ export const clearRead = async (email, role) => {
   return { success: true };
 };
 
+export const sendEmailForNotification = async (notificationId) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, title, details, change_no as changeNo, category, dept, type, color FROM notifications WHERE id = ?`,
+      [notificationId]
+    );
+    if (rows.length === 0) return;
+    const notification = rows[0];
+    
+    // Query users
+    const [users] = await pool.query('SELECT email, role, department FROM users');
+    
+    // Determine target users
+    const targetEmails = [];
+    const notificationIdLower = (notification.id || '').toLowerCase();
+    const notificationTitle = notification.title || '';
+    const targetDept = (notification.dept || '').trim().toLowerCase();
+    
+    const isHodOnly = notificationIdLower.startsWith('l1-hod-notif-') || 
+                      notificationTitle.includes('HOD Approval') || 
+                      notificationTitle.includes('L3 Final Review');
+                      
+    for (const user of users) {
+      const userEmail = user.email;
+      const userRole = (user.role || '').toLowerCase();
+      const userDept = (user.department || '').toLowerCase();
+      
+      const isAdmin = userRole.includes('admin') || userRole.includes('administrator');
+      const isHOD = userRole.includes('hod') || userRole.includes('manager') || 
+                    userRole.includes('unit head') || userRole.includes('unit_head');
+      
+      if (isAdmin) {
+        targetEmails.push(userEmail);
+        continue;
+      }
+      
+      // If notification is HOD only, but user is not HOD, skip
+      if (isHodOnly && !isHOD) {
+        continue;
+      }
+      
+      // Check department matching
+      if (targetDept) {
+        // Notification is for a specific department
+        if (userDept === targetDept) {
+          targetEmails.push(userEmail);
+        }
+      } else {
+        // Notification is general
+        targetEmails.push(userEmail);
+      }
+    }
+    
+    if (targetEmails.length > 0) {
+      const emailContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background-color: #ffffff;">
+          <div style="background-color: #0066cc; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin: -24px -24px 20px -24px;">
+            <h1 style="margin: 0; font-size: 20px; font-weight: 700;">4M Change Management System</h1>
+            <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.9; text-transform: uppercase; tracking-wider: 1px;">System Alert Notification</p>
+          </div>
+          <p style="font-size: 15px; font-weight: bold; color: #1e293b; margin-bottom: 12px;">${notification.title}</p>
+          <div style="background-color: #f8fafc; border-left: 4px solid #0066cc; padding: 16px; margin: 20px 0; font-size: 14px; color: #475569; line-height: 1.6; border-radius: 4px;">
+            ${notification.details}
+          </div>
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px; color: #475569;">
+            ${notification.changeNo ? `<tr><td style="padding: 6px 0; color: #64748b; width: 30%;"><strong>Change Request #</strong></td><td style="padding: 6px 0; color: #1e293b; font-weight: 600;">${notification.changeNo}</td></tr>` : ''}
+            ${notification.category ? `<tr><td style="padding: 6px 0; color: #64748b;"><strong>Category</strong></td><td style="padding: 6px 0; color: #1e293b;">${notification.category}</td></tr>` : ''}
+            ${notification.dept ? `<tr><td style="padding: 6px 0; color: #64748b;"><strong>Target Department</strong></td><td style="padding: 6px 0; color: #1e293b; font-weight: 600;">${notification.dept}</td></tr>` : ''}
+          </table>
+          <div style="text-align: center; margin: 30px 0 10px 0;">
+            <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
+              Access CMS Portal
+            </a>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 24px 0;" />
+          <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.5;">
+            This is an automated notification from the Nippon QA 4M Change Management System.<br />
+            Please do not reply directly to this email.
+          </p>
+        </div>
+      `;
+      
+      const { sendMail } = await import('../config/email.js');
+      for (const email of targetEmails) {
+        await sendMail({
+          to: email,
+          subject: `[CMS] Alert: ${notification.title}`,
+          html: emailContent,
+          text: `${notification.title}\n\n${notification.details}${notification.changeNo ? `\nChange Reference: ${notification.changeNo}` : ''}`
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error sending email for notification:', error);
+  }
+};
+
 export const createNotification = async ({ id, title, details, changeNo, category, dept, timeStr, type, color }) => {
   await pool.query(
     `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
@@ -136,6 +233,10 @@ export const createNotification = async ({ id, title, details, changeNo, categor
     [id, title, details, changeNo || '', category || '', dept || '', timeStr || 'Just now', type || 'Action Required', color || 'blue']
   );
   broadcast({ type: 'REFRESH_NOTIFICATIONS' });
+
+  // Trigger email asynchronously
+  sendEmailForNotification(id).catch(err => console.error('Error in createNotification email send:', err));
+
   return { id, title, details, changeNo, category, dept, time: timeStr || 'Just now', isRead: false, type: type || 'Action Required', color: color || 'blue' };
 };
 
