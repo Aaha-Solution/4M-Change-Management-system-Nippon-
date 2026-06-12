@@ -426,11 +426,10 @@ export const L1Request = ({
     if (!context || !context.trim()) {
       newErrors.context = 'Context of Change is required.';
     }
-
-    if (!description || description.trim().length < 20) {
-      newErrors.description = 'Detailed description must be at least 20 characters.';
+    if (!description || !description.trim()) {
+      newErrors.description = 'Detailed description is required.';
     }
-
+    
     if (!improvementArea) {
       newErrors.improvementArea = 'Please select a Change Improvement Area.';
     } else {
@@ -483,8 +482,8 @@ export const L1Request = ({
       }
     }
 
-    if (!traceFrom || traceFrom.trim().length < 20) {
-      newErrors.traceFrom = 'Part Traceability Details (From) must be at least 20 characters.';
+    if (!traceFrom || !traceFrom.trim()) {
+      newErrors.traceFrom = 'Part Traceability Details (From) is required.';
     }
 
     if (!dateClose || !dateClose.trim()) {
@@ -501,8 +500,8 @@ export const L1Request = ({
       }
     }
 
-    if (!traceTo || traceTo.trim().length < 20) {
-      newErrors.traceTo = 'Part Traceability (To) must be at least 20 characters.';
+    if (!traceTo || !traceTo.trim()) {
+      newErrors.traceTo = 'Part Traceability (To) is required.';
     }
 
     if (!riskAnalysis || !riskAnalysis.trim()) {
