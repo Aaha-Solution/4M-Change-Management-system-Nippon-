@@ -91,15 +91,7 @@ INSERT INTO roles (name) VALUES
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES
 ('suriya.p@plant.com', 'suriya123', 'Admin', 'Suriya Prabakaran', 'General', 'Active'),
-('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active'),
-('gunu1082@gmail.com', '123456', 'HOD', 'Guru E', 'QAD', 'Active'),
-('iyyanaraahasolutions@gmail.com', '123456', 'HOD', 'Suriya', 'Production', 'Active'),
-('web7094@gmail.com', '123456', 'HOD', 'Web', 'Maintenance', 'Active'),
-('aaac9953@gmail.com', '123456', 'HOD', 'Vetrivel', 'PED', 'Active'),
-('guru.e2003@gmail.com', '123456', 'User', 'Shanmugam', 'PC & L', 'Active'),
-('gurue7094@gmail.com', '123456', 'User', 'Arumugam', 'Materials', 'Active'),
-('velmurugan@gmail.com', '123456', 'User', 'Velmurugan', 'Marketing', 'Active'),
-('sathish@gmail.com', '123456', 'User', 'Sathish', 'HR', 'Active');
+('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active');
 
 -- No initial change requests seeded
 
