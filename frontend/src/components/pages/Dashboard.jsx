@@ -50,6 +50,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
     userRole.toLowerCase().includes('manager')
   );
 
+  const isAdmin = userRole && userRole.toLowerCase().includes('admin');
   const handleLocalSignOut = () => {
     logAction('Sign Out', 'User logged out of the system.');
     onSignOut();
