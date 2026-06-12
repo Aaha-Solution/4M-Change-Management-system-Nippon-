@@ -189,7 +189,7 @@ export const Login = ({ onLoginSuccess }) => {
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
                   >
-                    {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
