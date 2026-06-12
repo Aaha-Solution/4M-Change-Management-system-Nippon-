@@ -849,24 +849,19 @@ export const L1Request = ({
             {/* CHANGE REQUEST DEPT */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request Dept <span className="text-rose-500">*</span></label>
-              <select
+              <input
+                type="text"
+                readOnly
                 id="dept"
                 value={dept}
-                onChange={(e) => {
-                  setDept(e.target.value);
-                  if (errors.dept) setErrors(prev => ({ ...prev, dept: '' }));
-                }}
-                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
+                placeholder="Auto-captured department"
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none font-semibold cursor-not-allowed ${
                   errors.dept 
-                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' 
-                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                    ? 'border-rose-500 bg-rose-50/20 text-rose-700' 
+                    : 'border-slate-200 bg-slate-100 text-slate-550'
                 }`}
-              >
-                <option value="">— Select Department —</option>
-                {dbDepartments.map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+              />
+              <span className="block text-[9px] text-slate-400 mt-[2px]">Auto-captured from logged-in user</span>
               {errors.dept && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.dept}</span>}
             </div>
 
