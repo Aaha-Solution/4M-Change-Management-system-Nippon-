@@ -4,6 +4,7 @@
 -- -------------------------------------------------------------
 
 -- Drop tables if they already exist (for clean initialization)
+DROP TABLE IF EXISTS hod_approvals;
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS effectiveness_attachments;
 DROP TABLE IF EXISTS effectiveness_logs;
@@ -230,5 +231,19 @@ CREATE TABLE l3_approvals (
     safety VARCHAR(50) NOT NULL DEFAULT 'Pending',
     unit_head VARCHAR(50) NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- 9. HOD Approvals Table
+CREATE TABLE hod_approvals (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    change_no  VARCHAR(50) NOT NULL,
+    hod_email  VARCHAR(255) NOT NULL,
+    hod_dept   VARCHAR(100) NOT NULL,
+    status     VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    remarks    TEXT,
+    decided_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_change_dept (change_no, hod_dept),
     FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
