@@ -2,6 +2,21 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatDateToDDMMYYYY } from './dateUtils';
 import { getSyncedDate } from './timeSync';
+import nipponLogoUrl from '../assets/Nippon Logo.png';
+
+/**
+ * Adds the Nippon logo to the top-right corner of the current page.
+ * Call once per doc right after creation; didDrawPage will re-apply on new pages.
+ */
+const addLogoToDoc = (doc) => {
+  try {
+    const pw = doc.internal.pageSize.width;
+    // Logo placed top-right: 100 pt wide, 40 pt tall, with 10 pt padding
+    doc.addImage(nipponLogoUrl, 'PNG', pw - 120, 8, 100, 40);
+  } catch (_) {
+    // Silently skip if image fails to load (e.g. offline/test)
+  }
+};
 
 /**
  * Exports the filtered requests list to a landscape A4 PDF.
@@ -31,6 +46,7 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
       unit: 'pt',
       format: 'a4'
     });
+    addLogoToDoc(doc);
 
     // Headers for A4 Landscape Table
     const headers = [['SL. NO.', 'CHANGE NO.', 'MACHINE NO.', 'DEPARTMENT', 'PROCESS NAME', 'REQUESTER', 'REQUEST DATE', 'STATUS']];
@@ -139,6 +155,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
       unit: 'pt',
       format: 'a4'
     });
+    addLogoToDoc(doc);
 
     const primaryColor = [0, 102, 204]; // #0066cc
     const textColor = [51, 65, 85];    // Slate-700
@@ -414,6 +431,7 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
       unit: 'pt',
       format: 'a4'
     });
+    addLogoToDoc(doc);
 
     const headers = [['SL. NO.', 'CHANGE NO.', 'REQUEST DATE', 'REQUESTER', 'PED ATTACH.', 'QA ATTACH.', 'STATUS', 'REMARKS']];
 
@@ -519,6 +537,7 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       unit: 'pt',
       format: 'a4'
     });
+    addLogoToDoc(doc);
 
     // 14 columns to fit A4 landscape (842pt width)
     const headers = [['SL.', 'CHANGE NO.', 'DATE', 'REQUESTER', 'PED', 'QA', 'PROD', 'MAINT', 'PC&L', 'MAT', 'MKTG', 'HR', 'SAFE', 'UH']];
@@ -642,6 +661,7 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
       unit: 'pt',
       format: 'a4'
     });
+    addLogoToDoc(doc);
 
     const headers = [['SL. NO.', 'CHANGE NO.', 'DATE', 'REQUESTED BY', 'DEPARTMENT', 'HOD STATUS', 'REMARKS']];
 
@@ -760,6 +780,7 @@ export const exportUsersListPDF = (filteredUsers, filtersInfo = {}, setToastMsg)
       unit: 'pt',
       format: 'a4'
     });
+    addLogoToDoc(doc);
 
     const headers = [['SL. NO.', 'USER ID', 'NAME', 'EMAIL', 'ROLE', 'DEPARTMENT', 'STATUS']];
 
@@ -879,6 +900,7 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
       unit: 'pt',
       format: 'a4'
     });
+    addLogoToDoc(doc);
 
     const headers = [['SL. NO.', 'CHANGE NO.', 'MACHINE NO.', 'DEPARTMENT', 'REQUEST DATE', 'STATUS']];
 
@@ -1007,6 +1029,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       unit: 'pt',
       format: 'a4'
     });
+    addLogoToDoc(doc);
 
     const headers = [['SL. NO.', 'CHANGE NO.', 'REQ. DATE', 'CONTEXT', 'START DATE', 'MONTH', 'EFFECTIVENESS STATUS', 'QA DECISION', 'REMARKS']];
 
