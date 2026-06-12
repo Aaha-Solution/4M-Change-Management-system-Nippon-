@@ -709,8 +709,9 @@ export const Effectiveness = ({
       {/* Log Details Modal */}
       {viewingLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
+          {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => setViewingLog(null)}
           />
 
@@ -830,7 +831,7 @@ export const Effectiveness = ({
       {/* Attachment Preview Modal (opens in the same page) */}
       {previewFile && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setPreviewFile(null)}
         >
           <div

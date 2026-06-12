@@ -81,7 +81,7 @@ export const AllRequests = ({
   // Apply filters
   const filteredData = combinedData.filter(item => {
     const query = searchQuery.toLowerCase().trim();
-    const matchesSearch = !query ||
+    const matchesSearch = !query || 
       item.id.toLowerCase().includes(query) ||
       (item.department && item.department.toLowerCase().includes(query)) ||
       (item.machineNo && item.machineNo.toLowerCase().includes(query)) ||
@@ -112,7 +112,7 @@ export const AllRequests = ({
     if (fromDate) {
       const fD = parseDDMMYYYYToDate(fromDate);
       if (fD) {
-        fD.setHours(0, 0, 0, 0);
+        fD.setHours(0,0,0,0);
         const itemD = parseDDMMYYYYToDate(item.rawDate);
         matchesFromDate = itemD && itemD >= fD;
       }
@@ -122,7 +122,7 @@ export const AllRequests = ({
     if (toDate) {
       const tD = parseDDMMYYYYToDate(toDate);
       if (tD) {
-        tD.setHours(23, 59, 59, 999);
+        tD.setHours(23,59,59,999);
         const itemD = parseDDMMYYYYToDate(item.rawDate);
         matchesToDate = itemD && itemD <= tD;
       }
@@ -227,7 +227,7 @@ export const AllRequests = ({
     return (
       <div className="mt-1 flex flex-wrap gap-2">
         {files.map((file, idx) => (
-          <span
+          <span 
             key={idx}
             className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
             onClick={() => handleViewAttachment(file, changeNo)}
@@ -247,9 +247,9 @@ export const AllRequests = ({
         {/* SEARCH QUERY */}
         <div className="flex-1 min-w-[200px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">Search Query</label>
-          <input
-            type="text"
-            placeholder="Search ID, Dept, Person, Category..."
+          <input 
+            type="text" 
+            placeholder="Search ID, Dept, Person, Category..." 
             className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-[11px]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -259,7 +259,7 @@ export const AllRequests = ({
         {/* BY MONTH */}
         <div className="flex-1 min-w-[120px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">By Month</label>
-          <select
+          <select 
             className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none text-[11px]"
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
@@ -274,7 +274,7 @@ export const AllRequests = ({
         {/* FROM DATE */}
         <div className="flex-1 min-w-[130px] space-y-[4px] relative">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
-          <CustomDatePicker
+          <CustomDatePicker 
             value={fromDate}
             onChange={setFromDate}
             inputClassName="w-full pl-[8px] pr-[24px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-[11px] text-slate-500"
@@ -285,7 +285,7 @@ export const AllRequests = ({
         {/* TO DATE */}
         <div className="flex-1 min-w-[130px] space-y-[4px] relative">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-          <CustomDatePicker
+          <CustomDatePicker 
             value={toDate}
             onChange={setToDate}
             inputClassName="w-full pl-[8px] pr-[24px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-[11px] text-slate-500"
@@ -296,7 +296,7 @@ export const AllRequests = ({
         {/* BY PERSON */}
         <div className="flex-1 min-w-[130px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">By Person</label>
-          <select
+          <select 
             className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none text-[11px]"
             value={selectedPerson}
             onChange={(e) => setSelectedPerson(e.target.value)}
@@ -310,7 +310,7 @@ export const AllRequests = ({
         {/* BY PROCESS */}
         <div className="flex-1 min-w-[150px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">By Process</label>
-          <select
+          <select 
             className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none text-[11px]"
             value={selectedProcess}
             onChange={(e) => setSelectedProcess(e.target.value)}
@@ -324,7 +324,7 @@ export const AllRequests = ({
         {/* BY M/C NO */}
         <div className="flex-1 min-w-[150px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">By M/C No</label>
-          <select
+          <select 
             className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none text-[11px]"
             value={selectedMachine}
             onChange={(e) => setSelectedMachine(e.target.value)}
@@ -388,17 +388,18 @@ export const AllRequests = ({
                     <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.department}</td>
                     <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
                     <td className="p-[16px]">
-                      <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                          r.status === 'Pending L1 HOD' ? 'bg-blue-50 border-blue-200 text-blue-700' :
-                            r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
-                              r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
-                                'bg-teal-50 border-teal-200 text-teal-700'
-                        }`}>
+                      <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
+                        r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                        r.status === 'Pending L1 HOD' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                        r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
+                        r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
+                        'bg-teal-50 border-teal-200 text-teal-700'
+                      }`}>
                         {r.status}
                       </span>
                     </td>
                     <td className="p-[16px] text-center">
-                      <button
+                      <button 
                         onClick={() => handleViewDetails(r)}
                         className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
                         title="View Details"
@@ -429,15 +430,15 @@ export const AllRequests = ({
 
       {/* Details Modal (L1, L2, L3 Tabs) */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"
+          <div 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
             onClick={() => setSelectedLog(null)}
           />
-
+          
           {/* Modal Container */}
-          <div className="relative bg-white w-screen h-screen rounded-none shadow-2xl border-none overflow-hidden flex flex-col z-10 animate-fade-in">
+          <div className="relative bg-white w-full max-w-[800px] max-h-[90vh] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
             <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-[10px]">
@@ -449,7 +450,7 @@ export const AllRequests = ({
                   <p className="text-[11px] text-slate-400 mt-0.5">Tracking details for: <span className="font-mono font-bold text-slate-600">{selectedLog.changeNo}</span></p>
                 </div>
               </div>
-              <button
+              <button 
                 onClick={() => setSelectedLog(null)}
                 className="p-[6px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
               >
@@ -461,20 +462,22 @@ export const AllRequests = ({
             <div className="flex border-b border-slate-200 bg-slate-50/50">
               <button
                 onClick={() => setActiveTab('l1')}
-                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l1'
-                    ? 'border-[#0066cc] text-[#0066cc]'
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l1' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
                     : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
+                }`}
               >
                 1. L1 Request Details
               </button>
               {selectedLog?.status === 'Approved' && (
                 <button
                   onClick={() => setActiveTab('l2')}
-                  className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l2'
-                      ? 'border-[#0066cc] text-[#0066cc]'
+                  className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'l2' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
                       : 'border-transparent text-slate-500 hover:text-slate-850'
-                    }`}
+                  }`}
                 >
                   2. L2 Validation Details
                 </button>
@@ -482,10 +485,11 @@ export const AllRequests = ({
               {selectedLog?.status === 'Approved' && (
                 <button
                   onClick={() => setActiveTab('l3')}
-                  className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l3'
-                      ? 'border-[#0066cc] text-[#0066cc]'
+                  className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'l3' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
                       : 'border-transparent text-slate-500 hover:text-slate-850'
-                    }`}
+                  }`}
                 >
                   3. L3 Approval Details
                 </button>
@@ -518,10 +522,11 @@ export const AllRequests = ({
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                         <div className="flex gap-1.5 items-center mt-0.5">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL1Details.crStatus === 'Approved'
-                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            selectedL1Details.crStatus === 'Approved' 
+                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
                               : 'bg-amber-50 border-amber-220 text-amber-700'
-                            }`}>
+                          }`}>
                             L1 {selectedL1Details.crStatus}
                           </span>
                         </div>
@@ -546,10 +551,10 @@ export const AllRequests = ({
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
-                      <div className="space-y-[4px] md:col-span-2 min-w-0">
+                      <div className="space-y-[4px] md:col-span-2">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
-                        <span className="block font-semibold text-slate-800 break-words">{selectedL1Details.request_by}</span>
-                        <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
+                        <span className="font-semibold text-slate-800">{selectedL1Details.request_by}</span>
+                        <span className="block text-[11px] text-slate-400 mt-0.5 font-mono">{selectedL1Details.crRequester}</span>
                       </div>
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
@@ -797,12 +802,13 @@ export const AllRequests = ({
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
                         <div>
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL2Details.status === 'Accepted'
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            selectedL2Details.status === 'Accepted'
                               ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
                               : selectedL2Details.status === 'Rejected'
-                                ? 'bg-rose-50 border-rose-220 text-rose-700'
-                                : 'bg-amber-50 border-amber-220 text-amber-700'
-                            }`}>
+                              ? 'bg-rose-50 border-rose-220 text-rose-700'
+                              : 'bg-amber-50 border-amber-220 text-amber-700'
+                          }`}>
                             L2 {selectedL2Details.status || 'Pending'}
                           </span>
                         </div>
@@ -821,7 +827,7 @@ export const AllRequests = ({
                             {selectedL2Details.weldTest || '-'}
                           </span>
                           {selectedL2Details.weldTest && selectedL2Details.weldTest !== '-' && (
-                            <span
+                            <span 
                               className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
                               onClick={() => handleViewAttachment(selectedL2Details.weldTest, selectedL2Details.changeNo, 'L2')}
                             >
@@ -838,7 +844,7 @@ export const AllRequests = ({
                             {selectedL2Details.qaTest || '-'}
                           </span>
                           {selectedL2Details.qaTest && selectedL2Details.qaTest !== '-' && (
-                            <span
+                            <span 
                               className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
                               onClick={() => handleViewAttachment(selectedL2Details.qaTest, selectedL2Details.changeNo, 'L2')}
                             >
@@ -912,15 +918,15 @@ export const AllRequests = ({
                       const status = propMap[dept.label] || 'Pending';
                       const isAccepted = status === 'Accepted' || status === 'Approved';
                       const isRejected = status === 'Rejected';
-                      const badgeClass = isAccepted
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                        : isRejected
-                          ? 'bg-rose-50 border-rose-200 text-rose-700'
-                          : 'bg-amber-50 border-amber-200 text-amber-700';
+                      const badgeClass = isAccepted 
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                        : isRejected 
+                        ? 'bg-rose-50 border-rose-200 text-rose-700' 
+                        : 'bg-amber-50 border-amber-200 text-amber-700';
 
                       return (
-                        <div
-                          key={index}
+                        <div 
+                          key={index} 
                           className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
                         >
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
@@ -937,7 +943,7 @@ export const AllRequests = ({
 
             {/* Footer */}
             <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px]">
-              <button
+              <button 
                 onClick={handleExportRequestDetailsPDF}
                 className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px]"
                 title="Export this request's full details (L1, L2, L3) as PDF"
@@ -945,7 +951,7 @@ export const AllRequests = ({
                 <Download size={14} />
                 <span>Export PDF</span>
               </button>
-              <button
+              <button 
                 onClick={() => setSelectedLog(null)}
                 className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
               >
@@ -968,11 +974,11 @@ export const AllRequests = ({
 
       {/* Attachment Preview Modal */}
       {previewFile && (
-        <div
+        <div 
           className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={handleClosePreview}
         >
-          <div
+          <div 
             className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -983,33 +989,33 @@ export const AllRequests = ({
                 </span>
                 <span className="font-bold text-slate-800 text-sm">{previewFile}</span>
               </div>
-              <button
-                onClick={handleClosePreview}
+              <button 
+                onClick={handleClosePreview} 
                 className="text-slate-400 hover:text-slate-655 p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
-
+            
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
                 previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
-                  <img
-                    src={fileUrls[previewFile]}
-                    alt={previewFile}
-                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200"
+                  <img 
+                    src={fileUrls[previewFile]} 
+                    alt={previewFile} 
+                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200" 
                   />
                 ) : previewFile.toLowerCase().endsWith('.pdf') ? (
-                  <iframe
-                    src={`${fileUrls[previewFile]}#navpanes=0`}
-                    title={previewFile}
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white"
+                  <iframe 
+                    src={`${fileUrls[previewFile]}#navpanes=0`} 
+                    title={previewFile} 
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white" 
                   />
                 ) : (
-                  <iframe
-                    src={fileUrls[previewFile]}
-                    title={previewFile}
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700"
+                  <iframe 
+                    src={fileUrls[previewFile]} 
+                    title={previewFile} 
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700" 
                   />
                 )
               ) : (
@@ -1070,7 +1076,7 @@ export const AllRequests = ({
                 )
               )}
             </div>
-
+            
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-[8px]">
               {fileUrls[previewFile] && (
                 <a

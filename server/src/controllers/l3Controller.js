@@ -72,17 +72,34 @@ export const createL3Approval = async (req, res) => {
         return res.status(403).json({ error: 'Access denied. Only department HODs or Administrators can sign off at L3.' });
       }
 
-      // Map this HOD's own department to the L3 column they're allowed to update
-      const userMappedDept = mapDbDeptToL3Dept(user.department);
-      const allowedField = deptFields[userMappedDept];
+      // Fetch the department that raised the request
+      const [crRows] = await pool.query(
+        `SELECT COALESCE(l1.dept, u.department) as raisedDept
+         FROM change_requests c
+         LEFT JOIN l1_requests l1 ON c.id = l1.change_no
+         LEFT JOIN users u ON c.requester = u.email
+         WHERE c.id = ?`,
+        [logData.changeNo]
+      );
+      
+      if (crRows.length === 0) {
+        return res.status(404).json({ error: 'Change request not found.' });
+      }
 
-      if (!allowedField) {
-        return res.status(403).json({
-          error: `Your department ('${user.department}') does not have a corresponding L3 approval column.`
+      const raisedDept = crRows[0].raisedDept;
+      const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
+      const userMappedDept = mapDbDeptToL3Dept(user.department);
+
+      if (userMappedDept !== mappedRaisedDept) {
+        return res.status(403).json({ 
+          error: `Access denied. This request was raised by the '${mappedRaisedDept}' department. Only the '${mappedRaisedDept}' HOD can sign off.` 
         });
       }
 
-      // Fetch existing L3 approval to compare incoming values
+      // Map user department to L3 department key
+      const allowedField = deptFields[userMappedDept];
+
+      // Fetch existing L3 approval
       const [existingL3] = await pool.query(
         `SELECT ped, quality, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead
          FROM l3_approvals WHERE change_no = ?`,
@@ -102,15 +119,17 @@ export const createL3Approval = async (req, res) => {
         unitHead: 'Pending'
       };
 
-      // Ensure the HOD only changed THEIR OWN column — all other columns must be unchanged
+      // Check all fields to see if any unauthorized field was modified
       const fieldsToCheck = ['ped', 'quality', 'production', 'maintenance', 'pcl', 'materials', 'marketing', 'hr', 'safety', 'unitHead'];
       for (const field of fieldsToCheck) {
         const incomingVal = logData[field] || 'Pending';
         const dbVal = dbValues[field] || 'Pending';
-        if (incomingVal !== dbVal && field !== allowedField) {
-          return res.status(403).json({
-            error: `Access denied. You are only authorized to update the '${userMappedDept}' column (field: '${allowedField}'). You attempted to change '${field}'.`
-          });
+        if (incomingVal !== dbVal) {
+          if (field !== allowedField) {
+            return res.status(403).json({ 
+              error: `Access denied. You are only authorized to sign off for the '${userMappedDept}' department (field: '${allowedField}').` 
+            });
+          }
         }
       }
     }

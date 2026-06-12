@@ -167,7 +167,7 @@ export const AllApprovals = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoOpenChangeNo, requests]);
 
-  async function handleOpenModal(req) {
+  const handleOpenModal = async (req) => {
     setSelectedReq(req);
     setRemarks(req.hodRemarks || '');
     setL1Details(null);
@@ -437,10 +437,10 @@ export const AllApprovals = ({
 
       {/* ─── Details Modal ─── */}
       {selectedReq && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-0">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={handleCloseModal} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={handleCloseModal} />
 
-          <div className="relative bg-white w-screen h-screen rounded-none shadow-2xl border-none overflow-hidden flex flex-col z-10 animate-fade-in">
+          <div className="relative bg-white w-full max-w-[720px] max-h-[92vh] rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
 
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-[#0066cc] to-indigo-600 px-6 py-5 flex items-center justify-between">

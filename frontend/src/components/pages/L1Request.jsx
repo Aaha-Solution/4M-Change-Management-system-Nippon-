@@ -1370,7 +1370,7 @@ export const L1Request = ({
       {/* Process Modal */}
       {isProcessModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsProcessModalOpen(false)} />
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsProcessModalOpen(false)} />
           <div className="relative bg-white w-full max-w-[400px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 max-h-[80vh]">
             <div className="bg-slate-50 px-[20px] py-[14px] border-b border-slate-100 flex items-center justify-between rounded-t-[16px]">
               <h4 className="text-[14px] font-bold text-slate-800">Process Names in DB</h4>
@@ -1430,7 +1430,7 @@ export const L1Request = ({
       {/* Machine Modal */}
       {isMachineModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsMachineModalOpen(false)} />
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMachineModalOpen(false)} />
           <div className="relative bg-white w-full max-w-[400px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 max-h-[80vh]">
             <div className="bg-slate-50 px-[20px] py-[14px] border-b border-slate-100 flex items-center justify-between rounded-t-[16px]">
               <h4 className="text-[14px] font-bold text-slate-800">Machine Nos in DB</h4>
@@ -1502,7 +1502,7 @@ export const L1Request = ({
       {/* Delete Confirmation Modal */}
       {itemToDelete && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-[16px]">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setItemToDelete(null)} />
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setItemToDelete(null)} />
           <div className="relative bg-white w-full max-w-[320px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 p-[24px] text-center animate-fade-in-up">
             <div className="mx-auto bg-rose-100 text-rose-600 p-[12px] rounded-full mb-[16px]">
               <AlertTriangle size={24} />
@@ -1532,7 +1532,7 @@ export const L1Request = ({
       {/* Dynamic Table Input Modal */}
       {isImprovementModalOpen && ['cost', 'productivity', 'quality'].includes((improvementArea || '').toLowerCase()) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsImprovementModalOpen(false)} />
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsImprovementModalOpen(false)} />
           <div className="relative bg-white w-full max-w-[850px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 max-h-[85vh] overflow-hidden animate-fade-in-up">
             <div className="bg-slate-50 px-[24px] py-[16px] border-b border-slate-100 flex items-center justify-between rounded-t-[16px]">
               <h4 className="text-[14px] font-bold text-slate-800 uppercase tracking-wider">

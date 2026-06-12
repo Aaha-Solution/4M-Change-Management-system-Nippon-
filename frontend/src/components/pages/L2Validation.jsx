@@ -93,7 +93,7 @@ export const L2Validation = ({
   useEffect(() => {
     if (changes && changes.length > 0) {
       const approvedChanges = changes.filter(c => c.hodStatus === 'Approved');
-
+      
       if (autoOpenChangeNo) {
         const targetChange = approvedChanges.find(c => c.id.toLowerCase().trim() === autoOpenChangeNo.toLowerCase().trim());
         if (targetChange) {
@@ -112,7 +112,7 @@ export const L2Validation = ({
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [changes, autoOpenChangeNo]);
 
   // Sync form inputs with saved validation logs when formChangeNo or validationLogs changes
@@ -252,12 +252,12 @@ export const L2Validation = ({
       ]);
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
-
+      
       const matchedChange = changes?.find(c => c.id === changeNo);
       const hodStatus = matchedChange ? matchedChange.hodStatus : 'Pending';
       const requester = matchedChange ? matchedChange.requester : '';
       const date = matchedChange ? matchedChange.date : '';
-
+      
       const matchedL3 = l3Res.data?.find(log => log.changeNo === changeNo);
       const newLogData = matchedL3 ? { ...matchedL3, hodStatus } : {
         changeNo: changeNo,
@@ -320,7 +320,7 @@ export const L2Validation = ({
     return (
       <div className="mt-1 flex flex-wrap gap-2">
         {files.map((file, idx) => (
-          <span
+          <span 
             key={idx}
             className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
             onClick={() => handleViewAttachment(file, changeNo)}
@@ -341,22 +341,22 @@ export const L2Validation = ({
   const tableLogs = (changes || [])
     .filter(change => change.hodStatus === 'Approved')
     .map(change => {
-      const savedLog = validationLogs.find(log => log.changeNo?.toLowerCase().trim() === change.id?.toLowerCase().trim());
-      return {
-        changeNo: change.id,
-        date: change.date,
-        requester: change.requestBy || change.requester || savedLog?.requester || 'Unknown',
-        requesterEmail: change.requesterEmail || savedLog?.requesterEmail || '',
-        weldTest: savedLog?.weldTest || '-',
-        qaTest: savedLog?.qaTest || '-',
-        status: savedLog?.status || 'Pending',
-        remarks: savedLog?.remarks || '-',
-        isPending: !savedLog
-      };
-    });
+    const savedLog = validationLogs.find(log => log.changeNo?.toLowerCase().trim() === change.id?.toLowerCase().trim());
+    return {
+      changeNo: change.id,
+      date: change.date,
+      requester: change.requestBy || change.requester || savedLog?.requester || 'Unknown',
+      requesterEmail: change.requesterEmail || savedLog?.requesterEmail || '',
+      weldTest: savedLog?.weldTest || '-',
+      qaTest: savedLog?.qaTest || '-',
+      status: savedLog?.status || 'Pending',
+      remarks: savedLog?.remarks || '-',
+      isPending: !savedLog
+    };
+  });
 
   const matchedChange = changes?.find(c => c.id.toLowerCase().trim() === formChangeNo.toLowerCase().trim());
-  const isRaisedByUser = matchedChange && userEmail &&
+  const isRaisedByUser = matchedChange && userEmail && 
     matchedChange.requesterEmail?.toLowerCase().trim() === userEmail.toLowerCase().trim();
 
   const isAdmin = userRole && (
@@ -365,8 +365,8 @@ export const L2Validation = ({
   );
 
   const isQuality = userDept && (
-    userDept.toLowerCase() === 'quality' ||
-    userDept.toLowerCase() === 'qad' ||
+    userDept.toLowerCase() === 'quality' || 
+    userDept.toLowerCase() === 'qad' || 
     userDept.toLowerCase() === 'qa'
   );
 
@@ -509,8 +509,9 @@ export const L2Validation = ({
                   e.target.value = '';
                 }
               }}
-              className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${fieldErrors.pedFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
-                }`}
+              className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+                fieldErrors.pedFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
+              }`}
             />
             {/* Selected PED file chips */}
             {pedFiles.length > 0 && (
@@ -575,8 +576,9 @@ export const L2Validation = ({
                   e.target.value = '';
                 }
               }}
-              className={`w-full text-[11px] text-slate-555 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${fieldErrors.qaFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
-                }`}
+              className={`w-full text-[11px] text-slate-555 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
+                fieldErrors.qaFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
+              }`}
             />
             {/* Selected QA file chips */}
             {qaFiles.length > 0 && (
@@ -608,7 +610,7 @@ export const L2Validation = ({
               </p>
             )}
           </div>
-
+ 
           {/* APPROVER VALIDATION STATUS */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
@@ -619,8 +621,9 @@ export const L2Validation = ({
                 setFormStatus(e.target.value);
                 setFieldErrors(prev => ({ ...prev, status: '' }));
               }}
-              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 disabled:cursor-not-allowed text-slate-555 ${fieldErrors.status ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
-                }`}
+              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 disabled:cursor-not-allowed text-slate-555 ${
+                fieldErrors.status ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+              }`}
             >
               <option value="">Select Status</option>
               <option value="Accepted">Accepted</option>
@@ -633,7 +636,7 @@ export const L2Validation = ({
               </p>
             )}
           </div>
-
+ 
           {/* REMARKS */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remarks <span className="text-rose-500">*</span></label>
@@ -646,8 +649,9 @@ export const L2Validation = ({
                 setFormRemarks(e.target.value);
                 setFieldErrors(prev => ({ ...prev, remarks: '' }));
               }}
-              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none disabled:cursor-not-allowed text-slate-555 ${fieldErrors.remarks ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
-                }`}
+              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none disabled:cursor-not-allowed text-slate-555 ${
+                fieldErrors.remarks ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+              }`}
             />
             {fieldErrors.remarks && (
               <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
@@ -813,9 +817,10 @@ export const L2Validation = ({
                         </div>
                       </td>
                       <td className="p-[12px]">
-                        <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${log.status === 'Accepted'
-                            ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                            : log.status === 'Pending'
+                        <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
+                            log.status === 'Accepted'
+                              ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                              : log.status === 'Pending'
                               ? 'bg-amber-50 border-amber-250 text-amber-700'
                               : 'bg-rose-50 border-rose-250 text-rose-700'
                           }`}>
@@ -902,15 +907,15 @@ export const L2Validation = ({
 
       {/* L1 Request Details Modal */}
       {selectedL1Details && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => setSelectedL1Details(null)}
           />
 
           {/* Modal Container */}
-          <div className="relative bg-white w-screen h-screen rounded-none shadow-2xl border-none overflow-hidden flex flex-col z-10 animate-fade-in">
+          <div className="relative bg-white w-full max-w-[800px] max-h-[90vh] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
             <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-[10px]">
@@ -932,7 +937,7 @@ export const L2Validation = ({
 
             {/* Content */}
             <div className="p-[24px] overflow-y-auto space-y-[24px] text-[13px] text-slate-600">
-
+              
               {/* Section 1: General Info */}
               <div className="space-y-[12px]">
                 <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
@@ -955,10 +960,11 @@ export const L2Validation = ({
                   <div className="space-y-[4px]">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                     <div className="flex gap-1.5 items-center mt-0.5">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL1Details.crStatus === 'Approved'
-                          ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        selectedL1Details.crStatus === 'Approved' 
+                          ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
                           : 'bg-amber-50 border-amber-220 text-amber-700'
-                        }`}>
+                      }`}>
                         {selectedL1Details.crStatus}
                       </span>
                     </div>
@@ -983,10 +989,10 @@ export const L2Validation = ({
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
-                  <div className="space-y-[4px] md:col-span-2 min-w-0">
+                  <div className="space-y-[4px] md:col-span-2">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
-                    <span className="block font-semibold text-slate-800 break-words">{selectedL1Details.request_by}</span>
-                    <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
+                    <span className="font-semibold text-slate-800">{selectedL1Details.request_by}</span>
+                    <span className="block text-[11px] text-slate-400 mt-0.5 font-mono">{selectedL1Details.crRequester}</span>
                   </div>
                   <div className="space-y-[4px]">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
@@ -1128,7 +1134,7 @@ export const L2Validation = ({
 
             {/* Footer */}
             <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px]">
-              <button
+              <button 
                 onClick={handleExportRequestDetailsPDF}
                 className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
                 title="Export this request's full details (L1, L2, L3) as PDF"
@@ -1159,11 +1165,11 @@ export const L2Validation = ({
 
       {/* Attachment Preview Modal (opens in the same page) */}
       {previewFile && (
-        <div
+        <div 
           className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setPreviewFile(null)}
         >
-          <div
+          <div 
             className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1174,33 +1180,33 @@ export const L2Validation = ({
                 </span>
                 <span className="font-bold text-slate-800 text-sm">{previewFile}</span>
               </div>
-              <button
-                onClick={() => setPreviewFile(null)}
+              <button 
+                onClick={() => setPreviewFile(null)} 
                 className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
-
+            
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
                 previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
-                  <img
-                    src={fileUrls[previewFile]}
-                    alt={previewFile}
-                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200"
+                  <img 
+                    src={fileUrls[previewFile]} 
+                    alt={previewFile} 
+                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200" 
                   />
                 ) : previewFile.toLowerCase().endsWith('.pdf') ? (
-                  <iframe
-                    src={`${fileUrls[previewFile]}#navpanes=0`}
-                    title={previewFile}
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white"
+                  <iframe 
+                    src={`${fileUrls[previewFile]}#navpanes=0`} 
+                    title={previewFile} 
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white" 
                   />
                 ) : (
-                  <iframe
-                    src={fileUrls[previewFile]}
-                    title={previewFile}
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700"
+                  <iframe 
+                    src={fileUrls[previewFile]} 
+                    title={previewFile} 
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700" 
                   />
                 )
               ) : (
@@ -1261,7 +1267,7 @@ export const L2Validation = ({
                 )
               )}
             </div>
-
+            
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
               <button
                 onClick={() => setPreviewFile(null)}

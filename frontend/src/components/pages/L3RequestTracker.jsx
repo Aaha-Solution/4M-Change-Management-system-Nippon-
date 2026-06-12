@@ -158,21 +158,23 @@ export const L3RequestTracker = ({
         else if (actingDept === 'HR') currentStatus = currentLog.hr;
         else if (actingDept === 'Safety') currentStatus = currentLog.safety;
         else if (actingDept === 'Unit Head') currentStatus = currentLog.unitHead;
-
+        
         setFormStatus(currentStatus || 'Pending');
       }
     }
   }, [actingDept, selectedChangeId, approvalLogs]);
 
-  function handleSelectRow(log) {
+  // Click row to select it
+  const handleSelectRow = (log) => {
     setValidationError('');
     setSelectedChangeId(log.changeNo);
     setFormChangeNo(log.changeNo);
     setFormDate(formatDateToDDMMYYYY(log.date));
     setFormRequester(log.requester);
-    // DO NOT overwrite actingDept here — each HOD should approve their OWN dept column.
-    // actingDept is set once from the logged-in user's department and must not change
-    // when a row is selected.
+    if (log.raisedDept) {
+      const mapped = mapDbDeptToL3Dept(log.raisedDept);
+      setActingDept(mapped);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -224,7 +226,7 @@ export const L3RequestTracker = ({
 
     try {
       await createL3Approval(updatedLog);
-
+      
       if (setToastMsg) {
         setToastMsg(`Successfully saved ${actingDept} approval log for ${formChangeNo}`);
       }
@@ -250,7 +252,7 @@ export const L3RequestTracker = ({
 
   const handleModalDecision = async (status) => {
     if (!selectedLog) return;
-
+    
     setIsSubmitting(true);
     setValidationError('');
 
@@ -272,7 +274,7 @@ export const L3RequestTracker = ({
 
     try {
       await createL3Approval(updatedLog);
-
+      
       if (setToastMsg) {
         setToastMsg(`Successfully saved ${actingDept} approval status as ${status} for ${selectedLog.changeNo}`);
       }
@@ -284,7 +286,7 @@ export const L3RequestTracker = ({
       if (fetchChanges) {
         await fetchChanges();
       }
-
+      
       // Update selectedLog state in-place so view refreshes immediately
       setSelectedLog(prev => ({
         ...prev,
@@ -299,7 +301,7 @@ export const L3RequestTracker = ({
         safety: actingDept === 'Safety' ? status : prev.safety,
         unitHead: actingDept === 'Unit Head' ? status : prev.unitHead
       }));
-
+      
       handleCancelEdit();
     } catch (err) {
       console.error(err);
@@ -310,7 +312,7 @@ export const L3RequestTracker = ({
     }
   };
 
-  async function handleViewDetails(log) {
+  const handleViewDetails = async (log) => {
     setIsFetchingDetails(true);
     try {
       const [l1Res, l2Res] = await Promise.all([
@@ -355,7 +357,7 @@ export const L3RequestTracker = ({
     return (
       <div className="mt-1 flex flex-wrap gap-2">
         {files.map((file, idx) => (
-          <span
+          <span 
             key={idx}
             className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
             onClick={() => handleViewAttachment(file, changeNo)}
@@ -371,11 +373,11 @@ export const L3RequestTracker = ({
   // Filter logic
   const filteredLogs = approvalLogs.filter(log => {
     const q = searchQuery.toLowerCase().trim();
-    const matchesSearch = !q ||
+    const matchesSearch = !q || 
       log.changeNo.toLowerCase().includes(q) ||
       log.requester.toLowerCase().includes(q);
 
-    const matchesStatus = statusFilter === 'All' ||
+    const matchesStatus = statusFilter === 'All' || 
       log.production === statusFilter;
 
     return matchesSearch && matchesStatus;
@@ -411,24 +413,36 @@ export const L3RequestTracker = ({
   }
 
   const isAdmin = userRole && (
-    userRole.toLowerCase() === 'admin' ||
+    userRole.toLowerCase() === 'admin' || 
     userRole.toLowerCase() === 'administrator'
   );
 
   const isHOD = userRole && (
-    userRole.toLowerCase().includes('hod') ||
-    userRole.toLowerCase().includes('unit head') ||
+    userRole.toLowerCase().includes('hod') || 
+    userRole.toLowerCase().includes('unit head') || 
     userRole.toLowerCase().includes('unit_head') ||
     userRole.toLowerCase().includes('manager')
   );
 
+  const getUserMappedDept = () => {
+    if (userDept) return mapDbDeptToL3Dept(userDept);
+    
+    // Fallback to email hardcoding
+    if (!userEmail) return '';
+    const email = userEmail.toLowerCase();
+    if (email.includes('ravi.qa')) return 'Quality';
+    if (email.includes('kumar.s')) return 'Production';
+    if (email.includes('ped')) return 'PED';
+    if (email.includes('manager')) return 'Production';
+    return 'Quality';
+  };
 
+  const userMappedDept = getUserMappedDept();
 
+  const raisedDept = currentChangeLog ? currentChangeLog.raisedDept : '';
+  const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
 
-  // L3 sign-off: ANY HOD can approve — they each sign off their OWN department column.
-  // Admins can approve any column.
-  // Plain Users cannot approve at L3.
-  const canEdit = isAdmin || isHOD;
+  const canEdit = isAdmin || (isHOD && userMappedDept === mappedRaisedDept);
 
   const selectedLogL2Accepted = !selectedLog || selectedLog.l2Decision === 'Accepted';
 
@@ -452,11 +466,11 @@ export const L3RequestTracker = ({
 
   const selectedLogRaisedDept = selectedLog ? selectedLog.raisedDept : '';
   const selectedLogMappedRaisedDept = mapDbDeptToL3Dept(selectedLogRaisedDept);
-  const canEditModal = isAdmin || isHOD;
+  const canEditModal = isAdmin || (isHOD && userMappedDept === selectedLogMappedRaisedDept);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
-
+      
       {/* LEFT COLUMN: Add L3 Approval Log Form */}
       <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] h-fit">
         <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
@@ -479,7 +493,7 @@ export const L3RequestTracker = ({
             <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
               <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
               <div>
-                <span className="font-bold">Not Authorized:</span> Only HODs and Administrators can submit L3 approvals. (Your Role: <span className="font-bold uppercase">{userRole || 'User'}</span>)
+                <span className="font-bold">Not Authorized:</span> This change request was raised by the <span className="font-bold uppercase">{mappedRaisedDept}</span> department. Only the HOD of that department or an Administrator can sign off. (Your Department: <span className="font-bold uppercase">{userMappedDept || 'None'}</span>, Role: <span className="font-bold uppercase">{userRole || 'User'}</span>)
               </div>
             </div>
           )}
@@ -510,8 +524,8 @@ export const L3RequestTracker = ({
           {/* 4M CHANGE NO */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
-            <input
-              type="text"
+            <input 
+              type="text" 
               placeholder="Click a row to select"
               value={formChangeNo}
               disabled
@@ -522,8 +536,8 @@ export const L3RequestTracker = ({
           {/* REQUESTED DATE */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
-            <input
-              type="text"
+            <input 
+              type="text" 
               placeholder="Click a row to select"
               value={formDate}
               disabled
@@ -534,8 +548,8 @@ export const L3RequestTracker = ({
           {/* CHANGE REQUEST BY */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
-            <input
-              type="text"
+            <input 
+              type="text" 
               placeholder="Click a row to select"
               value={formRequester}
               disabled
@@ -546,8 +560,8 @@ export const L3RequestTracker = ({
           {/* APPROVAL STATUS */}
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approval Status <span className="text-rose-500">*</span></label>
-            <select
-              value={formStatus}
+            <select 
+              value={formStatus} 
               disabled={!selectedChangeId || isAlreadyValidated || !isL2Accepted || !canEdit}
               onChange={(e) => setFormStatus(e.target.value)}
               className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
@@ -561,8 +575,8 @@ export const L3RequestTracker = ({
 
           {/* Submit / Cancel row */}
           <div className="space-y-[8px] pt-[4px]">
-            <button
-              type="submit"
+            <button 
+              type="submit" 
               disabled={isSubmitting || !selectedChangeId || isAlreadyValidated || !isL2Accepted || !canEdit}
               className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
             >
@@ -588,8 +602,8 @@ export const L3RequestTracker = ({
             </button>
 
             {selectedChangeId && (
-              <button
-                type="button"
+              <button 
+                type="button" 
                 onClick={handleCancelEdit}
                 className="w-full text-center py-[6px] text-slate-500 hover:text-slate-800 text-[11px] font-semibold cursor-pointer"
               >
@@ -606,17 +620,17 @@ export const L3RequestTracker = ({
         <div className="flex gap-[8px] items-center text-[11px] flex-wrap">
           <div className="relative flex-grow min-w-[200px]">
             <Search className="absolute left-[10px] top-[10px] text-slate-400" size={14} />
-            <input
-              type="text"
-              placeholder="Search by change no or requester..."
+            <input 
+              type="text" 
+              placeholder="Search by change no or requester..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-[30px] pr-[12px] py-[8px] border border-slate-200 rounded-[6px] outline-none bg-white text-[12px] focus:border-[#0066cc]"
             />
           </div>
-
-          <select
-            value={statusFilter}
+          
+          <select 
+            value={statusFilter} 
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[150px] focus:border-[#0066cc]"
           >
@@ -681,16 +695,17 @@ export const L3RequestTracker = ({
                   paginatedLogs.map((log, idx) => {
                     const isSelected = selectedChangeId === log.changeNo;
                     return (
-                      <tr
-                        key={idx}
+                      <tr 
+                        key={idx} 
                         onClick={() => handleSelectRow(log)}
-                        className={`hover:bg-slate-50/50 cursor-pointer transition-colors ${isSelected ? 'bg-sky-50/60 hover:bg-sky-50/60 border-l-[3px] border-l-[#0066cc]' : ''
-                          }`}
+                        className={`hover:bg-slate-50/50 cursor-pointer transition-colors ${
+                          isSelected ? 'bg-sky-50/60 hover:bg-sky-50/60 border-l-[3px] border-l-[#0066cc]' : ''
+                        }`}
                       >
                         <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
                         <td className="p-[8px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
                         <td className="p-[8px] font-medium text-slate-700 truncate" title={log.requester}>{log.requester}</td>
-
+                        
                         {/* Department Badges */}
                         {[
                           { val: log.ped, type: 'ped' },
@@ -709,12 +724,13 @@ export const L3RequestTracker = ({
                           const isRejected = status === 'Rejected';
                           return (
                             <td key={cIdx} className="p-[8px] text-center">
-                              <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${isAccepted
-                                  ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                                  : isRejected
-                                    ? 'bg-rose-50 border-rose-250 text-rose-700'
-                                    : 'bg-amber-50 border-amber-250 text-amber-700'
-                                }`}>
+                              <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${
+                                isAccepted 
+                                  ? 'bg-emerald-50 border-emerald-250 text-emerald-700' 
+                                  : isRejected 
+                                  ? 'bg-rose-50 border-rose-250 text-rose-700' 
+                                  : 'bg-amber-50 border-amber-250 text-amber-700'
+                              }`}>
                                 {status}
                               </span>
                             </td>
@@ -722,7 +738,7 @@ export const L3RequestTracker = ({
                         })}
 
                         <td className="p-[8px] text-center" onClick={(e) => e.stopPropagation()}>
-                          <button
+                          <button 
                             onClick={() => handleViewDetails(log)}
                             className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
                           >
@@ -754,15 +770,15 @@ export const L3RequestTracker = ({
 
       {/* L3 Details Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"
+          <div 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
             onClick={() => setSelectedLog(null)}
           />
-
+          
           {/* Modal Container */}
-          <div className="relative bg-white w-screen h-screen rounded-none shadow-2xl border-none overflow-hidden flex flex-col z-10 animate-fade-in">
+          <div className="relative bg-white w-full max-w-[800px] max-h-[90vh] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
             <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-[10px]">
@@ -774,7 +790,7 @@ export const L3RequestTracker = ({
                   <p className="text-[11px] text-slate-400 mt-0.5">Tracking details for: <span className="font-mono font-bold text-slate-600">{selectedLog.changeNo}</span></p>
                 </div>
               </div>
-              <button
+              <button 
                 onClick={() => setSelectedLog(null)}
                 className="p-[6px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
               >
@@ -786,28 +802,31 @@ export const L3RequestTracker = ({
             <div className="flex border-b border-slate-200 bg-slate-50/50">
               <button
                 onClick={() => setActiveTab('l1')}
-                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l1'
-                    ? 'border-[#0066cc] text-[#0066cc]'
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l1' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
                     : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
+                }`}
               >
                 1. L1 Request Details
               </button>
               <button
                 onClick={() => setActiveTab('l2')}
-                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l2'
-                    ? 'border-[#0066cc] text-[#0066cc]'
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l2' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
                     : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
+                }`}
               >
                 2. L2 Validation Details
               </button>
               <button
                 onClick={() => setActiveTab('l3')}
-                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l3'
-                    ? 'border-[#0066cc] text-[#0066cc]'
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l3' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
                     : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
+                }`}
               >
                 3. L3 Approval Matrix
               </button>
@@ -839,10 +858,11 @@ export const L3RequestTracker = ({
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                         <div className="flex gap-1.5 items-center mt-0.5">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL1Details.crStatus === 'Approved'
-                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            selectedL1Details.crStatus === 'Approved' 
+                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
                               : 'bg-amber-50 border-amber-220 text-amber-700'
-                            }`}>
+                          }`}>
                             L1 {selectedL1Details.crStatus}
                           </span>
                         </div>
@@ -867,10 +887,10 @@ export const L3RequestTracker = ({
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
-                      <div className="space-y-[4px] md:col-span-2 min-w-0">
+                      <div className="space-y-[4px] md:col-span-2">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
-                        <span className="block font-semibold text-slate-800 break-words">{selectedL1Details.request_by}</span>
-                        <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
+                        <span className="font-semibold text-slate-800">{selectedL1Details.request_by}</span>
+                        <span className="block text-[11px] text-slate-400 mt-0.5 font-mono">{selectedL1Details.crRequester}</span>
                       </div>
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
@@ -1035,12 +1055,13 @@ export const L3RequestTracker = ({
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
                         <div>
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL2Details.status === 'Accepted'
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            selectedL2Details.status === 'Accepted'
                               ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
                               : selectedL2Details.status === 'Rejected'
-                                ? 'bg-rose-50 border-rose-220 text-rose-700'
-                                : 'bg-amber-50 border-amber-220 text-amber-700'
-                            }`}>
+                              ? 'bg-rose-50 border-rose-220 text-rose-700'
+                              : 'bg-amber-50 border-amber-220 text-amber-700'
+                          }`}>
                             L2 {selectedL2Details.status || 'Pending'}
                           </span>
                         </div>
@@ -1059,7 +1080,7 @@ export const L3RequestTracker = ({
                             {selectedL2Details.weldTest || '-'}
                           </span>
                           {selectedL2Details.weldTest && selectedL2Details.weldTest !== '-' && (
-                            <span
+                            <span 
                               className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
                               onClick={() => handleViewAttachment(selectedL2Details.weldTest, selectedL2Details.changeNo, 'L2')}
                             >
@@ -1076,7 +1097,7 @@ export const L3RequestTracker = ({
                             {selectedL2Details.qaTest || '-'}
                           </span>
                           {selectedL2Details.qaTest && selectedL2Details.qaTest !== '-' && (
-                            <span
+                            <span 
                               className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
                               onClick={() => handleViewAttachment(selectedL2Details.qaTest, selectedL2Details.changeNo, 'L2')}
                             >
@@ -1137,15 +1158,15 @@ export const L3RequestTracker = ({
                       const status = dept.value;
                       const isAccepted = status === 'Accepted' || status === 'Approved';
                       const isRejected = status === 'Rejected';
-                      const badgeClass = isAccepted
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                        : isRejected
-                          ? 'bg-rose-50 border-rose-200 text-rose-700'
-                          : 'bg-amber-50 border-amber-200 text-amber-700';
+                      const badgeClass = isAccepted 
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                        : isRejected 
+                        ? 'bg-rose-50 border-rose-200 text-rose-700' 
+                        : 'bg-amber-50 border-amber-200 text-amber-700';
 
                       return (
-                        <div
-                          key={index}
+                        <div 
+                          key={index} 
                           className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
                         >
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
@@ -1203,7 +1224,7 @@ export const L3RequestTracker = ({
                 )}
               </div>
               <div className="flex items-center gap-[12px] self-end sm:self-auto">
-                <button
+                <button 
                   onClick={handleExportRequestDetailsPDF}
                   className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
                   title="Export this request's full details (L1, L2, L3) as PDF"
@@ -1211,7 +1232,7 @@ export const L3RequestTracker = ({
                   <Download size={14} />
                   <span>Export PDF</span>
                 </button>
-                <button
+                <button 
                   onClick={() => setSelectedLog(null)}
                   className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap"
                 >
@@ -1235,11 +1256,11 @@ export const L3RequestTracker = ({
 
       {/* Attachment Preview Modal */}
       {previewFile && (
-        <div
+        <div 
           className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setPreviewFile(null)}
         >
-          <div
+          <div 
             className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1250,33 +1271,33 @@ export const L3RequestTracker = ({
                 </span>
                 <span className="font-bold text-slate-800 text-sm">{previewFile}</span>
               </div>
-              <button
-                onClick={() => setPreviewFile(null)}
+              <button 
+                onClick={() => setPreviewFile(null)} 
                 className="text-slate-400 hover:text-slate-650 p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
-
+            
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
                 previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
-                  <img
-                    src={fileUrls[previewFile]}
-                    alt={previewFile}
-                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200"
+                  <img 
+                    src={fileUrls[previewFile]} 
+                    alt={previewFile} 
+                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200" 
                   />
                 ) : previewFile.toLowerCase().endsWith('.pdf') ? (
-                  <iframe
-                    src={`${fileUrls[previewFile]}#navpanes=0`}
-                    title={previewFile}
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white"
+                  <iframe 
+                    src={`${fileUrls[previewFile]}#navpanes=0`} 
+                    title={previewFile} 
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white" 
                   />
                 ) : (
-                  <iframe
-                    src={fileUrls[previewFile]}
-                    title={previewFile}
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700"
+                  <iframe 
+                    src={fileUrls[previewFile]} 
+                    title={previewFile} 
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700" 
                   />
                 )
               ) : (
@@ -1337,7 +1358,7 @@ export const L3RequestTracker = ({
                 )
               )}
             </div>
-
+            
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
               <button
                 onClick={() => setPreviewFile(null)}
@@ -1353,15 +1374,15 @@ export const L3RequestTracker = ({
       {/* Validation Warning Modal */}
       {validationError && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
-          <div className="fixed inset-0 bg-slate-900/65 backdrop-blur-md" onClick={() => setValidationError('')} />
+          <div className="fixed inset-0 bg-slate-900/65 backdrop-blur-xs" onClick={() => setValidationError('')} />
           <div className="relative bg-white w-full max-w-[400px] rounded-[12px] shadow-xl border border-slate-200 p-[20px] z-10 flex flex-col items-center text-center gap-[12px] animate-fade-in-up">
             <div className="w-[48px] h-[48px] rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-500">
               <AlertTriangle size={24} />
             </div>
             <h4 className="text-[14px] font-bold text-slate-950">Validation Warning</h4>
             <p className="text-[12px] text-slate-500 leading-relaxed">{validationError}</p>
-            <button
-              onClick={() => setValidationError('')}
+            <button 
+              onClick={() => setValidationError('')} 
               className="mt-[4px] w-full py-[8px] bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-[6px] text-[12px] transition-colors cursor-pointer"
             >
               Understand

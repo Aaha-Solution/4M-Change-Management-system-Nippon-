@@ -730,7 +730,7 @@ export const Users = ({
 
       {/* Custom Role Modal */}
       {showAddRoleModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-sm w-full mx-auto animate-scale-in relative">
             <button
               onClick={() => setShowAddRoleModal(false)}
@@ -799,7 +799,7 @@ export const Users = ({
 
       {/* Custom Department Modal */}
       {showAddDeptModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-sm w-full mx-auto animate-scale-in relative">
             <button
               onClick={() => setShowAddDeptModal(false)}
@@ -868,7 +868,7 @@ export const Users = ({
 
       {/* Edit User Account Modal */}
       {userToEdit && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-md w-full mx-auto animate-scale-in relative">
             <div className="absolute inset-x-0 top-0 h-1 bg-[#0066cc] rounded-t-xl" />
             <button
@@ -1041,7 +1041,7 @@ export const Users = ({
 
       {/* Delete User Confirmation Modal */}
       {userToDelete && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-sm w-full mx-auto animate-scale-in relative">
             <button
               onClick={() => setUserToDelete(null)}
