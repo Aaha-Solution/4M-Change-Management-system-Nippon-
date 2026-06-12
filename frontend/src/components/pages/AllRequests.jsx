@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
-import { ClipboardList, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar } from 'lucide-react';
+import { ClipboardList, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { getSyncedDate } from '../../utils/timeSync';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
 import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Approvals } from '../../api/apiRoutes';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export const AllRequests = ({
-  changes
+  changes,
+  onTabChange,
+  setToastMsg
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('All');
@@ -184,6 +188,107 @@ export const AllRequests = ({
     }
   };
 
+  const handleExportPDF = () => {
+    try {
+      if (filteredData.length === 0) {
+        setToastMsg?.('No data available to export.');
+        return;
+      }
+
+      const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'pt',
+        format: 'a4'
+      });
+
+      // Headers for A4 Landscape Table
+      const headers = [['SL. NO.', 'CHANGE NO.', 'MACHINE NO.', 'DEPARTMENT', 'PROCESS NAME', 'REQUESTER', 'REQUEST DATE', 'STATUS']];
+
+      // Format row values from filteredData
+      const tableData = filteredData.map((item, idx) => [
+        idx + 1,
+        item.id,
+        item.machineNo,
+        item.department,
+        item.processName,
+        item.requester ? item.requester.split('@')[0] : '-',
+        item.date,
+        item.status
+      ]);
+
+      // Title & Branding (Blue theme)
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(0, 102, 204); // #0066cc
+      doc.text('4M Change Management System', 40, 45);
+
+      // Metadata details
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139); // Slate-500
+      doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
+
+      const filterParts = [];
+      if (searchQuery) filterParts.push(`Search: "${searchQuery}"`);
+      if (selectedMonth !== 'All') filterParts.push(`Month: "${selectedMonth}"`);
+      if (fromDate) filterParts.push(`From: "${fromDate}"`);
+      if (toDate) filterParts.push(`To: "${toDate}"`);
+      if (selectedPerson !== 'All') filterParts.push(`Person: "${selectedPerson.split('@')[0]}"`);
+      if (selectedProcess !== 'All') filterParts.push(`Process: "${selectedProcess}"`);
+      if (selectedMachine !== 'All') filterParts.push(`Machine: "${selectedMachine}"`);
+
+      const filterText = filterParts.length > 0 
+        ? `Active Filters -> ${filterParts.join(', ')}`
+        : 'Active Filters -> None';
+
+      doc.text(filterText, 40, 75);
+
+      // AutoTable generator
+      autoTable(doc, {
+        startY: 90,
+        head: headers,
+        body: tableData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [0, 102, 204],
+          textColor: [255, 255, 255],
+          fontSize: 9,
+          fontStyle: 'bold',
+          halign: 'left'
+        },
+        bodyStyles: {
+          fontSize: 9,
+          textColor: [51, 65, 85] // Slate-700
+        },
+        columnStyles: {
+          0: { cellWidth: 50 },  // SL. NO.
+          1: { cellWidth: 90, fontStyle: 'bold' },  // CHANGE NO.
+          2: { cellWidth: 90 },  // MACHINE NO.
+          3: { cellWidth: 110 }, // DEPARTMENT
+          4: { cellWidth: 120 }, // PROCESS NAME
+          5: { cellWidth: 110 }, // REQUESTER
+          6: { cellWidth: 90 },  // REQUEST DATE
+          7: { cellWidth: 100 }  // STATUS
+        },
+        margin: { top: 40, bottom: 40, left: 40, right: 40 },
+        didDrawPage: (data) => {
+          // Footer
+          const pageCount = doc.internal.getNumberOfPages();
+          doc.setFontSize(8);
+          doc.setTextColor(148, 163, 184); // Slate-400
+          doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
+          doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL', 40, doc.internal.pageSize.height - 20);
+        }
+      });
+
+      doc.save(`4M_Change_Requests_${formatDateToDDMMYYYY(getSyncedDate()).replace(/\//g, '-')}.pdf`);
+      setToastMsg?.('PDF exported successfully!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setToastMsg?.('Error generating PDF export.');
+    }
+  };
+
   const renderL1FilePill = (filename, changeNo) => {
     if (!filename) return null;
     const files = filename.split(',').map(s => s.trim()).filter(Boolean);
@@ -306,10 +411,20 @@ export const AllRequests = ({
             <h3 className="font-heading text-[18px] font-bold text-slate-900">All change requests</h3>
             <ClipboardList size={18} className="text-slate-400" />
           </div>
-          {/* Showing results count */}
-          <span className="bg-slate-100 border border-slate-200 text-slate-500 rounded-full px-[10px] py-[2px] text-[10px] font-bold select-none">
-            Showing {filteredData.length} of {combinedData.length}
-          </span>
+          <div className="flex items-center gap-[12px] flex-wrap">
+            {/* Showing results count */}
+            <span className="bg-slate-100 border border-slate-200 text-slate-500 rounded-full px-[10px] py-[2px] text-[10px] font-bold select-none">
+              Showing {filteredData.length} of {combinedData.length}
+            </span>
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[5px] rounded-[8px] text-[11px] font-bold cursor-pointer transition-all shadow-sm duration-200"
+              title="Export filtered requests as PDF"
+            >
+              <Download size={12} />
+              <span>Export PDF</span>
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto w-full">
