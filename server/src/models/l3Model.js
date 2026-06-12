@@ -215,9 +215,13 @@ export const addL3ApprovalLog = async (logData) => {
 
       for (const deptRow of allDeptRows) {
         const dept = deptRow.department;
-        const notifId = `L3-DECISION-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-        const title = `L3 Approval ${newDecision} by ${updatedDeptField} HOD – ${changeNo}`;
-        const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} raised by ${requestBy} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD at L3. Your department (${dept}) is notified.`;
+        // Keep ID short — VARCHAR(50) limit. Format: L3N-{changeNo}-{deptSlug}-{ts8}-{rnd3}
+        const ts8   = Date.now().toString().slice(-8);
+        const rnd3  = Math.random().toString(36).slice(2, 5);
+        const dSlug = dept.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6);
+        const notifId = `L3N-${changeNo}-${dSlug}-${ts8}-${rnd3}`;
+        const title = `L3 ${newDecision} by ${updatedDeptField} HOD – ${changeNo}`;
+        const details = `CR ${changeNo}${changeIn ? ` (${changeIn})` : ''} raised by ${requestBy} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD at L3. Dept (${dept}) notified.`;
 
         await connection.query(
           `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
@@ -227,11 +231,14 @@ export const addL3ApprovalLog = async (logData) => {
         notifIdsToSend.push(notifId);
       }
 
-      // Also notify the originating dept if not already covered
+      // Also notify the originating dept if not already covered by the loop above
       if (l1Dept && !allDeptRows.some(r => r.department === l1Dept)) {
-        const notifId = `L3-DECISION-NOTIF-${changeNo}-${l1Dept.replace(/\s+/g, '_')}-${Date.now()}`;
-        const title = `L3 Approval ${newDecision} by ${updatedDeptField} HOD – ${changeNo}`;
-        const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD.`;
+        const ts8   = Date.now().toString().slice(-8);
+        const rnd3  = Math.random().toString(36).slice(2, 5);
+        const dSlug = l1Dept.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6);
+        const notifId = `L3N-${changeNo}-${dSlug}-${ts8}-${rnd3}`;
+        const title = `L3 ${newDecision} by ${updatedDeptField} HOD – ${changeNo}`;
+        const details = `CR ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD at L3.`;
 
         await connection.query(
           `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
