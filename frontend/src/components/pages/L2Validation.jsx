@@ -155,16 +155,18 @@ export const L2Validation = ({
       log => log.changeNo?.toLowerCase().trim() === formChangeNo.toLowerCase().trim()
     );
 
-    if (isQuality) {
+    if (isQualityOrAdmin) {
       if (!formStatus) errors.status = 'Please select a validation status.';
       if (!formRemarks.trim()) errors.remarks = 'Remarks are required.';
       const hasQaInDb = existingLog && existingLog.qaTest && existingLog.qaTest !== '-';
       if (qaFiles.length === 0 && !hasQaInDb) {
         errors.qaFile = 'QA attachment is required.';
       }
-    }
-
-    if (isRaisedByUser) {
+      const hasPedInDb = existingLog && existingLog.weldTest && existingLog.weldTest !== '-';
+      if (pedFiles.length === 0 && !hasPedInDb) {
+        errors.pedFile = 'PED attachment is required.';
+      }
+    } else if (isRaisedByUserOrAdmin) {
       const hasPedInDb = existingLog && existingLog.weldTest && existingLog.weldTest !== '-';
       if (pedFiles.length === 0 && !hasPedInDb) {
         errors.pedFile = 'PED attachment is required.';
@@ -357,13 +359,21 @@ export const L2Validation = ({
   const isRaisedByUser = matchedChange && userEmail && 
     matchedChange.requesterEmail?.toLowerCase().trim() === userEmail.toLowerCase().trim();
 
+  const isAdmin = userRole && (
+    userRole.toLowerCase() === 'admin' ||
+    userRole.toLowerCase() === 'administrator'
+  );
+
   const isQuality = userDept && (
     userDept.toLowerCase() === 'quality' || 
     userDept.toLowerCase() === 'qad' || 
     userDept.toLowerCase() === 'qa'
   );
 
-  const canEdit = isQuality || isRaisedByUser;
+  const isQualityOrAdmin = isQuality || isAdmin;
+  const isRaisedByUserOrAdmin = isRaisedByUser || isAdmin;
+
+  const canEdit = isQualityOrAdmin || isRaisedByUser;
 
   // Filter logic
   const filteredLogs = tableLogs.filter(log => {
@@ -394,7 +404,7 @@ export const L2Validation = ({
           <h4 className="text-[13px] font-bold text-slate-900">Add L2 Validation Log</h4>
         </div>
 
-        {formChangeNo && isRaisedByUser && !isQuality && (
+        {formChangeNo && isRaisedByUser && !isQualityOrAdmin && (
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
@@ -403,29 +413,29 @@ export const L2Validation = ({
           </div>
         )}
 
-        {formChangeNo && !isRaisedByUser && isQuality && (
+        {formChangeNo && !isRaisedByUser && isQualityOrAdmin && (
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Notice:</span> You are logged in as Quality. You are authorized to complete the L2 validation status, remarks, and upload the <span className="font-semibold">QA Setup Verification Attachment</span>.
+              <span className="font-bold">Notice:</span> You are logged in as {isAdmin ? 'Admin' : 'Quality'}. You are authorized to complete the L2 validation status, remarks, and upload the <span className="font-semibold">QA Setup Verification Attachment</span>.
             </div>
           </div>
         )}
 
-        {formChangeNo && isRaisedByUser && isQuality && (
+        {formChangeNo && isRaisedByUser && isQualityOrAdmin && (
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Notice:</span> You are the creator of this change request and a Quality member. You have full permissions to update all L2 validation fields.
+              <span className="font-bold">Notice:</span> You are the creator of this change request and {isAdmin ? 'an Admin' : 'a Quality'} member. You have full permissions to update all L2 validation fields.
             </div>
           </div>
         )}
 
-        {formChangeNo && !isRaisedByUser && !isQuality && (
+        {formChangeNo && !isRaisedByUser && !isQualityOrAdmin && (
           <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request or Quality department members.
+              <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request or Quality department members / Admins.
             </div>
           </div>
         )}
@@ -475,7 +485,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || !isRaisedByUser}
+              disabled={!formChangeNo.trim() || !isRaisedByUserOrAdmin}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -513,7 +523,7 @@ export const L2Validation = ({
                   >
                     <Paperclip size={10} className="shrink-0" />
                     <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
-                    {formChangeNo.trim() && isRaisedByUser && (
+                    {formChangeNo.trim() && isRaisedByUserOrAdmin && (
                       <button
                         type="button"
                         onClick={() => setPedFiles(prev => prev.filter((_, i) => i !== idx))}
@@ -542,7 +552,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || !isQuality}
+              disabled={!formChangeNo.trim() || !isQualityOrAdmin}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -580,7 +590,7 @@ export const L2Validation = ({
                   >
                     <Paperclip size={10} className="shrink-0" />
                     <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
-                    {formChangeNo.trim() && isQuality && (
+                    {formChangeNo.trim() && isQualityOrAdmin && (
                       <button
                         type="button"
                         onClick={() => setQaFiles(prev => prev.filter((_, i) => i !== idx))}
@@ -606,7 +616,7 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
             <select
               value={formStatus}
-              disabled={!formChangeNo.trim() || !isQuality}
+              disabled={!formChangeNo.trim() || !isQualityOrAdmin}
               onChange={(e) => {
                 setFormStatus(e.target.value);
                 setFieldErrors(prev => ({ ...prev, status: '' }));
@@ -634,7 +644,7 @@ export const L2Validation = ({
               placeholder="Enter Remarks..."
               rows={3}
               value={formRemarks}
-              disabled={!formChangeNo.trim() || !isQuality}
+              disabled={!formChangeNo.trim() || !isQualityOrAdmin}
               onChange={(e) => {
                 setFormRemarks(e.target.value);
                 setFieldErrors(prev => ({ ...prev, remarks: '' }));
