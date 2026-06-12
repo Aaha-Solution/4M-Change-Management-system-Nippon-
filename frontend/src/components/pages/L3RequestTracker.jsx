@@ -3,7 +3,7 @@ import { Save, Search, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, C
 import TablePagination from '@mui/material/TablePagination';
 import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getUsers } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
-import { exportL3ApprovalsPDF } from '../../utils/pdfExport';
+import { exportL3ApprovalsPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 
 export const L3RequestTracker = ({
   userEmail,
@@ -387,6 +387,10 @@ export const L3RequestTracker = ({
 
   const handleExportPDF = () => {
     exportL3ApprovalsPDF(filteredLogs, { searchQuery, statusFilter }, setToastMsg);
+  };
+
+  const handleExportRequestDetailsPDF = () => {
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, setToastMsg);
   };
 
   const currentChangeLog = selectedChangeId ? approvalLogs.find(log => log.changeNo === selectedChangeId) : null;
@@ -1219,12 +1223,22 @@ export const L3RequestTracker = ({
                   </span>
                 )}
               </div>
-              <button 
-                onClick={() => setSelectedLog(null)}
-                className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap self-end sm:self-auto"
-              >
-                Close Details
-              </button>
+              <div className="flex items-center gap-[12px] self-end sm:self-auto">
+                <button 
+                  onClick={handleExportRequestDetailsPDF}
+                  className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
+                  title="Export this request's full details (L1, L2, L3) as PDF"
+                >
+                  <Download size={14} />
+                  <span>Export PDF</span>
+                </button>
+                <button 
+                  onClick={() => setSelectedLog(null)}
+                  className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap"
+                >
+                  Close Details
+                </button>
+              </div>
             </div>
           </div>
         </div>
