@@ -5,8 +5,7 @@ import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '.
 import { getSyncedDate } from '../../utils/timeSync';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
 import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Approvals } from '../../api/apiRoutes';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { exportRequestsListPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 
 export const AllRequests = ({
   changes,
@@ -189,104 +188,31 @@ export const AllRequests = ({
   };
 
   const handleExportPDF = () => {
-    try {
-      if (filteredData.length === 0) {
-        setToastMsg?.('No data available to export.');
-        return;
-      }
+    exportRequestsListPDF(filteredData, {
+      searchQuery,
+      selectedMonth,
+      selectedPerson,
+      selectedProcess,
+      selectedMachine,
+      fromDate,
+      toDate
+    }, setToastMsg);
+  };
 
-      const doc = new jsPDF({
-        orientation: 'landscape',
-        unit: 'pt',
-        format: 'a4'
+  const handleExportRequestDetailsPDF = () => {
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, setToastMsg);
+  };
+
+  const handleClosePreview = () => {
+    if (previewFile && fileUrls[previewFile]) {
+      URL.revokeObjectURL(fileUrls[previewFile]);
+      setFileUrls(prev => {
+        const copy = { ...prev };
+        delete copy[previewFile];
+        return copy;
       });
-
-      // Headers for A4 Landscape Table
-      const headers = [['SL. NO.', 'CHANGE NO.', 'MACHINE NO.', 'DEPARTMENT', 'PROCESS NAME', 'REQUESTER', 'REQUEST DATE', 'STATUS']];
-
-      // Format row values from filteredData
-      const tableData = filteredData.map((item, idx) => [
-        idx + 1,
-        item.id,
-        item.machineNo,
-        item.department,
-        item.processName,
-        item.requester ? item.requester.split('@')[0] : '-',
-        item.date,
-        item.status
-      ]);
-
-      // Title & Branding (Blue theme)
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(18);
-      doc.setTextColor(0, 102, 204); // #0066cc
-      doc.text('4M Change Management System', 40, 45);
-
-      // Metadata details
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(100, 116, 139); // Slate-500
-      doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
-
-      const filterParts = [];
-      if (searchQuery) filterParts.push(`Search: "${searchQuery}"`);
-      if (selectedMonth !== 'All') filterParts.push(`Month: "${selectedMonth}"`);
-      if (fromDate) filterParts.push(`From: "${fromDate}"`);
-      if (toDate) filterParts.push(`To: "${toDate}"`);
-      if (selectedPerson !== 'All') filterParts.push(`Person: "${selectedPerson.split('@')[0]}"`);
-      if (selectedProcess !== 'All') filterParts.push(`Process: "${selectedProcess}"`);
-      if (selectedMachine !== 'All') filterParts.push(`Machine: "${selectedMachine}"`);
-
-      const filterText = filterParts.length > 0 
-        ? `Active Filters -> ${filterParts.join(', ')}`
-        : 'Active Filters -> None';
-
-      doc.text(filterText, 40, 75);
-
-      // AutoTable generator
-      autoTable(doc, {
-        startY: 90,
-        head: headers,
-        body: tableData,
-        theme: 'striped',
-        headStyles: {
-          fillColor: [0, 102, 204],
-          textColor: [255, 255, 255],
-          fontSize: 9,
-          fontStyle: 'bold',
-          halign: 'left'
-        },
-        bodyStyles: {
-          fontSize: 9,
-          textColor: [51, 65, 85] // Slate-700
-        },
-        columnStyles: {
-          0: { cellWidth: 50 },  // SL. NO.
-          1: { cellWidth: 90, fontStyle: 'bold' },  // CHANGE NO.
-          2: { cellWidth: 90 },  // MACHINE NO.
-          3: { cellWidth: 110 }, // DEPARTMENT
-          4: { cellWidth: 120 }, // PROCESS NAME
-          5: { cellWidth: 110 }, // REQUESTER
-          6: { cellWidth: 90 },  // REQUEST DATE
-          7: { cellWidth: 100 }  // STATUS
-        },
-        margin: { top: 40, bottom: 40, left: 40, right: 40 },
-        didDrawPage: (data) => {
-          // Footer
-          const pageCount = doc.internal.getNumberOfPages();
-          doc.setFontSize(8);
-          doc.setTextColor(148, 163, 184); // Slate-400
-          doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
-          doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL', 40, doc.internal.pageSize.height - 20);
-        }
-      });
-
-      doc.save(`4M_Change_Requests_${formatDateToDDMMYYYY(getSyncedDate()).replace(/\//g, '-')}.pdf`);
-      setToastMsg?.('PDF exported successfully!');
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      setToastMsg?.('Error generating PDF export.');
     }
+    setPreviewFile(null);
   };
 
   const renderL1FilePill = (filename, changeNo) => {
@@ -1005,7 +931,15 @@ export const AllRequests = ({
             </div>
 
             {/* Footer */}
-            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end">
+            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px]">
+              <button 
+                onClick={handleExportRequestDetailsPDF}
+                className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px]"
+                title="Export this request's full details (L1, L2, L3) as PDF"
+              >
+                <Download size={14} />
+                <span>Export PDF</span>
+              </button>
               <button 
                 onClick={() => setSelectedLog(null)}
                 className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
@@ -1031,7 +965,7 @@ export const AllRequests = ({
       {previewFile && (
         <div 
           className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setPreviewFile(null)}
+          onClick={handleClosePreview}
         >
           <div 
             className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[85vh]"
@@ -1045,8 +979,8 @@ export const AllRequests = ({
                 <span className="font-bold text-slate-800 text-sm">{previewFile}</span>
               </div>
               <button 
-                onClick={() => setPreviewFile(null)} 
-                className="text-slate-400 hover:text-slate-650 p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
+                onClick={handleClosePreview} 
+                className="text-slate-400 hover:text-slate-655 p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -1132,9 +1066,20 @@ export const AllRequests = ({
               )}
             </div>
             
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-[8px]">
+              {fileUrls[previewFile] && (
+                <a
+                  href={fileUrls[previewFile]}
+                  download={previewFile}
+                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-[6px]"
+                  title="Download attachment locally"
+                >
+                  <Download size={12} />
+                  <span>Download File</span>
+                </a>
+              )}
               <button
-                onClick={() => setPreviewFile(null)}
+                onClick={handleClosePreview}
                 className="px-4 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
               >
                 Close Preview
