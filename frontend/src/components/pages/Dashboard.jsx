@@ -538,6 +538,7 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
               <AllRequests
                 changes={changes}
                 onTabChange={handleTabChange}
+                setToastMsg={setToastMsg}
               />
             )}
 
