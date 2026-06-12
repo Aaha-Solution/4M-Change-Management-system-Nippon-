@@ -393,3 +393,227 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     setToastMsg?.('Error generating detailed PDF export.');
   }
 };
+
+/**
+ * Exports the L2 Validation Logs to a landscape A4 PDF.
+ * @param {Array} filteredLogs 
+ * @param {Object} filtersInfo 
+ * @param {Function} setToastMsg 
+ */
+export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToastMsg) => {
+  try {
+    if (!filteredLogs || filteredLogs.length === 0) {
+      setToastMsg?.('No data available to export.');
+      return;
+    }
+
+    const { searchQuery = '', decisionFilter = 'All' } = filtersInfo;
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: 'a4'
+    });
+
+    const headers = [['SL. NO.', 'CHANGE NO.', 'REQUEST DATE', 'REQUESTER', 'PED ATTACH.', 'QA ATTACH.', 'STATUS', 'REMARKS']];
+
+    const tableData = filteredLogs.map((item, idx) => [
+      idx + 1,
+      item.changeNo,
+      item.date ? formatDateToDDMMYYYY(item.date) : '-',
+      item.requester,
+      item.weldTest || '-',
+      item.qaTest || '-',
+      item.status,
+      item.remarks || '-'
+    ]);
+
+    // Branding & Title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(0, 102, 204);
+    doc.text('4M Change Management System - L2 Validation Logs', 40, 45);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
+    doc.text(`Active Filters -> Search: "${searchQuery || 'None'}", Decision: "${decisionFilter}"`, 40, 75);
+
+    autoTable(doc, {
+      startY: 90,
+      head: headers,
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [0, 102, 204],
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'left'
+      },
+      bodyStyles: {
+        fontSize: 8.5,
+        textColor: [51, 65, 85]
+      },
+      columnStyles: {
+        0: { cellWidth: 40 },
+        1: { cellWidth: 90, fontStyle: 'bold' },
+        2: { cellWidth: 80 },
+        3: { cellWidth: 100 },
+        4: { cellWidth: 110 },
+        5: { cellWidth: 110 },
+        6: { cellWidth: 80 },
+        7: { cellWidth: 150 }
+      },
+      margin: { top: 40, bottom: 40, left: 40, right: 40 },
+      didDrawPage: (data) => {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
+        doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL L2 LOGS', 40, doc.internal.pageSize.height - 20);
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 6 && data.row.index > 0) {
+          const val = data.cell.text[0];
+          if (val === 'Accepted') {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Rejected') {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Pending') {
+            data.cell.styles.textColor = [217, 119, 6]; // Amber
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+
+    doc.save(`4M_L2_Validation_Logs_${formatDateToDDMMYYYY(getSyncedDate()).replace(/\//g, '-')}.pdf`);
+    setToastMsg?.('L2 validation logs exported successfully!');
+  } catch (error) {
+    console.error('Error generating L2 PDF:', error);
+    setToastMsg?.('Error generating L2 PDF export.');
+  }
+};
+
+/**
+ * Exports the L3 Approval Matrix to a landscape A4 PDF.
+ * @param {Array} filteredLogs 
+ * @param {Object} filtersInfo 
+ * @param {Function} setToastMsg 
+ */
+export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg) => {
+  try {
+    if (!filteredLogs || filteredLogs.length === 0) {
+      setToastMsg?.('No data available to export.');
+      return;
+    }
+
+    const { searchQuery = '', statusFilter = 'All' } = filtersInfo;
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: 'a4'
+    });
+
+    // 14 columns to fit A4 landscape (842pt width)
+    const headers = [['SL.', 'CHANGE NO.', 'DATE', 'REQUESTER', 'PED', 'QA', 'PROD', 'MAINT', 'PC&L', 'MAT', 'MKTG', 'HR', 'SAFE', 'UH']];
+
+    const tableData = filteredLogs.map((item, idx) => [
+      idx + 1,
+      item.changeNo,
+      item.date ? formatDateToDDMMYYYY(item.date) : '-',
+      item.requester ? item.requester.split('@')[0] : '-',
+      item.ped || 'Pending',
+      item.quality || 'Pending',
+      item.production || 'Pending',
+      item.maintenance || 'Pending',
+      item.pcl || 'Pending',
+      item.materials || 'Pending',
+      item.marketing || 'Pending',
+      item.hr || 'Pending',
+      item.safety || 'Pending',
+      item.unitHead || 'Pending'
+    ]);
+
+    // Branding & Title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(0, 102, 204);
+    doc.text('4M Change Management System - L3 Approval Tracker Matrix', 40, 45);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
+    doc.text(`Active Filters -> Search: "${searchQuery || 'None'}", Status: "${statusFilter}"`, 40, 75);
+
+    autoTable(doc, {
+      startY: 90,
+      head: headers,
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [0, 102, 204],
+        textColor: [255, 255, 255],
+        fontSize: 8,
+        fontStyle: 'bold',
+        halign: 'left'
+      },
+      bodyStyles: {
+        fontSize: 7.5,
+        textColor: [51, 65, 85]
+      },
+      columnStyles: {
+        0: { cellWidth: 35 },
+        1: { cellWidth: 65, fontStyle: 'bold' },
+        2: { cellWidth: 60 },
+        3: { cellWidth: 80 },
+        4: { cellWidth: 52 }, // PED
+        5: { cellWidth: 52 }, // QA
+        6: { cellWidth: 52 }, // PROD
+        7: { cellWidth: 52 }, // MAINT
+        8: { cellWidth: 52 }, // PC&L
+        9: { cellWidth: 52 }, // MAT
+        10: { cellWidth: 52 }, // MKTG
+        11: { cellWidth: 52 }, // HR
+        12: { cellWidth: 52 }, // SAFE
+        13: { cellWidth: 52 }  // UH
+      },
+      margin: { top: 40, bottom: 40, left: 40, right: 40 },
+      didDrawPage: (data) => {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
+        doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL L3 APPROVAL MATRIX', 40, doc.internal.pageSize.height - 20);
+      },
+      didParseCell: (data) => {
+        // Highlight status cells
+        if (data.column.index >= 4 && data.column.index <= 13 && data.row.index > 0) {
+          const val = data.cell.text[0];
+          if (val === 'Accepted' || val === 'Approved') {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Rejected') {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Pending') {
+            data.cell.styles.textColor = [217, 119, 6]; // Amber
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+
+    doc.save(`4M_L3_Approval_Matrix_${formatDateToDDMMYYYY(getSyncedDate()).replace(/\//g, '-')}.pdf`);
+    setToastMsg?.('L3 matrix approvals exported successfully!');
+  } catch (error) {
+    console.error('Error generating L3 PDF:', error);
+    setToastMsg?.('Error generating L3 PDF export.');
+  }
+};
