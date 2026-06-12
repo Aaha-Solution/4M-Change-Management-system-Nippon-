@@ -987,4 +987,152 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
   }
 };
 
+/**
+ * Exports the Effectiveness Monitoring Logs to a landscape A4 PDF.
+ * @param {Array} filteredLogs 
+ * @param {Object} filtersInfo 
+ * @param {Function} setToastMsg 
+ */
+export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setToastMsg) => {
+  try {
+    if (!filteredLogs || filteredLogs.length === 0) {
+      setToastMsg?.('No data available to export.');
+      return;
+    }
+
+    const { searchQuery = '', statusFilter = 'All', monthFilter = 'All' } = filtersInfo;
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: 'a4'
+    });
+
+    const headers = [['SL. NO.', 'CHANGE NO.', 'REQ. DATE', 'CONTEXT', 'START DATE', 'MONTH', 'STATUS', 'QA DECISION', 'REMARKS']];
+
+    const tableData = filteredLogs.map((item, idx) => {
+      // Month-Wise mapping function
+      const formatMonthWise = (val) => {
+        if (!val) return "-";
+        const parts = val.split("-");
+        if (parts.length === 2) {
+          const year = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10);
+          const date = new Date(year, month - 1, 1);
+          if (!isNaN(date.getTime())) {
+            const monthName = date.toLocaleDateString("en-US", { month: "short" });
+            const yearShort = String(year).slice(-2);
+            return `${monthName}-${yearShort}`;
+          }
+        }
+        return val;
+      };
+
+      return [
+        idx + 1,
+        item.changeNo,
+        item.reqDate ? formatDateToDDMMYYYY(item.reqDate) : '-',
+        item.context || '-',
+        item.startDate ? formatDateToDDMMYYYY(item.startDate) : '-',
+        formatMonthWise(item.monthWise),
+        item.status || '-',
+        item.qaApproval || '-',
+        item.remarks || '-'
+      ];
+    });
+
+    // Title & Branding (Blue theme)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(0, 102, 204); // #0066cc
+    doc.text('4M Change Management System - Effectiveness Monitoring Logs', 40, 45);
+
+    // Metadata details
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate-500
+    doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
+
+    const filterParts = [];
+    if (searchQuery) filterParts.push(`Search: "${searchQuery}"`);
+    if (statusFilter !== 'All') filterParts.push(`Status: "${statusFilter}"`);
+    if (monthFilter !== 'All') filterParts.push(`Month: "${monthFilter}"`);
+
+    const filterText = filterParts.length > 0 
+      ? `Active Filters -> ${filterParts.join(', ')}`
+      : 'Active Filters -> None';
+
+    doc.text(filterText, 40, 75);
+
+    // AutoTable generator
+    autoTable(doc, {
+      startY: 90,
+      head: headers,
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [0, 102, 204],
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'left'
+      },
+      bodyStyles: {
+        fontSize: 8.5,
+        textColor: [51, 65, 85] // Slate-700
+      },
+      columnStyles: {
+        0: { cellWidth: 40 },  // SL. NO.
+        1: { cellWidth: 80, fontStyle: 'bold' },  // CHANGE NO.
+        2: { cellWidth: 70 },  // REQ. DATE
+        3: { cellWidth: 130 }, // CONTEXT
+        4: { cellWidth: 70 },  // START DATE
+        5: { cellWidth: 70 },  // MONTH
+        6: { cellWidth: 100 }, // STATUS
+        7: { cellWidth: 80 },  // QA DECISION
+        8: { cellWidth: 120 }  // REMARKS
+      },
+      margin: { top: 40, bottom: 40, left: 40, right: 40 },
+      didDrawPage: (data) => {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184); // Slate-400
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
+        doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL EFFECTIVENESS OBSERVATIONS', 40, doc.internal.pageSize.height - 20);
+      },
+      didParseCell: (data) => {
+        // Highlight Status
+        if (data.column.index === 6 && data.row.index > 0) {
+          const val = data.cell.text[0];
+          if (val === 'Effectiveness Ok') {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Effectiveness Not Ok') {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+        // Highlight QA Approval Decision
+        if (data.column.index === 7 && data.row.index > 0) {
+          const val = data.cell.text[0];
+          if (val === 'Approved') {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Rejected') {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+
+    doc.save(`4M_Effectiveness_Logs_${formatDateToDDMMYYYY(getSyncedDate()).replace(/\//g, '-')}.pdf`);
+    setToastMsg?.('PDF exported successfully!');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    setToastMsg?.('Error generating PDF export.');
+  }
+};
+
+
 

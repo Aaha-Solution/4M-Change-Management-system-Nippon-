@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Paperclip, RefreshCw, Search, X, Eye, Save } from 'lucide-react';
+import { Paperclip, RefreshCw, Search, X, Eye, Save, Download } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import {
   createEffectivenessLog,
@@ -8,6 +8,7 @@ import {
   getEffectivenessLogs
 } from '../../api/apiRoutes';
 import { formatDateToDDMMYY } from '../../utils/dateUtils';
+import { exportEffectivenessLogsPDF } from '../../utils/pdfExport';
 
 const generateEffId = () => `EFF-${Date.now().toString().substring(7)}`;
 
@@ -198,6 +199,15 @@ export const Effectiveness = ({
   });
 
   const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const handleExportPDF = () => {
+    exportEffectivenessLogsPDF(filteredLogs, {
+      searchQuery: effSearch,
+      statusFilter: effFilterStatus,
+      monthFilter: effFilterMonth
+    }, setToastMsg);
+  };
+
 
   const selectedChange = changes.find(c => c.id === effChangeNo);
 
@@ -546,6 +556,17 @@ export const Effectiveness = ({
                 <option key={m} value={m}>{m}</option>
               ))}
             </select>
+
+            <button
+              type="button"
+              onClick={handleExportPDF}
+              className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[8px] rounded-[6px] text-[12px] font-bold cursor-pointer transition-all shadow-sm duration-200 font-sans"
+              title="Export effectiveness monitoring logs as PDF"
+            >
+              <Download size={14} />
+              <span>Export PDF</span>
+            </button>
+
 
 
           </div>

@@ -651,6 +651,7 @@ export const L2Validation = ({
             <option value="All">All Decisions</option>
             <option value="Accepted">Accepted</option>
             <option value="Rejected">Rejected</option>
+            <option value="Pending">Pending</option>
           </select>
 
           <button
