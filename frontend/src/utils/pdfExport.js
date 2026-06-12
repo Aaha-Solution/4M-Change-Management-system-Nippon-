@@ -1014,15 +1014,30 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       // Month-Wise mapping function
       const formatMonthWise = (val) => {
         if (!val) return "-";
-        const parts = val.split("-");
-        if (parts.length === 2) {
-          const year = parseInt(parts[0], 10);
-          const month = parseInt(parts[1], 10);
-          const date = new Date(year, month - 1, 1);
-          if (!isNaN(date.getTime())) {
-            const monthName = date.toLocaleDateString("en-US", { month: "short" });
-            const yearShort = String(year).slice(-2);
-            return `${monthName}-${yearShort}`;
+        if (val.includes('/')) {
+          const parts = val.split('/');
+          if (parts.length === 3) {
+            const month = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+            const date = new Date(year, month - 1, 1);
+            if (!isNaN(date.getTime())) {
+              const monthName = date.toLocaleDateString("en-US", { month: "short" });
+              const yearShort = String(year).slice(-2);
+              return `${monthName}-${yearShort}`;
+            }
+          }
+        }
+        if (val.includes('-')) {
+          const parts = val.split("-");
+          if (parts.length === 2) {
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const date = new Date(year, month - 1, 1);
+            if (!isNaN(date.getTime())) {
+              const monthName = date.toLocaleDateString("en-US", { month: "short" });
+              const yearShort = String(year).slice(-2);
+              return `${monthName}-${yearShort}`;
+            }
           }
         }
         return val;

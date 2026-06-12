@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseDDMMYYYYToDate } from '../../utils/dateUtils';
 
-export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", inputClassName = "", buttonClassName = "", containerClassName = "", id }) => {
+export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", inputClassName = "", buttonClassName = "", containerClassName = "", id, disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(() => {
     if (value) {
@@ -70,7 +70,8 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
         type="text" 
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => { if (!disabled) setIsOpen(!isOpen); }}
+        disabled={disabled}
         onKeyDown={(e) => {
           if (e.key !== 'Tab' && e.key !== 'Escape' && e.key !== 'Enter' && e.key !== 'Backspace' && e.key !== 'Delete' && !e.key.startsWith('Arrow')) {
             if (!/[0-9/]/.test(e.key) && e.key.length === 1) {
@@ -83,8 +84,9 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
       />
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`absolute text-slate-450 hover:text-[#0066cc] cursor-pointer flex items-center justify-center z-10 ${buttonClassName}`}
+        disabled={disabled}
+        onClick={() => { if (!disabled) setIsOpen(!isOpen); }}
+        className={`absolute text-slate-450 hover:text-[#0066cc] cursor-pointer flex items-center justify-center z-10 ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''} ${buttonClassName}`}
       >
         <Calendar size={12} />
       </button>

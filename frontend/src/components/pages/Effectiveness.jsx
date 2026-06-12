@@ -9,8 +9,18 @@ import {
 } from '../../api/apiRoutes';
 import { formatDateToDDMMYY } from '../../utils/dateUtils';
 import { exportEffectivenessLogsPDF } from '../../utils/pdfExport';
+import { CustomDatePicker } from '../ui/CustomDatePicker';
 
 const generateEffId = () => `EFF-${Date.now().toString().substring(7)}`;
+
+const getDefaultDateString = () => {
+  const d = new Date();
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 
 export const Effectiveness = ({
   changes,
@@ -21,7 +31,7 @@ export const Effectiveness = ({
 }) => {
   // Effectiveness Monitoring Form States
   const [effChangeNo, setEffChangeNo] = useState('');
-  const [effMonthWise, setEffMonthWise] = useState('2026-05');
+  const [effMonthWise, setEffMonthWise] = useState(() => getDefaultDateString());
   const [effRemarks, setEffRemarks] = useState('');
   const [effAttachment, setEffAttachment] = useState('');
   const [effStatus, setEffStatus] = useState('');
@@ -74,18 +84,33 @@ export const Effectiveness = ({
     setPage(0);
   }, [effSearch, effFilterStatus, effFilterMonth]);
 
-  // Format month names (e.g. "2026-05" -> "May-26")
+  // Format month names (e.g. "2026-05" -> "May-26" or "12/06/2026" -> "Jun-26")
   const formatMonthWise = (val) => {
     if (!val) return "-";
-    const parts = val.split("-");
-    if (parts.length === 2) {
-      const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10);
-      const date = new Date(year, month - 1, 1);
-      if (!isNaN(date.getTime())) {
-        const monthName = date.toLocaleDateString("en-US", { month: "short" });
-        const yearShort = String(year).slice(-2);
-        return `${monthName}-${yearShort}`;
+    if (val.includes('/')) {
+      const parts = val.split('/');
+      if (parts.length === 3) {
+        const month = parseInt(parts[1], 10);
+        const year = parseInt(parts[2], 10);
+        const date = new Date(year, month - 1, 1);
+        if (!isNaN(date.getTime())) {
+          const monthName = date.toLocaleDateString("en-US", { month: "short" });
+          const yearShort = String(year).slice(-2);
+          return `${monthName}-${yearShort}`;
+        }
+      }
+    }
+    if (val.includes('-')) {
+      const parts = val.split("-");
+      if (parts.length === 2) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        const date = new Date(year, month - 1, 1);
+        if (!isNaN(date.getTime())) {
+          const monthName = date.toLocaleDateString("en-US", { month: "short" });
+          const yearShort = String(year).slice(-2);
+          return `${monthName}-${yearShort}`;
+        }
       }
     }
     return val;
@@ -165,7 +190,7 @@ export const Effectiveness = ({
   // Cancel selection
   const handleCancelEditing = () => {
     setEffChangeNo('');
-    setEffMonthWise('2026-05');
+    setEffMonthWise(getDefaultDateString());
     setEffRemarks('');
     setEffAttachment('');
     setEffStatus('');
@@ -175,7 +200,7 @@ export const Effectiveness = ({
 
   const handleSelectChangeNo = (val) => {
     setEffChangeNo(val);
-    setEffMonthWise('2026-05');
+    setEffMonthWise(getDefaultDateString());
     setEffRemarks('');
     setEffAttachment('');
     setEffStatus('');
@@ -302,16 +327,14 @@ export const Effectiveness = ({
             </div>
 
             {/* MONTH WISE */}
-            <div className="space-y-[4px]">
+            <div className="space-y-[4px] relative">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise <span className="text-rose-500">*</span></label>
-              <input
-                type="month"
-                required
-                disabled={!effChangeNo || isAlreadyValidated}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
-                  }`}
+              <CustomDatePicker
                 value={effMonthWise}
-                onChange={(e) => setEffMonthWise(e.target.value)}
+                onChange={setEffMonthWise}
+                disabled={!effChangeNo || isAlreadyValidated}
+                inputClassName={`w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[30px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}
+                buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
             </div>
 
