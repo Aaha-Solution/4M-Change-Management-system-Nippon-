@@ -436,9 +436,14 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                 <div className="text-sm font-bold text-slate-800 leading-tight max-w-[130px] truncate" title={userEmail}>
                   {userEmail ? userEmail.split('@')[0] : 'Admin'}
                 </div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">
                   {userRole || 'Administrator'}
                 </span>
+                {userDept && (
+                  <span className="block text-[9px] font-semibold text-slate-500 tracking-wide mt-0.5" title={`Department: ${userDept}`}>
+                    Dept: {userDept}
+                  </span>
+                )}
               </div>
             </div>
             {/* Logout button */}
