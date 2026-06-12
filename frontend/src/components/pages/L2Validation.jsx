@@ -12,7 +12,9 @@ export const L2Validation = ({
   userDept,
   setToastMsg,
   fetchChanges,
-  fetchNotifications
+  fetchNotifications,
+  autoOpenChangeNo,
+  clearAutoOpen
 }) => {
   // Modal states
   const [validationError, setValidationError] = useState('');
@@ -85,21 +87,31 @@ export const L2Validation = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-populate the first pending/available request on initial mount only
+  // Auto-populate logic based on autoOpenChangeNo or first pending request
   useEffect(() => {
-    if (changes && changes.length > 0 && !formChangeNo) {
+    if (changes && changes.length > 0) {
       const approvedChanges = changes.filter(c => c.hodStatus === 'Approved');
-      const validatedNos = new Set(validationLogs.map(log => log.changeNo?.toLowerCase().trim()));
-      const firstPending = approvedChanges.find(c => !validatedNos.has(c.id.toLowerCase().trim())) || approvedChanges[0];
-      if (firstPending) {
-        setFormChangeNo(firstPending.id);
-        setFormDate(formatDateToDDMMYYYY(firstPending.date));
-        setFormRequester(firstPending.requestBy || firstPending.requester || '');
+      
+      if (autoOpenChangeNo) {
+        const targetChange = approvedChanges.find(c => c.id.toLowerCase().trim() === autoOpenChangeNo.toLowerCase().trim());
+        if (targetChange) {
+          setFormChangeNo(targetChange.id);
+          setFormDate(formatDateToDDMMYYYY(targetChange.date));
+          setFormRequester(targetChange.requestBy || targetChange.requester || '');
+        }
+        if (clearAutoOpen) clearAutoOpen();
+      } else if (!formChangeNo) {
+        const validatedNos = new Set(validationLogs.map(log => log.changeNo?.toLowerCase().trim()));
+        const firstPending = approvedChanges.find(c => !validatedNos.has(c.id.toLowerCase().trim())) || approvedChanges[0];
+        if (firstPending) {
+          setFormChangeNo(firstPending.id);
+          setFormDate(formatDateToDDMMYYYY(firstPending.date));
+          setFormRequester(firstPending.requestBy || firstPending.requester || '');
+        }
       }
     }
-  // Only run when changes or validationLogs first load (not on every re-render)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [changes]);
+  }, [changes, autoOpenChangeNo]);
 
   // Sync form inputs with saved validation logs when formChangeNo or validationLogs changes
   useEffect(() => {
