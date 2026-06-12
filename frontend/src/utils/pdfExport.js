@@ -617,3 +617,237 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
     setToastMsg?.('Error generating L3 PDF export.');
   }
 };
+
+/**
+ * Exports the Approvals list to a landscape A4 PDF.
+ * @param {Array} filteredApprovals 
+ * @param {Object} filtersInfo 
+ * @param {Function} setToastMsg 
+ */
+export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setToastMsg) => {
+  try {
+    if (!filteredApprovals || filteredApprovals.length === 0) {
+      setToastMsg?.('No data available to export.');
+      return;
+    }
+
+    const {
+      searchQuery = '',
+      statusFilter = 'All',
+      actingDept = ''
+    } = filtersInfo;
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: 'a4'
+    });
+
+    const headers = [['SL. NO.', 'CHANGE NO.', 'DATE', 'REQUESTED BY', 'DEPARTMENT', 'HOD STATUS', 'REMARKS']];
+
+    const tableData = filteredApprovals.map((item, idx) => [
+      idx + 1,
+      item.changeNo,
+      item.date || '-',
+      item.requestBy || item.requesterEmail || '-',
+      item.dept || '-',
+      item.hodStatus || 'Pending',
+      item.hodRemarks || '-'
+    ]);
+
+    // Title & Branding (Blue theme)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(0, 102, 204); // #0066cc
+    doc.text('4M Change Management System - HOD Approvals Log', 40, 45);
+
+    // Metadata details
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate-500
+    doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
+
+    const filterParts = [];
+    if (searchQuery) filterParts.push(`Search: "${searchQuery}"`);
+    if (statusFilter !== 'All') filterParts.push(`Status: "${statusFilter}"`);
+    if (actingDept) filterParts.push(`Department: "${actingDept}"`);
+
+    const filterText = filterParts.length > 0 
+      ? `Active Filters -> ${filterParts.join(', ')}`
+      : 'Active Filters -> None';
+
+    doc.text(filterText, 40, 75);
+
+    // AutoTable generator
+    autoTable(doc, {
+      startY: 90,
+      head: headers,
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [0, 102, 204],
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'left'
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: [51, 65, 85] // Slate-700
+      },
+      columnStyles: {
+        0: { cellWidth: 50 },  // SL. NO.
+        1: { cellWidth: 90, fontStyle: 'bold' },  // CHANGE NO.
+        2: { cellWidth: 80 },  // DATE
+        3: { cellWidth: 140 }, // REQUESTED BY
+        4: { cellWidth: 100 }, // DEPARTMENT
+        5: { cellWidth: 90 },  // HOD STATUS
+        6: { cellWidth: 210 }  // REMARKS
+      },
+      margin: { top: 40, bottom: 40, left: 40, right: 40 },
+      didDrawPage: (data) => {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184); // Slate-400
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
+        doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL APPROVAL LOGS', 40, doc.internal.pageSize.height - 20);
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 5 && data.row.index > 0) {
+          const val = data.cell.text[0];
+          if (val === 'Approved') {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Rejected') {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Pending') {
+            data.cell.styles.textColor = [217, 119, 6]; // Amber
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+
+    doc.save(`4M_HOD_Approvals_${formatDateToDDMMYYYY(getSyncedDate()).replace(/\//g, '-')}.pdf`);
+    setToastMsg?.('PDF exported successfully!');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    setToastMsg?.('Error generating PDF export.');
+  }
+};
+
+/**
+ * Exports the Users list to a landscape A4 PDF.
+ * @param {Array} filteredUsers 
+ * @param {Object} filtersInfo 
+ * @param {Function} setToastMsg 
+ */
+export const exportUsersListPDF = (filteredUsers, filtersInfo = {}, setToastMsg) => {
+  try {
+    if (!filteredUsers || filteredUsers.length === 0) {
+      setToastMsg?.('No data available to export.');
+      return;
+    }
+
+    const {
+      searchQuery = '',
+      roleFilter = 'All'
+    } = filtersInfo;
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: 'a4'
+    });
+
+    const headers = [['SL. NO.', 'USER ID', 'NAME', 'EMAIL', 'ROLE', 'DEPARTMENT', 'STATUS']];
+
+    const tableData = filteredUsers.map((item, idx) => [
+      idx + 1,
+      `USR-${String(item.id).padStart(3, '0')}`,
+      item.name || 'Unnamed User',
+      item.email || '-',
+      item.role || '-',
+      item.department || '-',
+      item.status || 'Active'
+    ]);
+
+    // Title & Branding (Blue theme)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(0, 102, 204); // #0066cc
+    doc.text('4M Change Management System - User Directory', 40, 45);
+
+    // Metadata details
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate-500
+    doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
+
+    const filterParts = [];
+    if (searchQuery) filterParts.push(`Search: "${searchQuery}"`);
+    if (roleFilter !== 'All') filterParts.push(`Role: "${roleFilter}"`);
+
+    const filterText = filterParts.length > 0 
+      ? `Active Filters -> ${filterParts.join(', ')}`
+      : 'Active Filters -> None';
+
+    doc.text(filterText, 40, 75);
+
+    // AutoTable generator
+    autoTable(doc, {
+      startY: 90,
+      head: headers,
+      body: tableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [0, 102, 204],
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'left'
+      },
+      bodyStyles: {
+        fontSize: 9,
+        textColor: [51, 65, 85] // Slate-700
+      },
+      columnStyles: {
+        0: { cellWidth: 50 },  // SL. NO.
+        1: { cellWidth: 80, fontStyle: 'bold' },  // USER ID
+        2: { cellWidth: 130 }, // NAME
+        3: { cellWidth: 180 }, // EMAIL
+        4: { cellWidth: 100 }, // ROLE
+        5: { cellWidth: 120 }, // DEPARTMENT
+        6: { cellWidth: 100 }  // STATUS
+      },
+      margin: { top: 40, bottom: 40, left: 40, right: 40 },
+      didDrawPage: (data) => {
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184); // Slate-400
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
+        doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL USER DIRECTORY', 40, doc.internal.pageSize.height - 20);
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 6 && data.row.index > 0) {
+          const val = data.cell.text[0];
+          if (val === 'Active') {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Inactive') {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+
+    doc.save(`4M_User_Directory_${formatDateToDDMMYYYY(getSyncedDate()).replace(/\//g, '-')}.pdf`);
+    setToastMsg?.('PDF exported successfully!');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    setToastMsg?.('Error generating PDF export.');
+  }
+};
+

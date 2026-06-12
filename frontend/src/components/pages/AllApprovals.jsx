@@ -18,7 +18,8 @@ import {
   Hash,
   ShieldCheck,
   XCircle,
-  MessageSquare
+  MessageSquare,
+  Download
 } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import {
@@ -32,6 +33,7 @@ import {
   getUsers
 } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
+import { exportApprovalsListPDF } from '../../utils/pdfExport';
 
 // Map raw DB dept string to display name
 const mapDept = (raw) => {
@@ -248,6 +250,14 @@ export const AllApprovals = ({
   });
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  const handleExportPDF = () => {
+    exportApprovalsListPDF(filtered, {
+      searchQuery: search,
+      statusFilter,
+      actingDept
+    }, setToastMsg);
+  };
+
   // Stats
   const pendingCount = requests.filter(r => !r.hodStatus || r.hodStatus === 'Pending').length;
   const approvedCount = requests.filter(r => r.hodStatus === 'Approved').length;
@@ -274,14 +284,24 @@ export const AllApprovals = ({
             <span className="font-semibold text-[#0066cc]">{actingDept || '...'}</span>
           </p>
         </div>
-        <button
-          onClick={fetchRequests}
-          disabled={isFetching}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer disabled:opacity-60"
-        >
-          <RefreshCw size={14} className={isFetching ? 'animate-spin text-[#0066cc]' : ''} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={fetchRequests}
+            disabled={isFetching}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer disabled:opacity-60"
+          >
+            <RefreshCw size={14} className={isFetching ? 'animate-spin text-[#0066cc]' : ''} />
+            Refresh
+          </button>
+          <button
+            onClick={handleExportPDF}
+            className="flex items-center gap-2 px-4 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-xl text-sm font-semibold transition-all shadow-sm cursor-pointer"
+            title="Export filtered approvals to PDF"
+          >
+            <Download size={14} />
+            Export PDF
+          </button>
+        </div>
       </div>
 
       {/* ─── Summary Cards ─── */}

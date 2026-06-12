@@ -22,9 +22,11 @@ import {
   Search,
   Trash2,
   Users as UsersIcon,
-  X
+  X,
+  Download
 } from 'lucide-react';
 import { useWebSocket } from '../../hooks/useWebSocket';
+import { exportUsersListPDF } from '../../utils/pdfExport';
 
 export const Users = ({
   userRole,
@@ -375,6 +377,14 @@ export const Users = ({
 
   const paginatedUsers = filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  const handleExportPDF = () => {
+    exportUsersListPDF(filteredUsers, {
+      searchQuery: userSearchQuery,
+      roleFilter: userRoleFilter
+    }, setToastMsg);
+  };
+
+
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div>
@@ -576,6 +586,17 @@ export const Users = ({
                 ))}
               </select>
             </div>
+
+            <button
+              type="button"
+              onClick={handleExportPDF}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
+              title="Export filtered users to PDF"
+            >
+              <Download size={12} />
+              <span>Export PDF</span>
+            </button>
+
 
 
           </div>
