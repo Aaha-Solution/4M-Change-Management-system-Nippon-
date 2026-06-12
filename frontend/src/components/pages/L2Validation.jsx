@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText } from 'lucide-react';
+import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText, Download } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
+import { exportL2ValidationLogsPDF } from '../../utils/pdfExport';
 
 export const L2Validation = ({
   changes,
@@ -322,6 +323,10 @@ export const L2Validation = ({
   });
 
   const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const handleExportPDF = () => {
+    exportL2ValidationLogsPDF(filteredLogs, { searchQuery, decisionFilter }, setToastMsg);
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_2.5fr] gap-[24px] animate-fade-in-up text-slate-800">
@@ -644,6 +649,16 @@ export const L2Validation = ({
             <option value="Accepted">Accepted</option>
             <option value="Rejected">Rejected</option>
           </select>
+
+          <button
+            type="button"
+            onClick={handleExportPDF}
+            className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[8px] rounded-[6px] text-[12px] font-bold cursor-pointer transition-all shadow-sm duration-200 font-sans"
+            title="Export L2 validation logs as PDF"
+          >
+            <Download size={14} />
+            <span>Export PDF</span>
+          </button>
 
 
         </div>

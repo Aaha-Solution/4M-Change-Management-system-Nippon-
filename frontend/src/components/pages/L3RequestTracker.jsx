@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Save, Search, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar } from 'lucide-react';
+import { Save, Search, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getUsers } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
+import { exportL3ApprovalsPDF } from '../../utils/pdfExport';
 
 export const L3RequestTracker = ({
   userEmail,
@@ -384,6 +385,10 @@ export const L3RequestTracker = ({
 
   const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  const handleExportPDF = () => {
+    exportL3ApprovalsPDF(filteredLogs, { searchQuery, statusFilter }, setToastMsg);
+  };
+
   const currentChangeLog = selectedChangeId ? approvalLogs.find(log => log.changeNo === selectedChangeId) : null;
   const isL2Accepted = !selectedChangeId || currentChangeLog?.l2Decision === 'Accepted';
   let isAlreadyValidated = false;
@@ -630,6 +635,16 @@ export const L3RequestTracker = ({
             <option value="Pending">Pending</option>
             <option value="Rejected">Rejected</option>
           </select>
+
+          <button
+            type="button"
+            onClick={handleExportPDF}
+            className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[8px] rounded-[6px] text-[12px] font-bold cursor-pointer transition-all shadow-sm duration-200 font-sans"
+            title="Export L3 approval tracker matrix as PDF"
+          >
+            <Download size={14} />
+            <span>Export PDF</span>
+          </button>
 
 
         </div>
