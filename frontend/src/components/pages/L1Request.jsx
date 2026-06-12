@@ -423,8 +423,8 @@ export const L1Request = ({
       newErrors.machineNo = 'Please select a Machine No.';
     }
 
-    if (!context || context.trim().length < 10) {
-      newErrors.context = 'Context of Change must be at least 10 characters.';
+    if (!context || !context.trim()) {
+      newErrors.context = 'Context of Change is required.';
     }
 
     if (!description || description.trim().length < 20) {
