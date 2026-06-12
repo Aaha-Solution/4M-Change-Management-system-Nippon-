@@ -76,6 +76,7 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
     const selectedDepts = hodApproval ? hodApproval.split(',').map(s => s.trim()).filter(Boolean) : [];
     const now = new Date();
     const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
+    const notifIds = [];
 
     for (const dName of selectedDepts) {
       const notifId = `L1-HOD-NOTIF-${changeNo}-${dName.replace(/\s+/g, '_')}-${Date.now()}`;
@@ -87,11 +88,18 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
         [notifId, notifTitle, notifDetails, changeNo, changeIn || 'GENERAL', dName, timeStr, 'Action Required', 'blue']
       );
+      notifIds.push(notifId);
     }
 
     await connection.commit();
     broadcast({ type: 'REFRESH_CHANGES' });
     broadcast({ type: 'REFRESH_NOTIFICATIONS' });
+
+    // Send email notifications asynchronously after commit
+    const { sendEmailForNotification } = await import('./notificationModel.js');
+    for (const id of notifIds) {
+      sendEmailForNotification(id).catch(err => console.error('Error sending L1 HOD notification email:', err));
+    }
     return {
       id: changeNo,
       title,
