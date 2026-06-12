@@ -87,8 +87,9 @@ export const L2Validation = ({
   // Auto-populate the first pending/available request on initial mount only
   useEffect(() => {
     if (changes && changes.length > 0 && !formChangeNo) {
+      const approvedChanges = changes.filter(c => c.hodStatus === 'Approved');
       const validatedNos = new Set(validationLogs.map(log => log.changeNo?.toLowerCase().trim()));
-      const firstPending = changes.find(c => !validatedNos.has(c.id.toLowerCase().trim())) || changes[0];
+      const firstPending = approvedChanges.find(c => !validatedNos.has(c.id.toLowerCase().trim())) || approvedChanges[0];
       if (firstPending) {
         setFormChangeNo(firstPending.id);
         setFormDate(formatDateToDDMMYYYY(firstPending.date));
@@ -281,7 +282,9 @@ export const L2Validation = ({
   );
 
   // Construct L2 table rows by combining changes and validationLogs
-  const tableLogs = (changes || []).map(change => {
+  const tableLogs = (changes || [])
+    .filter(change => change.hodStatus === 'Approved')
+    .map(change => {
     const savedLog = validationLogs.find(log => log.changeNo?.toLowerCase().trim() === change.id?.toLowerCase().trim());
     return {
       changeNo: change.id,
