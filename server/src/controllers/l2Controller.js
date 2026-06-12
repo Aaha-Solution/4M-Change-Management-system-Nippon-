@@ -56,6 +56,35 @@ export const createL2ValidationLog = async (req, res) => {
       [logData.changeNo]
     );
 
+    // Enforce mandatory L2 validation fields
+    if (isQualityOrAdmin) {
+      if (!logData.status || (logData.status !== 'Accepted' && logData.status !== 'Rejected')) {
+        return res.status(400).json({ error: 'Validation status must be "Accepted" or "Rejected".' });
+      }
+      if (!logData.remarks || !logData.remarks.trim()) {
+        return res.status(400).json({ error: 'Remarks are required.' });
+      }
+      
+      const hasQaFile = (attachments && attachments.some(a => a.fieldName === 'qa_test')) || 
+                        (existingL2.length > 0 && existingL2[0].qa_test && existingL2[0].qa_test !== '-');
+      if (!hasQaFile) {
+        return res.status(400).json({ error: 'QA Setup Verification Attachment is required.' });
+      }
+
+      const hasPedFile = (attachments && attachments.some(a => a.fieldName === 'weld_test')) || 
+                         (existingL2.length > 0 && existingL2[0].weld_test && existingL2[0].weld_test !== '-');
+      if (!hasPedFile) {
+        return res.status(400).json({ error: 'PED Requester Validation Attachment is required.' });
+      }
+    } else if (isRequester) {
+      const hasPedFile = (attachments && attachments.some(a => a.fieldName === 'weld_test')) || 
+                         (existingL2.length > 0 && existingL2[0].weld_test && existingL2[0].weld_test !== '-');
+      if (!hasPedFile) {
+        return res.status(400).json({ error: 'PED Requester Validation Attachment is required.' });
+      }
+    }
+
+
     if (existingL2.length > 0) {
       const current = existingL2[0];
       
