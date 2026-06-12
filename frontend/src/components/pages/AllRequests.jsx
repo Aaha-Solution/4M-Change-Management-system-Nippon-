@@ -470,7 +470,7 @@ export const AllRequests = ({
               >
                 1. L1 Request Details
               </button>
-              {selectedLog?.hodStatus === 'Approved' && (
+              {selectedLog?.status === 'Approved' && (
                 <button
                   onClick={() => setActiveTab('l2')}
                   className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
@@ -482,7 +482,7 @@ export const AllRequests = ({
                   2. L2 Validation Details
                 </button>
               )}
-              {selectedLog?.hodStatus === 'Approved' && (
+              {selectedLog?.status === 'Approved' && (
                 <button
                   onClick={() => setActiveTab('l3')}
                   className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
