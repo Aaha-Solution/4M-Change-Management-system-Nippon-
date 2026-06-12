@@ -317,7 +317,7 @@ export const L3RequestTracker = ({
     try {
       const [l1Res, l2Res] = await Promise.all([
         getL1Details(log.changeNo),
-        getL2Details(log.changeNo)
+        getL2Details(log.changeNo).catch(() => ({ data: null }))
       ]);
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
@@ -325,7 +325,7 @@ export const L3RequestTracker = ({
       setActiveTab('l1');
     } catch (err) {
       console.error(err);
-      if (setToastMsg) setToastMsg('Error loading L1 change request or L2 validation details.');
+      if (setToastMsg) setToastMsg('Error loading L1 change request details.');
     } finally {
       setIsFetchingDetails(false);
     }
@@ -1026,85 +1026,92 @@ export const L3RequestTracker = ({
                 </div>
               )}
 
-              {activeTab === 'l2' && selectedL2Details && (
-                <div className="space-y-[20px]">
-                  <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                    <CheckCircle2 size={14} />
-                    <span>L2 Validation Details</span>
-                  </h5>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
-                    <div className="space-y-[4px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Date</span>
-                      <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
-                    </div>
-                    <div className="space-y-[4px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
-                      <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
-                    </div>
-                    <div className="space-y-[4px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
-                      <div>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                          selectedL2Details.status === 'Accepted'
-                            ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
-                            : selectedL2Details.status === 'Rejected'
-                            ? 'bg-rose-50 border-rose-220 text-rose-700'
-                            : 'bg-amber-50 border-amber-220 text-amber-700'
-                        }`}>
-                          L2 {selectedL2Details.status || 'Pending'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-[4px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
-                      <span className="font-mono font-bold text-slate-800">{selectedL2Details.changeNo}</span>
-                    </div>
+              {activeTab === 'l2' && (
+                !selectedL2Details ? (
+                  <div className="text-center py-[64px] bg-slate-50 rounded-xl border border-dashed border-slate-200 w-full">
+                    <AlertTriangle className="mx-auto mb-[12px] text-slate-300" size={32} />
+                    <span className="text-slate-400 font-medium">No L2 Validation Details found for this request.</span>
                   </div>
+                ) : (
+                  <div className="space-y-[20px]">
+                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                      <CheckCircle2 size={14} />
+                      <span>L2 Validation Details</span>
+                    </h5>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
-                    <div className="space-y-[6px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">PED Validation Attachment</span>
-                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
-                        <span className="font-medium text-slate-650 truncate max-w-[200px]" title={selectedL2Details.weldTest || '-'}>
-                          {selectedL2Details.weldTest || '-'}
-                        </span>
-                        {selectedL2Details.weldTest && selectedL2Details.weldTest !== '-' && (
-                          <span 
-                            className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
-                            onClick={() => handleViewAttachment(selectedL2Details.weldTest, selectedL2Details.changeNo, 'L2')}
-                          >
-                            Preview
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Date</span>
+                        <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
+                        <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
+                        <div>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            selectedL2Details.status === 'Accepted'
+                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                              : selectedL2Details.status === 'Rejected'
+                              ? 'bg-rose-50 border-rose-220 text-rose-700'
+                              : 'bg-amber-50 border-amber-220 text-amber-700'
+                          }`}>
+                            L2 {selectedL2Details.status || 'Pending'}
                           </span>
-                        )}
+                        </div>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                        <span className="font-mono font-bold text-slate-800">{selectedL2Details.changeNo}</span>
                       </div>
                     </div>
 
-                    <div className="space-y-[6px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Setup Verification Attachment</span>
-                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
-                        <span className="font-medium text-slate-650 truncate max-w-[200px]" title={selectedL2Details.qaTest || '-'}>
-                          {selectedL2Details.qaTest || '-'}
-                        </span>
-                        {selectedL2Details.qaTest && selectedL2Details.qaTest !== '-' && (
-                          <span 
-                            className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
-                            onClick={() => handleViewAttachment(selectedL2Details.qaTest, selectedL2Details.changeNo, 'L2')}
-                          >
-                            Preview
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                      <div className="space-y-[6px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">PED Validation Attachment</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
+                          <span className="font-medium text-slate-650 truncate max-w-[200px]" title={selectedL2Details.weldTest || '-'}>
+                            {selectedL2Details.weldTest || '-'}
                           </span>
-                        )}
+                          {selectedL2Details.weldTest && selectedL2Details.weldTest !== '-' && (
+                            <span 
+                              className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
+                              onClick={() => handleViewAttachment(selectedL2Details.weldTest, selectedL2Details.changeNo, 'L2')}
+                            >
+                              Preview
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-[6px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Setup Verification Attachment</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
+                          <span className="font-medium text-slate-650 truncate max-w-[200px]" title={selectedL2Details.qaTest || '-'}>
+                            {selectedL2Details.qaTest || '-'}
+                          </span>
+                          {selectedL2Details.qaTest && selectedL2Details.qaTest !== '-' && (
+                            <span 
+                              className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
+                              onClick={() => handleViewAttachment(selectedL2Details.qaTest, selectedL2Details.changeNo, 'L2')}
+                            >
+                              Preview
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-[4px] mt-4">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validator Remarks / Comments</span>
+                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
+                        {selectedL2Details.remarks || 'No remarks provided.'}
                       </div>
                     </div>
                   </div>
-
-                  <div className="space-y-[4px] mt-4">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validator Remarks / Comments</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
-                      {selectedL2Details.remarks || 'No remarks provided.'}
-                    </div>
-                  </div>
-                </div>
+                )
               )}
 
               {activeTab === 'l3' && selectedLog && (
