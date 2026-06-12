@@ -553,7 +553,15 @@ export const AllApprovals = ({
                       </h5>
                       <div className="flex items-center gap-3">
                         <StatusBadge status={selectedReq.hodStatus} />
-                        <span className="text-[12px] text-slate-500">by <span className="font-semibold">{selectedReq.hodEmail}</span></span>
+                        <span className="text-[12px] text-slate-500">
+                          by{' '}
+                          <span className="font-semibold text-slate-700">
+                            {selectedReq.hodName || selectedReq.hodEmail}
+                          </span>{' '}
+                          {selectedReq.hodDept && (
+                            <span className="text-slate-400 font-normal">({selectedReq.hodDept})</span>
+                          )}
+                        </span>
                       </div>
                       {selectedReq.hodRemarks && (
                         <p className="text-[12px] text-slate-600 bg-white border border-slate-200 rounded-lg p-2.5 leading-relaxed">{selectedReq.hodRemarks}</p>
@@ -589,9 +597,22 @@ export const AllApprovals = ({
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 {alreadyDecided ? (
-                  <span className="inline-flex items-center gap-2 text-[12px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
-                    <CheckCircle2 size={14} />
-                    Already {selectedReq.hodStatus} by you
+                  <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${
+                    selectedReq.hodStatus === 'Approved' 
+                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
+                      : 'text-rose-700 bg-rose-50 border-rose-200'
+                  }`}>
+                    {selectedReq.hodStatus === 'Approved' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+                    {(() => {
+                      const showAsSelf = !isAdmin && isHOD && userEmail && selectedReq.hodEmail && userEmail.toLowerCase() === selectedReq.hodEmail.toLowerCase();
+                      if (showAsSelf) {
+                        return `Already ${selectedReq.hodStatus} by You`;
+                      } else {
+                        const displayName = selectedReq.hodName || selectedReq.hodEmail || 'HOD';
+                        const displayDept = selectedReq.hodDept ? ` (${selectedReq.hodDept})` : '';
+                        return `Already ${selectedReq.hodStatus} by ${displayName}${displayDept}`;
+                      }
+                    })()}
                   </span>
                 ) : (isAdmin || isHOD) ? (
                   <>
