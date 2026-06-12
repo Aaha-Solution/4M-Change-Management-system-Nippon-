@@ -36,6 +36,7 @@ export const getChanges = async () => {
             l1.request_by as requestBy,
             c.requester as requesterEmail,
             v.status as l2Status,
+            ha.status as hodStatus,
             DATE_FORMAT(c.date, '%Y-%m-%d') as rawDate,
             DATE_FORMAT(l1.date_start, '%Y-%m-%d') as dateStart,
             CASE WHEN l3.ped = 'Approved' 
@@ -53,6 +54,7 @@ export const getChanges = async () => {
      LEFT JOIN users u ON c.requester = u.email
      LEFT JOIN l2_validation_logs v ON c.id = v.change_no
      LEFT JOIN l3_approvals l3 ON c.id = l3.change_no
+     LEFT JOIN hod_approvals ha ON c.id = ha.change_no
      ORDER BY c.created_at DESC`
   );
   return rows;
