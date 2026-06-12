@@ -380,12 +380,13 @@ export const L1Request = ({
 
   const handleHodApprovalToggle = (deptName) => {
     const selected = hodApproval ? hodApproval.split(',').map(s => s.trim()).filter(Boolean) : [];
-    // For single selection, simply set the selected department or clear if re-selected
-    if (hodApproval && hodApproval.trim() === deptName) {
-      setHodApproval('');
+    let updated;
+    if (selected.includes(deptName)) {
+      updated = selected.filter(s => s !== deptName);
     } else {
-      setHodApproval(deptName);
+      updated = [...selected, deptName];
     }
+    setHodApproval(updated.join(', '));
     if (errors.hodApproval) setErrors(prev => ({ ...prev, hodApproval: '' }));
   };
 
@@ -1279,13 +1280,14 @@ export const L1Request = ({
               {renderAttachmentInput("Upload Supporting Files (SOP, WI, Control Plan, FMEA)", fileSop, setFileSop, "file-sop-input", "fileSop", true)}
             </div>
 
-            {/* USER DEPT HOD APPROVAL (single selection) */}
+            {/* USER DEPT HOD APPROVAL */}
             <div className="space-y-[6px]" id="hodApproval">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">User Dept HOD Approval <span className="text-rose-500">*</span></label>
               {dbDepartments.length > 0 ? (
                 <div className="flex flex-wrap gap-[10px] pt-[4px]">
                   {dbDepartments.map((deptName) => {
-                    const isChecked = hodApproval && hodApproval.trim() === deptName;
+                    const selectedDepts = hodApproval ? hodApproval.split(',').map(s => s.trim()).filter(Boolean) : [];
+                    const isChecked = selectedDepts.includes(deptName);
                     return (
                       <label 
                         key={deptName} 
@@ -1298,8 +1300,7 @@ export const L1Request = ({
                         }`}
                       >
                         <input
-                          type="radio"
-                          name="hodApproval"
+                          type="checkbox"
                           checked={isChecked}
                           onChange={() => handleHodApprovalToggle(deptName)}
                           className="w-[14px] h-[14px] rounded border-slate-300 text-[#0066cc] focus:ring-[#0066cc]"
