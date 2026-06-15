@@ -125,7 +125,7 @@ CREATE TABLE effectiveness_attachments (
 
 -- 5. Notifications Table
 CREATE TABLE notifications (
-    id VARCHAR(50) PRIMARY KEY,
+    id VARCHAR(255) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     details TEXT NOT NULL,
     change_no VARCHAR(50) NOT NULL DEFAULT '',

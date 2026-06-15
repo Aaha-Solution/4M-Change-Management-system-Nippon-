@@ -53,6 +53,14 @@ const pool = mysql.createPool({
       console.error('⚠️ Error adding improvement_table_data column:', err.message);
     }
 
+    // Ensure notifications table id column is VARCHAR(255)
+    try {
+      await connection.query('ALTER TABLE notifications MODIFY COLUMN id VARCHAR(255) NOT NULL');
+      console.log('✅ Modified notifications id column to VARCHAR(255).');
+    } catch (err) {
+      console.warn('⚠️ Could not modify notifications id column:', err.message);
+    }
+
     connection.release();
   } catch (error) {
     console.error('❌ Error connecting to MySQL database:', error.message);
