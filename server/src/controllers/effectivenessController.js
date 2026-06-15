@@ -1,4 +1,20 @@
 import * as effectivenessModel from '../models/effectivenessModel.js';
+import pool from '../config/db.js';
+
+const checkCanUpdate = async (email) => {
+  if (!email) return false;
+  const [userRows] = await pool.query('SELECT department, role FROM users WHERE email = ?', [email]);
+  if (userRows.length > 0) {
+    const user = userRows[0];
+    const dept = (user.department || '').toLowerCase();
+    const role = (user.role || '').toLowerCase();
+    const isAdmin = role === 'admin' || role === 'administrator';
+    const isQAHod = (role.includes('hod') || role.includes('manager') || role.includes('unit head') || role.includes('unit_head')) && 
+                    (dept === 'quality' || dept === 'qad' || dept === 'qa');
+    return isAdmin || isQAHod;
+  }
+  return false;
+};
 
 export const getLogs = async (req, res) => {
   try {
@@ -18,6 +34,11 @@ export const createLog = async (req, res) => {
   }
 
   try {
+    const canUpdate = await checkCanUpdate(req.user?.email);
+    if (!canUpdate) {
+      return res.status(403).json({ error: 'Access Denied: Only Admin and Quality HOD are allowed to create effectiveness logs.' });
+    }
+
     const newLog = await effectivenessModel.createLog(logData, attachments);
     res.status(201).json({
       message: 'Effectiveness log created successfully',
@@ -41,6 +62,11 @@ export const updateLog = async (req, res) => {
   }
 
   try {
+    const canUpdate = await checkCanUpdate(req.user?.email);
+    if (!canUpdate) {
+      return res.status(403).json({ error: 'Access Denied: Only Admin and Quality HOD are allowed to update effectiveness logs.' });
+    }
+
     const updated = await effectivenessModel.updateLog(id, logData, attachments);
     res.status(200).json({
       message: 'Effectiveness log updated successfully',
@@ -56,6 +82,11 @@ export const deleteLog = async (req, res) => {
   const { id } = req.params;
 
   try {
+    const canUpdate = await checkCanUpdate(req.user?.email);
+    if (!canUpdate) {
+      return res.status(403).json({ error: 'Access Denied: Only Admin and Quality HOD are allowed to delete effectiveness logs.' });
+    }
+
     await effectivenessModel.deleteLog(id);
     res.status(200).json({
       message: 'Effectiveness log deleted successfully'
@@ -87,6 +118,11 @@ export const getAttachmentFile = async (req, res) => {
 
 export const resetLogs = async (req, res) => {
   try {
+    const canUpdate = await checkCanUpdate(req.user?.email);
+    if (!canUpdate) {
+      return res.status(403).json({ error: 'Access Denied: Only Admin and Quality HOD are allowed to reset effectiveness logs.' });
+    }
+
     await effectivenessModel.resetLogsToDefaults();
     res.status(200).json({ message: 'Effectiveness logs reset to defaults successfully' });
   } catch (error) {

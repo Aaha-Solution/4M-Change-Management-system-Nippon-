@@ -357,21 +357,19 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               )}
             </div>
 
-            {/* Effectiveness (Admin Only) */}
-            {userRole && userRole.toLowerCase().includes('admin') && (
-              <button
-                onClick={() => handleTabChange('effectiveness')}
-                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'effectiveness'
-                  ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
-                  : 'text-slate-655 hover:text-[#0066cc] hover:bg-slate-50'
-                  }`}
-              >
-                <div className="flex items-center gap-3">
-                  <TrendingUp size={18} className={activeTab === 'effectiveness' ? 'text-[#0066cc]' : 'text-slate-400'} />
-                  <span>Effectiveness</span>
-                </div>
-              </button>
-            )}
+            {/* Effectiveness */}
+            <button
+              onClick={() => handleTabChange('effectiveness')}
+              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'effectiveness'
+                ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
+                : 'text-slate-655 hover:text-[#0066cc] hover:bg-slate-50'
+                }`}
+            >
+              <div className="flex items-center gap-3">
+                <TrendingUp size={18} className={activeTab === 'effectiveness' ? 'text-[#0066cc]' : 'text-slate-400'} />
+                <span>Effectiveness</span>
+              </div>
+            </button>
 
             {/* Notifications */}
             <button
@@ -605,14 +603,16 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               />
             )}
 
-            {/* TAB: EFFECTIVENESS MONITORING (Admin Only) */}
-            {activeTab === 'effectiveness' && userRole && userRole.toLowerCase().includes('admin') && (
+            {/* TAB: EFFECTIVENESS MONITORING */}
+            {activeTab === 'effectiveness' && (
               <Effectiveness
                 changes={changes}
                 effectivenessLogs={effectivenessLogs}
                 setEffectivenessLogs={setEffectivenessLogs}
                 logAction={logAction}
                 setToastMsg={setToastMsg}
+                userRole={userRole}
+                userDept={userDept}
               />
             )}
 
