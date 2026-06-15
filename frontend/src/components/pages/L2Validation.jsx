@@ -711,15 +711,24 @@ export const L2Validation = ({
                 <Loader2 className="animate-spin" size={14} />
                 <span>Saving Validation Log...</span>
               </>
+            ) : !formChangeNo.trim() ? (
+              <span>Select a Request to Validate</span>
+            ) : !canEdit ? (
+              <span>Access Restricted</span>
+            ) : (matchedL2 && matchedL2.status === 'Accepted') ? (
+              <span>Validation Locked (Accepted)</span>
+            ) : (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0)) ? (
+              <span>Validation Locked (Rejected)</span>
+            ) : (matchedL2 && matchedL2.status === 'Rejected' && isRaisedByUserOrAdmin && pedFiles.length > 0) ? (
+              <>
+                <Save size={14} />
+                <span>Reset & Resubmit Validation</span>
+              </>
             ) : isAlreadyValidated ? (
               <>
                 <Save size={14} />
                 <span>Update Validation Log</span>
               </>
-            ) : !formChangeNo.trim() ? (
-              <span>Select a Request to Validate</span>
-            ) : !canEdit ? (
-              <span>Access Restricted</span>
             ) : (
               <>
                 <Save size={14} />
