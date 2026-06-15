@@ -145,7 +145,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
       );
       deptRows = rows;
       title = `L2 Setup Validation Awaiting QA Review – ${changeNo}`;
-      details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has updated L2 requester validation (PED) attachment by ${requestBy}. QA Setup Verification review is now required.`;
+      details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has updated L2 requester validation attachment by ${requestBy}. QA Setup Verification review is now required.`;
       statusColor = 'blue';
     } else if (status === 'Accepted') {
       const [rows] = await connection.query(
@@ -200,7 +200,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
       if (reqDept) {
         const requesterNotifId = `L2-REQUESTER-CONFIRM-${changeNo}-${Date.now()}`;
         const requesterNotifTitle = `L2 Validation Submitted – ${changeNo}`;
-        const requesterNotifDetails = `Your L2 Requester Validation (PED) attachment for Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been submitted successfully. The QA department will now review and verify your setup. You will be notified once a decision is made.`;
+        const requesterNotifDetails = `Your L2 Requester Validation attachment for Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been submitted successfully. The QA department will now review and verify your setup. You will be notified once a decision is made.`;
         await connection.query(
           `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
            VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
@@ -249,7 +249,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
                 <div style="padding: 24px; background-color: #ffffff;">
                   <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Hello ${reqName},</h2>
                   <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-                    Your <strong>L2 Requester Validation (PED) attachment</strong> has been submitted successfully and is now <strong>awaiting QA Setup Verification</strong>.
+                    Your <strong>L2 Requester Validation attachment</strong> has been submitted successfully and is now <strong>awaiting QA Setup Verification</strong>.
                   </p>
                   <div style="background-color: #f0f9ff; border-left: 4px solid #0066cc; padding: 16px; margin: 20px 0; border-radius: 4px;">
                     <div style="font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600;">Submission Status</div>
@@ -314,7 +314,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
 
             if (status === 'Pending') {
               emailSubject = `[4M CMS] Action Required: QA Setup Verification for ${changeNo}`;
-              emailIntro = `A change request has updated <strong>L2 Requester Validation (PED) documentation</strong> and is now pending your setup verification review.`;
+              emailIntro = `A change request has updated <strong>L2 Requester Validation documentation</strong> and is now pending your setup verification review.`;
               headerSubtitle = 'L2 Validation Alert';
             } else if (status === 'Accepted') {
               headerSubtitle = 'L3 HOD Review Alert';

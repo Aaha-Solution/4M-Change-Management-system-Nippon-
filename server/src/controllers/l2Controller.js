@@ -75,13 +75,13 @@ export const createL2ValidationLog = async (req, res) => {
       const hasPedFile = (attachments && attachments.some(a => a.fieldName === 'weld_test')) || 
                          (existingL2.length > 0 && existingL2[0].weld_test && existingL2[0].weld_test !== '-');
       if (!hasPedFile) {
-        return res.status(400).json({ error: 'PED Requester Validation Attachment is required.' });
+        return res.status(400).json({ error: 'Requester Validation Attachment is required.' });
       }
     } else if (isRequester) {
       const hasPedFile = (attachments && attachments.some(a => a.fieldName === 'weld_test')) || 
                          (existingL2.length > 0 && existingL2[0].weld_test && existingL2[0].weld_test !== '-');
       if (!hasPedFile) {
-        return res.status(400).json({ error: 'PED Requester Validation Attachment is required.' });
+        return res.status(400).json({ error: 'Requester Validation Attachment is required.' });
       }
     }
 
@@ -95,12 +95,12 @@ export const createL2ValidationLog = async (req, res) => {
 
       const hasNewPedAttachment = attachments && attachments.some(a => a.fieldName === 'weld_test');
       if (current.status === 'Rejected' && !hasNewPedAttachment) {
-        return res.status(403).json({ error: 'Access Denied: L2 validation has already been Rejected. Requester must upload a new PED attachment to reset the status before it can be updated.' });
+        return res.status(403).json({ error: 'Access Denied: L2 validation has already been Rejected. Requester must upload a new validation attachment to reset the status before it can be updated.' });
       }
       
       if (current.status === 'Pending' && !isQualityOrAdmin) {
         if (attachments && attachments.some(a => a.fieldName === 'weld_test')) {
-          return res.status(403).json({ error: 'Access Denied: L2 Requester Validation (PED) attachment is already uploaded and awaiting QA review.' });
+          return res.status(403).json({ error: 'Access Denied: L2 Requester Validation attachment is already uploaded and awaiting QA review.' });
         }
       }
 
@@ -124,7 +124,7 @@ export const createL2ValidationLog = async (req, res) => {
       // Only the creator of the change request or Admins are allowed to update the PED attachment
       if (!isRequester && !isAdmin) {
         if (attachments && attachments.some(a => a.fieldName === 'weld_test')) {
-          return res.status(403).json({ error: 'Access Denied: Only the creator of the change request or Admins are allowed to update the PED attachment.' });
+          return res.status(403).json({ error: 'Access Denied: Only the creator of the change request or Admins are allowed to update the Requester Validation attachment.' });
         }
       }
     } else {
