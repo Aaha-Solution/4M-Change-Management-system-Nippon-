@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Search, RotateCcw, Eye, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText, Download } from 'lucide-react';
+import { Save, Search, Eye, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText, Download } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment, getL2Details, getL3Approvals } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
@@ -243,7 +243,32 @@ export const L2Validation = ({
 
 
   const handleViewL1Details = async (changeNo) => {
+    // Open modal immediately with skeleton data to avoid blinking/flicker
+    setSelectedL1Details({
+      change_no: changeNo,
+      title: 'Loading details...',
+      unit: '',
+      requested_time: '',
+      dept: '',
+      request_by: '',
+      process_name: '',
+      process_line: '',
+      machine_no: '',
+      description: '',
+      improvement_area: '',
+      change_type: '',
+      trace_from: '',
+      trace_to: '',
+      risk_analysis: '',
+      sop_update: '',
+      hod_approval: '',
+      customer_approval: '',
+      effectiveness_monitoring: ''
+    });
+    setSelectedL2Details(null);
+    setSelectedLog(null);
     setIsFetchingL1(true);
+
     try {
       const [l1Res, l2Res, l3Res] = await Promise.all([
         getL1Details(changeNo),
@@ -1023,7 +1048,14 @@ export const L2Validation = ({
             </div>
 
             {/* Content */}
-            <div className="p-[24px] overflow-y-auto space-y-[24px] text-[13px] text-slate-600">
+            <div className="p-[24px] overflow-y-auto space-y-[24px] text-[13px] text-slate-650 flex-1 flex flex-col justify-center">
+              {isFetchingL1 ? (
+                <div className="flex flex-col items-center justify-center py-[60px] gap-3 text-slate-400 my-auto">
+                  <Loader2 className="animate-spin text-[#0066cc]" size={32} />
+                  <span className="text-sm font-semibold text-slate-700">Loading L1 Request details...</span>
+                </div>
+              ) : (
+                <>
               
               {/* Section 1: General Info */}
               <div className="space-y-[12px]">
@@ -1216,6 +1248,8 @@ export const L2Validation = ({
                   </div>
                 </div>
               </div>
+              </>
+              )}
 
             </div>
 
@@ -1223,7 +1257,8 @@ export const L2Validation = ({
             <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px]">
               <button 
                 onClick={handleExportRequestDetailsPDF}
-                className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
+                disabled={isFetchingL1}
+                className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
                 title="Export this request's full details (L1, L2, L3) as PDF"
               >
                 <Download size={14} />
@@ -1236,16 +1271,6 @@ export const L2Validation = ({
                 Close
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Loading spinner for L1 details */}
-      {isFetchingL1 && (
-        <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-2xl flex flex-col items-center gap-3">
-            <Loader2 className="animate-spin text-[#0066cc]" size={32} />
-            <span className="text-sm font-semibold text-slate-700">Loading L1 Request details...</span>
           </div>
         </div>
       )}

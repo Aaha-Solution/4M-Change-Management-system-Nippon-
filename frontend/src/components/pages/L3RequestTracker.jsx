@@ -317,7 +317,13 @@ export const L3RequestTracker = ({
   };
 
   const handleViewDetails = async (log) => {
+    // Open modal immediately with skeleton data to avoid blinking/flicker
+    setSelectedLog(log);
+    setSelectedL1Details(null);
+    setSelectedL2Details(null);
     setIsFetchingDetails(true);
+    setActiveTab('l1');
+
     try {
       const [l1Res, l2Res] = await Promise.all([
         getL1Details(log.changeNo),
@@ -326,7 +332,6 @@ export const L3RequestTracker = ({
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
       setSelectedLog(log);
-      setActiveTab('l1');
     } catch (err) {
       console.error(err);
       if (setToastMsg) setToastMsg('Error loading L1 change request details.');
@@ -428,23 +433,7 @@ export const L3RequestTracker = ({
     userRole.toLowerCase().includes('manager')
   );
 
-  const getUserMappedDept = () => {
-    if (userDept) return mapDbDeptToL3Dept(userDept);
-    
-    // Fallback to email hardcoding
-    if (!userEmail) return '';
-    const email = userEmail.toLowerCase();
-    if (email.includes('ravi.qa')) return 'Quality';
-    if (email.includes('kumar.s')) return 'Production';
-    if (email.includes('ped')) return 'PED';
-    if (email.includes('manager')) return 'Production';
-    return 'Quality';
-  };
 
-  const userMappedDept = getUserMappedDept();
-
-  const raisedDept = currentChangeLog ? currentChangeLog.raisedDept : '';
-  const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
 
   const canEdit = isAdmin || isHOD;
 
@@ -468,8 +457,7 @@ export const L3RequestTracker = ({
 
   const selectedLogAlreadyValidated = selectedLog && getSelectedLogUserStatus() !== 'Pending';
 
-  const selectedLogRaisedDept = selectedLog ? selectedLog.raisedDept : '';
-  const selectedLogMappedRaisedDept = mapDbDeptToL3Dept(selectedLogRaisedDept);
+
   const canEditModal = isAdmin || isHOD;
 
   return (
@@ -837,8 +825,15 @@ export const L3RequestTracker = ({
             </div>
 
             {/* Content */}
-            <div className="p-[24px] overflow-y-auto space-y-[24px] text-[13px] text-slate-600 flex-1">
-              {activeTab === 'l1' && selectedL1Details && (
+            <div className="p-[24px] overflow-y-auto space-y-[24px] text-[13px] text-slate-650 flex-1 flex flex-col justify-center">
+              {isFetchingDetails ? (
+                <div className="flex flex-col items-center justify-center py-[60px] gap-3 text-slate-400 my-auto">
+                  <Loader2 className="animate-spin text-[#0066cc]" size={32} />
+                  <span className="text-sm font-semibold text-slate-700">Loading details...</span>
+                </div>
+              ) : (
+                <>
+                  {activeTab === 'l1' && selectedL1Details && (
                 <div className="space-y-[20px]">
                   {/* General Info */}
                   <div className="space-y-[12px]">
@@ -1183,80 +1178,72 @@ export const L3RequestTracker = ({
                   </div>
                 </div>
               )}
-            </div>
+            </>
+          )}
+        </div>
 
-            {/* Footer */}
-            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                {selectedLog && canEditModal && selectedLogL2Accepted && !selectedLogAlreadyValidated && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] font-bold text-slate-500 mr-1">Your Approval Status ({actingDept}):</span>
-                    <button
-                      onClick={() => handleModalDecision('Approved')}
-                      disabled={isSubmitting}
-                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-750 disabled:opacity-50 text-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1"
-                    >
-                      <CheckCircle2 size={13} />
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => handleModalDecision('Rejected')}
-                      disabled={isSubmitting}
-                      className="px-3 py-1.5 bg-rose-600 hover:bg-rose-750 disabled:opacity-50 text-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1"
-                    >
-                      <X size={13} />
-                      Reject
-                    </button>
-                  </div>
-                )}
-                {selectedLog && selectedLogAlreadyValidated && (
-                  <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 border border-emerald-150 px-2.5 py-1.5 rounded-lg">
-                    <CheckCircle2 size={13} className="text-emerald-500" />
-                    <span>You signed off this request as: <span className="font-extrabold uppercase">{getSelectedLogUserStatus()}</span></span>
-                  </span>
-                )}
-                {selectedLog && !selectedLogL2Accepted && (
-                  <span className="text-[11px] font-semibold text-rose-500 bg-rose-50 border border-rose-150 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
-                    <AlertTriangle size={13} className="text-rose-500" />
-                    <span>L3 Sign-off blocked (L2 Validation is {selectedLog.l2Decision || 'Pending'})</span>
-                  </span>
-                )}
-                {selectedLog && selectedLogL2Accepted && !canEditModal && (
-                  <span className="text-[11px] font-semibold text-slate-500 bg-slate-100/60 border border-slate-200 px-2.5 py-1.5 rounded-lg">
-                    Not Authorized to sign off (Only department HODs or Admin)
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-[12px] self-end sm:self-auto">
-                <button 
-                  onClick={handleExportRequestDetailsPDF}
-                  className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
-                  title="Export this request's full details (L1, L2, L3) as PDF"
+        {/* Footer */}
+        <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            {selectedLog && canEditModal && selectedLogL2Accepted && !selectedLogAlreadyValidated && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-bold text-slate-500 mr-1">Your Approval Status ({actingDept}):</span>
+                <button
+                  onClick={() => handleModalDecision('Approved')}
+                  disabled={isSubmitting}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-750 disabled:opacity-50 text-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1"
                 >
-                  <Download size={14} />
-                  <span>Export PDF</span>
+                  <CheckCircle2 size={13} />
+                  Approve
                 </button>
-                <button 
-                  onClick={() => setSelectedLog(null)}
-                  className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap"
+                <button
+                  onClick={() => handleModalDecision('Rejected')}
+                  disabled={isSubmitting}
+                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-750 disabled:opacity-50 text-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1"
                 >
-                  Close Details
+                  <X size={13} />
+                  Reject
                 </button>
               </div>
-            </div>
+            )}
+            {selectedLog && selectedLogAlreadyValidated && (
+              <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 border border-emerald-150 px-2.5 py-1.5 rounded-lg">
+                <CheckCircle2 size={13} className="text-emerald-500" />
+                <span>You signed off this request as: <span className="font-extrabold uppercase">{getSelectedLogUserStatus()}</span></span>
+              </span>
+            )}
+            {selectedLog && !selectedLogL2Accepted && (
+              <span className="text-[11px] font-semibold text-rose-500 bg-rose-50 border border-rose-150 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                <AlertTriangle size={13} className="text-rose-500" />
+                <span>L3 Sign-off blocked (L2 Validation is {selectedLog.l2Decision || 'Pending'})</span>
+              </span>
+            )}
+            {selectedLog && selectedLogL2Accepted && !canEditModal && (
+              <span className="text-[11px] font-semibold text-slate-500 bg-slate-100/60 border border-slate-200 px-2.5 py-1.5 rounded-lg">
+                Not Authorized to sign off (Only department HODs or Admin)
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-[12px] self-end sm:self-auto">
+            <button 
+              onClick={handleExportRequestDetailsPDF}
+              className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
+              title="Export this request's full details (L1, L2, L3) as PDF"
+            >
+              <Download size={14} />
+              <span>Export PDF</span>
+            </button>
+            <button 
+              onClick={() => setSelectedLog(null)}
+              className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer whitespace-nowrap"
+            >
+              Close Details
+            </button>
           </div>
         </div>
-      )}
-
-      {/* Loading spinner for details */}
-      {isFetchingDetails && (
-        <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-2xl flex flex-col items-center gap-3">
-            <Loader2 className="animate-spin text-[#0066cc]" size={32} />
-            <span className="text-sm font-semibold text-slate-700">Loading Change Request details...</span>
-          </div>
-        </div>
-      )}
+      </div>
+    </div>
+  )}
 
       {/* Attachment Preview Modal */}
       {previewFile && (

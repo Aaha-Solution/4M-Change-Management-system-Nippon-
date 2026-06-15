@@ -135,7 +135,29 @@ export const AllRequests = ({
 
   // Load details handler
   const handleViewDetails = async (request) => {
+    // Open modal immediately with skeleton data to avoid blinking/flicker
+    setSelectedLog({
+      changeNo: request.id,
+      requester: request.requester,
+      date: request.rawDate,
+      status: request.status,
+      hodStatus: request.hodStatus,
+      ped: 'Pending',
+      quality: 'Pending',
+      production: 'Pending',
+      maintenance: 'Pending',
+      pcl: 'Pending',
+      materials: 'Pending',
+      marketing: 'Pending',
+      hr: 'Pending',
+      safety: 'Pending',
+      unitHead: 'Pending'
+    });
+    setSelectedL1Details(null);
+    setSelectedL2Details(null);
     setIsFetchingDetails(true);
+    setActiveTab('l1');
+
     try {
       const [l1Res, l2Res, l3Res] = await Promise.all([
         getL1Details(request.id),
@@ -164,8 +186,6 @@ export const AllRequests = ({
         unitHead: 'Pending'
       };
       setSelectedLog(newLogData);
-
-      setActiveTab('l1');
     } catch (err) {
       console.error('Error fetching request details:', err);
     } finally {
@@ -497,7 +517,14 @@ export const AllRequests = ({
             </div>
 
             {/* Content */}
-            <div className="p-[24px] overflow-y-auto space-y-[24px] text-[13px] text-slate-600 flex-1">
+            <div className="p-[24px] overflow-y-auto space-y-[24px] text-[13px] text-slate-600 flex-1 flex flex-col justify-center">
+              {isFetchingDetails ? (
+                <div className="flex flex-col items-center justify-center py-[60px] gap-3 text-slate-400 my-auto">
+                  <Loader2 className="animate-spin text-[#0066cc]" size={32} />
+                  <span className="text-sm font-semibold text-slate-700">Loading Change Request details...</span>
+                </div>
+              ) : (
+                <>
               {activeTab === 'l1' && selectedL1Details && (
                 <div className="space-y-[20px]">
                   {/* General Info */}
@@ -939,13 +966,16 @@ export const AllRequests = ({
                   </div>
                 </div>
               )}
+            </>
+            )}
             </div>
 
             {/* Footer */}
             <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px]">
               <button 
                 onClick={handleExportRequestDetailsPDF}
-                className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px]"
+                disabled={isFetchingDetails}
+                className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px]"
                 title="Export this request's full details (L1, L2, L3) as PDF"
               >
                 <Download size={14} />
@@ -962,15 +992,7 @@ export const AllRequests = ({
         </div>
       )}
 
-      {/* Loading spinner for details */}
-      {isFetchingDetails && (
-        <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-2xl flex flex-col items-center gap-3">
-            <Loader2 className="animate-spin text-[#0066cc]" size={32} />
-            <span className="text-sm font-semibold text-slate-700">Loading Change Request details...</span>
-          </div>
-        </div>
-      )}
+
 
       {/* Attachment Preview Modal */}
       {previewFile && (

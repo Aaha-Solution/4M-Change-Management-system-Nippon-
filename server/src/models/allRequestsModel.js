@@ -43,7 +43,6 @@ export const getChanges = async () => {
             DATE_FORMAT(l1.date_start, '%Y-%m-%d') as dateStart,
             DATE_FORMAT(l1.date_close, '%Y-%m-%d') as dateClose,
             CASE WHEN (
-                    c.status = 'Completed' OR (
                       l3.ped = 'Approved' AND
                       l3.quality = 'Approved' AND
                       l3.production = 'Approved' AND
@@ -54,8 +53,7 @@ export const getChanges = async () => {
                       l3.hr = 'Approved' AND
                       l3.safety = 'Approved' AND
                       l3.unit_head = 'Approved'
-                    )
-                  ) THEN 1 ELSE 0 END as isL3Approved
+                    ) THEN 1 ELSE 0 END as isL3Approved
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
