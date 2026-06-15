@@ -375,6 +375,18 @@ export const L2Validation = ({
 
   const canEdit = isQualityOrAdmin || isRaisedByUser;
 
+  const matchedL2 = validationLogs.find(
+    log => log.changeNo?.toLowerCase().trim() === formChangeNo.toLowerCase().trim()
+  );
+  const isL2AlreadyValidated = matchedL2 && (matchedL2.status === 'Accepted' || matchedL2.status === 'Rejected');
+
+  const isSaveDisabled = isSubmitting || !formChangeNo.trim() || !canEdit || (
+    // If Accepted, completely locked
+    (matchedL2 && matchedL2.status === 'Accepted') ||
+    // If Rejected, locked for Quality/Admin, and locked for requester unless they selected a new file to reset
+    (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0))
+  );
+
   // Filter logic
   const filteredLogs = tableLogs.filter(log => {
     const q = searchQuery.toLowerCase().trim();
@@ -413,7 +425,7 @@ export const L2Validation = ({
           </div>
         )}
 
-        {formChangeNo && !isRaisedByUser && isQualityOrAdmin && (
+        {formChangeNo && !isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
@@ -422,11 +434,38 @@ export const L2Validation = ({
           </div>
         )}
 
-        {formChangeNo && isRaisedByUser && isQualityOrAdmin && (
+        {formChangeNo && isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold">Notice:</span> You are the creator of this change request and {isAdmin ? 'an Admin' : 'a Quality'} member. You have full permissions to update all L2 validation fields.
+            </div>
+          </div>
+        )}
+
+        {formChangeNo && isL2AlreadyValidated && isQualityOrAdmin && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+            <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Validation Locked:</span> L2 validation has already been completed (Status: <span className="font-bold uppercase">{matchedL2.status}</span>). Quality members and Admins cannot update these fields again.
+            </div>
+          </div>
+        )}
+
+        {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Accepted' && (
+          <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+            <AlertTriangle size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Validation Completed:</span> This request has already been validated and Accepted by Quality. No further actions are required.
+            </div>
+          </div>
+        )}
+
+        {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Rejected' && (
+          <div className="bg-rose-50 border border-rose-250 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+            <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Validation Rejected:</span> L2 validation has been rejected by Quality. Please upload a new <span className="font-semibold">Requester Validation (PED) Attachment</span> to reset the status to Pending and notify Quality for re-evaluation.
             </div>
           </div>
         )}
@@ -485,7 +524,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || !isRaisedByUserOrAdmin}
+              disabled={!formChangeNo.trim() || !isRaisedByUserOrAdmin || (matchedL2 && matchedL2.status === 'Accepted')}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -523,7 +562,7 @@ export const L2Validation = ({
                   >
                     <Paperclip size={10} className="shrink-0" />
                     <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
-                    {formChangeNo.trim() && isRaisedByUserOrAdmin && (
+                    {formChangeNo.trim() && isRaisedByUserOrAdmin && !(matchedL2 && matchedL2.status === 'Accepted') && (
                       <button
                         type="button"
                         onClick={() => setPedFiles(prev => prev.filter((_, i) => i !== idx))}
@@ -552,7 +591,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || !isQualityOrAdmin}
+              disabled={!formChangeNo.trim() || !isQualityOrAdmin || isL2AlreadyValidated}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -590,7 +629,7 @@ export const L2Validation = ({
                   >
                     <Paperclip size={10} className="shrink-0" />
                     <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
-                    {formChangeNo.trim() && isQualityOrAdmin && (
+                    {formChangeNo.trim() && isQualityOrAdmin && !isL2AlreadyValidated && (
                       <button
                         type="button"
                         onClick={() => setQaFiles(prev => prev.filter((_, i) => i !== idx))}
@@ -616,7 +655,7 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
             <select
               value={formStatus}
-              disabled={!formChangeNo.trim() || !isQualityOrAdmin}
+              disabled={!formChangeNo.trim() || !isQualityOrAdmin || isL2AlreadyValidated}
               onChange={(e) => {
                 setFormStatus(e.target.value);
                 setFieldErrors(prev => ({ ...prev, status: '' }));
@@ -644,7 +683,7 @@ export const L2Validation = ({
               placeholder="Enter Remarks..."
               rows={3}
               value={formRemarks}
-              disabled={!formChangeNo.trim() || !isQualityOrAdmin}
+              disabled={!formChangeNo.trim() || !isQualityOrAdmin || isL2AlreadyValidated}
               onChange={(e) => {
                 setFormRemarks(e.target.value);
                 setFieldErrors(prev => ({ ...prev, remarks: '' }));
@@ -664,7 +703,7 @@ export const L2Validation = ({
           {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting || !formChangeNo.trim() || !canEdit}
+            disabled={isSaveDisabled}
             className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-60 border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
           >
             {isSubmitting ? (

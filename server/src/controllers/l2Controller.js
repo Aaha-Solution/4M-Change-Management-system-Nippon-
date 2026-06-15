@@ -89,6 +89,15 @@ export const createL2ValidationLog = async (req, res) => {
     if (existingL2.length > 0) {
       const current = existingL2[0];
       
+      if (current.status === 'Accepted') {
+        return res.status(403).json({ error: 'Access Denied: L2 validation has already been Accepted and cannot be modified.' });
+      }
+
+      const hasNewPedAttachment = attachments && attachments.some(a => a.fieldName === 'weld_test');
+      if (current.status === 'Rejected' && !hasNewPedAttachment) {
+        return res.status(403).json({ error: 'Access Denied: L2 validation has already been Rejected. Requester must upload a new PED attachment to reset the status before it can be updated.' });
+      }
+      
       // If the user is NOT Quality/Admin, they are the requester.
       // As the requester, if they upload a new PED attachment, the status MUST be reset to 'Pending'.
       if (!isQualityOrAdmin) {
