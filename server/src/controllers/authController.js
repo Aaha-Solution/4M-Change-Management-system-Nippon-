@@ -18,7 +18,7 @@ export const login = async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      'SELECT email, role, password FROM users WHERE email = ?',
+      'SELECT email, role, password, name FROM users WHERE email = ?',
       [normalizedEmail]
     );
 
@@ -35,7 +35,7 @@ export const login = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { email: user.email, role: user.role },
+      { email: user.email, role: user.role, name: user.name },
       JWT_SECRET,
       { expiresIn: rememberMe ? '30d' : '24h' }
     );
@@ -44,6 +44,7 @@ export const login = async (req, res) => {
       message: 'Login successful',
       email: user.email,
       role: user.role,
+      name: user.name,
       token
     });
   } catch (error) {
@@ -129,7 +130,7 @@ export const signup = async (req, res) => {
     broadcast({ type: 'REFRESH_USERS' });
 
     const token = jwt.sign(
-      { email, role: assignedRole },
+      { email, role: assignedRole, name: assignedName },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -138,6 +139,7 @@ export const signup = async (req, res) => {
       message: 'User registered successfully',
       email,
       role: assignedRole,
+      name: assignedName,
       token
     });
   } catch (error) {

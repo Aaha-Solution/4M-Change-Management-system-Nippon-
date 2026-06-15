@@ -40,6 +40,19 @@ function App() {
     return '';
   });
 
+  const [userName, setUserName] = useState(() => {
+    const token = localStorage.getItem('cms_token') || sessionStorage.getItem('cms_token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.name || '';
+      } catch (error) {
+        console.warn('Failed to parse name from token:', error);
+      }
+    }
+    return '';
+  });
+
   const [toastMsg, setToastMsg] = useState(null);
 
   useEffect(() => {
@@ -62,6 +75,12 @@ function App() {
     }
     setUserEmail(email);
     setUserRole(role);
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      setUserName(payload.name || '');
+    } catch (e) {
+      setUserName('');
+    }
     setToastMsg(`Signed in as ${role}`);
   };
 
@@ -70,6 +89,7 @@ function App() {
     sessionStorage.removeItem('cms_token');
     setUserEmail('');
     setUserRole('');
+    setUserName('');
   };
 
   return (
@@ -88,6 +108,7 @@ function App() {
               <Dashboard
                 userEmail={userEmail}
                 userRole={userRole}
+                userName={userName}
                 onSignOut={handleSignOut}
               />
             }

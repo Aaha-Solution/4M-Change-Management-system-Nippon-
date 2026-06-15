@@ -36,7 +36,7 @@ const Notifications = lazy(() => import('./Notifications').then(m => ({ default:
 import nipponLogo from '../../assets/Nippon Logo.png';
 import { useWebSocket } from '../../hooks/useWebSocket';
 
-export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
+export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'new-request' | 'all-requests' | 'approvals' | 'effectiveness' | 'reports' | 'audit-log' | 'users' | 'settings' | 'notifications'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -433,8 +433,8 @@ export const Dashboard = ({ userEmail, userRole, onSignOut }) => {
                 {(userRole || 'A')[0]}
               </div>
               <div className="text-left">
-                <div className="text-sm font-bold text-slate-800 leading-tight max-w-[130px] truncate" title={userEmail}>
-                  {userEmail ? userEmail.split('@')[0] : 'Admin'}
+                <div className="text-sm font-bold text-slate-800 leading-tight max-w-[130px] truncate" title={userName || userEmail}>
+                  {userName || (userEmail ? userEmail.split('@')[0] : 'Admin')}
                 </div>
                 <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">
                   {userRole || 'Administrator'}
