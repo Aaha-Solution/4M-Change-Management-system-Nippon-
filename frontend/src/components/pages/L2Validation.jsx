@@ -380,11 +380,16 @@ export const L2Validation = ({
   );
   const isL2AlreadyValidated = matchedL2 && (matchedL2.status === 'Accepted' || matchedL2.status === 'Rejected');
 
+  const hasPedUploaded = matchedL2 && matchedL2.weldTest && matchedL2.weldTest !== '-';
+  const canUploadPed = !hasPedUploaded || matchedL2.status === 'Rejected';
+
   const isSaveDisabled = isSubmitting || !formChangeNo.trim() || !canEdit || (
     // If Accepted, completely locked
     (matchedL2 && matchedL2.status === 'Accepted') ||
     // If Rejected, locked for Quality/Admin, and locked for requester unless they selected a new file to reset
-    (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0))
+    (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0)) ||
+    // If Pending, locked for standard requester since they already uploaded the PED file
+    (matchedL2 && matchedL2.status === 'Pending' && isRaisedByUser && !isQualityOrAdmin)
   );
 
   // Filter logic
@@ -524,7 +529,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || !isRaisedByUserOrAdmin || (matchedL2 && matchedL2.status === 'Accepted')}
+              disabled={!formChangeNo.trim() || !isRaisedByUserOrAdmin || !canUploadPed}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -562,7 +567,7 @@ export const L2Validation = ({
                   >
                     <Paperclip size={10} className="shrink-0" />
                     <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
-                    {formChangeNo.trim() && isRaisedByUserOrAdmin && !(matchedL2 && matchedL2.status === 'Accepted') && (
+                    {formChangeNo.trim() && isRaisedByUserOrAdmin && canUploadPed && (
                       <button
                         type="button"
                         onClick={() => setPedFiles(prev => prev.filter((_, i) => i !== idx))}
@@ -724,6 +729,8 @@ export const L2Validation = ({
                 <Save size={14} />
                 <span>Reset & Resubmit Validation</span>
               </>
+            ) : (matchedL2 && matchedL2.status === 'Pending' && isRaisedByUser && !isQualityOrAdmin) ? (
+              <span>Awaiting QA Review</span>
             ) : isAlreadyValidated ? (
               <>
                 <Save size={14} />
