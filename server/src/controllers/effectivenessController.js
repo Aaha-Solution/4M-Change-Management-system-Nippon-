@@ -8,10 +8,11 @@ const checkCanUpdate = async (email) => {
     const user = userRows[0];
     const dept = (user.department || '').toLowerCase();
     const role = (user.role || '').toLowerCase();
-    const isAdmin = role === 'admin' || role === 'administrator';
-    const isQAHod = (role.includes('hod') || role.includes('manager') || role.includes('unit head') || role.includes('unit_head')) && 
-                    (dept === 'quality' || dept === 'qad' || dept === 'qa');
-    return isAdmin || isQAHod;
+    const isQADept = dept === 'quality' || dept === 'qad' || dept === 'qa';
+    const isAuthorizedRole = role === 'admin' || role === 'administrator' || 
+                             role.includes('hod') || role.includes('manager') || 
+                             role.includes('unit head') || role.includes('unit_head');
+    return isQADept && isAuthorizedRole;
   }
   return false;
 };
@@ -36,7 +37,7 @@ export const createLog = async (req, res) => {
   try {
     const canUpdate = await checkCanUpdate(req.user?.email);
     if (!canUpdate) {
-      return res.status(403).json({ error: 'Access Denied: Only Admin and Quality HOD are allowed to create effectiveness logs.' });
+      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department are allowed to create effectiveness logs.' });
     }
 
     const [existing] = await pool.query('SELECT id FROM effectiveness_logs WHERE change_no = ?', [logData.changeNo]);
@@ -68,7 +69,7 @@ export const deleteLog = async (req, res) => {
   try {
     const canUpdate = await checkCanUpdate(req.user?.email);
     if (!canUpdate) {
-      return res.status(403).json({ error: 'Access Denied: Only Admin and Quality HOD are allowed to delete effectiveness logs.' });
+      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department are allowed to delete effectiveness logs.' });
     }
 
     await effectivenessModel.deleteLog(id);
@@ -104,7 +105,7 @@ export const resetLogs = async (req, res) => {
   try {
     const canUpdate = await checkCanUpdate(req.user?.email);
     if (!canUpdate) {
-      return res.status(403).json({ error: 'Access Denied: Only Admin and Quality HOD are allowed to reset effectiveness logs.' });
+      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department are allowed to reset effectiveness logs.' });
     }
 
     await effectivenessModel.resetLogsToDefaults();

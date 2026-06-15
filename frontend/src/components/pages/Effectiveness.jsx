@@ -32,21 +32,20 @@ export const Effectiveness = ({
   userRole,
   userDept
 }) => {
-  const isAdmin = userRole && (
-    userRole.toLowerCase() === 'admin' ||
-    userRole.toLowerCase() === 'administrator'
-  );
-  const isQAHod = userRole && (
-    userRole.toLowerCase() === 'hod' ||
-    userRole.toLowerCase() === 'manager' ||
-    userRole.toLowerCase().includes('hod') ||
-    userRole.toLowerCase().includes('manager')
-  ) && userDept && (
+  const isQADept = userDept && (
     userDept.toLowerCase() === 'quality' ||
     userDept.toLowerCase() === 'qad' ||
     userDept.toLowerCase() === 'qa'
   );
-  const canUpdate = isAdmin || isQAHod;
+  const isAuthorizedRole = userRole && (
+    userRole.toLowerCase() === 'admin' ||
+    userRole.toLowerCase() === 'administrator' ||
+    userRole.toLowerCase().includes('hod') ||
+    userRole.toLowerCase().includes('manager') ||
+    userRole.toLowerCase().includes('unit head') ||
+    userRole.toLowerCase().includes('unit_head')
+  );
+  const canUpdate = isQADept && isAuthorizedRole;
   // Effectiveness Monitoring Form States
   const [effChangeNo, setEffChangeNo] = useState('');
   const [effMonthWise, setEffMonthWise] = useState(() => getDefaultDateString());
