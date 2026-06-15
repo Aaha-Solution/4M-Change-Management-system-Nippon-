@@ -109,7 +109,7 @@ export const L1Request = ({
   };
 
   // Identifiers State
-  const [unit, setUnit] = useState('UNIT-Pdy');
+  const [unit, setUnit] = useState('UNIT-2');
   const [changeNo, setChangeNo] = useState('');
   const [timeOffset, setTimeOffset] = useState(0);
   const [requestedDate, setRequestedDate] = useState(() => formatDateToDDMMYYYY(new Date()));
@@ -757,9 +757,7 @@ export const L1Request = ({
                 }`}
               >
                 <option value="">— Select Unit —</option>
-                <option value="UNIT-Pdy">UNIT-Pdy</option>
-                <option value="UNIT-Klk">UNIT-Klk</option>
-                <option value="UNIT-Che">UNIT-Che</option>
+                <option value="UNIT-2">UNIT-2</option>
               </select>
               {errors.unit && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.unit}</span>}
             </div>
