@@ -19,7 +19,10 @@ import {
   ShieldCheck,
   XCircle,
   MessageSquare,
-  Download
+  Download,
+  Info,
+  Layers,
+  ArrowRight
 } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import {
@@ -52,6 +55,22 @@ const mapDept = (raw) => {
   return raw;
 };
 
+// Workflow stage label + styling based on crStatus
+const workflowStageConfig = (crStatus) => {
+  switch ((crStatus || '').toLowerCase()) {
+    case 'pending':
+      return { label: 'L1 – HOD Review', color: 'bg-amber-50 border-amber-200 text-amber-700', dot: 'bg-amber-500', level: 'L1' };
+    case 'evaluating':
+      return { label: 'L2 – QA Validation', color: 'bg-blue-50 border-blue-200 text-blue-700', dot: 'bg-blue-500', level: 'L2' };
+    case 'approved':
+      return { label: 'L3 – HOD Decisions', color: 'bg-indigo-50 border-indigo-200 text-indigo-700', dot: 'bg-indigo-500', level: 'L3' };
+    case 'completed':
+      return { label: 'Completed', color: 'bg-emerald-50 border-emerald-200 text-emerald-700', dot: 'bg-emerald-500', level: '✓' };
+    default:
+      return { label: crStatus || 'Unknown', color: 'bg-slate-50 border-slate-200 text-slate-600', dot: 'bg-slate-400', level: '?' };
+  }
+};
+
 const StatusBadge = ({ status }) => {
   if (!status || status === 'Pending') return (
     <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border bg-amber-50 border-amber-200 text-amber-700">
@@ -67,6 +86,41 @@ const StatusBadge = ({ status }) => {
     <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border bg-rose-50 border-rose-200 text-rose-700">
       <XCircle size={11} /> Rejected
     </span>
+  );
+};
+
+// Workflow steps strip shown in modal header
+const WorkflowStrip = ({ crStatus }) => {
+  const steps = [
+    { key: 'L1', label: 'L1 HOD Review' },
+    { key: 'L2', label: 'L2 QA Validation' },
+    { key: 'L3', label: 'L3 HOD Decisions' },
+    { key: 'Done', label: 'Completed' },
+  ];
+  const activeIdx = crStatus === 'Pending' ? 0 : crStatus === 'Evaluating' ? 1 : crStatus === 'Approved' ? 2 : crStatus === 'Completed' ? 3 : 0;
+
+  return (
+    <div className="flex items-center gap-0 px-1 mt-2">
+      {steps.map((s, i) => (
+        <div key={s.key} className="flex items-center">
+          <div className={`flex flex-col items-center`}>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-all ${
+              i < activeIdx ? 'bg-emerald-500 border-emerald-500 text-white' :
+              i === activeIdx ? 'bg-white border-white text-[#0066cc] shadow' :
+              'bg-white/20 border-white/30 text-white/50'
+            }`}>
+              {i < activeIdx ? '✓' : s.key.replace('Done', '✓')}
+            </div>
+            <span className={`text-[9px] font-bold mt-0.5 whitespace-nowrap ${i === activeIdx ? 'text-white' : i < activeIdx ? 'text-emerald-200' : 'text-white/40'}`}>
+              {s.label}
+            </span>
+          </div>
+          {i < steps.length - 1 && (
+            <div className={`w-8 h-0.5 mx-1 mb-4 transition-all ${i < activeIdx ? 'bg-emerald-400' : 'bg-white/20'}`} />
+          )}
+        </div>
+      ))}
+    </div>
   );
 };
 
@@ -96,8 +150,10 @@ export const AllApprovals = ({
   // Filter & Search
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [stageFilter, setStageFilter] = useState('All');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showLegend, setShowLegend] = useState(false);
 
   const isAdmin = userRole && (
     userRole.toLowerCase() === 'admin' ||
@@ -109,7 +165,7 @@ export const AllApprovals = ({
     userRole.toLowerCase().includes('unit head')
   );
 
-  useEffect(() => { setPage(0); }, [search, statusFilter]);
+  useEffect(() => { setPage(0); }, [search, statusFilter, stageFilter]);
 
   // Resolve acting department from DB user record
   useEffect(() => {
@@ -138,7 +194,7 @@ export const AllApprovals = ({
       if (isAdmin) {
         res = await getAllHodApprovals();
       } else {
-        const dept = actingDept || mapDept(userDept) || 'PED';
+        const dept = actingDept || mapDept(userDept) || 'General';
         res = await getHodApprovalsByDept(dept);
       }
       setRequests(res.data || []);
@@ -246,7 +302,9 @@ export const AllApprovals = ({
     const matchStatus = statusFilter === 'All' ||
       (statusFilter === 'Pending' && (!r.hodStatus || r.hodStatus === 'Pending')) ||
       r.hodStatus === statusFilter;
-    return matchSearch && matchStatus;
+    const stageInfo = workflowStageConfig(r.crStatus);
+    const matchStage = stageFilter === 'All' || stageInfo.level === stageFilter;
+    return matchSearch && matchStatus && matchStage;
   });
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -267,6 +325,8 @@ export const AllApprovals = ({
     selectedReq.hodStatus &&
     selectedReq.hodStatus !== 'Pending';
 
+  const selectedStage = selectedReq ? workflowStageConfig(selectedReq.crStatus) : null;
+
   return (
     <div className="space-y-6 animate-fade-in-up pb-10">
 
@@ -280,11 +340,19 @@ export const AllApprovals = ({
             <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">All Approvals</h2>
           </div>
           <p className="text-sm text-slate-500 ml-10">
-            Review and action L1 Change Requests assigned to your department —{' '}
+            Review L1 HOD approval decisions for change requests —{' '}
             <span className="font-semibold text-[#0066cc]">{actingDept || '...'}</span>
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowLegend(v => !v)}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all shadow-sm cursor-pointer"
+            title="Show workflow guide"
+          >
+            <Info size={14} />
+            Guide
+          </button>
           <button
             onClick={fetchRequests}
             disabled={isFetching}
@@ -304,12 +372,48 @@ export const AllApprovals = ({
         </div>
       </div>
 
+      {/* ─── Workflow Legend ─── */}
+      {showLegend && (
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 space-y-3 animate-fade-in-up">
+          <div className="flex items-center gap-2 mb-1">
+            <Layers size={15} className="text-[#0066cc]" />
+            <h4 className="text-[12px] font-black text-slate-700 uppercase tracking-wider">Change Request Workflow — How Approvals Work</h4>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            {[
+              { level: 'L1', name: 'HOD Review', desc: 'Department HOD approves/rejects the initial change request', color: 'from-amber-500 to-orange-500', badge: 'bg-amber-50 border-amber-200 text-amber-700', status: 'CR Status: Pending' },
+              { level: 'L2', name: 'QA Validation', desc: 'Quality dept verifies the setup & compliance documentation', color: 'from-blue-500 to-cyan-500', badge: 'bg-blue-50 border-blue-200 text-blue-700', status: 'CR Status: Evaluating' },
+              { level: 'L3', name: 'Multi-Dept HOD', desc: 'All department HODs review and give their final decision', color: 'from-indigo-500 to-purple-500', badge: 'bg-indigo-50 border-indigo-200 text-indigo-700', status: 'CR Status: Approved' },
+              { level: '✓', name: 'Completed', desc: 'All levels signed off — change is fully approved', color: 'from-emerald-500 to-teal-500', badge: 'bg-emerald-50 border-emerald-200 text-emerald-700', status: 'CR Status: Completed' },
+            ].map((s, i, arr) => (
+              <div key={s.level} className="flex items-start gap-2">
+                <div className="flex items-center gap-1">
+                  <div className={`relative bg-white border rounded-xl p-3 flex-1 shadow-sm`}>
+                    <div className={`inline-flex items-center gap-1.5 text-[10px] font-black px-2 py-0.5 rounded-full border mb-2 ${s.badge}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-br ${s.color} inline-block`} />
+                      {s.level} · {s.name}
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">{s.desc}</p>
+                    <p className="text-[10px] text-slate-400 mt-1 font-mono">{s.status}</p>
+                  </div>
+                  {i < arr.length - 1 && <ArrowRight size={16} className="text-slate-300 shrink-0 mt-4" />}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-blue-700 bg-blue-100 rounded-lg px-3 py-2 flex items-center gap-1.5">
+            <Info size={12} />
+            <strong>This page shows L1 HOD approvals only.</strong> The "Stage" column shows where each request is in the overall workflow.
+          </p>
+        </div>
+      )}
+
       {/* ─── Summary Cards ─── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {[
-          { label: 'Pending Your Decision', value: pendingCount, icon: <Clock size={18} />, gradient: 'from-amber-500 to-orange-500', border: 'border-amber-100', text: 'text-amber-700' },
-          { label: 'Approved by You', value: approvedCount, icon: <CheckCircle2 size={18} />, gradient: 'from-emerald-500 to-teal-500', border: 'border-emerald-100', text: 'text-emerald-700' },
-          { label: 'Rejected by You', value: rejectedCount, icon: <XCircle size={18} />, gradient: 'from-rose-500 to-pink-500', border: 'border-rose-100', text: 'text-rose-700' },
+          { label: 'Awaiting Your Decision', value: pendingCount, icon: <Clock size={18} />, gradient: 'from-amber-500 to-orange-500', border: 'border-amber-100', text: 'text-amber-700', sublabel: 'L1 HOD Review Pending' },
+          { label: 'Approved by You', value: approvedCount, icon: <CheckCircle2 size={18} />, gradient: 'from-emerald-500 to-teal-500', border: 'border-emerald-100', text: 'text-emerald-700', sublabel: 'HOD Approved' },
+          { label: 'Rejected by You', value: rejectedCount, icon: <XCircle size={18} />, gradient: 'from-rose-500 to-pink-500', border: 'border-rose-100', text: 'text-rose-700', sublabel: 'HOD Rejected' },
         ].map((card, i) => (
           <div key={i} className={`relative bg-white border ${card.border} rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group`}>
             <div className={`absolute top-0 right-0 w-20 h-20 rounded-full bg-gradient-to-br ${card.gradient} opacity-[0.07] -translate-y-4 translate-x-4 group-hover:opacity-[0.13] transition-opacity`} />
@@ -317,36 +421,64 @@ export const AllApprovals = ({
               {card.icon}
             </div>
             <div className={`text-3xl font-black ${card.text}`}>{card.value}</div>
-            <div className="text-xs font-semibold text-rose-600 mt-0.5">{card.label}</div>
+            <div className="text-xs font-semibold text-slate-700 mt-0.5">{card.label}</div>
+            <div className="text-[10px] text-slate-400 font-medium mt-0.5">{card.sublabel}</div>
           </div>
         ))}
       </div>
 
       {/* ─── Filters ─── */}
-      <div className="bg-white border border-slate-200/70 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-2.5 text-slate-400" size={15} />
-          <input
-            type="text"
-            placeholder="Search by Change No., Requester, Department..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all"
-          />
+      <div className="bg-white border border-slate-200/70 rounded-2xl p-4 shadow-sm space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-2.5 text-slate-400" size={15} />
+            <input
+              type="text"
+              placeholder="Search by Change No., Requester, Department..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all"
+            />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Filter size={14} className="text-slate-400" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Decision:</span>
+            {['All', 'Pending', 'Approved', 'Rejected'].map(f => (
+              <button
+                key={f}
+                onClick={() => setStatusFilter(f)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                  statusFilter === f
+                    ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-200'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
+        {/* Stage filter row */}
         <div className="flex items-center gap-2 flex-wrap">
-          <Filter size={14} className="text-slate-400" />
-          {['All', 'Pending', 'Approved', 'Rejected'].map(f => (
+          <Layers size={14} className="text-slate-400" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Workflow Stage:</span>
+          {[
+            { key: 'All', label: 'All Stages' },
+            { key: 'L1', label: '🟡 L1 HOD Review' },
+            { key: 'L2', label: '🔵 L2 QA Validation' },
+            { key: 'L3', label: '🟣 L3 Multi-HOD' },
+            { key: '✓', label: '🟢 Completed' },
+          ].map(s => (
             <button
-              key={f}
-              onClick={() => setStatusFilter(f)}
+              key={s.key}
+              onClick={() => setStageFilter(s.key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                statusFilter === f
-                  ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-200'
+                stageFilter === s.key
+                  ? 'bg-slate-800 text-white border-slate-800 shadow-md'
                   : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
-              {f}
+              {s.label}
             </button>
           ))}
         </div>
@@ -370,25 +502,33 @@ export const AllApprovals = ({
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[640px]">
+              <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-50 to-slate-100/50 border-b border-slate-200 text-[10px] uppercase tracking-wider">
                     <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Hash size={11} />Change No.</div></th>
+                    <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Layers size={11} />Workflow Stage</div></th>
                     <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Calendar size={11} />Date</div></th>
                     <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><User size={11} />Requested By</div></th>
                     <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Building2 size={11} />Dept</div></th>
-                    <th className="px-5 py-3.5 font-black text-slate-500">HOD Decision</th>
+                    <th className="px-5 py-3.5 font-black text-slate-500">L1 HOD Decision</th>
                     <th className="px-5 py-3.5 font-black text-slate-500 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {paginated.map((req, idx) => {
                     const isPending = !req.hodStatus || req.hodStatus === 'Pending';
+                    const stage = workflowStageConfig(req.crStatus);
                     return (
                       <tr key={idx} className="hover:bg-blue-50/30 transition-colors group">
                         <td className="px-5 py-3.5">
                           <span className="font-mono font-bold text-[#0066cc] text-[12px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
                             {req.changeNo}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${stage.color}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${stage.dot} ${isPending && req.crStatus === 'Pending' ? 'animate-pulse' : ''}`} />
+                            {stage.label}
                           </span>
                         </td>
                         <td className="px-5 py-3.5 text-[12px] text-slate-500 font-medium">{req.date || '-'}</td>
@@ -405,11 +545,15 @@ export const AllApprovals = ({
                         <td className="px-5 py-3.5 text-center">
                           <button
                             onClick={() => handleOpenModal(req)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50 rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer group-hover:shadow"
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer group-hover:shadow ${
+                              isPending && req.crStatus === 'Pending'
+                                ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
+                                : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
+                            }`}
                           >
                             <Eye size={12} />
-                            View
-                            {isPending && (
+                            {isPending && req.crStatus === 'Pending' ? 'Review & Decide' : 'View'}
+                            {isPending && req.crStatus === 'Pending' && (
                               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                             )}
                           </button>
@@ -443,23 +587,49 @@ export const AllApprovals = ({
           <div className="relative bg-white w-full max-w-[720px] max-h-[92vh] rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
 
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-[#0066cc] to-indigo-600 px-6 py-5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                  <FileText size={18} className="text-white" />
+            <div className="bg-gradient-to-r from-[#0066cc] to-indigo-600 px-6 py-5">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <FileText size={18} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-[15px] font-extrabold text-white">L1 Change Request Review</h4>
+                      {selectedStage && (
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${selectedStage.color} border`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${selectedStage.dot}`} />
+                          {selectedStage.label}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-blue-100 mt-0.5">
+                      <span className="font-mono font-bold text-white">{selectedReq.changeNo}</span>
+                      <span className="mx-2 text-blue-300">·</span>
+                      Raised by: <span className="font-semibold text-white">{selectedReq.requestBy || selectedReq.requesterEmail}</span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-[15px] font-extrabold text-white">L1 Change Request Details</h4>
-                  <p className="text-[11px] text-blue-100 mt-0.5">
-                    <span className="font-mono font-bold text-white">{selectedReq.changeNo}</span>
-                    <span className="mx-2 text-blue-300">·</span>
-                    Raised by: <span className="font-semibold text-white">{selectedReq.requestBy || selectedReq.requesterEmail}</span>
-                  </p>
-                </div>
+                <button onClick={handleCloseModal} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer shrink-0">
+                  <X size={16} />
+                </button>
               </div>
-              <button onClick={handleCloseModal} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer">
-                <X size={16} />
-              </button>
+              {/* Workflow progress strip */}
+              <div className="mt-3">
+                <WorkflowStrip crStatus={selectedReq.crStatus} />
+              </div>
+            </div>
+
+            {/* Approval type info bar */}
+            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 flex items-center gap-2">
+              <ShieldCheck size={13} className="text-amber-600 shrink-0" />
+              <p className="text-[11px] text-amber-800 font-semibold">
+                <strong>L1 HOD Approval</strong> — You are reviewing this change request as <span className="text-[#0066cc] font-black">{actingDept}</span> HOD.
+                {alreadyDecided
+                  ? <span className="ml-1 text-slate-500 font-normal">A decision has already been recorded.</span>
+                  : <span className="ml-1 text-amber-700 font-normal">Your decision will advance or halt this change request.</span>
+                }
+              </p>
             </div>
 
             {/* Content */}
@@ -636,7 +806,9 @@ export const AllApprovals = ({
                   </span>
                 ) : (isAdmin || isHOD) ? (
                   <>
-                    <span className="text-[11px] font-bold text-slate-600">Your decision as <span className="text-[#0066cc]">{actingDept}</span> HOD:</span>
+                    <span className="text-[11px] font-bold text-slate-600">
+                      Your L1 decision as <span className="text-[#0066cc]">{actingDept}</span> HOD:
+                    </span>
                     <button
                       onClick={() => handleDecision('Approved')}
                       disabled={isSubmitting}
