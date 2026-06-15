@@ -1,9 +1,34 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseDDMMYYYYToDate } from '../../utils/dateUtils';
 
 export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", inputClassName = "", buttonClassName = "", containerClassName = "", id, disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  const updateCoords = () => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updateCoords();
+      window.addEventListener('resize', updateCoords);
+      window.addEventListener('scroll', updateCoords, true);
+    }
+    return () => {
+      window.removeEventListener('resize', updateCoords);
+      window.removeEventListener('scroll', updateCoords, true);
+    };
+  }, [isOpen]);
   const [viewDate, setViewDate] = useState(() => {
     if (value) {
       const parsed = parseDDMMYYYYToDate(value);
@@ -64,7 +89,7 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
   ];
 
   return (
-    <div className={`relative w-full ${containerClassName}`}>
+    <div ref={containerRef} className={`relative w-full ${containerClassName}`}>
       <input 
         id={id}
         type="text" 
@@ -91,10 +116,17 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
         <Calendar size={12} />
       </button>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <>
           <div className="fixed inset-0 z-45" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-[100%] left-0 mt-[4px] bg-white border border-slate-200 shadow-xl rounded-[6px] p-[10px] z-50 w-[210px] text-slate-800 font-sans select-none">
+          <div 
+            style={{
+              position: 'absolute',
+              top: `${coords.top + 4}px`,
+              left: `${coords.left}px`,
+            }}
+            className="bg-white border border-slate-200 shadow-xl rounded-[6px] p-[10px] z-50 w-[210px] text-slate-800 font-sans select-none"
+          >
             <div className="flex justify-between items-center mb-[8px]">
               <button type="button" onClick={prevMonth} className="p-[2px] hover:bg-slate-100 rounded text-slate-550 cursor-pointer">
                 <ChevronLeft size={12} />
@@ -135,7 +167,8 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
               })}
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );
