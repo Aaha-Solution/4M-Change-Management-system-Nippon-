@@ -151,6 +151,7 @@ export const AllApprovals = ({
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [stageFilter, setStageFilter] = useState('All');
+  const [scopeFilter, setScopeFilter] = useState('MyDept');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showLegend, setShowLegend] = useState(false);
@@ -165,7 +166,15 @@ export const AllApprovals = ({
     userRole.toLowerCase().includes('unit head')
   );
 
-  useEffect(() => { setPage(0); }, [search, statusFilter, stageFilter]);
+  useEffect(() => {
+    if (isAdmin) {
+      setScopeFilter('All');
+    } else {
+      setScopeFilter('MyDept');
+    }
+  }, [isAdmin]);
+
+  useEffect(() => { setPage(0); }, [search, statusFilter, stageFilter, scopeFilter]);
 
   // Resolve acting department from DB user record
   useEffect(() => {
@@ -304,7 +313,8 @@ export const AllApprovals = ({
       r.hodStatus === statusFilter;
     const stageInfo = workflowStageConfig(r.crStatus);
     const matchStage = stageFilter === 'All' || stageInfo.level === stageFilter;
-    return matchSearch && matchStatus && matchStage;
+    const matchScope = scopeFilter === 'All' || mapDept(r.dept) === actingDept;
+    return matchSearch && matchStatus && matchStage && matchScope;
   });
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -317,7 +327,12 @@ export const AllApprovals = ({
   };
 
   // Stats
-  const pendingCount = requests.filter(r => !r.hodStatus || r.hodStatus === 'Pending').length;
+  const pendingCount = requests.filter(r => {
+    const isL1Pending = r.crStatus === 'Pending';
+    const isPendingDecision = !r.hodStatus || r.hodStatus === 'Pending';
+    const isMyDept = isAdmin || (isHOD && mapDept(r.dept) === actingDept);
+    return isL1Pending && isPendingDecision && isMyDept;
+  }).length;
   const approvedCount = requests.filter(r => r.hodStatus === 'Approved').length;
   const rejectedCount = requests.filter(r => r.hodStatus === 'Rejected').length;
 
@@ -482,6 +497,29 @@ export const AllApprovals = ({
             </button>
           ))}
         </div>
+        {/* Scope/Source filter row */}
+        {!isAdmin && (
+          <div className="flex items-center gap-2 flex-wrap pt-2.5 border-t border-slate-100">
+            <Building2 size={14} className="text-slate-400" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Request Source:</span>
+            {[
+              { key: 'MyDept', label: `My Department (${actingDept || '...'})` },
+              { key: 'All', label: 'All Departments' },
+            ].map(sc => (
+              <button
+                key={sc.key}
+                onClick={() => setScopeFilter(sc.key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                  scopeFilter === sc.key
+                    ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-100'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                {sc.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ─── Table ─── */}
@@ -516,7 +554,10 @@ export const AllApprovals = ({
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {paginated.map((req, idx) => {
-                    const isPending = !req.hodStatus || req.hodStatus === 'Pending';
+                    const isL1Pending = req.crStatus === 'Pending';
+                    const isPendingDecision = !req.hodStatus || req.hodStatus === 'Pending';
+                    const isMyDept = isAdmin || (isHOD && mapDept(req.dept) === actingDept);
+                    const isActionable = isL1Pending && isPendingDecision && isMyDept;
                     const stage = workflowStageConfig(req.crStatus);
                     return (
                       <tr key={idx} className="hover:bg-blue-50/30 transition-colors group">
@@ -526,10 +567,25 @@ export const AllApprovals = ({
                           </span>
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${stage.color}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${stage.dot} ${isPending && req.crStatus === 'Pending' ? 'animate-pulse' : ''}`} />
-                            {stage.label}
-                          </span>
+                          <div className="flex flex-col gap-1 items-start">
+                            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${stage.color}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${stage.dot} ${isActionable ? 'animate-pulse' : ''}`} />
+                              {stage.label}
+                            </span>
+                            {req.crStatus && (
+                              <div className="text-[9px] font-bold tracking-wide mt-0.5 pl-1 select-none">
+                                {req.crStatus.toLowerCase() === 'evaluating' && (
+                                  <span className="text-blue-600 bg-blue-50/60 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-0.5">✓ L1 Completed</span>
+                                )}
+                                {req.crStatus.toLowerCase() === 'approved' && (
+                                  <span className="text-indigo-600 bg-indigo-50/60 px-1.5 py-0.5 rounded border border-indigo-100 flex items-center gap-0.5">✓ L1 & L2 Completed</span>
+                                )}
+                                {req.crStatus.toLowerCase() === 'completed' && (
+                                  <span className="text-emerald-600 bg-emerald-50/60 px-1.5 py-0.5 rounded border border-emerald-100 flex items-center gap-0.5">✓ L1, L2 & L3 Completed</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-5 py-3.5 text-[12px] text-slate-500 font-medium">{req.date || '-'}</td>
                         <td className="px-5 py-3.5">
@@ -540,20 +596,24 @@ export const AllApprovals = ({
                           <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">{req.dept || '-'}</span>
                         </td>
                         <td className="px-5 py-3.5">
-                          <StatusBadge status={req.hodStatus} />
+                          {req.crStatus && req.crStatus.toLowerCase() !== 'pending' ? (
+                            <StatusBadge status="Approved" />
+                          ) : (
+                            <StatusBadge status={req.hodStatus} />
+                          )}
                         </td>
                         <td className="px-5 py-3.5 text-center">
                           <button
                             onClick={() => handleOpenModal(req)}
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer group-hover:shadow ${
-                              isPending && req.crStatus === 'Pending'
+                              isActionable
                                 ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
                             }`}
                           >
                             <Eye size={12} />
-                            {isPending && req.crStatus === 'Pending' ? 'Review & Decide' : 'View'}
-                            {isPending && req.crStatus === 'Pending' && (
+                            {isActionable ? 'Review & Decide' : 'View'}
+                            {isActionable && (
                               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                             )}
                           </button>
@@ -804,7 +864,11 @@ export const AllApprovals = ({
                       }
                     })()}
                   </span>
-                ) : (isAdmin || isHOD) ? (
+                ) : selectedReq.crStatus && selectedReq.crStatus.toLowerCase() !== 'pending' ? (
+                  <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-emerald-700 bg-emerald-50 border-emerald-200">
+                    <CheckCircle2 size={14} /> L1 HOD Approval Completed
+                  </span>
+                ) : (isAdmin || (isHOD && mapDept(selectedReq.dept) === actingDept)) ? (
                   <>
                     <span className="text-[11px] font-bold text-slate-600">
                       Your L1 decision as <span className="text-[#0066cc]">{actingDept}</span> HOD:
@@ -828,7 +892,7 @@ export const AllApprovals = ({
                   </>
                 ) : (
                   <span className="text-[12px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
-                    Not authorized to approve
+                    Awaiting {mapDept(selectedReq.dept)} HOD Decision
                   </span>
                 )}
               </div>
