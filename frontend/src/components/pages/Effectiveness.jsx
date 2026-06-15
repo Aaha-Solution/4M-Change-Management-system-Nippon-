@@ -32,20 +32,22 @@ export const Effectiveness = ({
   userRole,
   userDept
 }) => {
+  const isAdmin = userRole && (
+    userRole.toLowerCase() === 'admin' ||
+    userRole.toLowerCase() === 'administrator'
+  );
   const isQADept = userDept && (
     userDept.toLowerCase() === 'quality' ||
     userDept.toLowerCase() === 'qad' ||
     userDept.toLowerCase() === 'qa'
   );
   const isAuthorizedRole = userRole && (
-    userRole.toLowerCase() === 'admin' ||
-    userRole.toLowerCase() === 'administrator' ||
     userRole.toLowerCase().includes('hod') ||
     userRole.toLowerCase().includes('manager') ||
     userRole.toLowerCase().includes('unit head') ||
     userRole.toLowerCase().includes('unit_head')
   );
-  const canUpdate = isQADept && isAuthorizedRole;
+  const canUpdate = isAdmin || (isQADept && isAuthorizedRole);
   // Effectiveness Monitoring Form States
   const [effChangeNo, setEffChangeNo] = useState('');
   const [effMonthWise, setEffMonthWise] = useState(() => getDefaultDateString());
@@ -382,11 +384,20 @@ export const Effectiveness = ({
               />
             </div>
 
-            {effChangeNo && isAlreadyValidated && (
+            {effChangeNo && isAlreadyValidated && !canUpdate && (
               <div className="bg-amber-50 border border-amber-250 text-amber-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
                 <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
                 <div>
                   <span className="font-bold">Log Locked:</span> This effectiveness log has already been submitted and locked (Status: <span className="font-bold uppercase">{effStatus}</span>, QA: <span className="font-bold uppercase">{effQaApproval}</span>). Updates are not allowed.
+                </div>
+              </div>
+            )}
+
+            {effChangeNo && isAlreadyValidated && canUpdate && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                <AlertTriangle size={14} className="shrink-0 mt-0.5 text-blue-600" />
+                <div>
+                  <span className="font-bold">Edit Mode:</span> This effectiveness log has already been submitted, but you have update access to modify it.
                 </div>
               </div>
             )}
@@ -433,8 +444,8 @@ export const Effectiveness = ({
               <CustomDatePicker
                 value={effMonthWise}
                 onChange={setEffMonthWise}
-                disabled={!effChangeNo || isAlreadyValidated}
-                inputClassName={`w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[30px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || isAlreadyValidated) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}
+                disabled={!effChangeNo || (isAlreadyValidated && !canUpdate)}
+                inputClassName={`w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[30px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && !canUpdate)) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'}`}
                 buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
             </div>
@@ -444,10 +455,10 @@ export const Effectiveness = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Observation Remarks <span className="text-rose-500">*</span></label>
               <textarea
                 required
-                disabled={!effChangeNo || isAlreadyValidated}
+                disabled={!effChangeNo || (isAlreadyValidated && !canUpdate)}
                 rows={3}
                 placeholder="Enter evaluation remarks/results..."
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || isAlreadyValidated) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && !canUpdate)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
                   }`}
                 value={effRemarks}
                 onChange={(e) => setEffRemarks(e.target.value)}
@@ -463,16 +474,16 @@ export const Effectiveness = ({
                     type="text"
                     required
                     readOnly
-                    disabled={!effChangeNo || isAlreadyValidated}
+                    disabled={!effChangeNo || (isAlreadyValidated && !canUpdate)}
                     placeholder="e.g. proof-log.pdf, image.png"
-                    className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${(!effChangeNo || isAlreadyValidated) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
+                    className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${(!effChangeNo || (isAlreadyValidated && !canUpdate)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
                       }`}
                     value={effAttachment}
                   />
-                  {effAttachment && !isAlreadyValidated && (
+                  {effAttachment && (!isAlreadyValidated || canUpdate) && (
                     <button
                       type="button"
-                      disabled={!effChangeNo || isAlreadyValidated}
+                      disabled={!effChangeNo || (isAlreadyValidated && !canUpdate)}
                       onClick={() => setEffAttachment('')}
                       className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                       title="Clear all attachments"
@@ -481,7 +492,7 @@ export const Effectiveness = ({
                     </button>
                   )}
                 </div>
-                <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 rounded-[6px] text-[12px] font-bold transition-all cursor-pointer ${(!effChangeNo || isAlreadyValidated) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'
+                <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 rounded-[6px] text-[12px] font-bold transition-all cursor-pointer ${(!effChangeNo || (isAlreadyValidated && !canUpdate)) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'
                   }`}>
                   <Paperclip size={14} />
                   <span>Upload</span>
@@ -489,7 +500,7 @@ export const Effectiveness = ({
                     type="file"
                     multiple
                     accept="image/*,application/pdf"
-                    disabled={!effChangeNo || isAlreadyValidated}
+                    disabled={!effChangeNo || (isAlreadyValidated && !canUpdate)}
                     className="hidden"
                     onChange={async (e) => {
                       const target = e.target;
@@ -562,10 +573,10 @@ export const Effectiveness = ({
                       >
                         📎 {file}
                       </span>
-                      {!isAlreadyValidated && (
+                      {(!isAlreadyValidated || canUpdate) && (
                         <button
                           type="button"
-                          disabled={!effChangeNo || isAlreadyValidated}
+                          disabled={!effChangeNo || (isAlreadyValidated && !canUpdate)}
                           onClick={() => {
                             const existing = effAttachment.split(',').map(s => s.trim()).filter(Boolean);
                             const updated = existing.filter(f => f !== file).join(', ');
@@ -587,8 +598,8 @@ export const Effectiveness = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Status <span className="text-rose-500">*</span></label>
               <select
                 required
-                disabled={!effChangeNo || isAlreadyValidated}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || isAlreadyValidated) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                disabled={!effChangeNo || (isAlreadyValidated && !canUpdate)}
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && !canUpdate)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
                   }`}
                 value={effStatus}
                 onChange={(e) => setEffStatus(e.target.value)}
@@ -604,8 +615,8 @@ export const Effectiveness = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Approval Decision <span className="text-rose-500">*</span></label>
               <select
                 required
-                disabled={!effChangeNo || isAlreadyValidated}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || isAlreadyValidated) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                disabled={!effChangeNo || (isAlreadyValidated && !canUpdate)}
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && !canUpdate)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
                   }`}
                 value={effQaApproval}
                 onChange={(e) => setEffQaApproval(e.target.value)}
@@ -620,13 +631,18 @@ export const Effectiveness = ({
             <div className="space-y-[8px] pt-[4px]">
               <button
                 type="submit"
-                disabled={!effChangeNo || isAlreadyValidated}
+                disabled={!effChangeNo || (isAlreadyValidated && !canUpdate)}
                 className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
               >
                 {!effChangeNo ? (
                   <span>Select a Request to Evaluate</span>
-                ) : isAlreadyValidated ? (
+                ) : (isAlreadyValidated && !canUpdate) ? (
                   <span>Log Already Submitted</span>
+                ) : isAlreadyValidated ? (
+                  <>
+                    <Save size={14} />
+                    <span>Update Log Entry</span>
+                  </>
                 ) : (
                   <>
                     <Save size={14} />

@@ -8,14 +8,16 @@ const checkCanUpdate = async (email) => {
     const user = userRows[0];
     const dept = (user.department || '').toLowerCase();
     const role = (user.role || '').toLowerCase();
+    const isAdmin = role === 'admin' || role === 'administrator';
     const isQADept = dept === 'quality' || dept === 'qad' || dept === 'qa';
-    const isAuthorizedRole = role === 'admin' || role === 'administrator' || 
-                             role.includes('hod') || role.includes('manager') || 
+    const isAuthorizedRole = role.includes('hod') || role.includes('manager') || 
                              role.includes('unit head') || role.includes('unit_head');
-    return isQADept && isAuthorizedRole;
+    return isAdmin || (isQADept && isAuthorizedRole);
   }
   return false;
 };
+
+
 
 export const getLogs = async (req, res) => {
   try {
@@ -37,7 +39,7 @@ export const createLog = async (req, res) => {
   try {
     const canUpdate = await checkCanUpdate(req.user?.email);
     if (!canUpdate) {
-      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department are allowed to create effectiveness logs.' });
+      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department and Administrators are allowed to create effectiveness logs.' });
     }
 
     const [existing] = await pool.query('SELECT id FROM effectiveness_logs WHERE change_no = ?', [logData.changeNo]);
@@ -60,7 +62,28 @@ export const createLog = async (req, res) => {
 };
 
 export const updateLog = async (req, res) => {
-  return res.status(400).json({ error: 'Access Denied: Effectiveness logs can only be submitted once and cannot be updated.' });
+  const { id } = req.params;
+  const { logData, attachments } = req.body;
+
+  if (!logData) {
+    return res.status(400).json({ error: 'Log data is required.' });
+  }
+
+  try {
+    const canUpdate = await checkCanUpdate(req.user?.email);
+    if (!canUpdate) {
+      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department and Administrators are allowed to update effectiveness logs.' });
+    }
+
+    const updated = await effectivenessModel.updateLog(id, logData, attachments);
+    res.status(200).json({
+      message: 'Effectiveness log updated successfully',
+      log: updated
+    });
+  } catch (error) {
+    console.error('Error in updateLog:', error);
+    res.status(500).json({ error: 'Failed to update effectiveness log' });
+  }
 };
 
 export const deleteLog = async (req, res) => {
@@ -69,7 +92,7 @@ export const deleteLog = async (req, res) => {
   try {
     const canUpdate = await checkCanUpdate(req.user?.email);
     if (!canUpdate) {
-      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department are allowed to delete effectiveness logs.' });
+      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department and Administrators are allowed to delete effectiveness logs.' });
     }
 
     await effectivenessModel.deleteLog(id);
@@ -105,7 +128,7 @@ export const resetLogs = async (req, res) => {
   try {
     const canUpdate = await checkCanUpdate(req.user?.email);
     if (!canUpdate) {
-      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department are allowed to reset effectiveness logs.' });
+      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department and Administrators are allowed to reset effectiveness logs.' });
     }
 
     await effectivenessModel.resetLogsToDefaults();
