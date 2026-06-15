@@ -3,6 +3,7 @@ import { Paperclip, RefreshCw, Search, X, Eye, Save, Download } from 'lucide-rea
 import TablePagination from '@mui/material/TablePagination';
 import {
   createEffectivenessLog,
+  updateEffectivenessLog,
   getEffectivenessAttachment,
   resetEffectivenessLogs,
   getEffectivenessLogs
@@ -53,11 +54,31 @@ export const Effectiveness = ({
   const [effAttachment, setEffAttachment] = useState('');
   const [effStatus, setEffStatus] = useState('');
   const [effQaApproval, setEffQaApproval] = useState('');
-  const [editingEffLogId] = useState(null);
+  const [editingEffLogId, setEditingEffLogId] = useState(null);
   const [viewingLog, setViewingLog] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
   const [previewFile, setPreviewFile] = useState(null);
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
+
+  useEffect(() => {
+    if (effChangeNo) {
+      const savedLog = effectivenessLogs.find(
+        log => log.changeNo?.toLowerCase().trim() === effChangeNo.toLowerCase().trim()
+      );
+      if (savedLog) {
+        setEditingEffLogId(savedLog.id);
+        setEffMonthWise(savedLog.monthWise || getDefaultDateString());
+        setEffRemarks(savedLog.remarks || '');
+        setEffAttachment(savedLog.attachment || '');
+        setEffStatus(savedLog.status || '');
+        setEffQaApproval(savedLog.qaApproval || '');
+      } else {
+        setEditingEffLogId(null);
+      }
+    } else {
+      setEditingEffLogId(null);
+    }
+  }, [effChangeNo, effectivenessLogs]);
 
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -138,7 +159,7 @@ export const Effectiveness = ({
     return formatDateToDDMMYY(dateStr);
   };
 
-  // Add Effectiveness Log
+  // Add or Edit Effectiveness Log
   const handleAddOrEditEff = async (e) => {
     e.preventDefault();
     if (!effChangeNo) {
@@ -171,42 +192,61 @@ export const Effectiveness = ({
     const reqDate = selectedChange ? (selectedChange.rawDate || selectedChange.date) : new Date().toISOString().split('T')[0];
     const startDate = selectedChange ? (selectedChange.dateStart || selectedChange.rawDate || selectedChange.date) : new Date().toISOString().split('T')[0];
 
-    // Create mode
-    const newId = generateEffId();
-    const logData = {
-      id: newId,
-      changeNo: effChangeNo,
-      reqDate: reqDate,
-      context: context,
-      startDate: startDate,
-      monthWise: effMonthWise,
-      remarks: effRemarks,
-      attachment: effAttachment,
-      status: effStatus,
-      qaApproval: effQaApproval
-    };
-    try {
-      const response = await createEffectivenessLog(logData, uploadedFilesList);
-      setEffectivenessLogs(prev => [response.data.log, ...prev]);
-      logAction('Effectiveness Log Created', `Created monitoring observations for change ${effChangeNo}.`);
-      setToastMsg(`Log entry added for ${effChangeNo}`);
+    const savedLog = effectivenessLogs.find(
+      log => log.changeNo?.toLowerCase().trim() === effChangeNo.toLowerCase().trim()
+    );
 
-      // Reset form
-      setEffChangeNo('');
-      setEffRemarks('');
-      setEffAttachment('');
-      setEffStatus('');
-      setEffQaApproval('');
-      setUploadedFilesList([]);
-    } catch (err) {
-      console.error("Error creating log:", err);
-      setToastMsg('Failed to create effectiveness log.');
+    if (savedLog) {
+      // Edit mode
+      const logData = {
+        monthWise: effMonthWise,
+        remarks: effRemarks,
+        attachment: effAttachment,
+        status: effStatus,
+        qaApproval: effQaApproval
+      };
+      try {
+        const response = await updateEffectivenessLog(savedLog.id, logData, uploadedFilesList);
+        setEffectivenessLogs(prev => prev.map(log => log.id === savedLog.id ? response.data.log : log));
+        logAction('Effectiveness Log Updated', `Updated monitoring observations for change ${effChangeNo}.`);
+        setToastMsg(`Log entry updated for ${effChangeNo}`);
+        handleCancelEditing();
+      } catch (err) {
+        console.error("Error updating log:", err);
+        setToastMsg('Failed to update effectiveness log.');
+      }
+    } else {
+      // Create mode
+      const newId = generateEffId();
+      const logData = {
+        id: newId,
+        changeNo: effChangeNo,
+        reqDate: reqDate,
+        context: context,
+        startDate: startDate,
+        monthWise: effMonthWise,
+        remarks: effRemarks,
+        attachment: effAttachment,
+        status: effStatus,
+        qaApproval: effQaApproval
+      };
+      try {
+        const response = await createEffectivenessLog(logData, uploadedFilesList);
+        setEffectivenessLogs(prev => [response.data.log, ...prev]);
+        logAction('Effectiveness Log Created', `Created monitoring observations for change ${effChangeNo}.`);
+        setToastMsg(`Log entry added for ${effChangeNo}`);
+        handleCancelEditing();
+      } catch (err) {
+        console.error("Error creating log:", err);
+        setToastMsg('Failed to create effectiveness log.');
+      }
     }
   };
 
   // Cancel selection
   const handleCancelEditing = () => {
     setEffChangeNo('');
+    setEditingEffLogId(null);
     setEffMonthWise(getDefaultDateString());
     setEffRemarks('');
     setEffAttachment('');
@@ -217,33 +257,84 @@ export const Effectiveness = ({
 
   const handleSelectChangeNo = (val) => {
     setEffChangeNo(val);
-    setEffMonthWise(getDefaultDateString());
-    setEffRemarks('');
-    setEffAttachment('');
-    setEffStatus('');
-    setEffQaApproval('');
+    const savedLog = effectivenessLogs.find(
+      log => log.changeNo?.toLowerCase().trim() === val.toLowerCase().trim()
+    );
+    if (savedLog) {
+      setEditingEffLogId(savedLog.id);
+      setEffMonthWise(savedLog.monthWise || getDefaultDateString());
+      setEffRemarks(savedLog.remarks || '');
+      setEffAttachment(savedLog.attachment || '');
+      setEffStatus(savedLog.status || '');
+      setEffQaApproval(savedLog.qaApproval || '');
+    } else {
+      setEditingEffLogId(null);
+      setEffMonthWise(getDefaultDateString());
+      setEffRemarks('');
+      setEffAttachment('');
+      setEffStatus('');
+      setEffQaApproval('');
+    }
     setUploadedFilesList([]);
   };
 
 
 
   // Extract unique months for filter
-  const uniqueMonths = Array.from(new Set(effectivenessLogs.map(l => formatMonthWise(l.monthWise)))).filter(Boolean);
+  const uniqueMonths = Array.from(new Set(effectivenessLogs.map(l => l.monthWise ? formatMonthWise(l.monthWise) : null).filter(Boolean))).filter(Boolean);
 
-  const filteredLogs = effectivenessLogs.filter(log => {
+  // Construct table logs combining changes and effectivenessLogs
+  const tableLogs = (changes || [])
+    .filter(change => change.isL3Approved)
+    .map(change => {
+      const savedLog = effectivenessLogs.find(
+        log => log.changeNo?.toLowerCase().trim() === change.id?.toLowerCase().trim()
+      );
+      return {
+        id: savedLog?.id || `EFF-PENDING-${change.id}`,
+        changeNo: change.id,
+        reqDate: change.rawDate || change.date,
+        context: change.title,
+        startDate: change.dateStart || change.rawDate || change.date,
+        monthWise: savedLog?.monthWise || '',
+        remarks: savedLog?.remarks || '',
+        attachment: savedLog?.attachment || '',
+        status: savedLog?.status || 'Pending',
+        qaApproval: savedLog?.qaApproval || 'Pending',
+        isPending: !savedLog
+      };
+    });
+
+  const filteredLogs = tableLogs.filter(log => {
     const query = effSearch.toLowerCase();
     const matchesSearch = (log.changeNo || '').toLowerCase().includes(query) ||
       (log.context || '').toLowerCase().includes(query) ||
       (log.remarks || '').toLowerCase().includes(query);
+    
     const matchesStatus = effFilterStatus === 'All' || log.status === effFilterStatus;
-    const matchesMonth = effFilterMonth === 'All' || formatMonthWise(log.monthWise) === effFilterMonth;
+    
+    let matchesMonth = true;
+    if (effFilterMonth !== 'All') {
+      if (effFilterMonth === 'Pending') {
+        matchesMonth = log.isPending;
+      } else {
+        matchesMonth = log.monthWise && formatMonthWise(log.monthWise) === effFilterMonth;
+      }
+    }
     return matchesSearch && matchesStatus && matchesMonth;
   });
 
   const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleExportPDF = () => {
-    exportEffectivenessLogsPDF(filteredLogs, {
+    // Only export logs that are already validated (have a valid non-pending status)
+    const savedLogsOnly = filteredLogs.filter(l => !l.isPending).map(l => ({
+      ...l,
+      reqDate: l.reqDate,
+      startDate: l.startDate,
+      qaApproval: l.qaApproval
+    }));
+    exportEffectivenessLogsPDF(savedLogsOnly, {
       searchQuery: effSearch,
       statusFilter: effFilterStatus,
       monthFilter: effFilterMonth
@@ -283,29 +374,13 @@ export const Effectiveness = ({
             {/* 4M CHANGE NO */}
             <div className="space-y-1">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
-              {editingEffLogId || effChangeNo ? (
-                <input
-                  type="text"
-                  disabled
-                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
-                  value={effChangeNo}
-                />
-              ) : (
-                <select
-                  required
-                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
-                  value={effChangeNo}
-                  onChange={(e) => handleSelectChangeNo(e.target.value)}
-                >
-                  <option value="">Select Completed Change (L3 Approved)</option>
-                  {changes.filter(c => c.isL3Approved).map(c => (
-                    <option key={c.id} value={c.id}>{c.id} - {c.title.substring(0, 30)}...</option>
-                  ))}
-                  {changes.filter(c => c.isL3Approved).length === 0 && (
-                    <option value="CHG-DEMO">No L3 Approved Changes</option>
-                  )}
-                </select>
-              )}
+              <input
+                type="text"
+                disabled
+                placeholder="Click a row on the right to select"
+                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none animate-fade-in-up"
+                value={effChangeNo}
+              />
             </div>
 
             {/* REQUESTED DATE */}
@@ -314,7 +389,7 @@ export const Effectiveness = ({
               <input
                 type="text"
                 disabled
-                placeholder="e.g. 16 May"
+                placeholder="Click a row on the right to select"
                 className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
                 value={displayReqDate}
               />
@@ -326,7 +401,7 @@ export const Effectiveness = ({
               <input
                 type="text"
                 disabled
-                placeholder="e.g. Gauge R&R Study"
+                placeholder="Click a row on the right to select"
                 className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
                 value={displayContext}
               />
@@ -338,7 +413,7 @@ export const Effectiveness = ({
               <input
                 type="text"
                 disabled
-                placeholder="e.g. 17 May"
+                placeholder="Click a row on the right to select"
                 className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
                 value={displayStartDate}
               />
@@ -350,8 +425,8 @@ export const Effectiveness = ({
               <CustomDatePicker
                 value={effMonthWise}
                 onChange={setEffMonthWise}
-                disabled={!effChangeNo || isAlreadyValidated}
-                inputClassName={`w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[30px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}
+                disabled={!effChangeNo}
+                inputClassName={`w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[30px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'cursor-pointer'}`}
                 buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
               />
             </div>
@@ -361,10 +436,10 @@ export const Effectiveness = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Observation Remarks <span className="text-rose-500">*</span></label>
               <textarea
                 required
-                disabled={!effChangeNo || isAlreadyValidated}
+                disabled={!effChangeNo}
                 rows={3}
                 placeholder="Enter evaluation remarks/results..."
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
                   }`}
                 value={effRemarks}
                 onChange={(e) => setEffRemarks(e.target.value)}
@@ -380,16 +455,16 @@ export const Effectiveness = ({
                     type="text"
                     required
                     readOnly
-                    disabled={!effChangeNo || isAlreadyValidated}
+                    disabled={!effChangeNo}
                     placeholder="e.g. proof-log.pdf, image.png"
-                    className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
+                    className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
                       }`}
                     value={effAttachment}
                   />
                   {effAttachment && (
                     <button
                       type="button"
-                      disabled={!effChangeNo || isAlreadyValidated}
+                      disabled={!effChangeNo}
                       onClick={() => setEffAttachment('')}
                       className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                       title="Clear all attachments"
@@ -398,7 +473,7 @@ export const Effectiveness = ({
                     </button>
                   )}
                 </div>
-                <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 rounded-[6px] text-[12px] font-bold transition-all cursor-pointer ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'
+                <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 rounded-[6px] text-[12px] font-bold transition-all cursor-pointer ${!effChangeNo ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'
                   }`}>
                   <Paperclip size={14} />
                   <span>Upload</span>
@@ -406,7 +481,7 @@ export const Effectiveness = ({
                     type="file"
                     multiple
                     accept="image/*,application/pdf"
-                    disabled={!effChangeNo || isAlreadyValidated}
+                    disabled={!effChangeNo}
                     className="hidden"
                     onChange={async (e) => {
                       const target = e.target;
@@ -417,7 +492,7 @@ export const Effectiveness = ({
                         const allowedFiles = files.filter(file => {
                           const isImage = file.type.startsWith('image/');
                           const isPdf = file.type === 'application/pdf';
-                          const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
+                          const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bold|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
                           return (isImage || isPdf) && hasAllowedExt;
                         });
 
@@ -481,7 +556,7 @@ export const Effectiveness = ({
                       </span>
                       <button
                         type="button"
-                        disabled={!effChangeNo || isAlreadyValidated}
+                        disabled={!effChangeNo}
                         onClick={() => {
                           const existing = effAttachment.split(',').map(s => s.trim()).filter(Boolean);
                           const updated = existing.filter(f => f !== file).join(', ');
@@ -502,8 +577,8 @@ export const Effectiveness = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Status <span className="text-rose-500">*</span></label>
               <select
                 required
-                disabled={!effChangeNo || isAlreadyValidated}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                disabled={!effChangeNo}
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
                   }`}
                 value={effStatus}
                 onChange={(e) => setEffStatus(e.target.value)}
@@ -519,8 +594,8 @@ export const Effectiveness = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Approval Decision <span className="text-rose-500">*</span></label>
               <select
                 required
-                disabled={!effChangeNo || isAlreadyValidated}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo || isAlreadyValidated ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                disabled={!effChangeNo}
+                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${!effChangeNo ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
                   }`}
                 value={effQaApproval}
                 onChange={(e) => setEffQaApproval(e.target.value)}
@@ -535,13 +610,16 @@ export const Effectiveness = ({
             <div className="space-y-[8px] pt-[4px]">
               <button
                 type="submit"
-                disabled={!effChangeNo || isAlreadyValidated}
+                disabled={!effChangeNo}
                 className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
               >
-                {isAlreadyValidated ? (
-                  <span>Log Already Saved</span>
-                ) : !effChangeNo ? (
+                {!effChangeNo ? (
                   <span>Select a Request to Evaluate</span>
+                ) : isAlreadyValidated ? (
+                  <>
+                    <Save size={14} />
+                    <span>Update Log Entry</span>
+                  </>
                 ) : (
                   <>
                     <Save size={14} />
@@ -643,13 +721,14 @@ export const Effectiveness = ({
                       return (
                         <tr
                           key={log.id}
-                          className="hover:bg-slate-50/50 transition-colors"
+                          className="hover:bg-slate-50/50 cursor-pointer transition-colors"
+                          onClick={() => handleSelectChangeNo(log.changeNo)}
                         >
                           <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
                           <td className="p-[8px] text-slate-500">{formatDateShort(log.reqDate)}</td>
                           <td className="p-[8px] font-medium text-slate-700 truncate" title={log.context}>{log.context}</td>
                           <td className="p-[8px] text-slate-500">{formatDateShort(log.startDate)}</td>
-                          <td className="p-[8px] font-medium text-slate-600">{formatMonthWise(log.monthWise)}</td>
+                          <td className="p-[8px] font-medium text-slate-600">{log.monthWise ? formatMonthWise(log.monthWise) : '-'}</td>
                           <td className="p-[8px] max-w-[200px] truncate text-slate-500" title={log.remarks}>{log.remarks}</td>
 
                           <td className="p-[8px] font-mono text-teal-655" onClick={(e) => e.stopPropagation()}>
@@ -673,6 +752,8 @@ export const Effectiveness = ({
                           <td className="p-[8px]">
                             <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${log.status === 'Effectiveness Ok'
                                 ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                                : log.status === 'Pending'
+                                ? 'bg-slate-50 border-slate-200 text-slate-500'
                                 : 'bg-rose-50 border-rose-250 text-rose-700'
                               }`}>
                               {log.status}
@@ -682,6 +763,8 @@ export const Effectiveness = ({
                           <td className="p-[8px]">
                             <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${log.qaApproval === 'Approved'
                                 ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                                : log.qaApproval === 'Pending'
+                                ? 'bg-slate-50 border-slate-200 text-slate-500'
                                 : 'bg-rose-50 border-rose-250 text-rose-700'
                               }`}>
                               {log.qaApproval}
@@ -689,14 +772,18 @@ export const Effectiveness = ({
                           </td>
 
                           <td className="p-[8px] text-center" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              type="button"
-                              onClick={() => setViewingLog(log)}
-                              className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
-                              title="View Details"
-                            >
-                              <Eye size={12} />
-                            </button>
+                            {!log.isPending ? (
+                              <button
+                                type="button"
+                                onClick={() => setViewingLog(log)}
+                                className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
+                                title="View Details"
+                              >
+                                <Eye size={12} />
+                              </button>
+                            ) : (
+                              <span className="text-slate-300 text-[10px] font-medium">-</span>
+                            )}
                           </td>
                         </tr>
                       );
