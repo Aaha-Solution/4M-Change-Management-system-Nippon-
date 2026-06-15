@@ -118,6 +118,41 @@ export const DashboardOverview = ({
     return matchesMonth && matchesFromDate && matchesToDate && matchesPerson && matchesProcess && matchesMachine && matchesStatus;
   });
 
+  // Extract all improvement data rows
+  const costSavingRows = [];
+  const productivityRows = [];
+  const qualityRows = [];
+
+  filteredChanges.forEach(c => {
+    if (c.improvementTableData) {
+      try {
+        const rows = typeof c.improvementTableData === 'string'
+          ? JSON.parse(c.improvementTableData)
+          : c.improvementTableData;
+
+        if (Array.isArray(rows)) {
+          const area = (c.improvementArea || '').toLowerCase();
+          rows.forEach(r => {
+            const rowWithDefaults = {
+              ...r,
+              changeNo: r.changeNo || c.id || c.changeNo || '',
+              date: r.date || ''
+            };
+            if (area === 'cost') {
+              costSavingRows.push(rowWithDefaults);
+            } else if (area === 'productivity') {
+              productivityRows.push(rowWithDefaults);
+            } else if (area === 'quality') {
+              qualityRows.push(rowWithDefaults);
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Error parsing improvementTableData for change:', c.id, e);
+      }
+    }
+  });
+
   const dynamicApproved = filteredChanges.filter(c => c.status === 'Approved' || ((c.status === 'Pending' || c.status === 'Evaluating') && c.l2Status === 'Accepted')).length;
   const dynamicPending = filteredChanges.filter(c => (c.status === 'Pending' || c.status === 'Evaluating') && c.l2Status !== 'Accepted').length;
   const dynamicRejected = filteredChanges.filter(c => c.status === 'Rejected').length;
@@ -604,6 +639,131 @@ export const DashboardOverview = ({
     );
   };
 
+  const renderImprovementBenefits = () => {
+    return (
+      <div className="space-y-[28px] pt-[8px]">
+        {/* Cost Saving Table */}
+        <div className="space-y-[6px]">
+          <div className="inline-block bg-[#1e60aa] text-white text-[11px] font-bold px-[12px] py-[6px] rounded-t-[4px] tracking-wide select-none">
+            Cost Saving
+          </div>
+          <div className="border border-slate-200 rounded-b-xl rounded-r-xl overflow-hidden shadow-sm bg-white">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
+                <thead>
+                  <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
+                    <th className="p-[10px] border-r border-[#1a5596] w-[18%]">4M #</th>
+                    <th className="p-[10px] border-r border-[#1a5596] w-[20%]">Implementation date</th>
+                    <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Total Cost Saved / month(Rs)</th>
+                    <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Total Cost Saved / Annum(Rs)</th>
+                    <th className="p-[10px] w-[18%]">ROI (Rs)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {costSavingRows.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-[16px] text-center text-slate-400 font-medium">
+                        No Cost Saving data available.
+                      </td>
+                    </tr>
+                  ) : (
+                    costSavingRows.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
+                        <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
+                        <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
+                        <td className="p-[10px] border-r border-slate-100 font-semibold text-slate-800">Rs. {row.monthlySave || '0'}</td>
+                        <td className="p-[10px] border-r border-slate-100 font-semibold text-slate-800">Rs. {row.annualSave || '0'}</td>
+                        <td className="p-[10px] text-slate-600">{row.roi || '-'}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Productivity Improvement Table */}
+        <div className="space-y-[6px]">
+          <div className="inline-block bg-[#1e60aa] text-white text-[11px] font-bold px-[12px] py-[6px] rounded-t-[4px] tracking-wide select-none">
+            Productivity Improvement
+          </div>
+          <div className="border border-slate-200 rounded-b-xl rounded-r-xl overflow-hidden shadow-sm bg-white">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
+                <thead>
+                  <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
+                    <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M #</th>
+                    <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Implementation date</th>
+                    <th className="p-[10px] border-r border-[#1a5596] w-[29%]">Current Productivity (nos)</th>
+                    <th className="p-[10px] w-[29%]">Productivity Improved (nos)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {productivityRows.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="p-[16px] text-center text-slate-400 font-medium">
+                        No Productivity Improvement data available.
+                      </td>
+                    </tr>
+                  ) : (
+                    productivityRows.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
+                        <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
+                        <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
+                        <td className="p-[10px] border-r border-slate-100 text-slate-600">{row.currentProd || '0'} nos</td>
+                        <td className="p-[10px] font-bold text-slate-800">{row.improvedProd || '0'} nos</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Quality Improvement Table */}
+        <div className="space-y-[6px]">
+          <div className="inline-block bg-[#1e60aa] text-white text-[11px] font-bold px-[12px] py-[6px] rounded-t-[4px] tracking-wide select-none">
+            Quality Improvement
+          </div>
+          <div className="border border-slate-200 rounded-b-xl rounded-r-xl overflow-hidden shadow-sm bg-white">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
+                <thead>
+                  <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
+                    <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M #</th>
+                    <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Implementation date</th>
+                    <th className="p-[10px] border-r border-[#1a5596] w-[29%]">Current PPM</th>
+                    <th className="p-[10px] w-[29%]">Reduced PPM</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {qualityRows.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="p-[16px] text-center text-slate-400 font-medium">
+                        No Quality Improvement data available.
+                      </td>
+                    </tr>
+                  ) : (
+                    qualityRows.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
+                        <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
+                        <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
+                        <td className="p-[10px] border-r border-slate-100 text-slate-600">{row.currentPpm || '0'}</td>
+                        <td className="p-[10px] font-bold text-slate-800">{row.reducedPpm || '0'}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-[32px] animate-fade-in-up">
       {/* KPIs Grid */}
@@ -686,7 +846,7 @@ export const DashboardOverview = ({
             {/* Show tab segments ONLY in Tab View mode */}
             {!isGridView && (
               <div className="flex flex-wrap items-center justify-center bg-slate-100 p-[4px] rounded-[6px] border border-slate-200 gap-y-1">
-                {['Department', 'Process', '6M Category', 'Monthly', 'Approval Status'].map((tab) => (
+                {['Department', 'Process', '6M Category', 'Monthly', 'Approval Status', 'Improvement Benefits'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveAnalyticsTab(tab)}
@@ -723,6 +883,7 @@ export const DashboardOverview = ({
                 {activeAnalyticsTab === '6M Category' && '6M Category Change'}
                 {activeAnalyticsTab === 'Monthly' && 'Monthly Change'}
                 {activeAnalyticsTab === 'Approval Status' && 'Overall Change Approval Status'}
+                {activeAnalyticsTab === 'Improvement Benefits' && 'Improvement Benefits'}
               </h4>
             </div>
 
@@ -735,6 +896,7 @@ export const DashboardOverview = ({
             {activeAnalyticsTab === '6M Category' && renderCategoryChart()}
             {activeAnalyticsTab === 'Monthly' && renderMonthlyChart()}
             {activeAnalyticsTab === 'Approval Status' && renderApprovalStatusChart()}
+            {activeAnalyticsTab === 'Improvement Benefits' && renderImprovementBenefits()}
           </div>
         ) : (
           /* GRID VIEW (2x2 smaller charts + 1 full-width chart layout) */
@@ -807,6 +969,18 @@ export const DashboardOverview = ({
               </div>
               {renderStatusFilters()}
               {renderApprovalStatusChart('h-[180px]')}
+            </div>
+
+            {/* 6. Improvement Benefits (Full-width Card at bottom of Grid Mode) */}
+            <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-[8px]">
+                <div className="flex items-center gap-[8px]">
+                  <h4 className="text-[13px] font-bold text-slate-800">Improvement Benefits</h4>
+                  <BarChart3 size={14} className="text-slate-400" />
+                </div>
+              </div>
+              {renderFilters()}
+              {renderImprovementBenefits()}
             </div>
           </div>
         )}

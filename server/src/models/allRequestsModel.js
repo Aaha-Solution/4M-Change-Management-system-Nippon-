@@ -34,11 +34,14 @@ export const getChanges = async () => {
             DATE_FORMAT(c.date, '%b %d, %Y') as date, c.priority, c.status,
             l1.dept, l1.process_name as processName, l1.machine_no as machineNo, l1.change_in as changeIn,
             l1.request_by as requestBy,
+            l1.improvement_area as improvementArea,
+            l1.improvement_table_data as improvementTableData,
             c.requester as requesterEmail,
             v.status as l2Status,
             ha.status as hodStatus,
             DATE_FORMAT(c.date, '%Y-%m-%d') as rawDate,
             DATE_FORMAT(l1.date_start, '%Y-%m-%d') as dateStart,
+            DATE_FORMAT(l1.date_close, '%Y-%m-%d') as dateClose,
             CASE WHEN l3.ped = 'Approved' 
                   AND l3.quality = 'Approved' 
                   AND l3.production = 'Approved' 
