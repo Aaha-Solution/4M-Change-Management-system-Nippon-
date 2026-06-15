@@ -140,6 +140,20 @@ export const sendEmailForNotification = async (notificationId) => {
     
     // Query users
     const [users] = await pool.query('SELECT email, role, department FROM users');
+
+    let l1Details = null;
+    if (notification.changeNo) {
+      const [l1Rows] = await pool.query(
+        `SELECT l1.change_no, l1.dept, l1.change_in, l1.request_by, l1.process_name, l1.process_line, l1.machine_no, l1.description, cr.title
+         FROM l1_requests l1
+         LEFT JOIN change_requests cr ON l1.change_no = cr.id
+         WHERE l1.change_no = ?`,
+        [notification.changeNo]
+      );
+      if (l1Rows.length > 0) {
+        l1Details = l1Rows[0];
+      }
+    }
     
     // Determine target users
     const targetEmails = [];
@@ -194,9 +208,14 @@ export const sendEmailForNotification = async (notificationId) => {
             ${notification.details}
           </div>
           <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px; color: #475569;">
-            ${notification.changeNo ? `<tr><td style="padding: 6px 0; color: #64748b; width: 30%;"><strong>Change Request #</strong></td><td style="padding: 6px 0; color: #1e293b; font-weight: 600;">${notification.changeNo}</td></tr>` : ''}
-            ${notification.category ? `<tr><td style="padding: 6px 0; color: #64748b;"><strong>Category</strong></td><td style="padding: 6px 0; color: #1e293b;">${notification.category}</td></tr>` : ''}
-            ${notification.dept ? `<tr><td style="padding: 6px 0; color: #64748b;"><strong>Target Department</strong></td><td style="padding: 6px 0; color: #1e293b; font-weight: 600;">${notification.dept}</td></tr>` : ''}
+            ${notification.changeNo ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 30%;"><strong>Change Request #</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${notification.changeNo}</td></tr>` : ''}
+            ${l1Details && l1Details.title ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Title</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${l1Details.title}</td></tr>` : ''}
+            ${(l1Details && l1Details.change_in) || notification.category ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Category</strong></td><td style="padding: 10px 0; color: #1e293b;">${(l1Details && l1Details.change_in) || notification.category}</td></tr>` : ''}
+            ${l1Details && l1Details.request_by ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Requested By</strong></td><td style="padding: 10px 0; color: #1e293b;">${l1Details.request_by} ${l1Details.dept ? `(${l1Details.dept})` : ''}</td></tr>` : ''}
+            ${l1Details && l1Details.process_name ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Process Name</strong></td><td style="padding: 10px 0; color: #1e293b;">${l1Details.process_name} ${l1Details.process_line ? `(Line: ${l1Details.process_line})` : ''}</td></tr>` : ''}
+            ${l1Details && l1Details.machine_no ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Machine No</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${l1Details.machine_no}</td></tr>` : ''}
+            ${l1Details && l1Details.description ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; vertical-align: top;"><strong>Description</strong></td><td style="padding: 10px 0; color: #475569; line-height: 1.5; font-size: 12.5px;">${l1Details.description}</td></tr>` : ''}
+            ${notification.dept ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Target Department</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${notification.dept}</td></tr>` : ''}
           </table>
           <div style="text-align: center; margin: 30px 0 10px 0;">
             <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">

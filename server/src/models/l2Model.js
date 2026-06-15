@@ -34,7 +34,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
           `UPDATE change_requests SET status = 'Approved' WHERE id = ?`,
           [changeNo]
         );
-      } else if (status === 'Rejected') {
+      } else if (status === 'Rejected' || status === 'Pending') {
         await connection.query(
           `UPDATE change_requests SET status = 'Evaluating' WHERE id = ?`,
           [changeNo]
@@ -68,7 +68,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
           `UPDATE change_requests SET status = 'Approved' WHERE id = ?`,
           [changeNo]
         );
-      } else if (status === 'Rejected') {
+      } else if (status === 'Rejected' || status === 'Pending') {
         await connection.query(
           `UPDATE change_requests SET status = 'Evaluating' WHERE id = ?`,
           [changeNo]
@@ -100,7 +100,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
       }
     }
 
-    // Create notifications for all other departments
+    // Create notifications based on validation status
     const [l1Rows] = await connection.query(
       `SELECT dept, change_in, request_by, process_name, machine_no FROM l1_requests WHERE change_no = ?`,
       [changeNo]
@@ -111,25 +111,70 @@ export const addL2ValidationLog = async (logData, attachments) => {
     const processName = l1Rows.length > 0 ? l1Rows[0].process_name : '';
     const machineNo = l1Rows.length > 0 ? l1Rows[0].machine_no : '';
 
-    const [deptRows] = await connection.query(
-      `SELECT DISTINCT department FROM users WHERE department != '' AND department IS NOT NULL AND LOWER(department) != LOWER(?)`,
-      [l1Dept || '']
+    // Fetch requester email and title of the change request
+    const [crRequesterRow] = await connection.query(
+      `SELECT requester, title FROM change_requests WHERE id = ?`,
+      [changeNo]
     );
+    const crRequesterEmail = crRequesterRow.length > 0 ? crRequesterRow[0].requester : '';
+    const crTitle = crRequesterRow.length > 0 ? crRequesterRow[0].title : '';
+    const [reqUserRow] = await connection.query(
+      `SELECT department FROM users WHERE email = ?`,
+      [crRequesterEmail]
+    );
+    const crRequesterDept = reqUserRow.length > 0 ? reqUserRow[0].department : '';
 
-    const statusLabel = status === 'Accepted' ? 'Accepted' : 'Rejected';
-    const statusColor = status === 'Accepted' ? 'green' : 'red';
+    let deptRows = [];
+    let title = '';
+    let details = '';
+    let statusColor = 'blue';
+
     const now = new Date();
     const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
+
+    if (status === 'Pending') {
+      const [rows] = await connection.query(
+        `SELECT DISTINCT department FROM users 
+         WHERE department != '' AND department IS NOT NULL 
+           AND (LOWER(department) IN ('quality', 'qad', 'qa', 'general') OR LOWER(role) IN ('admin', 'administrator'))`
+      );
+      deptRows = rows;
+      title = `L2 Setup Validation Awaiting QA Review – ${changeNo}`;
+      details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has updated L2 requester validation (PED) attachment by ${requestBy}. QA Setup Verification review is now required.`;
+      statusColor = 'blue';
+    } else if (status === 'Accepted') {
+      const [rows] = await connection.query(
+        `SELECT DISTINCT department FROM users WHERE department != '' AND department IS NOT NULL AND LOWER(department) != LOWER(?)`,
+        [l1Dept || '']
+      );
+      deptRows = rows;
+      title = `L2 Validation Accepted – ${changeNo}`;
+      details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been accepted at L2 validation by ${requestBy}.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} Your department review is now required at L3.`;
+      statusColor = 'green';
+    } else if (status === 'Rejected') {
+      const [rows] = await connection.query(
+        `SELECT DISTINCT department FROM users 
+         WHERE department != '' AND department IS NOT NULL 
+           AND (LOWER(department) IN ('quality', 'qad', 'qa', 'general', LOWER(?)) OR LOWER(role) IN ('admin', 'administrator'))`,
+        [crRequesterDept || '']
+      );
+      deptRows = rows;
+      title = `L2 Validation Rejected – ${changeNo}`;
+      details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been rejected at L2 validation by Quality.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''}`;
+      statusColor = 'red';
+    }
 
     for (const deptRow of deptRows) {
       const dept = deptRow.department;
       const notifId = `L2-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`;
-      const title = `L2 Validation ${statusLabel} – ${changeNo}`;
-      const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${statusLabel.toLowerCase()} at L2 validation by ${requestBy}.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} Your department (${dept}) review is now required at L3.`;
+      const finalDetails = status === 'Accepted'
+        ? `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been accepted at L2 validation by ${requestBy}.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} Your department (${dept}) review is now required at L3.`
+        : details;
+
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
-        [notifId, title, details, changeNo, changeIn || 'GENERAL', dept, timeStr, 'Action Required', statusColor]
+        [notifId, title, finalDetails, changeNo, changeIn || 'GENERAL', dept, timeStr, 'Action Required', statusColor]
       );
     }
 
@@ -140,15 +185,50 @@ export const addL2ValidationLog = async (logData, attachments) => {
     // Send emails asynchronously after commit
     (async () => {
       try {
-        const [users] = await pool.query(
-          `SELECT email, name, department FROM users WHERE department != '' AND department IS NOT NULL AND LOWER(department) != LOWER(?)`,
-          [l1Dept || '']
-        );
+        let users = [];
+        if (status === 'Pending') {
+          const [rows] = await pool.query(
+            `SELECT email, name, department, role FROM users 
+             WHERE department != '' AND department IS NOT NULL 
+               AND (LOWER(department) IN ('quality', 'qad', 'qa') OR LOWER(role) IN ('admin', 'administrator'))`
+          );
+          users = rows;
+        } else if (status === 'Accepted') {
+          const [rows] = await pool.query(
+            `SELECT email, name, department, role FROM users 
+             WHERE department != '' AND department IS NOT NULL AND LOWER(department) != LOWER(?)`,
+            [l1Dept || '']
+          );
+          users = rows;
+        } else if (status === 'Rejected') {
+          const [rows] = await pool.query(
+            `SELECT email, name, department, role FROM users 
+             WHERE department != '' AND department IS NOT NULL 
+               AND (LOWER(department) IN ('quality', 'qad', 'qa') 
+                    OR LOWER(role) IN ('admin', 'administrator') 
+                    OR LOWER(email) = LOWER(?))`,
+            [crRequesterEmail || '']
+          );
+          users = rows;
+        }
+
         if (users && users.length > 0) {
-          const themeColor = status === 'Accepted' ? '#10b981' : '#ef4444';
-          const bgLight = status === 'Accepted' ? '#f0fdf4' : '#fef2f2';
+          const themeColor = status === 'Accepted' ? '#10b981' : (status === 'Rejected' ? '#ef4444' : '#0066cc');
+          const bgLight = status === 'Accepted' ? '#f0fdf4' : (status === 'Rejected' ? '#fef2f2' : '#f0f9ff');
+          const statusLabel = status === 'Accepted' ? 'Accepted' : (status === 'Rejected' ? 'Rejected' : 'Pending QA Review');
+
           for (const user of users) {
-            const emailSubject = `[4M CMS] Action Required: L3 Review for ${changeNo}`;
+            let emailSubject = `[4M CMS] Action Required: L3 Review for ${changeNo}`;
+            let emailIntro = `A change request has been evaluated at <strong>L2 Validation</strong> and is now pending your department's review at <strong>L3</strong>.`;
+
+            if (status === 'Pending') {
+              emailSubject = `[4M CMS] Action Required: QA Setup Verification for ${changeNo}`;
+              emailIntro = `A change request has updated <strong>L2 Requester Validation (PED) documentation</strong> and is now pending your setup verification review.`;
+            } else if (status === 'Rejected') {
+              emailSubject = `[4M CMS] Alert: L2 Validation Rejected for ${changeNo}`;
+              emailIntro = `A change request L2 validation has been <strong>rejected</strong> by the Quality department.`;
+            }
+
             const emailHtml = `
               <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                 <div style="background-color: ${themeColor}; color: white; padding: 24px; text-align: center;">
@@ -158,20 +238,21 @@ export const addL2ValidationLog = async (logData, attachments) => {
                 <div style="padding: 24px; background-color: #ffffff;">
                   <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Hello ${user.name || 'User'},</h2>
                   <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-                    A change request has been evaluated at <strong>L2 Validation</strong> and is now pending your department's review at <strong>L3</strong>.
+                    ${emailIntro}
                   </p>
                   <div style="background-color: ${bgLight}; border-left: 4px solid ${themeColor}; padding: 16px; margin: 20px 0; border-radius: 4px;">
                     <div style="font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600;">Validation Status</div>
                     <div style="font-size: 18px; font-weight: 700; color: ${themeColor}; margin-top: 2px;">L2 Status: ${statusLabel}</div>
                   </div>
-                  <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-                    <tr><td style="padding: 8px 0; color: #64748b; font-size: 13px; width: 35%;">Change Request #</td><td style="padding: 8px 0; color: #1e293b; font-size: 13px; font-weight: 600;">${changeNo}</td></tr>
-                    ${changeIn ? `<tr><td style="padding: 8px 0; color: #64748b; font-size: 13px;">Change Category</td><td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${changeIn}</td></tr>` : ''}
-                    ${processName ? `<tr><td style="padding: 8px 0; color: #64748b; font-size: 13px;">Process Name</td><td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${processName}</td></tr>` : ''}
-                    ${machineNo ? `<tr><td style="padding: 8px 0; color: #64748b; font-size: 13px;">Machine No</td><td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${machineNo}</td></tr>` : ''}
-                    <tr><td style="padding: 8px 0; color: #64748b; font-size: 13px;">L2 Evaluated By</td><td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${requestBy}</td></tr>
-                    <tr><td style="padding: 8px 0; color: #64748b; font-size: 13px;">Target Department</td><td style="padding: 8px 0; color: #1e293b; font-size: 13px; font-weight: 600;">${user.department}</td></tr>
-                    ${remarks ? `<tr><td style="padding: 8px 0; color: #64748b; font-size: 13px; vertical-align: top;">Remarks</td><td style="padding: 8px 0; color: #475569; font-size: 13px;">${remarks}</td></tr>` : ''}
+                  <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; color: #475569;">
+                    <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 35%;">Change Request #</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
+                    ${crTitle ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Title</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${crTitle}</td></tr>` : ''}
+                    ${changeIn ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Change Category</td><td style="padding: 10px 0; color: #1e293b;">${changeIn}</td></tr>` : ''}
+                    ${processName ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Process Name</td><td style="padding: 10px 0; color: #1e293b;">${processName}</td></tr>` : ''}
+                    ${machineNo ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Machine No</td><td style="padding: 10px 0; color: #1e293b; font-family: monospace;">${machineNo}</td></tr>` : ''}
+                    <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Change Requested By</td><td style="padding: 10px 0; color: #1e293b;">${requestBy} ${l1Dept ? `(${l1Dept})` : ''}</td></tr>
+                    <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Target Department</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${user.department}</td></tr>
+                    ${remarks ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; vertical-align: top;">Remarks</td><td style="padding: 10px 0; color: #475569; line-height: 1.5;">${remarks}</td></tr>` : ''}
                   </table>
                   <div style="text-align: center; margin: 32px 0 12px 0;">
                     <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">

@@ -23,6 +23,7 @@ export const createL2ValidationLog = async (req, res) => {
     let isQuality = false;
     let isQualityOrAdmin = false;
     let isRequester = false;
+    let isAdmin = false;
 
     if (userEmail) {
       const [userRows] = await pool.query('SELECT department, role FROM users WHERE email = ?', [userEmail]);
@@ -31,8 +32,8 @@ export const createL2ValidationLog = async (req, res) => {
         const dept = (user.department || '').toLowerCase();
         const role = (user.role || '').toLowerCase();
         isQuality = dept === 'quality' || dept === 'qad' || dept === 'qa';
-        isQualityOrAdmin =
-          role === 'admin' || role === 'administrator' || isQuality;
+        isAdmin = role === 'admin' || role === 'administrator';
+        isQualityOrAdmin = isAdmin || isQuality;
       }
 
       const [crRows] = await pool.query(
@@ -88,28 +89,36 @@ export const createL2ValidationLog = async (req, res) => {
     if (existingL2.length > 0) {
       const current = existingL2[0];
       
-      // Only Quality is allowed to set/change QA validation details (status, remarks, qa_test)
-      if (!isQuality) {
-        if ((logData.status && logData.status !== current.status) || 
+      // If the user is NOT Quality/Admin, they are the requester.
+      // As the requester, if they upload a new PED attachment, the status MUST be reset to 'Pending'.
+      if (!isQualityOrAdmin) {
+        const hasNewPedAttachment = attachments && attachments.some(a => a.fieldName === 'weld_test');
+        if (hasNewPedAttachment) {
+          logData.status = 'Pending';
+        }
+
+        const allowedStatus = hasNewPedAttachment ? 'Pending' : current.status;
+
+        if ((logData.status && logData.status !== allowedStatus) || 
             (logData.remarks && logData.remarks !== current.remarks) || 
             (attachments && attachments.some(a => a.fieldName === 'qa_test'))) {
-          return res.status(403).json({ error: 'Access Denied: Only Quality department members are allowed to update L2 validation status, remarks, or QA attachments.' });
+          return res.status(403).json({ error: 'Access Denied: Only Quality department members or Admins are allowed to update L2 validation status, remarks, or QA attachments.' });
         }
       }
       
-      // Only the requester is allowed to update PED attachments
-      if (!isRequester) {
+      // Only the creator of the change request or Admins are allowed to update the PED attachment
+      if (!isRequester && !isAdmin) {
         if (attachments && attachments.some(a => a.fieldName === 'weld_test')) {
-          return res.status(403).json({ error: 'Access Denied: Only the creator of the change request is allowed to update the PED attachment.' });
+          return res.status(403).json({ error: 'Access Denied: Only the creator of the change request or Admins are allowed to update the PED attachment.' });
         }
       }
     } else {
-      // For new log inserts, a non-Quality user cannot set status, remarks, or QA files
-      if (!isQuality) {
-        if ((logData.status && logData.status !== 'Pending') || 
-            (logData.remarks && logData.remarks !== '') || 
-            (attachments && attachments.some(a => a.fieldName === 'qa_test'))) {
-          return res.status(403).json({ error: 'Access Denied: Only Quality department members are allowed to set L2 validation status, remarks, and QA attachments.' });
+      // For new log inserts, a non-Quality/Admin user cannot set status, remarks, or QA files
+      if (!isQualityOrAdmin) {
+        logData.status = 'Pending';
+        logData.remarks = '';
+        if (attachments && attachments.some(a => a.fieldName === 'qa_test')) {
+          return res.status(403).json({ error: 'Access Denied: Only Quality department members or Admins are allowed to upload QA attachments.' });
         }
       }
     }
