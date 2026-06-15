@@ -171,7 +171,11 @@ export const L3RequestTracker = ({
     setFormChangeNo(log.changeNo);
     setFormDate(formatDateToDDMMYYYY(log.date));
     setFormRequester(log.requester);
-    if (log.raisedDept) {
+    const userIsAdmin = userRole && (
+      userRole.toLowerCase() === 'admin' || 
+      userRole.toLowerCase() === 'administrator'
+    );
+    if (userIsAdmin && log.raisedDept) {
       const mapped = mapDbDeptToL3Dept(log.raisedDept);
       setActingDept(mapped);
     }
@@ -442,7 +446,7 @@ export const L3RequestTracker = ({
   const raisedDept = currentChangeLog ? currentChangeLog.raisedDept : '';
   const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
 
-  const canEdit = isAdmin || (isHOD && userMappedDept === mappedRaisedDept);
+  const canEdit = isAdmin || isHOD;
 
   const selectedLogL2Accepted = !selectedLog || selectedLog.l2Decision === 'Accepted';
 
@@ -466,7 +470,7 @@ export const L3RequestTracker = ({
 
   const selectedLogRaisedDept = selectedLog ? selectedLog.raisedDept : '';
   const selectedLogMappedRaisedDept = mapDbDeptToL3Dept(selectedLogRaisedDept);
-  const canEditModal = isAdmin || (isHOD && userMappedDept === selectedLogMappedRaisedDept);
+  const canEditModal = isAdmin || isHOD;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
@@ -493,7 +497,7 @@ export const L3RequestTracker = ({
             <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
               <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
               <div>
-                <span className="font-bold">Not Authorized:</span> This change request was raised by the <span className="font-bold uppercase">{mappedRaisedDept}</span> department. Only the HOD of that department or an Administrator can sign off. (Your Department: <span className="font-bold uppercase">{userMappedDept || 'None'}</span>, Role: <span className="font-bold uppercase">{userRole || 'User'}</span>)
+                <span className="font-bold">Not Authorized:</span> Only department HODs or an Administrator can sign off at Level 3. (Your Role: <span className="font-bold uppercase">{userRole || 'User'}</span>)
               </div>
             </div>
           )}
@@ -1219,7 +1223,7 @@ export const L3RequestTracker = ({
                 )}
                 {selectedLog && selectedLogL2Accepted && !canEditModal && (
                   <span className="text-[11px] font-semibold text-slate-500 bg-slate-100/60 border border-slate-200 px-2.5 py-1.5 rounded-lg">
-                    Not Authorized to sign off (Only HOD of {selectedLogMappedRaisedDept} department or Admin)
+                    Not Authorized to sign off (Only department HODs or Admin)
                   </span>
                 )}
               </div>

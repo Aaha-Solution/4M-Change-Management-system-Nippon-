@@ -72,29 +72,7 @@ export const createL3Approval = async (req, res) => {
         return res.status(403).json({ error: 'Access denied. Only department HODs or Administrators can sign off at L3.' });
       }
 
-      // Fetch the department that raised the request
-      const [crRows] = await pool.query(
-        `SELECT COALESCE(l1.dept, u.department) as raisedDept
-         FROM change_requests c
-         LEFT JOIN l1_requests l1 ON c.id = l1.change_no
-         LEFT JOIN users u ON c.requester = u.email
-         WHERE c.id = ?`,
-        [logData.changeNo]
-      );
-      
-      if (crRows.length === 0) {
-        return res.status(404).json({ error: 'Change request not found.' });
-      }
-
-      const raisedDept = crRows[0].raisedDept;
-      const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
       const userMappedDept = mapDbDeptToL3Dept(user.department);
-
-      if (userMappedDept !== mappedRaisedDept) {
-        return res.status(403).json({ 
-          error: `Access denied. This request was raised by the '${mappedRaisedDept}' department. Only the '${mappedRaisedDept}' HOD can sign off.` 
-        });
-      }
 
       // Map user department to L3 department key
       const allowedField = deptFields[userMappedDept];
