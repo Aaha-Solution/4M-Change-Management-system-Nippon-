@@ -39,6 +39,11 @@ export const createLog = async (req, res) => {
       return res.status(403).json({ error: 'Access Denied: Only Admin and Quality HOD are allowed to create effectiveness logs.' });
     }
 
+    const [existing] = await pool.query('SELECT id FROM effectiveness_logs WHERE change_no = ?', [logData.changeNo]);
+    if (existing && existing.length > 0) {
+      return res.status(400).json({ error: 'An effectiveness log has already been submitted for this change request.' });
+    }
+
     const newLog = await effectivenessModel.createLog(logData, attachments);
     res.status(201).json({
       message: 'Effectiveness log created successfully',
@@ -54,28 +59,7 @@ export const createLog = async (req, res) => {
 };
 
 export const updateLog = async (req, res) => {
-  const { id } = req.params;
-  const { logData, attachments } = req.body;
-
-  if (!logData) {
-    return res.status(400).json({ error: 'Log data is required.' });
-  }
-
-  try {
-    const canUpdate = await checkCanUpdate(req.user?.email);
-    if (!canUpdate) {
-      return res.status(403).json({ error: 'Access Denied: Only Admin and Quality HOD are allowed to update effectiveness logs.' });
-    }
-
-    const updated = await effectivenessModel.updateLog(id, logData, attachments);
-    res.status(200).json({
-      message: 'Effectiveness log updated successfully',
-      log: updated
-    });
-  } catch (error) {
-    console.error('Error in updateLog:', error);
-    res.status(500).json({ error: 'Failed to update effectiveness log' });
-  }
+  return res.status(400).json({ error: 'Access Denied: Effectiveness logs can only be submitted once and cannot be updated.' });
 };
 
 export const deleteLog = async (req, res) => {
