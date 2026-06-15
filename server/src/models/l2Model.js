@@ -136,7 +136,12 @@ export const addL2ValidationLog = async (logData, attachments) => {
       const [rows] = await connection.query(
         `SELECT DISTINCT department FROM users 
          WHERE department != '' AND department IS NOT NULL 
-           AND (LOWER(department) IN ('quality', 'qad', 'qa', 'general') OR LOWER(role) IN ('admin', 'administrator'))`
+           AND (
+             LOWER(department) IN ('quality', 'qad', 'qa', 'general') 
+             OR LOWER(role) IN ('admin', 'administrator')
+             OR LOWER(department) = LOWER(?)
+           )`,
+        [l1Dept || '']
       );
       deptRows = rows;
       title = `L2 Setup Validation Awaiting QA Review – ${changeNo}`;
@@ -166,7 +171,14 @@ export const addL2ValidationLog = async (logData, attachments) => {
 
     for (const deptRow of deptRows) {
       const dept = deptRow.department;
-      const notifId = `L2-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`;
+      const deptLower = (dept || '').toLowerCase();
+      const l1DeptLower = (l1Dept || '').toLowerCase();
+      const isL1DeptHODOnly = status === 'Pending' && deptLower === l1DeptLower && !['quality', 'qad', 'qa', 'general'].includes(deptLower);
+      
+      const notifId = isL1DeptHODOnly
+        ? `L1-HOD-NOTIF-L2-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`
+        : `L2-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`;
+        
       const finalDetails = status === 'Accepted'
         ? `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been accepted at L2 validation by ${requestBy}.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} Your department (${dept}) review is now required at L3.`
         : details;
@@ -190,7 +202,15 @@ export const addL2ValidationLog = async (logData, attachments) => {
           const [rows] = await pool.query(
             `SELECT email, name, department, role FROM users 
              WHERE department != '' AND department IS NOT NULL 
-               AND (LOWER(department) IN ('quality', 'qad', 'qa') OR LOWER(role) IN ('admin', 'administrator'))`
+               AND (
+                 LOWER(department) IN ('quality', 'qad', 'qa') 
+                 OR LOWER(role) IN ('admin', 'administrator')
+                 OR (
+                   LOWER(department) = LOWER(?)
+                   AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%' OR LOWER(role) LIKE '%unit head%' OR LOWER(role) LIKE '%unit_head%')
+                 )
+               )`,
+            [l1Dept || '']
           );
           users = rows;
         } else if (status === 'Accepted') {
