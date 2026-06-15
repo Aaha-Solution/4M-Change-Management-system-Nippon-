@@ -425,7 +425,7 @@ export const L2Validation = ({
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Notice:</span> You raised this change request. You are authorized to upload the <span className="font-semibold">Requester Validation (PED) Attachment</span>. Quality department will review and complete the validation.
+              <span className="font-bold">Notice:</span> You raised this change request. You are authorized to upload the <span className="font-semibold">Requester Validation Attachment</span>. Quality department will review and complete the validation.
             </div>
           </div>
         )}
@@ -470,7 +470,7 @@ export const L2Validation = ({
           <div className="bg-rose-50 border border-rose-250 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Validation Rejected:</span> L2 validation has been rejected by Quality. Please upload a new <span className="font-semibold">Requester Validation (PED) Attachment</span> to reset the status to Pending and notify Quality for re-evaluation.
+              <span className="font-bold">Validation Rejected:</span> L2 validation has been rejected by Quality. Please upload a new <span className="font-semibold">Requester Validation Attachment</span> to reset the status to Pending and notify Quality for re-evaluation.
             </div>
           </div>
         )}
@@ -521,9 +521,9 @@ export const L2Validation = ({
             />
           </div>
 
-          {/* REQUESTER VALIDATION (PED) ATTACHMENT */}
+          {/* REQUESTER VALIDATION ATTACHMENT */}
           <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requester Validation(PED) Attachment <span className="text-rose-500">*</span></label>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requester Validation Attachment <span className="text-rose-500">*</span></label>
             <input
               key={`ped-${formChangeNo}`}
               type="file"
@@ -826,7 +826,7 @@ export const L2Validation = ({
                   <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
                   <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
                   <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Change Request By</th>
-                  <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requester Validation(PED)</th>
+                  <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requester Validation</th>
                   <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approver Set Up Verification(QA)</th>
                   <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approver Validation Status</th>
                   <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Remarks</th>

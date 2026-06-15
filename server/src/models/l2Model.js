@@ -190,6 +190,25 @@ export const addL2ValidationLog = async (logData, attachments) => {
       );
     }
 
+    // Send personal confirmation notification to the requester when they submit their PED validation
+    if (status === 'Pending' && crRequesterEmail) {
+      const [reqUserDeptRow] = await connection.query(
+        `SELECT department FROM users WHERE email = ?`,
+        [crRequesterEmail]
+      );
+      const reqDept = reqUserDeptRow.length > 0 ? reqUserDeptRow[0].department : '';
+      if (reqDept) {
+        const requesterNotifId = `L2-REQUESTER-CONFIRM-${changeNo}-${Date.now()}`;
+        const requesterNotifTitle = `L2 Validation Submitted – ${changeNo}`;
+        const requesterNotifDetails = `Your L2 Requester Validation (PED) attachment for Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been submitted successfully. The QA department will now review and verify your setup. You will be notified once a decision is made.`;
+        await connection.query(
+          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
+           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
+          [requesterNotifId, requesterNotifTitle, requesterNotifDetails, changeNo, changeIn || 'GENERAL', reqDept, timeStr, 'Info', 'blue']
+        );
+      }
+    }
+
     await connection.commit();
     broadcast({ type: 'REFRESH_CHANGES' });
     broadcast({ type: 'REFRESH_NOTIFICATIONS' });
@@ -213,6 +232,57 @@ export const addL2ValidationLog = async (logData, attachments) => {
             [l1Dept || '']
           );
           users = rows;
+
+          // Also send a confirmation email to the requester themselves
+          if (crRequesterEmail) {
+            const [reqNameRow] = await pool.query(
+              `SELECT name FROM users WHERE LOWER(email) = LOWER(?)`,
+              [crRequesterEmail]
+            );
+            const reqName = reqNameRow.length > 0 ? reqNameRow[0].name : requestBy;
+            const confirmHtml = `
+              <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <div style="background-color: #0066cc; color: white; padding: 24px; text-align: center;">
+                  <h1 style="margin: 0; font-size: 20px; font-weight: 700;">Change Management System</h1>
+                  <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase;">L2 Validation Submission Confirmation</p>
+                </div>
+                <div style="padding: 24px; background-color: #ffffff;">
+                  <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Hello ${reqName},</h2>
+                  <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+                    Your <strong>L2 Requester Validation (PED) attachment</strong> has been submitted successfully and is now <strong>awaiting QA Setup Verification</strong>.
+                  </p>
+                  <div style="background-color: #f0f9ff; border-left: 4px solid #0066cc; padding: 16px; margin: 20px 0; border-radius: 4px;">
+                    <div style="font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600;">Submission Status</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #0066cc; margin-top: 2px;">Pending QA Review</div>
+                  </div>
+                  <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; color: #475569;">
+                    <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 35%;">Change Request #</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
+                    ${crTitle ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Title</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${crTitle}</td></tr>` : ''}
+                    ${changeIn ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Change Category</td><td style="padding: 10px 0; color: #1e293b;">${changeIn}</td></tr>` : ''}
+                    ${processName ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Process Name</td><td style="padding: 10px 0; color: #1e293b;">${processName}</td></tr>` : ''}
+                    ${machineNo ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Machine No</td><td style="padding: 10px 0; color: #1e293b; font-family: monospace;">${machineNo}</td></tr>` : ''}
+                    <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Submitted By</td><td style="padding: 10px 0; color: #1e293b;">${requestBy}</td></tr>
+                  </table>
+                  <p style="color: #64748b; font-size: 13px; line-height: 1.6;">
+                    The QA department has been notified and will review your submission. You will receive another notification once a decision (Accepted / Rejected) is made.
+                  </p>
+                  <div style="text-align: center; margin: 32px 0 12px 0;">
+                    <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
+                      Go to Dashboard
+                    </a>
+                  </div>
+                </div>
+                <div style="background-color: #f8fafc; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9;">
+                  This is an automated notification from the 4M Change Management System.
+                </div>
+              </div>
+            `;
+            await sendMail({
+              to: crRequesterEmail,
+              subject: `[4M CMS] Submission Confirmed: L2 Requester Validation for ${changeNo}`,
+              html: confirmHtml
+            });
+          }
         } else if (status === 'Accepted') {
           const [rows] = await pool.query(
             `SELECT email, name, department, role FROM users 
@@ -240,20 +310,25 @@ export const addL2ValidationLog = async (logData, attachments) => {
           for (const user of users) {
             let emailSubject = `[4M CMS] Action Required: L3 Review for ${changeNo}`;
             let emailIntro = `A change request has been evaluated at <strong>L2 Validation</strong> and is now pending your department's review at <strong>L3</strong>.`;
+            let headerSubtitle = 'L2 Validation Alert';
 
             if (status === 'Pending') {
               emailSubject = `[4M CMS] Action Required: QA Setup Verification for ${changeNo}`;
               emailIntro = `A change request has updated <strong>L2 Requester Validation (PED) documentation</strong> and is now pending your setup verification review.`;
+              headerSubtitle = 'L2 Validation Alert';
+            } else if (status === 'Accepted') {
+              headerSubtitle = 'L3 HOD Review Alert';
             } else if (status === 'Rejected') {
               emailSubject = `[4M CMS] Alert: L2 Validation Rejected for ${changeNo}`;
               emailIntro = `A change request L2 validation has been <strong>rejected</strong> by the Quality department.`;
+              headerSubtitle = 'L2 Validation Rejected';
             }
 
             const emailHtml = `
               <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                 <div style="background-color: ${themeColor}; color: white; padding: 24px; text-align: center;">
                   <h1 style="margin: 0; font-size: 20px; font-weight: 700;">Change Management System</h1>
-                  <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase;">L2 Validation Alert</p>
+                  <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase;">${headerSubtitle}</p>
                 </div>
                 <div style="padding: 24px; background-color: #ffffff;">
                   <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Hello ${user.name || 'User'},</h2>
