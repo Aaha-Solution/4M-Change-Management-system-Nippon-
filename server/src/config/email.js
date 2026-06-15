@@ -35,16 +35,17 @@ if (useSMTP) {
   };
 }
 
-export const sendMail = async ({ to, subject, html, text }) => {
+export const sendMail = async ({ to, bcc, subject, html, text }) => {
   try {
     const info = await transporter.sendMail({
       from: process.env.SMTP_FROM || '"Change Management System" <noreply@cms.com>',
       to,
+      ...(bcc ? { bcc } : {}),
       subject,
       text: text || '',
       html,
     });
-    console.log(`Email successfully sent to ${to}: ${info.messageId}`);
+    console.log(`Email successfully sent to ${to}${bcc ? ` (+ BCC: ${bcc})` : ''}: ${info.messageId}`);
     return info;
   } catch (error) {
     console.error(`Failed to send email to ${to}:`, error);

@@ -307,60 +307,63 @@ export const addL2ValidationLog = async (logData, attachments) => {
           const bgLight = status === 'Accepted' ? '#f0fdf4' : (status === 'Rejected' ? '#fef2f2' : '#f0f9ff');
           const statusLabel = status === 'Accepted' ? 'Accepted' : (status === 'Rejected' ? 'Rejected' : 'Pending QA Review');
 
-          for (const user of users) {
-            let emailSubject = `[4M CMS] Action Required: L3 Review for ${changeNo}`;
-            let emailIntro = `A change request has been evaluated at <strong>L2 Validation</strong> and is now pending your department's review at <strong>L3</strong>.`;
-            let headerSubtitle = 'L2 Validation Alert';
+          let emailSubject = `[4M CMS] Action Required: L3 Review for ${changeNo}`;
+          let emailIntro = `A change request has been evaluated at <strong>L2 Validation</strong> and is now pending your department's review at <strong>L3</strong>.`;
+          let headerSubtitle = 'L2 Validation Alert';
 
-            if (status === 'Pending') {
-              emailSubject = `[4M CMS] Action Required: QA Setup Verification for ${changeNo}`;
-              emailIntro = `A change request has updated <strong>L2 Requester Validation documentation</strong> and is now pending your setup verification review.`;
-              headerSubtitle = 'L2 Validation Alert';
-            } else if (status === 'Accepted') {
-              headerSubtitle = 'L3 HOD Review Alert';
-            } else if (status === 'Rejected') {
-              emailSubject = `[4M CMS] Alert: L2 Validation Rejected for ${changeNo}`;
-              emailIntro = `A change request L2 validation has been <strong>rejected</strong> by the Quality department.`;
-              headerSubtitle = 'L2 Validation Rejected';
-            }
+          if (status === 'Pending') {
+            emailSubject = `[4M CMS] Action Required: QA Setup Verification for ${changeNo}`;
+            emailIntro = `A change request has updated <strong>L2 Requester Validation documentation</strong> and is now pending your setup verification review.`;
+            headerSubtitle = 'L2 Validation Alert';
+          } else if (status === 'Accepted') {
+            headerSubtitle = 'L3 HOD Review Alert';
+          } else if (status === 'Rejected') {
+            emailSubject = `[4M CMS] Alert: L2 Validation Rejected for ${changeNo}`;
+            emailIntro = `A change request L2 validation has been <strong>rejected</strong> by the Quality department.`;
+            headerSubtitle = 'L2 Validation Rejected';
+          }
 
-            const emailHtml = `
-              <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                <div style="background-color: ${themeColor}; color: white; padding: 24px; text-align: center;">
-                  <h1 style="margin: 0; font-size: 20px; font-weight: 700;">Change Management System</h1>
-                  <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase;">${headerSubtitle}</p>
+          // Collect all recipient emails and send ONE batched email (BCC) instead of N individual emails
+          const recipientEmails = [...new Set(users.map(u => u.email).filter(Boolean))];
+
+          const emailHtml = `
+            <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+              <div style="background-color: ${themeColor}; color: white; padding: 24px; text-align: center;">
+                <h1 style="margin: 0; font-size: 20px; font-weight: 700;">Change Management System</h1>
+                <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase;">${headerSubtitle}</p>
+              </div>
+              <div style="padding: 24px; background-color: #ffffff;">
+                <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Hello Team,</h2>
+                <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+                  ${emailIntro}
+                </p>
+                <div style="background-color: ${bgLight}; border-left: 4px solid ${themeColor}; padding: 16px; margin: 20px 0; border-radius: 4px;">
+                  <div style="font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600;">Validation Status</div>
+                  <div style="font-size: 18px; font-weight: 700; color: ${themeColor}; margin-top: 2px;">L2 Status: ${statusLabel}</div>
                 </div>
-                <div style="padding: 24px; background-color: #ffffff;">
-                  <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Hello ${user.name || 'User'},</h2>
-                  <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-                    ${emailIntro}
-                  </p>
-                  <div style="background-color: ${bgLight}; border-left: 4px solid ${themeColor}; padding: 16px; margin: 20px 0; border-radius: 4px;">
-                    <div style="font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600;">Validation Status</div>
-                    <div style="font-size: 18px; font-weight: 700; color: ${themeColor}; margin-top: 2px;">L2 Status: ${statusLabel}</div>
-                  </div>
-                  <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; color: #475569;">
-                    <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 35%;">Change Request #</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
-                    ${crTitle ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Title</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${crTitle}</td></tr>` : ''}
-                    ${changeIn ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Change Category</td><td style="padding: 10px 0; color: #1e293b;">${changeIn}</td></tr>` : ''}
-                    ${processName ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Process Name</td><td style="padding: 10px 0; color: #1e293b;">${processName}</td></tr>` : ''}
-                    ${machineNo ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Machine No</td><td style="padding: 10px 0; color: #1e293b; font-family: monospace;">${machineNo}</td></tr>` : ''}
-                    <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Change Requested By</td><td style="padding: 10px 0; color: #1e293b;">${requestBy} ${l1Dept ? `(${l1Dept})` : ''}</td></tr>
-                    <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Target Department</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${user.department}</td></tr>
-                    ${remarks ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; vertical-align: top;">Remarks</td><td style="padding: 10px 0; color: #475569; line-height: 1.5;">${remarks}</td></tr>` : ''}
-                  </table>
-                  <div style="text-align: center; margin: 32px 0 12px 0;">
-                    <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
-                      Go to Dashboard
-                    </a>
-                  </div>
-                </div>
-                <div style="background-color: #f8fafc; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9;">
-                  This is an automated notification from the 4M Change Management System.
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; color: #475569;">
+                  <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 35%;">Change Request #</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
+                  ${crTitle ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Title</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${crTitle}</td></tr>` : ''}
+                  ${changeIn ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Change Category</td><td style="padding: 10px 0; color: #1e293b;">${changeIn}</td></tr>` : ''}
+                  ${processName ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Process Name</td><td style="padding: 10px 0; color: #1e293b;">${processName}</td></tr>` : ''}
+                  ${machineNo ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Machine No</td><td style="padding: 10px 0; color: #1e293b; font-family: monospace;">${machineNo}</td></tr>` : ''}
+                  <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Change Requested By</td><td style="padding: 10px 0; color: #1e293b;">${requestBy} ${l1Dept ? `(${l1Dept})` : ''}</td></tr>
+                  ${remarks ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; vertical-align: top;">Remarks</td><td style="padding: 10px 0; color: #475569; line-height: 1.5;">${remarks}</td></tr>` : ''}
+                </table>
+                <div style="text-align: center; margin: 32px 0 12px 0;">
+                  <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
+                    Go to Dashboard
+                  </a>
                 </div>
               </div>
-            `;
-            await sendMail({ to: user.email, subject: emailSubject, html: emailHtml });
+              <div style="background-color: #f8fafc; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9;">
+                This is an automated notification from the 4M Change Management System.
+              </div>
+            </div>
+          `;
+
+          if (recipientEmails.length > 0) {
+            await sendMail({ to: recipientEmails[0], bcc: recipientEmails.slice(1).join(', '), subject: emailSubject, html: emailHtml });
           }
         }
       } catch (err) {
