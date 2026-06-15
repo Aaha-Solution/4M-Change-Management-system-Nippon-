@@ -567,6 +567,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
             {activeTab === 'l1' && (
               <L1Request
                 userEmail={userEmail}
+                userRole={userRole}
                 onTabChange={handleTabChange}
                 changes={changes}
                 setChanges={setChanges}

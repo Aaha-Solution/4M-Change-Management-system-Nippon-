@@ -13,12 +13,14 @@ import { formatDateToDDMMYYYY, parseDDMMYYYYToDate } from '../../utils/dateUtils
 
 export const L1Request = ({
   userEmail,
+  userRole,
   onTabChange,
   changes,
   setChanges,
   logAction,
   setToastMsg
 }) => {
+  const isAdmin = userRole && userRole.toLowerCase().includes('admin');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
@@ -902,17 +904,19 @@ export const L1Request = ({
                     <option key={p} value={p}>{p}</option>
                   ))}
                 </select>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTempProcessName('');
-                    setIsProcessModalOpen(true);
-                  }}
-                  className="flex items-center justify-center w-[36px] bg-slate-50 border border-slate-200 rounded-[6px] text-slate-500 hover:bg-slate-100 hover:text-[#0066cc] transition-colors"
-                  title="View DB & Add Process"
-                >
-                  <Plus size={16} />
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTempProcessName('');
+                      setIsProcessModalOpen(true);
+                    }}
+                    className="flex items-center justify-center w-[36px] bg-slate-50 border border-slate-200 rounded-[6px] text-slate-500 hover:bg-slate-100 hover:text-[#0066cc] transition-colors"
+                    title="View DB & Add Process"
+                  >
+                    <Plus size={16} />
+                  </button>
+                )}
               </div>
               {errors.processName && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.processName}</span>}
             </div>
@@ -960,17 +964,19 @@ export const L1Request = ({
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTempMachineNo('');
-                    setIsMachineModalOpen(true);
-                  }}
-                  className="flex items-center justify-center w-[36px] bg-slate-50 border border-slate-200 rounded-[6px] text-slate-500 hover:bg-slate-100 hover:text-[#0066cc] transition-colors"
-                  title="View DB & Add Machine"
-                >
-                  <Plus size={16} />
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTempMachineNo('');
+                      setIsMachineModalOpen(true);
+                    }}
+                    className="flex items-center justify-center w-[36px] bg-slate-50 border border-slate-200 rounded-[6px] text-slate-500 hover:bg-slate-100 hover:text-[#0066cc] transition-colors"
+                    title="View DB & Add Machine"
+                  >
+                    <Plus size={16} />
+                  </button>
+                )}
               </div>
               {errors.machineNo && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.machineNo}</span>}
             </div>
