@@ -580,6 +580,22 @@ export const L2Validation = ({
                 ))}
               </div>
             )}
+            {/* Already Uploaded PED Files */}
+            {matchedL2 && matchedL2.weldTest && matchedL2.weldTest !== '-' && (
+              <div className="mt-1 flex flex-wrap gap-[6px]">
+                {matchedL2.weldTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                  <span
+                    key={idx}
+                    onClick={() => handleViewAttachment(file, formChangeNo, 'L2')}
+                    className="inline-flex items-center gap-[5px] bg-[#f0f9ff] hover:bg-[#e0f2fe] border border-[#bae6fd] text-[#0284c7] rounded-[5px] py-[3px] px-[8px] text-[10px] font-semibold cursor-pointer max-w-full"
+                    title="Click to view/download previously uploaded file"
+                  >
+                    <Paperclip size={10} className="shrink-0" />
+                    <span className="underline truncate max-w-[180px]">{file}</span>
+                  </span>
+                ))}
+              </div>
+            )}
             {fieldErrors.pedFile && (
               <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
                 <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
@@ -643,6 +659,22 @@ export const L2Validation = ({
                         <X size={9} />
                       </button>
                     )}
+                  </span>
+                ))}
+              </div>
+            )}
+            {/* Already Uploaded QA Files */}
+            {matchedL2 && matchedL2.qaTest && matchedL2.qaTest !== '-' && (
+              <div className="mt-1 flex flex-wrap gap-[6px]">
+                {matchedL2.qaTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                  <span
+                    key={idx}
+                    onClick={() => handleViewAttachment(file, formChangeNo, 'L2')}
+                    className="inline-flex items-center gap-[5px] bg-[#f0f9ff] hover:bg-[#e0f2fe] border border-[#bae6fd] text-[#0284c7] rounded-[5px] py-[3px] px-[8px] text-[10px] font-semibold cursor-pointer max-w-full"
+                    title="Click to view/download previously uploaded file"
+                  >
+                    <Paperclip size={10} className="shrink-0" />
+                    <span className="underline truncate max-w-[180px]">{file}</span>
                   </span>
                 ))}
               </div>
