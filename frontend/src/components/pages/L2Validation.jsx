@@ -961,11 +961,11 @@ export const L2Validation = ({
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                     <div className="flex gap-1.5 items-center mt-0.5">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                        selectedL1Details.crStatus === 'Approved' 
+                        selectedL1Details.crStatus !== 'Pending' 
                           ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
                           : 'bg-amber-50 border-amber-220 text-amber-700'
                       }`}>
-                        {selectedL1Details.crStatus}
+                        L1 {selectedL1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}
                       </span>
                     </div>
                   </div>

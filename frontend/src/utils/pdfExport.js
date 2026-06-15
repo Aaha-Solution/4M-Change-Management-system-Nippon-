@@ -176,7 +176,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     const generalInfoData = [
       [
         { content: 'Change Number:', fontStyle: 'bold' }, selectedL1Details.change_no || '-',
-        { content: 'Status:', fontStyle: 'bold' }, `L1: ${selectedL1Details.crStatus || '-'}`,
+        { content: 'Status:', fontStyle: 'bold' }, `L1: ${selectedL1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}`,
       ],
       [
         { content: 'Requested By:', fontStyle: 'bold' }, `${selectedL1Details.request_by || '-'} (${selectedL1Details.crRequester || '-'})`,
