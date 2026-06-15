@@ -42,16 +42,30 @@ export const getChanges = async () => {
             DATE_FORMAT(c.date, '%Y-%m-%d') as rawDate,
             DATE_FORMAT(l1.date_start, '%Y-%m-%d') as dateStart,
             DATE_FORMAT(l1.date_close, '%Y-%m-%d') as dateClose,
-            CASE WHEN l3.ped = 'Approved' 
-                  AND l3.quality = 'Approved' 
-                  AND l3.production = 'Approved' 
-                  AND l3.maintenance = 'Approved' 
-                  AND l3.pcl = 'Approved' 
-                  AND l3.materials = 'Approved' 
-                  AND l3.marketing = 'Approved' 
-                  AND l3.hr = 'Approved' 
-                  AND l3.safety = 'Approved' 
-                  AND l3.unit_head = 'Approved' THEN 1 ELSE 0 END as isL3Approved
+            CASE WHEN (
+                    (LOWER(COALESCE(l1.dept, u.department)) IN ('quality', 'qad', 'qa') AND l3.quality = 'Approved') OR
+                    (LOWER(COALESCE(l1.dept, u.department)) = 'ped' AND l3.ped = 'Approved') OR
+                    (LOWER(COALESCE(l1.dept, u.department)) = 'production' AND l3.production = 'Approved') OR
+                    (LOWER(COALESCE(l1.dept, u.department)) = 'maintenance' AND l3.maintenance = 'Approved') OR
+                    (LOWER(COALESCE(l1.dept, u.department)) IN ('pc & l', 'pcl') AND l3.pcl = 'Approved') OR
+                    (LOWER(COALESCE(l1.dept, u.department)) = 'materials' AND l3.materials = 'Approved') OR
+                    (LOWER(COALESCE(l1.dept, u.department)) = 'marketing' AND l3.marketing = 'Approved') OR
+                    (LOWER(COALESCE(l1.dept, u.department)) = 'hr' AND l3.hr = 'Approved') OR
+                    (LOWER(COALESCE(l1.dept, u.department)) = 'safety' AND l3.safety = 'Approved') OR
+                    (LOWER(COALESCE(l1.dept, u.department)) IN ('unit head', 'unit_head') AND l3.unit_head = 'Approved')
+                  ) AND (
+                    l1.hod_approval IS NULL OR TRIM(l1.hod_approval) = '' OR
+                    (LOWER(TRIM(l1.hod_approval)) IN ('quality', 'qad', 'qa') AND l3.quality = 'Approved') OR
+                    (LOWER(TRIM(l1.hod_approval)) = 'ped' AND l3.ped = 'Approved') OR
+                    (LOWER(TRIM(l1.hod_approval)) = 'production' AND l3.production = 'Approved') OR
+                    (LOWER(TRIM(l1.hod_approval)) = 'maintenance' AND l3.maintenance = 'Approved') OR
+                    (LOWER(TRIM(l1.hod_approval)) IN ('pc & l', 'pcl') AND l3.pcl = 'Approved') OR
+                    (LOWER(TRIM(l1.hod_approval)) = 'materials' AND l3.materials = 'Approved') OR
+                    (LOWER(TRIM(l1.hod_approval)) = 'marketing' AND l3.marketing = 'Approved') OR
+                    (LOWER(TRIM(l1.hod_approval)) = 'hr' AND l3.hr = 'Approved') OR
+                    (LOWER(TRIM(l1.hod_approval)) = 'safety' AND l3.safety = 'Approved') OR
+                    (LOWER(TRIM(l1.hod_approval)) IN ('unit head', 'unit_head') AND l3.unit_head = 'Approved')
+                  ) THEN 1 ELSE 0 END as isL3Approved
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
