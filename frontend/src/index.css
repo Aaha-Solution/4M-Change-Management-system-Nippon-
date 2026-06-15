@@ -92,3 +92,9 @@ thead th {
   color: #000000 !important;
   font-weight: 800 !important;
 }
+
+/* Hide browser default password reveal and clear buttons (e.g. Edge, IE) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}

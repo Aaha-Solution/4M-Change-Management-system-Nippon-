@@ -511,14 +511,14 @@ export const AllApprovals = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Change Description</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 leading-relaxed min-h-[60px] text-slate-700 text-[12px]">
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 leading-relaxed min-h-[60px] text-slate-700 text-[12px] break-words whitespace-pre-wrap">
                           {l1Details.description || '-'}
                         </div>
                         <div className="flex flex-wrap gap-1.5">{renderFilePills(l1Details.file_desc, l1Details.change_no)}</div>
                       </div>
                       <div className="space-y-1.5">
                         <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Area of Improvement</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 leading-relaxed min-h-[60px] text-slate-700 text-[12px]">
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 leading-relaxed min-h-[60px] text-slate-700 text-[12px] break-words whitespace-pre-wrap">
                           {l1Details.improvement_area || '-'}
                         </div>
                         <div className="flex flex-wrap gap-1.5">{renderFilePills(l1Details.file_improvement, l1Details.change_no)}</div>
@@ -558,7 +558,7 @@ export const AllApprovals = ({
                       ].map((item, i) => (
                         <div key={i} className="space-y-1.5">
                           <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">{item.label}</span>
-                          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[12px] text-slate-700 leading-relaxed min-h-[44px]">{item.value || '-'}</div>
+                          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[12px] text-slate-700 leading-relaxed min-h-[44px] break-words whitespace-pre-wrap">{item.value || '-'}</div>
                           <div className="flex flex-wrap gap-1.5">{renderFilePills(item.file, l1Details.change_no)}</div>
                         </div>
                       ))}
