@@ -141,7 +141,7 @@ export const DashboardOverview = ({
             const rowWithDefaults = {
               ...r,
               changeNo: r.changeNo || c.id || c.changeNo || '',
-              date: r.date || ''
+              date: r.date ? formatDateToDDMMYY(r.date) : ''
             };
             if (area === 'cost') {
               costSavingRows.push(rowWithDefaults);

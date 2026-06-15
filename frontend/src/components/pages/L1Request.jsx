@@ -1590,13 +1590,14 @@ export const L1Request = ({
                           />
                         </td>
                         <td className="p-[8px]">
-                          <input
-                            type="date"
+                          <CustomDatePicker
                             value={row.date}
-                            onChange={(e) => handleUpdateCell(idx, 'date', e.target.value)}
-                            className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                            onChange={(val) => handleUpdateCell(idx, 'date', val)}
+                            placeholder="dd/mm/yyyy"
+                            inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[6px] pl-[10px] pr-[24px] text-[11px] outline-none focus:border-[#0066cc] ${
                               modalError && !row.date ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
                             }`}
+                            buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
                           />
                         </td>
                         {(improvementArea || '').toLowerCase() === 'cost' && (
