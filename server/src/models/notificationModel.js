@@ -12,11 +12,11 @@ export const getNotifications = async (email, role) => {
   const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
   const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
 
+  let conditions = [];
   if (!isAdmin) {
     const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
     const department = userRows.length > 0 ? userRows[0].department : '';
     
-    let conditions = [];
     if (department) {
       conditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
       params.push(department);
@@ -27,10 +27,13 @@ export const getNotifications = async (email, role) => {
     if (!isHOD) {
       conditions.push(`id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%'`);
     }
+  } else {
+    // Admin only receives general notifications (where dept is 'General', empty, or null)
+    conditions.push(`(LOWER(dept) = 'general' OR dept = '' OR dept IS NULL)`);
+  }
 
-    if (conditions.length > 0) {
-      query += ` WHERE ` + conditions.join(' AND ');
-    }
+  if (conditions.length > 0) {
+    query += ` WHERE ` + conditions.join(' AND ');
   }
 
   query += ` ORDER BY created_at DESC `;
@@ -63,11 +66,11 @@ export const markAllRead = async (email, role) => {
   const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
   const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
 
+  let conditions = [];
   if (!isAdmin) {
     const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
     const department = userRows.length > 0 ? userRows[0].department : '';
     
-    let conditions = [];
     if (department) {
       conditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
       params.push(department);
@@ -78,10 +81,13 @@ export const markAllRead = async (email, role) => {
     if (!isHOD) {
       conditions.push(`id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%'`);
     }
+  } else {
+    // Admin only marks general notifications as read
+    conditions.push(`(LOWER(dept) = 'general' OR dept = '' OR dept IS NULL)`);
+  }
 
-    if (conditions.length > 0) {
-      query += ` WHERE ` + conditions.join(' AND ');
-    }
+  if (conditions.length > 0) {
+    query += ` WHERE ` + conditions.join(' AND ');
   }
 
   await pool.query(query, params);
@@ -103,11 +109,11 @@ export const clearRead = async (email, role) => {
   const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
   const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
 
+  let conditions = [];
   if (!isAdmin) {
     const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
     const department = userRows.length > 0 ? userRows[0].department : '';
     
-    let conditions = [];
     if (department) {
       conditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
       params.push(department);
@@ -118,10 +124,13 @@ export const clearRead = async (email, role) => {
     if (!isHOD) {
       conditions.push(`id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%'`);
     }
+  } else {
+    // Admin only clears read general notifications
+    conditions.push(`(LOWER(dept) = 'general' OR dept = '' OR dept IS NULL)`);
+  }
 
-    if (conditions.length > 0) {
-      query += ` AND ` + conditions.join(' AND ');
-    }
+  if (conditions.length > 0) {
+    query += ` AND ` + conditions.join(' AND ');
   }
 
   await pool.query(query, params);
@@ -175,7 +184,10 @@ export const sendEmailForNotification = async (notificationId) => {
                     userRole.includes('unit head') || userRole.includes('unit_head');
       
       if (isAdmin) {
-        targetEmails.push(userEmail);
+        // Only notify Admin via email if the notification is general
+        if (!targetDept || targetDept === 'general') {
+          targetEmails.push(userEmail);
+        }
         continue;
       }
       
