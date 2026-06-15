@@ -28,6 +28,11 @@ export const DashboardOverview = ({
   const [isGridView, setIsGridView] = useState(false);
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Department');
 
+  // Separate Benefit Filters
+  const [benefitFilterType, setBenefitFilterType] = useState('All');
+  const [benefitFilterMonth, setBenefitFilterMonth] = useState('All');
+  const [benefitFilterSearch, setBenefitFilterSearch] = useState('');
+
   // Pagination State
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -640,126 +645,375 @@ export const DashboardOverview = ({
   };
 
   const renderImprovementBenefits = () => {
+    // 1. Apply separate filters
+    const filteredCost = costSavingRows.filter(row => {
+      let matchesMonth = true;
+      if (benefitFilterMonth !== 'All') {
+        const parts = row.date.split('/');
+        if (parts.length === 3) {
+          const monthIdx = parseInt(parts[1], 10) - 1;
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          matchesMonth = months[monthIdx] === benefitFilterMonth;
+        } else {
+          matchesMonth = false;
+        }
+      }
+      const matchesSearch = !benefitFilterSearch || row.changeNo.toLowerCase().includes(benefitFilterSearch.toLowerCase());
+      return matchesMonth && matchesSearch;
+    });
+
+    const filteredProductivity = productivityRows.filter(row => {
+      let matchesMonth = true;
+      if (benefitFilterMonth !== 'All') {
+        const parts = row.date.split('/');
+        if (parts.length === 3) {
+          const monthIdx = parseInt(parts[1], 10) - 1;
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          matchesMonth = months[monthIdx] === benefitFilterMonth;
+        } else {
+          matchesMonth = false;
+        }
+      }
+      const matchesSearch = !benefitFilterSearch || row.changeNo.toLowerCase().includes(benefitFilterSearch.toLowerCase());
+      return matchesMonth && matchesSearch;
+    });
+
+    const filteredQuality = qualityRows.filter(row => {
+      let matchesMonth = true;
+      if (benefitFilterMonth !== 'All') {
+        const parts = row.date.split('/');
+        if (parts.length === 3) {
+          const monthIdx = parseInt(parts[1], 10) - 1;
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          matchesMonth = months[monthIdx] === benefitFilterMonth;
+        } else {
+          matchesMonth = false;
+        }
+      }
+      const matchesSearch = !benefitFilterSearch || row.changeNo.toLowerCase().includes(benefitFilterSearch.toLowerCase());
+      return matchesMonth && matchesSearch;
+    });
+
+    // Max values for chart scaling
+    const maxCostVal = Math.max(...filteredCost.map(r => parseFloat(r.monthlySave) || 0), 1000);
+    const maxProdVal = Math.max(...filteredProductivity.flatMap(r => [parseFloat(r.currentProd) || 0, parseFloat(r.improvedProd) || 0]), 10);
+    const maxQualityVal = Math.max(...filteredQuality.flatMap(r => [parseFloat(r.currentPpm) || 0, parseFloat(r.reducedPpm) || 0]), 100);
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const showCost = benefitFilterType === 'All' || benefitFilterType === 'Cost';
+    const showProductivity = benefitFilterType === 'All' || benefitFilterType === 'Productivity';
+    const showQuality = benefitFilterType === 'All' || benefitFilterType === 'Quality';
+
     return (
-      <div className="space-y-[28px] pt-[8px]">
-        {/* Cost Saving Table */}
-        <div className="space-y-[6px]">
-          <div className="inline-block bg-[#1e60aa] text-white text-[11px] font-bold px-[12px] py-[6px] rounded-t-[4px] tracking-wide select-none">
-            Cost Saving
+      <div className="space-y-[24px]">
+        {/* SEPARATE FILTER BAR */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-[12px] p-[16px] bg-slate-50 border border-slate-200 rounded-xl text-[11px] shadow-sm">
+          <div className="space-y-[4px]">
+            <label className="block font-bold text-slate-500 uppercase tracking-wider">Improvement Type</label>
+            <select
+              className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[6px] bg-white text-slate-700 font-semibold outline-none focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc]/20 transition-all"
+              value={benefitFilterType}
+              onChange={(e) => setBenefitFilterType(e.target.value)}
+            >
+              <option value="All">All Benefits</option>
+              <option value="Cost">Cost Saving</option>
+              <option value="Productivity">Productivity Improvement</option>
+              <option value="Quality">Quality Improvement</option>
+            </select>
           </div>
-          <div className="border border-slate-200 rounded-b-xl rounded-r-xl overflow-hidden shadow-sm bg-white">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
-                <thead>
-                  <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
-                    <th className="p-[10px] border-r border-[#1a5596] w-[18%]">4M #</th>
-                    <th className="p-[10px] border-r border-[#1a5596] w-[20%]">Implementation date</th>
-                    <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Total Cost Saved / month(Rs)</th>
-                    <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Total Cost Saved / Annum(Rs)</th>
-                    <th className="p-[10px] w-[18%]">ROI (Rs)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {costSavingRows.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="p-[16px] text-center text-slate-400 font-medium">
-                        No Cost Saving data available.
-                      </td>
-                    </tr>
-                  ) : (
-                    costSavingRows.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
-                        <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
-                        <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
-                        <td className="p-[10px] border-r border-slate-100 font-semibold text-slate-800">Rs. {row.monthlySave || '0'}</td>
-                        <td className="p-[10px] border-r border-slate-100 font-semibold text-slate-800">Rs. {row.annualSave || '0'}</td>
-                        <td className="p-[10px] text-slate-600">{row.roi || '-'}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+
+          <div className="space-y-[4px]">
+            <label className="block font-bold text-slate-500 uppercase tracking-wider">Month</label>
+            <select
+              className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[6px] bg-white text-slate-700 font-semibold outline-none focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc]/20 transition-all"
+              value={benefitFilterMonth}
+              onChange={(e) => setBenefitFilterMonth(e.target.value)}
+            >
+              <option value="All">All Months</option>
+              {months.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-[4px]">
+            <label className="block font-bold text-slate-500 uppercase tracking-wider">Search 4M Change No</label>
+            <input
+              type="text"
+              placeholder="e.g. 4M-2026-2..."
+              className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[6px] bg-white text-slate-700 placeholder-slate-400 font-semibold outline-none focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc]/20 transition-all"
+              value={benefitFilterSearch}
+              onChange={(e) => setBenefitFilterSearch(e.target.value)}
+            />
           </div>
         </div>
 
-        {/* Productivity Improvement Table */}
-        <div className="space-y-[6px]">
-          <div className="inline-block bg-[#1e60aa] text-white text-[11px] font-bold px-[12px] py-[6px] rounded-t-[4px] tracking-wide select-none">
-            Productivity Improvement
-          </div>
-          <div className="border border-slate-200 rounded-b-xl rounded-r-xl overflow-hidden shadow-sm bg-white">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
-                <thead>
-                  <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
-                    <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M #</th>
-                    <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Implementation date</th>
-                    <th className="p-[10px] border-r border-[#1a5596] w-[29%]">Current Productivity (nos)</th>
-                    <th className="p-[10px] w-[29%]">Productivity Improved (nos)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {productivityRows.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="p-[16px] text-center text-slate-400 font-medium">
-                        No Productivity Improvement data available.
-                      </td>
-                    </tr>
-                  ) : (
-                    productivityRows.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
-                        <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
-                        <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
-                        <td className="p-[10px] border-r border-slate-100 text-slate-600">{row.currentProd || '0'} nos</td>
-                        <td className="p-[10px] font-bold text-slate-800">{row.improvedProd || '0'} nos</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+        {/* Cost Saving Section */}
+        {showCost && (
+          <div className="space-y-[12px] bg-white border border-slate-200/80 rounded-xl p-[20px] shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h5 className="text-[13px] font-bold text-[#1e60aa] uppercase tracking-wider">Cost Saving</h5>
             </div>
-          </div>
-        </div>
 
-        {/* Quality Improvement Table */}
-        <div className="space-y-[6px]">
-          <div className="inline-block bg-[#1e60aa] text-white text-[11px] font-bold px-[12px] py-[6px] rounded-t-[4px] tracking-wide select-none">
-            Quality Improvement
-          </div>
-          <div className="border border-slate-200 rounded-b-xl rounded-r-xl overflow-hidden shadow-sm bg-white">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
-                <thead>
-                  <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
-                    <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M #</th>
-                    <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Implementation date</th>
-                    <th className="p-[10px] border-r border-[#1a5596] w-[29%]">Current PPM</th>
-                    <th className="p-[10px] w-[29%]">Reduced PPM</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {qualityRows.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="p-[16px] text-center text-slate-400 font-medium">
-                        No Quality Improvement data available.
-                      </td>
+            {/* Cost Saving Chart */}
+            {filteredCost.length > 0 ? (
+              <div className="bg-slate-50/50 border border-slate-200/50 rounded-xl p-4">
+                <h6 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Cost Saved / Month (Rs) per Change Request</h6>
+                <div className="flex justify-start items-end h-[160px] gap-6 overflow-x-auto pb-4 px-2 min-w-full">
+                  {filteredCost.map((row, idx) => {
+                    const val = parseFloat(row.monthlySave) || 0;
+                    const pct = (val / maxCostVal) * 100;
+                    return (
+                      <div key={idx} className="flex flex-col items-center min-w-[70px] max-w-[100px] h-full justify-end group">
+                        <span className="text-[9px] font-bold text-slate-600 mb-1">Rs. {val}</span>
+                        <div
+                          className="w-8 bg-gradient-to-t from-[#154a85] to-[#1e60aa] hover:from-[#1a5292] hover:to-[#226ec2] transition-all rounded-t-[3px] shadow-sm cursor-pointer"
+                          style={{ height: `${Math.max(pct, 4)}%` }}
+                        />
+                        <span className="text-[9px] font-bold text-slate-500 mt-2 truncate max-w-full" title={row.changeNo}>
+                          {row.changeNo}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6 text-slate-400 bg-slate-50/50 border border-dashed border-slate-200 rounded-xl text-[12px]">
+                No Cost Saving chart data matching filter criteria.
+              </div>
+            )}
+
+            {/* Cost Saving Table */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
+                  <thead>
+                    <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
+                      <th className="p-[10px] border-r border-[#1a5596] w-[18%]">4M #</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">Implementation date</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Total Cost Saved / month(Rs)</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Total Cost Saved / Annum(Rs)</th>
+                      <th className="p-[10px] w-[18%]">ROI (Rs)</th>
                     </tr>
-                  ) : (
-                    qualityRows.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
-                        <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
-                        <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
-                        <td className="p-[10px] border-r border-slate-100 text-slate-600">{row.currentPpm || '0'}</td>
-                        <td className="p-[10px] font-bold text-slate-800">{row.reducedPpm || '0'}</td>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredCost.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-[16px] text-center text-slate-400 font-medium">
+                          No Cost Saving data available matching selection.
+                        </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      filteredCost.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
+                          <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
+                          <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
+                          <td className="p-[10px] border-r border-slate-100 font-semibold text-slate-800">Rs. {row.monthlySave || '0'}</td>
+                          <td className="p-[10px] border-r border-slate-100 font-semibold text-slate-800">Rs. {row.annualSave || '0'}</td>
+                          <td className="p-[10px] text-slate-600">{row.roi || '-'}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Productivity Improvement Section */}
+        {showProductivity && (
+          <div className="space-y-[12px] bg-white border border-slate-200/80 rounded-xl p-[20px] shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h5 className="text-[13px] font-bold text-[#1e60aa] uppercase tracking-wider">Productivity Improvement</h5>
+            </div>
+
+            {/* Productivity Chart */}
+            {filteredProductivity.length > 0 ? (
+              <div className="bg-slate-50/50 border border-slate-200/50 rounded-xl p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h6 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Productivity (nos) per Change Request</h6>
+                  <div className="flex items-center gap-3 text-[9px] font-bold text-slate-500">
+                    <div className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-sm bg-slate-400" />
+                      <span>Current</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-sm bg-[#2e7d32]" />
+                      <span>Improved</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-start items-end h-[160px] gap-8 overflow-x-auto pb-4 px-2 min-w-full">
+                  {filteredProductivity.map((row, idx) => {
+                    const curr = parseFloat(row.currentProd) || 0;
+                    const imp = parseFloat(row.improvedProd) || 0;
+                    const pctCurr = (curr / maxProdVal) * 100;
+                    const pctImp = (imp / maxProdVal) * 100;
+                    return (
+                      <div key={idx} className="flex flex-col items-center min-w-[80px] h-full justify-end">
+                        <div className="flex gap-1 mb-1 text-[9px] font-bold text-slate-600">
+                          <span>{curr}</span>
+                          <span>/</span>
+                          <span className="text-[#2e7d32]">{imp}</span>
+                        </div>
+                        <div className="flex items-end gap-1.5 h-[65%] justify-center">
+                          <div
+                            className="w-5 bg-slate-350 hover:bg-slate-400 transition-all rounded-t-[2px] shadow-sm cursor-pointer"
+                            style={{ height: `${Math.max(pctCurr, 4)}%` }}
+                          />
+                          <div
+                            className="w-5 bg-[#2e7d32] hover:bg-[#1b5e20] transition-all rounded-t-[2px] shadow-sm cursor-pointer"
+                            style={{ height: `${Math.max(pctImp, 4)}%` }}
+                          />
+                        </div>
+                        <span className="text-[9px] font-bold text-slate-500 mt-2 truncate max-w-full" title={row.changeNo}>
+                          {row.changeNo}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6 text-slate-400 bg-slate-50/50 border border-dashed border-slate-200 rounded-xl text-[12px]">
+                No Productivity chart data matching filter criteria.
+              </div>
+            )}
+
+            {/* Productivity Table */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
+                  <thead>
+                    <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
+                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M #</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Implementation date</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[29%]">Current Productivity (nos)</th>
+                      <th className="p-[10px] w-[29%]">Productivity Improved (nos)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredProductivity.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-[16px] text-center text-slate-400 font-medium">
+                          No Productivity Improvement data available matching selection.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredProductivity.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
+                          <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
+                          <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
+                          <td className="p-[10px] border-r border-slate-100 text-slate-600">{row.currentProd || '0'} nos</td>
+                          <td className="p-[10px] font-bold text-slate-800">{row.improvedProd || '0'} nos</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quality Improvement Section */}
+        {showQuality && (
+          <div className="space-y-[12px] bg-white border border-slate-200/80 rounded-xl p-[20px] shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h5 className="text-[13px] font-bold text-[#1e60aa] uppercase tracking-wider">Quality Improvement</h5>
+            </div>
+
+            {/* Quality Chart */}
+            {filteredQuality.length > 0 ? (
+              <div className="bg-slate-50/50 border border-slate-200/50 rounded-xl p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h6 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Quality PPM Reduction per Change Request</h6>
+                  <div className="flex items-center gap-3 text-[9px] font-bold text-slate-500">
+                    <div className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-sm bg-rose-500" />
+                      <span>Current PPM</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-sm bg-[#8bc34a]" />
+                      <span>Reduced PPM</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-start items-end h-[160px] gap-8 overflow-x-auto pb-4 px-2 min-w-full">
+                  {filteredQuality.map((row, idx) => {
+                    const curr = parseFloat(row.currentPpm) || 0;
+                    const red = parseFloat(row.reducedPpm) || 0;
+                    const pctCurr = (curr / maxQualityVal) * 100;
+                    const pctRed = (red / maxQualityVal) * 100;
+                    return (
+                      <div key={idx} className="flex flex-col items-center min-w-[80px] h-full justify-end">
+                        <div className="flex gap-1 mb-1 text-[9px] font-bold text-slate-655">
+                          <span className="text-rose-600">{curr}</span>
+                          <span>/</span>
+                          <span className="text-[#689f38]">{red}</span>
+                        </div>
+                        <div className="flex items-end gap-1.5 h-[65%] justify-center">
+                          <div
+                            className="w-5 bg-rose-500 hover:bg-rose-600 transition-all rounded-t-[2px] shadow-sm cursor-pointer"
+                            style={{ height: `${Math.max(pctCurr, 4)}%` }}
+                          />
+                          <div
+                            className="w-5 bg-[#8bc34a] hover:bg-[#7cb342] transition-all rounded-t-[2px] shadow-sm cursor-pointer"
+                            style={{ height: `${Math.max(pctRed, 4)}%` }}
+                          />
+                        </div>
+                        <span className="text-[9px] font-bold text-slate-500 mt-2 truncate max-w-full" title={row.changeNo}>
+                          {row.changeNo}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6 text-slate-400 bg-slate-50/50 border border-dashed border-slate-200 rounded-xl text-[12px]">
+                No Quality chart data matching filter criteria.
+              </div>
+            )}
+
+            {/* Quality Table */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
+                  <thead>
+                    <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
+                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M #</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Implementation date</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[29%]">Current PPM</th>
+                      <th className="p-[10px] w-[29%]">Reduced PPM</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredQuality.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-[16px] text-center text-slate-400 font-medium">
+                          No Quality Improvement data available matching selection.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredQuality.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
+                          <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
+                          <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
+                          <td className="p-[10px] border-r border-slate-100 text-slate-600">{row.currentPpm || '0'}</td>
+                          <td className="p-[10px] font-bold text-slate-800">{row.reducedPpm || '0'}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
