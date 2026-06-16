@@ -482,30 +482,26 @@ export const AllRequests = ({
               >
                 1. L1 Request Details
               </button>
-              {selectedLog?.status === 'Approved' && (
-                <button
-                  onClick={() => setActiveTab('l2')}
-                  className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
-                    activeTab === 'l2' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
-                      : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
-                >
-                  2. L2 Validation Details
-                </button>
-              )}
-              {selectedLog?.status === 'Approved' && (
-                <button
-                  onClick={() => setActiveTab('l3')}
-                  className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
-                    activeTab === 'l3' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
-                      : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
-                >
-                  3. L3 Approval Details
-                </button>
-              )}
+              <button
+                onClick={() => setActiveTab('l2')}
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l2' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
+                    : 'border-transparent text-slate-500 hover:text-slate-850'
+                }`}
+              >
+                2. L2 Validation Details
+              </button>
+              <button
+                onClick={() => setActiveTab('l3')}
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l3' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
+                    : 'border-transparent text-slate-500 hover:text-slate-850'
+                }`}
+              >
+                3. L3 Approval Details
+              </button>
             </div>
 
             {/* Content */}
