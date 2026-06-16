@@ -124,6 +124,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
     );
     const crRequesterDept = reqUserRow.length > 0 ? reqUserRow[0].department : '';
 
+    let targetUsers = [];
     let deptRows = [];
     let title = '';
     let details = '';
@@ -148,13 +149,55 @@ export const addL2ValidationLog = async (logData, attachments) => {
       details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has updated L2 requester validation attachment by ${requestBy}. QA Setup Verification review is now required.`;
       statusColor = 'blue';
     } else if (status === 'Accepted') {
-      const [rows] = await connection.query(
-        `SELECT DISTINCT department FROM users WHERE department != '' AND department IS NOT NULL AND LOWER(department) != LOWER(?)`,
-        [l1Dept || '']
+      // Find all target users for L2 Accepted: requester, requester's department HOD, and admins
+      const seenEmails = new Set();
+
+      // 1. Requester
+      if (crRequesterEmail) {
+        const [requesterDetails] = await connection.query(
+          `SELECT email, name, department, role FROM users WHERE email = ?`,
+          [crRequesterEmail]
+        );
+        if (requesterDetails.length > 0) {
+          const u = requesterDetails[0];
+          if (!seenEmails.has(u.email.toLowerCase())) {
+            seenEmails.add(u.email.toLowerCase());
+            targetUsers.push(u);
+          }
+        }
+      }
+
+      // 2. Department HOD
+      const deptForHod = crRequesterDept || l1Dept;
+      if (deptForHod) {
+        const [hods] = await connection.query(
+          `SELECT email, name, department, role FROM users 
+           WHERE LOWER(department) = LOWER(?) 
+             AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%' OR LOWER(role) LIKE '%unit head%' OR LOWER(role) LIKE '%unit_head%')`,
+          [deptForHod]
+        );
+        for (const u of hods) {
+          if (!seenEmails.has(u.email.toLowerCase())) {
+            seenEmails.add(u.email.toLowerCase());
+            targetUsers.push(u);
+          }
+        }
+      }
+
+      // 3. Admin
+      const [admins] = await connection.query(
+        `SELECT email, name, department, role FROM users 
+         WHERE LOWER(role) IN ('admin', 'administrator')`
       );
-      deptRows = rows;
+      for (const u of admins) {
+        if (!seenEmails.has(u.email.toLowerCase())) {
+          seenEmails.add(u.email.toLowerCase());
+          targetUsers.push(u);
+        }
+      }
+
       title = `L2 Validation Accepted – ${changeNo}`;
-      details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been accepted at L2 validation by ${requestBy}.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} Your department review is now required at L3.`;
+      details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been accepted at L2 validation by ${requestBy}.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} L3 review is now required.`;
       statusColor = 'green';
     } else if (status === 'Rejected') {
       const [rows] = await connection.query(
@@ -169,25 +212,35 @@ export const addL2ValidationLog = async (logData, attachments) => {
       statusColor = 'red';
     }
 
-    for (const deptRow of deptRows) {
-      const dept = deptRow.department;
-      const deptLower = (dept || '').toLowerCase();
-      const l1DeptLower = (l1Dept || '').toLowerCase();
-      const isL1DeptHODOnly = status === 'Pending' && deptLower === l1DeptLower && !['quality', 'qad', 'qa', 'general'].includes(deptLower);
-      
-      const notifId = isL1DeptHODOnly
-        ? `L1-HOD-NOTIF-L2-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`
-        : `L2-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`;
+    if (status === 'Accepted') {
+      for (const targetUser of targetUsers) {
+        const dept = targetUser.department;
+        const email = targetUser.email;
+        const notifId = `L2-NOTIF-ACCEPTED-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
         
-      const finalDetails = status === 'Accepted'
-        ? `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been accepted at L2 validation by ${requestBy}.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} Your department (${dept}) review is now required at L3.`
-        : details;
-
-      await connection.query(
-        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
-         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
-        [notifId, title, finalDetails, changeNo, changeIn || 'GENERAL', dept, timeStr, 'Action Required', statusColor]
-      );
+        await connection.query(
+          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
+          [notifId, title, details, changeNo, changeIn || 'GENERAL', dept || 'General', timeStr, 'Action Required', statusColor, email]
+        );
+      }
+    } else {
+      for (const deptRow of deptRows) {
+        const dept = deptRow.department;
+        const deptLower = (dept || '').toLowerCase();
+        const l1DeptLower = (l1Dept || '').toLowerCase();
+        const isL1DeptHODOnly = status === 'Pending' && deptLower === l1DeptLower && !['quality', 'qad', 'qa', 'general'].includes(deptLower);
+        
+        const notifId = isL1DeptHODOnly
+          ? `L1-HOD-NOTIF-L2-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`
+          : `L2-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`;
+          
+        await connection.query(
+          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, NULL)`,
+          [notifId, title, details, changeNo, changeIn || 'GENERAL', dept, timeStr, 'Action Required', statusColor]
+        );
+      }
     }
 
     // Send personal confirmation notification to the requester when they submit their PED validation
@@ -202,8 +255,8 @@ export const addL2ValidationLog = async (logData, attachments) => {
         const requesterNotifTitle = `L2 Validation Submitted – ${changeNo}`;
         const requesterNotifDetails = `Your L2 Requester Validation attachment for Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been submitted successfully. The QA department will now review and verify your setup. You will be notified once a decision is made.`;
         await connection.query(
-          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
-           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
+          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, NULL)`,
           [requesterNotifId, requesterNotifTitle, requesterNotifDetails, changeNo, changeIn || 'GENERAL', reqDept, timeStr, 'Info', 'blue']
         );
       }
@@ -284,12 +337,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
             });
           }
         } else if (status === 'Accepted') {
-          const [rows] = await pool.query(
-            `SELECT email, name, department, role FROM users 
-             WHERE department != '' AND department IS NOT NULL AND LOWER(department) != LOWER(?)`,
-            [l1Dept || '']
-          );
-          users = rows;
+          users = targetUsers;
         } else if (status === 'Rejected') {
           const [rows] = await pool.query(
             `SELECT email, name, department, role FROM users 
@@ -316,7 +364,9 @@ export const addL2ValidationLog = async (logData, attachments) => {
             emailIntro = `A change request has updated <strong>L2 Requester Validation documentation</strong> and is now pending your setup verification review.`;
             headerSubtitle = 'L2 Validation Alert';
           } else if (status === 'Accepted') {
-            headerSubtitle = 'L3 HOD Review Alert';
+            emailSubject = `[4M CMS] L2 Validation Approved for Request: ${changeNo}`;
+            emailIntro = `Change Request <strong>${changeNo}</strong> has successfully completed and been <strong>Approved</strong> at L2 setup validation. L3 department reviews are now required.`;
+            headerSubtitle = 'L2 Validation Approved';
           } else if (status === 'Rejected') {
             emailSubject = `[4M CMS] Alert: L2 Validation Rejected for ${changeNo}`;
             emailIntro = `A change request L2 validation has been <strong>rejected</strong> by the Quality department.`;

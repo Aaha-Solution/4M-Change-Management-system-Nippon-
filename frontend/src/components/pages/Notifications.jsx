@@ -3,18 +3,12 @@ import {
   Search,
   CheckCheck,
   Trash2,
-  RotateCcw,
-  Sliders,
   Mail,
-  MailOpen,
-  AlertTriangle,
   Check,
   FileText,
   Layers,
   Activity,
-  Clock,
-  User,
-  ExternalLink
+  Clock
 } from 'lucide-react';
 import {
   toggleNotificationRead,

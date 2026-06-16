@@ -3,7 +3,7 @@ import { broadcast } from '../config/websocket.js';
 
 export const getNotifications = async (email, role) => {
   let query = `
-    SELECT id, title, details, change_no as changeNo, category, dept, time_str as time, is_read as isRead, type, color 
+    SELECT id, title, details, change_no as changeNo, category, dept, time_str as time, is_read as isRead, type, color, recipient_email as recipientEmail 
     FROM notifications
   `;
   const params = [];
@@ -12,30 +12,35 @@ export const getNotifications = async (email, role) => {
   const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
   const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
 
-  let conditions = [];
+  const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
+  const department = userRows.length > 0 ? userRows[0].department : '';
+
+  let userConditions = [];
   if (!isAdmin) {
-    const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
-    const department = userRows.length > 0 ? userRows[0].department : '';
-    
     if (department) {
-      conditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
+      userConditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
       params.push(department);
     } else {
-      conditions.push(`(dept = '' OR dept IS NULL)`);
+      userConditions.push(`(dept = '' OR dept IS NULL)`);
     }
 
     if (!isHOD) {
-      conditions.push(`id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%'`);
+      userConditions.push(`(id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%')`);
     }
   } else {
     // Admin only receives general notifications (where dept is 'General', empty, or null)
-    conditions.push(`(LOWER(dept) = 'general' OR dept = '' OR dept IS NULL)`);
+    userConditions.push(`(LOWER(dept) = 'general' OR dept = '' OR dept IS NULL)`);
   }
 
-  if (conditions.length > 0) {
-    query += ` WHERE ` + conditions.join(' AND ');
-  }
+  let mainCondition = `(LOWER(recipient_email) = LOWER(?) OR ((recipient_email IS NULL OR recipient_email = '')`;
+  params.unshift(email); // Put email as first parameter
 
+  if (userConditions.length > 0) {
+    mainCondition += ` AND ` + userConditions.join(' AND ');
+  }
+  mainCondition += `))`;
+
+  query += ` WHERE ` + mainCondition;
   query += ` ORDER BY created_at DESC `;
 
   const [rows] = await pool.query(query, params);
@@ -59,36 +64,40 @@ export const toggleReadStatus = async (id) => {
 };
 
 export const markAllRead = async (email, role) => {
-  let query = `UPDATE notifications SET is_read = TRUE`;
-  const params = [];
-
   const roleLower = (role || '').toLowerCase();
   const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
   const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
 
-  let conditions = [];
+  const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
+  const department = userRows.length > 0 ? userRows[0].department : '';
+
+  let userConditions = [];
+  const params = [];
   if (!isAdmin) {
-    const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
-    const department = userRows.length > 0 ? userRows[0].department : '';
-    
     if (department) {
-      conditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
+      userConditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
       params.push(department);
     } else {
-      conditions.push(`(dept = '' OR dept IS NULL)`);
+      userConditions.push(`(dept = '' OR dept IS NULL)`);
     }
 
     if (!isHOD) {
-      conditions.push(`id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%'`);
+      userConditions.push(`(id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%')`);
     }
   } else {
     // Admin only marks general notifications as read
-    conditions.push(`(LOWER(dept) = 'general' OR dept = '' OR dept IS NULL)`);
+    userConditions.push(`(LOWER(dept) = 'general' OR dept = '' OR dept IS NULL)`);
   }
 
-  if (conditions.length > 0) {
-    query += ` WHERE ` + conditions.join(' AND ');
+  let mainCondition = `(LOWER(recipient_email) = LOWER(?) OR ((recipient_email IS NULL OR recipient_email = '')`;
+  params.unshift(email); // Put email as first parameter
+
+  if (userConditions.length > 0) {
+    mainCondition += ` AND ` + userConditions.join(' AND ');
   }
+  mainCondition += `))`;
+
+  let query = `UPDATE notifications SET is_read = TRUE WHERE ` + mainCondition;
 
   await pool.query(query, params);
   broadcast({ type: 'REFRESH_NOTIFICATIONS' });
@@ -102,36 +111,40 @@ export const deleteNotification = async (id) => {
 };
 
 export const clearRead = async (email, role) => {
-  let query = `DELETE FROM notifications WHERE is_read = TRUE`;
-  const params = [];
-
   const roleLower = (role || '').toLowerCase();
   const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
   const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
 
-  let conditions = [];
+  const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
+  const department = userRows.length > 0 ? userRows[0].department : '';
+
+  let userConditions = [];
+  const params = [];
   if (!isAdmin) {
-    const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
-    const department = userRows.length > 0 ? userRows[0].department : '';
-    
     if (department) {
-      conditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
+      userConditions.push(`(LOWER(dept) = LOWER(?) OR dept = '' OR dept IS NULL)`);
       params.push(department);
     } else {
-      conditions.push(`(dept = '' OR dept IS NULL)`);
+      userConditions.push(`(dept = '' OR dept IS NULL)`);
     }
 
     if (!isHOD) {
-      conditions.push(`id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%'`);
+      userConditions.push(`(id NOT LIKE 'L1-HOD-NOTIF-%' AND title NOT LIKE '%HOD Approval%' AND title NOT LIKE '%L3 Final Review%')`);
     }
   } else {
     // Admin only clears read general notifications
-    conditions.push(`(LOWER(dept) = 'general' OR dept = '' OR dept IS NULL)`);
+    userConditions.push(`(LOWER(dept) = 'general' OR dept = '' OR dept IS NULL)`);
   }
 
-  if (conditions.length > 0) {
-    query += ` AND ` + conditions.join(' AND ');
+  let mainCondition = `(LOWER(recipient_email) = LOWER(?) OR ((recipient_email IS NULL OR recipient_email = '')`;
+  params.unshift(email); // Put email as first parameter
+
+  if (userConditions.length > 0) {
+    mainCondition += ` AND ` + userConditions.join(' AND ');
   }
+  mainCondition += `))`;
+
+  let query = `DELETE FROM notifications WHERE is_read = TRUE AND ` + mainCondition;
 
   await pool.query(query, params);
   broadcast({ type: 'REFRESH_NOTIFICATIONS' });
@@ -141,7 +154,7 @@ export const clearRead = async (email, role) => {
 export const sendEmailForNotification = async (notificationId) => {
   try {
     const [rows] = await pool.query(
-      `SELECT id, title, details, change_no as changeNo, category, dept, type, color FROM notifications WHERE id = ?`,
+      `SELECT id, title, details, change_no as changeNo, category, dept, type, color, recipient_email as recipientEmail FROM notifications WHERE id = ?`,
       [notificationId]
     );
     if (rows.length === 0) return;
@@ -166,45 +179,49 @@ export const sendEmailForNotification = async (notificationId) => {
     
     // Determine target users
     const targetEmails = [];
-    const notificationIdLower = (notification.id || '').toLowerCase();
-    const notificationTitle = notification.title || '';
-    const targetDept = (notification.dept || '').trim().toLowerCase();
-    
-    const isHodOnly = notificationIdLower.startsWith('l1-hod-notif-') || 
-                      notificationTitle.includes('HOD Approval') || 
-                      notificationTitle.includes('L3 Final Review');
-                      
-    for (const user of users) {
-      const userEmail = user.email;
-      const userRole = (user.role || '').toLowerCase();
-      const userDept = (user.department || '').toLowerCase();
+    if (notification.recipientEmail) {
+      targetEmails.push(notification.recipientEmail);
+    } else {
+      const notificationIdLower = (notification.id || '').toLowerCase();
+      const notificationTitle = notification.title || '';
+      const targetDept = (notification.dept || '').trim().toLowerCase();
       
-      const isAdmin = userRole.includes('admin') || userRole.includes('administrator');
-      const isHOD = userRole.includes('hod') || userRole.includes('manager') || 
-                    userRole.includes('unit head') || userRole.includes('unit_head');
-      
-      if (isAdmin) {
-        // Only notify Admin via email if the notification is general
-        if (!targetDept || targetDept === 'general') {
+      const isHodOnly = notificationIdLower.startsWith('l1-hod-notif-') || 
+                        notificationTitle.includes('HOD Approval') || 
+                        notificationTitle.includes('L3 Final Review');
+                        
+      for (const user of users) {
+        const userEmail = user.email;
+        const userRole = (user.role || '').toLowerCase();
+        const userDept = (user.department || '').toLowerCase();
+        
+        const isAdmin = userRole.includes('admin') || userRole.includes('administrator');
+        const isHOD = userRole.includes('hod') || userRole.includes('manager') || 
+                      userRole.includes('unit head') || userRole.includes('unit_head');
+        
+        if (isAdmin) {
+          // Only notify Admin via email if the notification is general
+          if (!targetDept || targetDept === 'general') {
+            targetEmails.push(userEmail);
+          }
+          continue;
+        }
+        
+        // If notification is HOD only, but user is not HOD, skip
+        if (isHodOnly && !isHOD) {
+          continue;
+        }
+        
+        // Check department matching
+        if (targetDept) {
+          // Notification is for a specific department
+          if (userDept === targetDept) {
+            targetEmails.push(userEmail);
+          }
+        } else {
+          // Notification is general
           targetEmails.push(userEmail);
         }
-        continue;
-      }
-      
-      // If notification is HOD only, but user is not HOD, skip
-      if (isHodOnly && !isHOD) {
-        continue;
-      }
-      
-      // Check department matching
-      if (targetDept) {
-        // Notification is for a specific department
-        if (userDept === targetDept) {
-          targetEmails.push(userEmail);
-        }
-      } else {
-        // Notification is general
-        targetEmails.push(userEmail);
       }
     }
     
@@ -257,18 +274,18 @@ export const sendEmailForNotification = async (notificationId) => {
   }
 };
 
-export const createNotification = async ({ id, title, details, changeNo, category, dept, timeStr, type, color }) => {
+export const createNotification = async ({ id, title, details, changeNo, category, dept, timeStr, type, color, recipientEmail }) => {
   await pool.query(
-    `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
-     VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
-    [id, title, details, changeNo || '', category || '', dept || '', timeStr || 'Just now', type || 'Action Required', color || 'blue']
+    `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+     VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
+    [id, title, details, changeNo || '', category || '', dept || '', timeStr || 'Just now', type || 'Action Required', color || 'blue', recipientEmail || null]
   );
   broadcast({ type: 'REFRESH_NOTIFICATIONS' });
 
   // Trigger email asynchronously
   sendEmailForNotification(id).catch(err => console.error('Error in createNotification email send:', err));
 
-  return { id, title, details, changeNo, category, dept, time: timeStr || 'Just now', isRead: false, type: type || 'Action Required', color: color || 'blue' };
+  return { id, title, details, changeNo, category, dept, time: timeStr || 'Just now', isRead: false, type: type || 'Action Required', color: color || 'blue', recipientEmail: recipientEmail || null };
 };
 
 export const resetNotifications = async () => {

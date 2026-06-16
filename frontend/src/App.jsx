@@ -78,7 +78,7 @@ function App() {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       setUserName(payload.name || '');
-    } catch (e) {
+    } catch {
       setUserName('');
     }
     setToastMsg(`Signed in as ${role}`);

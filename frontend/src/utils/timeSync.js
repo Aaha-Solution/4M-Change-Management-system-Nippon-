@@ -1,7 +1,6 @@
 import { getServerTime } from '../api/apiRoutes';
 
 let timeOffset = 0;
-let isSynced = false;
 
 export async function initTimeSync() {
   try {
@@ -10,7 +9,6 @@ export async function initTimeSync() {
     const serverTimeMs = new Date(res.data.time).getTime();
     const latency = (Date.now() - start) / 2;
     timeOffset = (serverTimeMs + latency) - Date.now();
-    isSynced = true;
     console.log(`[TimeSync] Server time synchronized. Offset: ${timeOffset}ms`);
   } catch (err) {
     console.error('[TimeSync] Failed to sync time with server, falling back to local time:', err);

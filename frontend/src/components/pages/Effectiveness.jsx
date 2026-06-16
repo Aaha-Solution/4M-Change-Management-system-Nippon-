@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Paperclip, RefreshCw, Search, X, Eye, Save, Download, AlertTriangle } from 'lucide-react';
+import { Paperclip, Search, X, Eye, Save, Download, AlertTriangle } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import {
   createEffectivenessLog,
   updateEffectivenessLog,
-  getEffectivenessAttachment,
-  resetEffectivenessLogs,
-  getEffectivenessLogs
+  getEffectivenessAttachment
 } from '../../api/apiRoutes';
 import { formatDateToDDMMYY } from '../../utils/dateUtils';
 import { exportEffectivenessLogsPDF } from '../../utils/pdfExport';

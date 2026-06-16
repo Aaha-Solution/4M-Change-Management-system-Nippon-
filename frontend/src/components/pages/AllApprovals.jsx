@@ -225,18 +225,6 @@ export const AllApprovals = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actingDept, isAdmin]);
 
-  // Auto-open from notification click
-  useEffect(() => {
-    if (autoOpenChangeNo && requests.length > 0) {
-      const req = requests.find(r => r.changeNo === autoOpenChangeNo);
-      if (req) {
-        handleOpenModal(req);
-        if (clearAutoOpen) clearAutoOpen();
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoOpenChangeNo, requests]);
-
   const handleOpenModal = async (req) => {
     setSelectedReq(req);
     setRemarks(req.hodRemarks || '');
@@ -295,6 +283,18 @@ export const AllApprovals = ({
     }
   };
 
+  // Auto-open from notification click
+  useEffect(() => {
+    if (autoOpenChangeNo && requests.length > 0) {
+      const req = requests.find(r => r.changeNo === autoOpenChangeNo);
+      if (req) {
+        handleOpenModal(req);
+        if (clearAutoOpen) clearAutoOpen();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpenChangeNo, requests]);
+
   const handleCloseModal = () => {
     setSelectedReq(null);
     setL1Details(null);
@@ -321,20 +321,6 @@ export const AllApprovals = ({
         console.error(`Error loading ${type} attachment:`, err);
       }
     }
-  };
-
-  const renderFilePills = (filenames, changeNo) => {
-    if (!filenames) return null;
-    return filenames.split(',').map(f => f.trim()).filter(Boolean).map((f, i) => (
-      <span
-        key={i}
-        onClick={() => handleViewAttachment(f, changeNo)}
-        className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-md py-1 px-2 text-[11px] font-medium text-[#0066cc] cursor-pointer transition-colors"
-      >
-        <Paperclip size={10} className="text-slate-400" />
-        <span className="underline truncate max-w-[160px]">{f}</span>
-      </span>
-    ));
   };
 
   const renderL1FilePill = (filename, changeNo) => {
@@ -922,10 +908,10 @@ export const AllApprovals = ({
                               {/* TABLE VIEW FOR IMPROVEMENT DATA */}
                               {(() => {
                                 if (!l1Details.improvement_table_data) return null;
-                                let tableData = [];
+                                let tableData;
                                 try {
                                   tableData = JSON.parse(l1Details.improvement_table_data);
-                                } catch (e) {
+                                } catch {
                                   return null;
                                 }
                                 if (!Array.isArray(tableData) || tableData.length === 0) return null;

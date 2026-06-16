@@ -114,7 +114,6 @@ export const L1Request = ({
   // Identifiers State
   const [unit, setUnit] = useState('UNIT-2');
   const [changeNo, setChangeNo] = useState('');
-  const [timeOffset, setTimeOffset] = useState(0);
   const [requestedDate, setRequestedDate] = useState(() => formatDateToDDMMYYYY(new Date()));
   const [requestedTime, setRequestedTime] = useState(() => {
     const now = new Date();
@@ -131,7 +130,6 @@ export const L1Request = ({
         const serverTimeMs = new Date(res.data.time).getTime();
         const latency = (Date.now() - start) / 2;
         const offset = (serverTimeMs + latency) - Date.now();
-        setTimeOffset(offset);
 
         // Update initially synced date/time
         const syncedNow = new Date(Date.now() + offset);
@@ -141,7 +139,6 @@ export const L1Request = ({
         setRequestedTime(`${hrs}:${mins}`);
       } catch (err) {
         console.error('Failed to sync time with server, falling back to local time:', err);
-        setTimeOffset(0);
       }
     }
     syncTime();
@@ -163,7 +160,7 @@ export const L1Request = ({
   const [fileTraceTo, setFileTraceTo] = useState('');
   const [fileRisk, setFileRisk] = useState('');
   const [fileSop, setFileSop] = useState('');
-  const [fileEffectiveness, setFileEffectiveness] = useState('');
+  const [fileEffectiveness] = useState('');
 
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
 
@@ -183,10 +180,7 @@ export const L1Request = ({
   const [dept, setDept] = useState('');
   const [requestBy, setRequestBy] = useState('');
 
-  const filteredUsers = systemUsers.filter(u => {
-    if (!dept) return true;
-    return (u.department || '').toLowerCase() === dept.toLowerCase();
-  });
+
 
 
   useEffect(() => {
@@ -246,7 +240,7 @@ export const L1Request = ({
   const [sopUpdate, setSopUpdate] = useState('');
   const [hodApproval, setHodApproval] = useState('');
   const [customerApproval, setCustomerApproval] = useState('');
-  const [effectivenessMonitoring, setEffectivenessMonitoring] = useState('None');
+  const [effectivenessMonitoring] = useState('None');
   const [improvementTableData, setImprovementTableData] = useState([]);
   const [isImprovementModalOpen, setIsImprovementModalOpen] = useState(false);
   const [modalError, setModalError] = useState('');
@@ -382,7 +376,6 @@ export const L1Request = ({
   };
 
   const handleHodApprovalToggle = (deptName) => {
-    const selected = hodApproval ? hodApproval.split(',').map(s => s.trim()).filter(Boolean) : [];
     // For single selection, simply set the selected department or clear if re-selected
     if (hodApproval && hodApproval.trim() === deptName) {
       setHodApproval('');

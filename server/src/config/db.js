@@ -61,6 +61,17 @@ const pool = mysql.createPool({
       console.warn('⚠️ Could not modify notifications id column:', err.message);
     }
 
+    // Ensure notifications table recipient_email column exists
+    try {
+      const [columns] = await connection.query("SHOW COLUMNS FROM notifications LIKE 'recipient_email'");
+      if (columns.length === 0) {
+        await connection.query("ALTER TABLE notifications ADD COLUMN recipient_email VARCHAR(255) NULL");
+        console.log('✅ Added column recipient_email to notifications table.');
+      }
+    } catch (err) {
+      console.warn('⚠️ Could not add recipient_email column to notifications table:', err.message);
+    }
+
     // Ensure standard departments exist in departments table
     try {
       const depts = [

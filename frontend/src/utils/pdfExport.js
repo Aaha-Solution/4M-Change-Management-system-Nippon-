@@ -14,7 +14,7 @@ const addLogoToDoc = (doc) => {
     const pw = doc.internal.pageSize.width;
     // Logo placed top-right: 100 pt wide, 40 pt tall, with 10 pt padding
     doc.addImage(nipponLogoUrl, 'PNG', pw - 120, 8, 100, 40);
-  } catch (_) {
+  } catch {
     // Silently skip if image fails to load (e.g. offline/test)
   }
 };
@@ -1069,7 +1069,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
         item.reqDate ? formatDateToDDMMYYYY(item.reqDate) : '-',
         item.context || '-',
         item.startDate ? formatDateToDDMMYYYY(item.startDate) : '-',
-        item.monthWise || '-',
+        item.monthWise ? formatMonthWise(item.monthWise) : '-',
         item.status || '-',
         item.qaApproval || '-',
         item.remarks || '-'
@@ -1626,7 +1626,9 @@ export const exportMonthlyAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
         if (!isNaN(d.getTime())) {
           counts[d.getMonth()]++;
         }
-      } catch (_) {}
+      } catch {
+        // Ignore date parsing errors
+      }
     });
 
     const total = counts.reduce((a, b) => a + b, 0);
@@ -1762,7 +1764,9 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
             dataMap[monthIdx].pend++;
           }
         }
-      } catch (_) {}
+      } catch {
+        // Ignore date parsing errors
+      }
     });
 
     const summaryHeaders = [['MONTH', 'APPROVED', 'REJECTED', 'PENDING', 'TOTAL']];

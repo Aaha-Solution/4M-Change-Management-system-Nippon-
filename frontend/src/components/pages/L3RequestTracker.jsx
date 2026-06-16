@@ -8,7 +8,6 @@ import { exportL3ApprovalsPDF, exportRequestDetailsPDF } from '../../utils/pdfEx
 export const L3RequestTracker = ({
   userEmail,
   userRole,
-  userDept,
   logAction,
   setToastMsg,
   fetchChanges,
@@ -50,46 +49,6 @@ export const L3RequestTracker = ({
   // Pagination State
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  // Reset page when search or status filters change
-  useEffect(() => {
-    setPage(0);
-  }, [searchQuery, statusFilter]);
-
-  // Fetch L3 logs from database
-  const fetchLogs = async () => {
-    setIsFetchingLogs(true);
-    try {
-      const response = await getL3Approvals();
-      setApprovalLogs(response.data);
-    } catch (err) {
-      console.error(err);
-      if (setToastMsg) setToastMsg('Error loading L3 approvals from database.');
-    } finally {
-      setIsFetchingLogs(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchLogs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (autoOpenChangeNo && approvalLogs.length > 0) {
-      const log = approvalLogs.find(l => l.changeNo === autoOpenChangeNo);
-      if (log) {
-        // Auto-select the row to populate the form on the left
-        handleSelectRow(log);
-        // Auto-open the details popup
-        handleViewDetails(log);
-        // Clear the state so it doesn't open again on re-renders
-        if (clearAutoOpen) {
-          clearAutoOpen();
-        }
-      }
-    }
-  }, [autoOpenChangeNo, approvalLogs]);
 
   // Map database department to L3 acting department
   const mapDbDeptToL3Dept = (dbDept) => {
@@ -254,67 +213,7 @@ export const L3RequestTracker = ({
 
 
 
-  const handleModalDecision = async (status) => {
-    if (!selectedLog) return;
-    
-    setIsSubmitting(true);
-    setValidationError('');
 
-    const updatedLog = {
-      changeNo: selectedLog.changeNo,
-      date: selectedLog.date,
-      requester: selectedLog.requester,
-      ped: actingDept === 'PED' ? status : selectedLog.ped,
-      quality: actingDept === 'Quality' ? status : selectedLog.quality,
-      production: actingDept === 'Production' ? status : selectedLog.production,
-      maintenance: actingDept === 'Maintenance' ? status : selectedLog.maintenance,
-      pcl: actingDept === 'PC & L' ? status : selectedLog.pcl,
-      materials: actingDept === 'Materials' ? status : selectedLog.materials,
-      marketing: actingDept === 'Marketing' ? status : selectedLog.marketing,
-      hr: actingDept === 'HR' ? status : selectedLog.hr,
-      safety: actingDept === 'Safety' ? status : selectedLog.safety,
-      unitHead: actingDept === 'Unit Head' ? status : selectedLog.unitHead
-    };
-
-    try {
-      await createL3Approval(updatedLog);
-      
-      if (setToastMsg) {
-        setToastMsg(`Successfully saved ${actingDept} approval status as ${status} for ${selectedLog.changeNo}`);
-      }
-      if (logAction) {
-        logAction('L3 Log Saved', `Successfully logged L3 approval status: "${status}" for department: ${actingDept} and Change No: ${selectedLog.changeNo}`);
-      }
-
-      await fetchLogs();
-      if (fetchChanges) {
-        await fetchChanges();
-      }
-      
-      // Update selectedLog state in-place so view refreshes immediately
-      setSelectedLog(prev => ({
-        ...prev,
-        ped: actingDept === 'PED' ? status : prev.ped,
-        quality: actingDept === 'Quality' ? status : prev.quality,
-        production: actingDept === 'Production' ? status : prev.production,
-        maintenance: actingDept === 'Maintenance' ? status : prev.maintenance,
-        pcl: actingDept === 'PC & L' ? status : prev.pcl,
-        materials: actingDept === 'Materials' ? status : prev.materials,
-        marketing: actingDept === 'Marketing' ? status : prev.marketing,
-        hr: actingDept === 'HR' ? status : prev.hr,
-        safety: actingDept === 'Safety' ? status : prev.safety,
-        unitHead: actingDept === 'Unit Head' ? status : prev.unitHead
-      }));
-      
-      handleCancelEdit();
-    } catch (err) {
-      console.error(err);
-      const errMsg = err.response?.data?.error || 'Error saving L3 approval log to database.';
-      if (setToastMsg) setToastMsg(errMsg);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleViewDetails = async (log) => {
     // Open modal immediately with skeleton data to avoid blinking/flicker
@@ -339,6 +238,46 @@ export const L3RequestTracker = ({
       setIsFetchingDetails(false);
     }
   };
+
+  // Reset page when search or status filters change
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, statusFilter]);
+
+  // Fetch L3 logs from database
+  const fetchLogs = async () => {
+    setIsFetchingLogs(true);
+    try {
+      const response = await getL3Approvals();
+      setApprovalLogs(response.data);
+    } catch (err) {
+      console.error(err);
+      if (setToastMsg) setToastMsg('Error loading L3 approvals from database.');
+    } finally {
+      setIsFetchingLogs(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (autoOpenChangeNo && approvalLogs.length > 0) {
+      const log = approvalLogs.find(l => l.changeNo === autoOpenChangeNo);
+      if (log) {
+        // Auto-select the row to populate the form on the left
+        handleSelectRow(log);
+        // Auto-open the details popup
+        handleViewDetails(log);
+        // Clear the state so it doesn't open again on re-renders
+        if (clearAutoOpen) {
+          clearAutoOpen();
+        }
+      }
+    }
+  }, [autoOpenChangeNo, approvalLogs]);
 
   const handleViewAttachment = async (filename, changeNo, type = 'L1') => {
     if (!filename || filename === '-') return;
@@ -437,8 +376,6 @@ export const L3RequestTracker = ({
 
   const canEdit = isAdmin || isHOD;
 
-  const selectedLogL2Accepted = !selectedLog || selectedLog.l2Decision === 'Accepted';
-
   const getSelectedLogUserStatus = () => {
     if (!selectedLog) return '';
     let status = 'Pending';
@@ -454,11 +391,6 @@ export const L3RequestTracker = ({
     else if (actingDept === 'Unit Head') status = selectedLog.unitHead;
     return status;
   };
-
-  const selectedLogAlreadyValidated = selectedLog && getSelectedLogUserStatus() !== 'Pending';
-
-
-  const canEditModal = isAdmin || isHOD;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">

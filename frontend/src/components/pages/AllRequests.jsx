@@ -10,7 +10,6 @@ import { exportRequestsListPDF, exportRequestDetailsPDF } from '../../utils/pdfE
 
 export const AllRequests = ({
   changes,
-  onTabChange,
   setToastMsg
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -622,10 +621,10 @@ export const AllRequests = ({
                         {/* TABLE VIEW FOR IMPROVEMENT DATA */}
                         {(() => {
                           if (!selectedL1Details.improvement_table_data) return null;
-                          let tableData = [];
+                          let tableData;
                           try {
                             tableData = JSON.parse(selectedL1Details.improvement_table_data);
-                          } catch (e) {
+                          } catch {
                             return null;
                           }
                           if (!Array.isArray(tableData) || tableData.length === 0) return null;
