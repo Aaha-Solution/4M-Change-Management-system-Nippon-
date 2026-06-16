@@ -105,32 +105,75 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
 
   // Insert Database Notifications
   const seenNotifEmails = new Set();
-  for (const targetUser of targetUsers) {
-    const email = targetUser.email;
-    if (!email || seenNotifEmails.has(email.toLowerCase())) continue;
-    seenNotifEmails.add(email.toLowerCase());
+  const notifDept = l1Dept || crRequesterDept || 'General';
 
-    const dept = targetUser.department || 'General';
-    const deptLower = dept.toLowerCase();
-    const l1DeptLower = (l1Dept || '').toLowerCase();
-    const isL1DeptHODOnly = status === 'Pending' && deptLower === l1DeptLower && !['quality', 'qad', 'qa', 'general'].includes(deptLower);
+  if (status === 'Accepted' || status === 'Rejected') {
+    const isAccepted = status === 'Accepted';
+    
+    // 1. Insert System Logs notification for all targetUsers
+    for (const targetUser of targetUsers) {
+      const email = targetUser.email;
+      if (!email || seenNotifEmails.has(email.toLowerCase())) continue;
+      seenNotifEmails.add(email.toLowerCase());
 
-    let notifId = '';
-    if (status === 'Accepted') {
-      notifId = `L2-NOTIF-ACCEPTED-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
-    } else {
-      notifId = isL1DeptHODOnly
-        ? `L1-HOD-NOTIF-L2-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`
-        : `L2-NOTIF-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
+      const notifId = `L2-LOG-${status.toUpperCase()}-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
+      await connection.query(
+        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?, ?)`,
+        [notifId, title, details, changeNo, changeIn || 'GENERAL', notifDept, timeStr, statusColor, email]
+      );
     }
 
-    const notifDept = l1Dept || crRequesterDept || 'General';
-
-    await connection.query(
-      `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
-      [notifId, title, details, changeNo, changeIn || 'GENERAL', notifDept, timeStr, 'Action Required', statusColor, email]
+    // 2. Insert Action Required notification for requester and admins
+    const targetEmailsForL2Action = new Set();
+    if (crRequesterEmail) {
+      targetEmailsForL2Action.add(crRequesterEmail.toLowerCase().trim());
+    }
+    // Fetch all admins
+    const [admins] = await connection.query(
+      `SELECT email FROM users WHERE LOWER(role) IN ('admin', 'administrator')`
     );
+    for (const admin of admins) {
+      targetEmailsForL2Action.add(admin.email.toLowerCase().trim());
+    }
+
+    const actionTitle = isAccepted ? `L2 Approved - Proceed to L3 Review` : `L2 Rejected – ${changeNo}`;
+    const actionDetails = isAccepted
+      ? `Change Request ${changeNo} ("${crTitle}") has been accepted at L2 validation. Please proceed to L3.`
+      : `Change Request ${changeNo} ("${crTitle}") has been rejected at L2 validation. Please review the remarks.`;
+    const actionColor = isAccepted ? 'blue' : 'red';
+    const notifPrefix = isAccepted ? 'L2-VAL-ACTION-ACCEPTED' : 'L2-VAL-ACTION-REJECTED';
+
+    for (const email of targetEmailsForL2Action) {
+      const actionNotifId = `${notifPrefix}-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
+      await connection.query(
+        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', ?, ?)`,
+        [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', notifDept, timeStr, actionColor, email]
+      );
+    }
+  } else {
+    // This is the status === 'Pending' block
+    for (const targetUser of targetUsers) {
+      const email = targetUser.email;
+      if (!email || seenNotifEmails.has(email.toLowerCase())) continue;
+      seenNotifEmails.add(email.toLowerCase());
+
+      const dept = targetUser.department || 'General';
+      const deptLower = dept.toLowerCase();
+      const l1DeptLower = (l1Dept || '').toLowerCase();
+      const isL1DeptHODOnly = status === 'Pending' && deptLower === l1DeptLower && !['quality', 'qad', 'qa', 'general'].includes(deptLower);
+
+      const notifId = isL1DeptHODOnly
+        ? `L1-HOD-NOTIF-L2-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`
+        : `L2-NOTIF-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
+
+      await connection.query(
+        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', ?, ?)`,
+        [notifId, title, details, changeNo, changeIn || 'GENERAL', notifDept, timeStr, statusColor, email]
+      );
+    }
   }
 
   // Send personal confirmation notification to the requester when they submit their PED validation
