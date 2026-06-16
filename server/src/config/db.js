@@ -76,7 +76,7 @@ const pool = mysql.createPool({
     try {
       const depts = [
         'General', 'PED', 'Quality', 'Production', 'Maintenance', 
-        'PC & L', 'Materials', 'Marketing', 'HR', 'Safety'
+        'PC & L', 'Materials', 'Marketing', 'HR', 'Safety', 'Unit Head'
       ];
       for (const d of depts) {
         await connection.query(

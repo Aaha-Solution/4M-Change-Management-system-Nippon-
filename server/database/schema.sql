@@ -85,6 +85,29 @@ INSERT INTO roles (name) VALUES
 ('User'),
 ('Hod');
 
+-- Seed Departments
+INSERT INTO departments (name) VALUES
+('General'),
+('PED'),
+('Quality'),
+('Production'),
+('Maintenance'),
+('PC & L'),
+('Materials'),
+('Marketing'),
+('HR'),
+('Safety'),
+('Unit Head');
+
+-- Seed Processes
+INSERT INTO processes (name) VALUES
+('Wind'),
+('Gold'),
+('EOL'),
+('Pott'),
+('Load');
+
+
 
 
 
