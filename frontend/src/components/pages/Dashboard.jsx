@@ -11,7 +11,6 @@ import {
   LayoutGrid,
   FilePlus,
   ClipboardList,
-  Settings as SettingsIcon,
   Menu,
   X,
   CheckCheck,
@@ -31,7 +30,6 @@ const AllApprovals = lazy(() => import('./AllApprovals').then(m => ({ default: m
 const L2Validation = lazy(() => import('./L2Validation').then(m => ({ default: m.L2Validation })));
 const Effectiveness = lazy(() => import('./Effectiveness').then(m => ({ default: m.Effectiveness })));
 const Users = lazy(() => import('./Users').then(m => ({ default: m.Users })));
-const Settings = lazy(() => import('./Settings').then(m => ({ default: m.Settings })));
 const Notifications = lazy(() => import('./Notifications').then(m => ({ default: m.Notifications })));
 import nipponLogo from '../../assets/Nippon Logo.png';
 import { useWebSocket } from '../../hooks/useWebSocket';
@@ -406,19 +404,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               </button>
             )}
 
-            {/* Settings */}
-            <button
-              onClick={() => handleTabChange('settings')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'settings'
-                ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
-                : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
-                }`}
-            >
-              <div className="flex items-center gap-3">
-                <SettingsIcon size={18} className={activeTab === 'settings' ? 'text-[#0066cc]' : 'text-slate-400'} />
-                <span>Settings</span>
-              </div>
-            </button>
+
 
           </nav>
         </div>
@@ -639,13 +625,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               />
             )}
 
-            {/* TAB: SETTINGS */}
-            {activeTab === 'settings' && (
-              <Settings
-                userEmail={userEmail}
-                userRole={userRole}
-              />
-            )}
+
           </Suspense>
         </main>
       </div>
