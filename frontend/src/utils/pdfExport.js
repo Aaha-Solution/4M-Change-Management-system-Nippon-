@@ -1072,7 +1072,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
         item.reqDate ? formatDateToDDMMYYYY(item.reqDate) : '-',
         item.context || '-',
         item.startDate ? formatDateToDDMMYYYY(item.startDate) : '-',
-        formatMonthWise(item.monthWise),
+        item.monthWise || '-',
         item.status || '-',
         item.qaApproval || '-',
         item.remarks || '-'

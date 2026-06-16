@@ -28,6 +28,7 @@ export const L1Request = ({
   const [tempProcessName, setTempProcessName] = useState('');
   const [tempMachineNo, setTempMachineNo] = useState('');
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const [dbProcesses, setDbProcesses] = useState([]);
   const [dbMachines, setDbMachines] = useState([]);
@@ -638,9 +639,15 @@ export const L1Request = ({
               <button
                 type="button"
                 onClick={() => {
-                  setValue('');
-                  setUploadedFilesList(prev => prev.filter(f => f.fieldName !== fieldName));
-                  if (hasError) setErrors(prev => ({ ...prev, [fieldName]: '' }));
+                  setDeleteConfirm({
+                    title: 'Clear All Attachments?',
+                    message: 'Are you sure you want to clear all attachments from this field?',
+                    onConfirm: () => {
+                      setValue('');
+                      setUploadedFilesList(prev => prev.filter(f => f.fieldName !== fieldName));
+                      if (hasError) setErrors(prev => ({ ...prev, [fieldName]: '' }));
+                    }
+                  });
                 }}
                 className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                 title="Clear all attachments"
@@ -707,11 +714,17 @@ export const L1Request = ({
                 <button
                   type="button"
                   onClick={() => {
-                    const existing = value.split(',').map(s => s.trim()).filter(Boolean);
-                    const updated = existing.filter(f => f !== file).join(', ');
-                    setValue(updated);
-                    setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === fieldName && f.name === file)));
-                    if (hasError) setErrors(prev => ({ ...prev, [fieldName]: '' }));
+                    setDeleteConfirm({
+                      title: 'Delete Attachment?',
+                      message: `Are you sure you want to delete "${file}"? This action cannot be undone.`,
+                      onConfirm: () => {
+                        const existing = value.split(',').map(s => s.trim()).filter(Boolean);
+                        const updated = existing.filter(f => f !== file).join(', ');
+                        setValue(updated);
+                        setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === fieldName && f.name === file)));
+                        if (hasError) setErrors(prev => ({ ...prev, [fieldName]: '' }));
+                      }
+                    });
                   }}
                   className="text-slate-450 hover:text-rose-650 font-bold ml-[2px] cursor-pointer text-[12px]"
                 >
@@ -1525,6 +1538,43 @@ export const L1Request = ({
               <button
                 onClick={confirmDelete}
                 className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-[10px] rounded-[8px] text-[13px] font-bold transition-colors shadow-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Attachment Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-[16px]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setDeleteConfirm(null)} />
+          <div className="relative bg-white w-full max-w-[320px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 p-[24px] text-center animate-fade-in-up">
+            <div className="mx-auto bg-rose-100 text-rose-600 p-[12px] rounded-full mb-[16px]">
+              <AlertTriangle size={24} />
+            </div>
+            <h4 className="text-[16px] font-bold text-slate-800 mb-[8px]">
+              {deleteConfirm.title || 'Delete Attachment?'}
+            </h4>
+            <p className="text-[13px] text-slate-500 mb-[24px]">
+              {deleteConfirm.message || 'Are you sure you want to delete this attachment? This action cannot be undone.'}
+            </p>
+            <div className="flex gap-[12px] w-full">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-[10px] rounded-[8px] text-[13px] font-bold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteConfirm.onConfirm();
+                  setDeleteConfirm(null);
+                }}
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-[10px] rounded-[8px] text-[13px] font-bold transition-colors shadow-sm cursor-pointer"
               >
                 Delete
               </button>

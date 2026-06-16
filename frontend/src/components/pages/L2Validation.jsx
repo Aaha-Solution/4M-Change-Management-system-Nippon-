@@ -18,6 +18,7 @@ export const L2Validation = ({
 }) => {
   // Modal states
   const [validationError, setValidationError] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   // L1 Details Modal states
   const [selectedL1Details, setSelectedL1Details] = useState(null);
@@ -595,7 +596,15 @@ export const L2Validation = ({
                     {formChangeNo.trim() && isRaisedByUserOrAdmin && canUploadPed && (
                       <button
                         type="button"
-                        onClick={() => setPedFiles(prev => prev.filter((_, i) => i !== idx))}
+                        onClick={() => {
+                          setDeleteConfirm({
+                            title: 'Remove File Selection?',
+                            message: `Are you sure you want to remove "${file.name}" from selection?`,
+                            onConfirm: () => {
+                              setPedFiles(prev => prev.filter((_, i) => i !== idx));
+                            }
+                          });
+                        }}
                         className="ml-[2px] hover:bg-[#b2d1f0] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
                       >
                         <X size={9} />
@@ -678,7 +687,15 @@ export const L2Validation = ({
                     {formChangeNo.trim() && isQualityOrAdmin && !isL2AlreadyValidated && (
                       <button
                         type="button"
-                        onClick={() => setQaFiles(prev => prev.filter((_, i) => i !== idx))}
+                        onClick={() => {
+                          setDeleteConfirm({
+                            title: 'Remove File Selection?',
+                            message: `Are you sure you want to remove "${file.name}" from selection?`,
+                            onConfirm: () => {
+                              setQaFiles(prev => prev.filter((_, i) => i !== idx));
+                            }
+                          });
+                        }}
                         className="ml-[2px] hover:bg-[#b2d1f0] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
                       >
                         <X size={9} />
@@ -1011,6 +1028,43 @@ export const L2Validation = ({
                 className="px-[14px] py-[6px] bg-rose-600 hover:bg-rose-700 text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
               >
                 Okay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Attachment Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-[16px]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setDeleteConfirm(null)} />
+          <div className="relative bg-white w-full max-w-[320px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 p-[24px] text-center animate-fade-in-up">
+            <div className="mx-auto bg-rose-100 text-rose-600 p-[12px] rounded-full mb-[16px]">
+              <AlertTriangle size={24} />
+            </div>
+            <h4 className="text-[16px] font-bold text-slate-800 mb-[8px]">
+              {deleteConfirm.title || 'Delete Attachment?'}
+            </h4>
+            <p className="text-[13px] text-slate-500 mb-[24px]">
+              {deleteConfirm.message || 'Are you sure you want to delete this attachment? This action cannot be undone.'}
+            </p>
+            <div className="flex gap-[12px] w-full">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-[10px] rounded-[8px] text-[13px] font-bold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteConfirm.onConfirm();
+                  setDeleteConfirm(null);
+                }}
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-[10px] rounded-[8px] text-[13px] font-bold transition-colors shadow-sm cursor-pointer"
+              >
+                Delete
               </button>
             </div>
           </div>
