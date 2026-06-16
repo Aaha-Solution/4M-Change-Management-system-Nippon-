@@ -16,8 +16,11 @@ export const getRequestDisplayStatus = (c) => {
   if (c.status === 'Completed') {
     return 'Closed';
   }
-  if (c.status === 'Approved' || c.l2Status === 'Accepted') {
+  if (c.status === 'Approved' || c.l3Status === 'Approved') {
     return 'Approved';
+  }
+  if (c.hodStatus === 'Approved' && c.l2Status === 'Accepted') {
+    return 'Pending L3';
   }
   if (c.hodStatus === 'Approved') {
     return 'Pending L2';
