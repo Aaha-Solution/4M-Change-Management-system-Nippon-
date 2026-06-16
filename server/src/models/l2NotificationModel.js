@@ -29,7 +29,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
          )`,
       [l1Dept || '']
     );
-    targetUsers = rows;
+    targetUsers = rows.filter(u => u.email.toLowerCase() !== (crRequesterEmail || '').toLowerCase());
     title = `L2 Setup Validation Awaiting QA Review – ${changeNo}`;
     details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has updated L2 requester validation attachment by ${requestBy}. QA Setup Verification review is now required.`;
     statusColor = 'blue';
@@ -175,7 +175,7 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
            )`,
         [l1Dept || '']
       );
-      users = rows;
+      users = rows.filter(u => u.email.toLowerCase() !== (crRequesterEmail || '').toLowerCase());
 
       // Also send a confirmation email to the requester themselves
       if (crRequesterEmail) {

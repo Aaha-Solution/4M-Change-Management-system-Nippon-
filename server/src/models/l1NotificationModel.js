@@ -26,7 +26,6 @@ export const createL1RequestNotifications = async (connection, changeNo, hodAppr
 
   if (requesterEmail) {
     seenEmails.add(requesterEmail.toLowerCase());
-    targetUsers.push({ email: requesterEmail, department: dept || 'General' });
   }
 
   for (const user of users) {
@@ -45,6 +44,7 @@ export const createL1RequestNotifications = async (connection, changeNo, hodAppr
     }
   }
 
+  // Send HOD approval required notifications to target HODs/Admins (excluding requester)
   for (const targetUser of targetUsers) {
     const notifId = `L1-HOD-NOTIF-${changeNo}-${targetUser.email.replace(/[@.]/g, '_')}-${Date.now()}`;
     const notifTitle = `HOD Approval Required – ${changeNo}`;
@@ -52,10 +52,24 @@ export const createL1RequestNotifications = async (connection, changeNo, hodAppr
     
     await connection.query(
       `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
-      [notifId, notifTitle, notifDetails, changeNo, changeIn || 'GENERAL', targetUser.department || 'General', timeStr, 'Action Required', 'blue', targetUser.email]
+       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue', ?)`,
+      [notifId, notifTitle, notifDetails, changeNo, changeIn || 'GENERAL', targetUser.department || 'General', timeStr, targetUser.email]
     );
     notifIds.push(notifId);
+  }
+
+  // Send personal confirmation notification to the requester
+  if (requesterEmail) {
+    const requesterNotifId = `L1-REQUESTER-CONFIRM-${changeNo}-${Date.now()}`;
+    const requesterNotifTitle = `L1 Change Request Submitted – ${changeNo}`;
+    const requesterNotifDetails = `Your L1 Change Request ${changeNo} has been submitted successfully and is now awaiting HOD approval/validation.`;
+    
+    await connection.query(
+      `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Info', 'blue', ?)`,
+      [requesterNotifId, requesterNotifTitle, requesterNotifDetails, changeNo, changeIn || 'GENERAL', dept || 'General', timeStr, requesterEmail]
+    );
+    notifIds.push(requesterNotifId);
   }
 
   return notifIds;
@@ -84,67 +98,115 @@ export const sendL1RequestEmails = async (changeNo, hodApproval, changeIn, reque
     const [users] = await pool.query('SELECT email, role, department FROM users');
 
     const targetEmails = new Set();
-    if (l1Details.requesterEmail) {
-      targetEmails.add(l1Details.requesterEmail.toLowerCase());
-    }
+    const requesterEmail = l1Details.requesterEmail ? l1Details.requesterEmail.toLowerCase().trim() : null;
     const selectedDeptsLower = selectedDepts.map(d => d.toLowerCase());
 
     for (const user of users) {
-      const userEmail = user.email;
+      const userEmail = user.email.toLowerCase().trim();
       const userRole = (user.role || '').toLowerCase();
       const userDept = (user.department || '').toLowerCase();
       
       const isHOD = userRole.includes('hod') || userRole.includes('manager');
       const isAdmin = userRole.includes('admin') || userRole.includes('administrator');
       
-      // Always include admins, and HODs of selected departments
-      if (isAdmin) {
-        targetEmails.add(userEmail.toLowerCase());
-      } else if (isHOD && selectedDeptsLower.includes(userDept)) {
-        targetEmails.add(userEmail.toLowerCase());
+      // Add admins and HODs of selected departments (excluding requester)
+      if (userEmail !== requesterEmail) {
+        if (isAdmin || (isHOD && selectedDeptsLower.includes(userDept))) {
+          targetEmails.add(userEmail);
+        }
       }
     }
 
     const emailList = [...targetEmails].filter(Boolean);
-    if (emailList.length === 0) return;
+    
+    // Send main review required alert to HODs & Admins
+    if (emailList.length > 0) {
+      const emailContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background-color: #ffffff;">
+          <div style="background-color: #0066cc; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin: -24px -24px 20px -24px;">
+            <h1 style="margin: 0; font-size: 20px; font-weight: 700;">4M Change Management System</h1>
+            <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.9; text-transform: uppercase; tracking-wider: 1px;">HOD & Admin Review Request</p>
+          </div>
+          <p style="font-size: 15px; font-weight: bold; color: #1e293b; margin-bottom: 12px;">Review Required – ${changeNo}</p>
+          <div style="background-color: #f8fafc; border-left: 4px solid #0066cc; padding: 16px; margin: 20px 0; font-size: 14px; color: #475569; line-height: 1.6; border-radius: 4px;">
+            Change Request ${changeNo} created by ${requestBy} (${dept} department) requires HOD approval/validation decision from your department(s) (${selectedDepts.join(', ')}). System administrators have also been notified.
+          </div>
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px; color: #475569;">
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 30%;"><strong>Change Request #</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
+            ${l1Details.title ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Title</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${l1Details.title}</td></tr>` : ''}
+            ${l1Details.change_in ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Category</strong></td><td style="padding: 10px 0; color: #1e293b;">${l1Details.change_in}</td></tr>` : ''}
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Requested By</strong></td><td style="padding: 10px 0; color: #1e293b;">${l1Details.request_by} (${l1Details.dept})</td></tr>
+            ${l1Details.process_name ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Process Name</strong></td><td style="padding: 10px 0; color: #1e293b;">${l1Details.process_name} ${l1Details.process_line ? `(Line: ${l1Details.process_line})` : ''}</td></tr>` : ''}
+            ${l1Details.machine_no ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Machine No</strong></td><td style="padding: 10px 0; color: #1e293b; font-family: monospace;">${l1Details.machine_no}</td></tr>` : ''}
+            ${l1Details.description ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; vertical-align: top;"><strong>Description</strong></td><td style="padding: 10px 0; color: #475569; line-height: 1.5; font-size: 12.5px;">${l1Details.description}</td></tr>` : ''}
+          </table>
+          <div style="text-align: center; margin: 30px 0 10px 0;">
+            <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
+              Access CMS Portal
+            </a>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 24px 0;" />
+          <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.5;">
+            This is an automated notification from the Nippon QA 4M Change Management System.<br />
+            Please do not reply directly to this email.
+          </p>
+        </div>
+      `;
 
-    const emailContent = `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background-color: #ffffff;">
-        <div style="background-color: #0066cc; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin: -24px -24px 20px -24px;">
-          <h1 style="margin: 0; font-size: 20px; font-weight: 700;">4M Change Management System</h1>
-          <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.9; text-transform: uppercase; tracking-wider: 1px;">HOD & Admin Review Request</p>
-        </div>
-        <p style="font-size: 15px; font-weight: bold; color: #1e293b; margin-bottom: 12px;">Review Required – ${changeNo}</p>
-        <div style="background-color: #f8fafc; border-left: 4px solid #0066cc; padding: 16px; margin: 20px 0; font-size: 14px; color: #475569; line-height: 1.6; border-radius: 4px;">
-          Change Request ${changeNo} created by ${requestBy} (${dept} department) requires HOD approval/validation decision from your department(s) (${selectedDepts.join(', ')}). System administrators have also been notified.
-        </div>
-        <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px; color: #475569;">
-          <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 30%;"><strong>Change Request #</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
-          ${l1Details.title ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Title</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${l1Details.title}</td></tr>` : ''}
-          ${l1Details.change_in ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Category</strong></td><td style="padding: 10px 0; color: #1e293b;">${l1Details.change_in}</td></tr>` : ''}
-          <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Requested By</strong></td><td style="padding: 10px 0; color: #1e293b;">${l1Details.request_by} (${l1Details.dept})</td></tr>
-          ${l1Details.process_name ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Process Name</strong></td><td style="padding: 10px 0; color: #1e293b;">${l1Details.process_name} ${l1Details.process_line ? `(Line: ${l1Details.process_line})` : ''}</td></tr>` : ''}
-          ${l1Details.machine_no ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Machine No</strong></td><td style="padding: 10px 0; color: #1e293b; font-family: monospace;">${l1Details.machine_no}</td></tr>` : ''}
-          ${l1Details.description ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; vertical-align: top;"><strong>Description</strong></td><td style="padding: 10px 0; color: #475569; line-height: 1.5; font-size: 12.5px;">${l1Details.description}</td></tr>` : ''}
-        </table>
-        <div style="text-align: center; margin: 30px 0 10px 0;">
-          <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
-            Access CMS Portal
-          </a>
-        </div>
-        <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 24px 0;" />
-        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.5;">
-          This is an automated notification from the Nippon QA 4M Change Management System.<br />
-          Please do not reply directly to this email.
-        </p>
-      </div>
-    `;
+      await sendMail({
+        to: emailList.join(', '),
+        subject: `[CMS] Alert: HOD & Admin Review Required for ${changeNo}`,
+        html: emailContent
+      });
+    }
 
-    await sendMail({
-      to: emailList.join(', '),
-      subject: `[CMS] Alert: HOD & Admin Review Required for ${changeNo}`,
-      html: emailContent
-    });
+    // Send confirmation email to the requester
+    if (requesterEmail) {
+      const confirmHtml = `
+        <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background-color: #ffffff;">
+          <div style="background-color: #0066cc; color: white; padding: 24px; text-align: center;">
+            <h1 style="margin: 0; font-size: 20px; font-weight: 700;">Change Management System</h1>
+            <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase;">L1 Submission Confirmation</p>
+          </div>
+          <div style="padding: 24px; background-color: #ffffff;">
+            <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Hello ${l1Details.request_by || 'Requester'},</h2>
+            <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+              Your <strong>L1 Change Request</strong> has been submitted successfully and is now <strong>awaiting HOD approval/validation</strong>.
+            </p>
+            <div style="background-color: #f0f9ff; border-left: 4px solid #0066cc; padding: 16px; margin: 20px 0; border-radius: 4px;">
+              <div style="font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600;">Submission Status</div>
+              <div style="font-size: 18px; font-weight: 700; color: #0066cc; margin-top: 2px;">Pending HOD Approval</div>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; color: #475569;">
+              <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 35%;">Change Request #</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
+              ${l1Details.title ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Title</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${l1Details.title}</td></tr>` : ''}
+              ${l1Details.change_in ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Change Category</td><td style="padding: 10px 0; color: #1e293b;">${l1Details.change_in}</td></tr>` : ''}
+              ${l1Details.process_name ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Process Name</td><td style="padding: 10px 0; color: #1e293b;">${l1Details.process_name}</td></tr>` : ''}
+              ${l1Details.machine_no ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Machine No</td><td style="padding: 10px 0; color: #1e293b; font-family: monospace;">${l1Details.machine_no}</td></tr>` : ''}
+              <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Requested By</td><td style="padding: 10px 0; color: #1e293b;">${l1Details.request_by} (${l1Details.dept})</td></tr>
+            </table>
+            <p style="color: #64748b; font-size: 13px; line-height: 1.6;">
+              The selected department HOD(s) (${selectedDepts.join(', ')}) and system administrators have been notified to review your request. You will receive another notification once a decision is made.
+            </p>
+            <div style="text-align: center; margin: 32px 0 12px 0;">
+              <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
+                Go to Dashboard
+              </a>
+            </div>
+          </div>
+          <div style="background-color: #f8fafc; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9;">
+            This is an automated notification from the 4M Change Management System.
+          </div>
+        </div>
+      `;
+
+      await sendMail({
+        to: requesterEmail,
+        subject: `[4M CMS] Submission Confirmed: L1 Change Request for ${changeNo}`,
+        html: confirmHtml
+      });
+    }
+
   } catch (error) {
     console.error('Error sending L1 HOD and Admin emails:', error);
   }
