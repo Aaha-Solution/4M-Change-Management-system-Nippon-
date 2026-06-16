@@ -149,7 +149,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
       details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has updated L2 requester validation attachment by ${requestBy}. QA Setup Verification review is now required.`;
       statusColor = 'blue';
     } else if (status === 'Accepted') {
-      // Find all target users for L2 Accepted: requester, requester's department HOD, and admins
+      // Find all target users for L2 Accepted: requester, other department HODs, and admins
       const seenEmails = new Set();
 
       // 1. Requester
@@ -164,32 +164,37 @@ export const addL2ValidationLog = async (logData, attachments) => {
             seenEmails.add(u.email.toLowerCase());
             targetUsers.push(u);
           }
+        } else if (!seenEmails.has(crRequesterEmail.toLowerCase())) {
+          // Fallback if requester is not in users table
+          seenEmails.add(crRequesterEmail.toLowerCase());
+          targetUsers.push({
+            email: crRequesterEmail,
+            name: requester || 'Requester',
+            department: crRequesterDept || 'General',
+            role: 'User'
+          });
         }
       }
 
-      // 2. Department HOD
-      const deptForHod = crRequesterDept || l1Dept;
-      if (deptForHod) {
-        const [hods] = await connection.query(
-          `SELECT email, name, department, role FROM users 
-           WHERE LOWER(department) = LOWER(?) 
-             AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%' OR LOWER(role) LIKE '%unit head%' OR LOWER(role) LIKE '%unit_head%')`,
-          [deptForHod]
-        );
-        for (const u of hods) {
-          if (!seenEmails.has(u.email.toLowerCase())) {
-            seenEmails.add(u.email.toLowerCase());
-            targetUsers.push(u);
-          }
-        }
-      }
-
-      // 3. Admin
+      // 2. Admins
       const [admins] = await connection.query(
         `SELECT email, name, department, role FROM users 
          WHERE LOWER(role) IN ('admin', 'administrator')`
       );
       for (const u of admins) {
+        if (!seenEmails.has(u.email.toLowerCase())) {
+          seenEmails.add(u.email.toLowerCase());
+          targetUsers.push(u);
+        }
+      }
+
+      // 3. All Department HODs
+      const [hods] = await connection.query(
+        `SELECT email, name, department, role FROM users 
+         WHERE department != '' AND department IS NOT NULL 
+           AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%' OR LOWER(role) LIKE '%unit head%' OR LOWER(role) LIKE '%unit_head%')`
+      );
+      for (const u of hods) {
         if (!seenEmails.has(u.email.toLowerCase())) {
           seenEmails.add(u.email.toLowerCase());
           targetUsers.push(u);
@@ -256,8 +261,8 @@ export const addL2ValidationLog = async (logData, attachments) => {
         const requesterNotifDetails = `Your L2 Requester Validation attachment for Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been submitted successfully. The QA department will now review and verify your setup. You will be notified once a decision is made.`;
         await connection.query(
           `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, NULL)`,
-          [requesterNotifId, requesterNotifTitle, requesterNotifDetails, changeNo, changeIn || 'GENERAL', reqDept, timeStr, 'Info', 'blue']
+           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
+          [requesterNotifId, requesterNotifTitle, requesterNotifDetails, changeNo, changeIn || 'GENERAL', reqDept, timeStr, 'Info', 'blue', crRequesterEmail]
         );
       }
     }

@@ -144,9 +144,9 @@ export const saveHodApproval = async ({ changeNo, hodEmail, hodDept, status, rem
         const actionTitle = `L1 Approved - Proceed to L2 Validation`;
         const actionDetails = `Your Change Request ${changeNo} has been approved by the HOD. Please proceed to L2.`;
         await connection.query(
-          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
-           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue')`,
-          [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', userDept || raisedDept || '', timeStr]
+          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue', ?)`,
+          [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', userDept || raisedDept || '', timeStr, requester]
         );
         notifIds.push(actionNotifId);
       }
