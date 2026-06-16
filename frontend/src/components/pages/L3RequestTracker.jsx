@@ -1185,42 +1185,22 @@ export const L3RequestTracker = ({
         {/* Footer */}
         <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            {selectedLog && canEditModal && selectedLogL2Accepted && !selectedLogAlreadyValidated && (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-bold text-slate-500 mr-1">Your Approval Status ({actingDept}):</span>
-                <button
-                  onClick={() => handleModalDecision('Approved')}
-                  disabled={isSubmitting}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-750 disabled:opacity-50 text-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1"
-                >
+            {selectedLog && (
+              <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl border ${
+                getSelectedLogUserStatus() === 'Approved' || getSelectedLogUserStatus() === 'Accepted'
+                  ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
+                  : getSelectedLogUserStatus() === 'Rejected'
+                  ? 'text-rose-700 bg-rose-50 border-rose-200'
+                  : 'text-amber-700 bg-amber-50 border-amber-200'
+              }`}>
+                {getSelectedLogUserStatus() === 'Approved' || getSelectedLogUserStatus() === 'Accepted' ? (
                   <CheckCircle2 size={13} />
-                  Approve
-                </button>
-                <button
-                  onClick={() => handleModalDecision('Rejected')}
-                  disabled={isSubmitting}
-                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-750 disabled:opacity-50 text-white rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1"
-                >
+                ) : getSelectedLogUserStatus() === 'Rejected' ? (
                   <X size={13} />
-                  Reject
-                </button>
-              </div>
-            )}
-            {selectedLog && selectedLogAlreadyValidated && (
-              <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 border border-emerald-150 px-2.5 py-1.5 rounded-lg">
-                <CheckCircle2 size={13} className="text-emerald-500" />
-                <span>You signed off this request as: <span className="font-extrabold uppercase">{getSelectedLogUserStatus()}</span></span>
-              </span>
-            )}
-            {selectedLog && !selectedLogL2Accepted && (
-              <span className="text-[11px] font-semibold text-rose-500 bg-rose-50 border border-rose-150 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
-                <AlertTriangle size={13} className="text-rose-500" />
-                <span>L3 Sign-off blocked (L2 Validation is {selectedLog.l2Decision || 'Pending'})</span>
-              </span>
-            )}
-            {selectedLog && selectedLogL2Accepted && !canEditModal && (
-              <span className="text-[11px] font-semibold text-slate-500 bg-slate-100/60 border border-slate-200 px-2.5 py-1.5 rounded-lg">
-                Not Authorized to sign off (Only department HODs or Admin)
+                ) : (
+                  <Clock size={13} />
+                )}
+                <span>Your L3 Status ({actingDept}): <span className="font-extrabold uppercase">{getSelectedLogUserStatus() || 'Pending'}</span></span>
               </span>
             )}
           </div>
