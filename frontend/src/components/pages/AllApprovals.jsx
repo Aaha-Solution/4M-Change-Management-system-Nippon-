@@ -22,17 +22,19 @@ import {
   Download,
   Info,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Cpu
 } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import {
   getHodApprovalsByDept,
   getAllHodApprovals,
-  submitHodApproval
-} from '../../api/apiRoutes';
-import {
+  submitHodApproval,
   getL1Details,
   getL1Attachment,
+  getL2Details,
+  getL2Attachment,
+  getL3Approvals,
   getUsers
 } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
@@ -142,6 +144,9 @@ export const AllApprovals = ({
   // Modal
   const [selectedReq, setSelectedReq] = useState(null);
   const [l1Details, setL1Details] = useState(null);
+  const [selectedL2Details, setSelectedL2Details] = useState(null);
+  const [selectedLog, setSelectedLog] = useState(null);
+  const [activeTab, setActiveTab] = useState('l1');
   const [isFetchingDetails, setIsFetchingDetails] = useState(false);
   const [remarks, setRemarks] = useState('');
   const [fileUrls, setFileUrls] = useState({});
@@ -236,12 +241,55 @@ export const AllApprovals = ({
     setSelectedReq(req);
     setRemarks(req.hodRemarks || '');
     setL1Details(null);
+    setSelectedL2Details(null);
+    setSelectedLog({
+      changeNo: req.changeNo,
+      requester: req.requestBy || req.requesterEmail,
+      date: req.date,
+      status: req.crStatus,
+      hodStatus: req.hodStatus,
+      ped: 'Pending',
+      quality: 'Pending',
+      production: 'Pending',
+      maintenance: 'Pending',
+      pcl: 'Pending',
+      materials: 'Pending',
+      marketing: 'Pending',
+      hr: 'Pending',
+      safety: 'Pending',
+      unitHead: 'Pending'
+    });
     setIsFetchingDetails(true);
+    setActiveTab('l1');
     try {
-      const res = await getL1Details(req.changeNo);
-      setL1Details(res.data);
+      const [l1Res, l2Res, l3Res] = await Promise.all([
+        getL1Details(req.changeNo),
+        getL2Details(req.changeNo).catch(() => ({ data: null })),
+        getL3Approvals().catch(() => ({ data: [] }))
+      ]);
+      setL1Details(l1Res.data);
+      setSelectedL2Details(l2Res.data);
+
+      const matchedL3 = l3Res.data?.find(log => log.changeNo === req.changeNo);
+      const newLogData = matchedL3 ? { ...matchedL3, hodStatus: req.hodStatus } : {
+        changeNo: req.changeNo,
+        requester: req.requestBy || req.requesterEmail,
+        date: req.date,
+        hodStatus: req.hodStatus,
+        ped: 'Pending',
+        quality: 'Pending',
+        production: 'Pending',
+        maintenance: 'Pending',
+        pcl: 'Pending',
+        materials: 'Pending',
+        marketing: 'Pending',
+        hr: 'Pending',
+        safety: 'Pending',
+        unitHead: 'Pending'
+      };
+      setSelectedLog(newLogData);
     } catch (err) {
-      console.error('Error fetching L1 details:', err);
+      console.error('Error fetching L1/L2/L3 details:', err);
     } finally {
       setIsFetchingDetails(false);
     }
@@ -250,20 +298,27 @@ export const AllApprovals = ({
   const handleCloseModal = () => {
     setSelectedReq(null);
     setL1Details(null);
+    setSelectedL2Details(null);
+    setSelectedLog(null);
     setRemarks('');
     setPreviewFile(null);
   };
 
-  const handleViewAttachment = async (filename, changeNo) => {
+  const handleViewAttachment = async (filename, changeNo, type = 'L1') => {
     if (!filename || filename === '-') return;
     setPreviewFile(filename);
     if (!fileUrls[filename]) {
       try {
-        const res = await getL1Attachment(changeNo, filename);
+        let res;
+        if (type === 'L2') {
+          res = await getL2Attachment(changeNo, filename);
+        } else {
+          res = await getL1Attachment(changeNo, filename);
+        }
         const url = URL.createObjectURL(res.data);
         setFileUrls(prev => ({ ...prev, [filename]: url }));
       } catch (err) {
-        console.error('Error loading attachment:', err);
+        console.error(`Error loading ${type} attachment:`, err);
       }
     }
   };
@@ -280,6 +335,25 @@ export const AllApprovals = ({
         <span className="underline truncate max-w-[160px]">{f}</span>
       </span>
     ));
+  };
+
+  const renderL1FilePill = (filename, changeNo) => {
+    if (!filename) return null;
+    const files = filename.split(',').map(s => s.trim()).filter(Boolean);
+    return (
+      <div className="mt-1 flex flex-wrap gap-2">
+        {files.map((file, idx) => (
+          <span 
+            key={idx}
+            className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-105 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
+            onClick={() => handleViewAttachment(file, changeNo)}
+          >
+            <Paperclip size={11} className="text-slate-400" />
+            <span className="underline truncate max-w-[200px]">{file}</span>
+          </span>
+        ))}
+      </div>
+    );
   };
 
   const handleDecision = async (status) => {
@@ -692,6 +766,43 @@ export const AllApprovals = ({
               </p>
             </div>
 
+            {/* Tabs Header */}
+            <div className="flex border-b border-slate-200 bg-slate-50/50">
+              <button
+                type="button"
+                onClick={() => setActiveTab('l1')}
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l1' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
+                    : 'border-transparent text-slate-500 hover:text-slate-850'
+                }`}
+              >
+                1. L1 Request Details
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('l2')}
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l2' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
+                    : 'border-transparent text-slate-500 hover:text-slate-850'
+                }`}
+              >
+                2. L2 Validation Details
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('l3')}
+                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                  activeTab === 'l3' 
+                    ? 'border-[#0066cc] text-[#0066cc]' 
+                    : 'border-transparent text-slate-500 hover:text-slate-850'
+                }`}
+              >
+                3. L3 Approval Details
+              </button>
+            </div>
+
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-5 text-[13px] text-slate-700">
               {isFetchingDetails ? (
@@ -699,147 +810,496 @@ export const AllApprovals = ({
                   <Loader2 className="animate-spin text-[#0066cc]" size={24} />
                   <span className="text-sm font-semibold">Loading request details...</span>
                 </div>
-              ) : l1Details ? (
-                <div className="space-y-5">
-                  {/* General Info */}
-                  <section className="space-y-3">
-                    <h5 className="text-[11px] font-black text-[#0066cc] uppercase tracking-widest flex items-center gap-1.5 pb-2 border-b border-slate-100">
-                      <Folder size={13} /> General Information
-                    </h5>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50/60 rounded-xl p-4 border border-slate-100">
-                      {[
-                        { label: 'Change No', value: <span className="font-mono font-bold text-[#0066cc]">{l1Details.change_no}</span> },
-                        { label: 'Date', value: l1Details.crDate ? formatDateToDDMMYYYY(l1Details.crDate) : '-' },
-                        { label: 'Department', value: l1Details.dept || '-' },
-                        { label: 'Change Type', value: l1Details.change_type || '-' },
-                      ].map((item, i) => (
-                        <div key={i} className="space-y-1">
-                          <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">{item.label}</span>
-                          <div className="font-semibold text-slate-800">{item.value}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {[
-                        { label: 'Requested By', value: l1Details.request_by },
-                        { label: 'Process Name', value: l1Details.process_name },
-                        { label: 'Machine No', value: l1Details.machine_no },
-                      ].map((item, i) => (
-                        <div key={i} className="space-y-1">
-                          <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">{item.label}</span>
-                          <div className="font-semibold text-slate-800">{item.value || '-'}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-
-                  {/* Description */}
-                  <section className="space-y-3">
-                    <h5 className="text-[11px] font-black text-[#0066cc] uppercase tracking-widest flex items-center gap-1.5 pb-2 border-b border-slate-100">
-                      <FileText size={13} /> Description & Justification
-                    </h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Change Description</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 leading-relaxed min-h-[60px] text-slate-700 text-[12px] break-words whitespace-pre-wrap">
-                          {l1Details.description || '-'}
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">{renderFilePills(l1Details.file_desc, l1Details.change_no)}</div>
-                      </div>
-                      <div className="space-y-1.5">
-                        <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Area of Improvement</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 leading-relaxed min-h-[60px] text-slate-700 text-[12px] break-words whitespace-pre-wrap">
-                          {l1Details.improvement_area || '-'}
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">{renderFilePills(l1Details.file_improvement, l1Details.change_no)}</div>
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* Timeline */}
-                  <section>
-                    <h5 className="text-[11px] font-black text-[#0066cc] uppercase tracking-widest flex items-center gap-1.5 pb-2 border-b border-slate-100 mb-3">
-                      <Calendar size={13} /> Implementation Timeline
-                    </h5>
-                    <div className="grid grid-cols-2 gap-4">
-                      {[
-                        { label: 'Target Start', value: l1Details.date_start ? formatDateToDDMMYYYY(l1Details.date_start) : '-' },
-                        { label: 'Target Close', value: l1Details.date_close ? formatDateToDDMMYYYY(l1Details.date_close) : '-' },
-                      ].map((item, i) => (
-                        <div key={i} className="space-y-1">
-                          <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">{item.label}</span>
-                          <div className="font-semibold text-slate-800 flex items-center gap-1.5"><Calendar size={12} className="text-slate-400" />{item.value}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-
-                  {/* Risk & Traceability */}
-                  <section className="space-y-3">
-                    <h5 className="text-[11px] font-black text-[#0066cc] uppercase tracking-widest flex items-center gap-1.5 pb-2 border-b border-slate-100">
-                      <AlertTriangle size={13} /> Risk & Traceability
-                    </h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {[
-                        { label: 'Traceability FROM', value: l1Details.trace_from, file: l1Details.file_trace_from },
-                        { label: 'Traceability TO', value: l1Details.trace_to, file: l1Details.file_trace_to },
-                        { label: 'Risk Analysis', value: l1Details.risk_analysis, file: l1Details.file_risk },
-                        { label: 'SOP / WI Update', value: l1Details.sop_update, file: l1Details.file_sop },
-                      ].map((item, i) => (
-                        <div key={i} className="space-y-1.5">
-                          <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">{item.label}</span>
-                          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[12px] text-slate-700 leading-relaxed min-h-[44px] break-words whitespace-pre-wrap">{item.value || '-'}</div>
-                          <div className="flex flex-wrap gap-1.5">{renderFilePills(item.file, l1Details.change_no)}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-
-                  {/* If already decided — show previous decision */}
-                  {alreadyDecided && (
-                    <section className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
-                      <h5 className="text-[11px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-1.5">
-                        <ShieldCheck size={13} /> Previous HOD Decision
-                      </h5>
-                      <div className="flex items-center gap-3">
-                        <StatusBadge status={selectedReq.hodStatus} />
-                        <span className="text-[12px] text-slate-500">
-                          by{' '}
-                          <span className="font-semibold text-slate-700">
-                            {selectedReq.hodName || selectedReq.hodEmail}
-                          </span>{' '}
-                          {selectedReq.hodDept && (
-                            <span className="text-slate-400 font-normal">({selectedReq.hodDept})</span>
-                          )}
-                        </span>
-                      </div>
-                      {selectedReq.hodRemarks && (
-                        <p className="text-[12px] text-slate-600 bg-white border border-slate-200 rounded-lg p-2.5 leading-relaxed">{selectedReq.hodRemarks}</p>
-                      )}
-                    </section>
-                  )}
-                </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
-                  <FileText size={28} className="text-slate-300" />
-                  <p className="text-sm">No L1 request details found for this change.</p>
-                </div>
-              )}
+                <>
+                  {activeTab === 'l1' && (
+                    l1Details ? (
+                      <div className="space-y-5">
+                        {/* General Info */}
+                        <div className="space-y-[12px]">
+                          <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                            <Folder size={14} />
+                            <span>General Information</span>
+                          </h5>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                              <span className="font-mono font-bold text-slate-800">{l1Details.change_no}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                              <span className="font-medium text-slate-700">{l1Details.crDate ? formatDateToDDMMYYYY(l1Details.crDate) : '-'}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Time</span>
+                              <span className="font-medium text-slate-700">{l1Details.requested_time}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
+                              <div className="flex gap-1.5 items-center mt-0.5">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  l1Details.crStatus !== 'Pending' 
+                                    ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
+                                    : 'bg-amber-50 border-amber-220 text-amber-700'
+                                }`}>
+                                  L1 {l1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
 
-              {/* Remarks input */}
-              {!alreadyDecided && (isAdmin || isHOD) && (
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <label className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
-                    <MessageSquare size={12} /> Remarks <span className="text-slate-400 font-normal normal-case">(optional)</span>
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={remarks}
-                    onChange={e => setRemarks(e.target.value)}
-                    placeholder="Enter your remarks or reason for decision..."
-                    className="w-full border border-slate-200 rounded-xl p-3 text-[12px] text-slate-700 outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all resize-none"
-                  />
-                </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[12px]">
+                            <div className="space-y-[4px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
+                              <span className="font-semibold text-slate-850 block break-words">{l1Details.title}</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-[16px]">
+                              <div className="space-y-[4px]">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
+                                <span className="font-medium text-slate-700">{l1Details.unit}</span>
+                              </div>
+                              <div className="space-y-[4px]">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In</span>
+                                <span className="font-medium text-slate-750">{l1Details.change_in}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                            <div className="space-y-[4px] md:col-span-2 min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
+                              <span className="font-semibold text-slate-800 block break-words">{l1Details.request_by}</span>
+                              <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{l1Details.crRequester}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
+                              <span className="font-medium text-slate-700">{l1Details.dept}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
+                              <span className="font-medium text-slate-700">{l1Details.change_type}</span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
+                              <span className="font-medium text-slate-700">{l1Details.process_name}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line</span>
+                              <span className="font-medium text-slate-700">{l1Details.process_line}</span>
+                            </div>
+                            <div className="space-y-[4px] col-span-2 md:col-span-1">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No</span>
+                              <span className="font-mono text-slate-700">{l1Details.machine_no}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Details & Justification */}
+                        <div className="space-y-[12px] pt-4 border-t border-slate-100">
+                          <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                            <FileText size={14} />
+                            <span>Details & Justification</span>
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                            <div className="space-y-[6px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Description</span>
+                              <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
+                                {l1Details.description}
+                              </div>
+                              {l1Details.file_desc && renderL1FilePill(l1Details.file_desc, l1Details.change_no)}
+                            </div>
+
+                            <div className="space-y-[6px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Area of Improvement / Benefit</span>
+                              <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
+                                {l1Details.improvement_area}
+                              </div>
+                              {l1Details.file_improvement && renderL1FilePill(l1Details.file_improvement, l1Details.change_no)}
+
+                              {/* TABLE VIEW FOR IMPROVEMENT DATA */}
+                              {(() => {
+                                if (!l1Details.improvement_table_data) return null;
+                                let tableData = [];
+                                try {
+                                  tableData = JSON.parse(l1Details.improvement_table_data);
+                                } catch (e) {
+                                  return null;
+                                }
+                                if (!Array.isArray(tableData) || tableData.length === 0) return null;
+
+                                const area = (l1Details.improvement_area || '').toLowerCase();
+                                const hasCost = area === 'cost';
+                                const hasProductivity = area === 'productivity';
+                                const hasQuality = area === 'quality';
+
+                                if (!hasCost && !hasProductivity && !hasQuality) return null;
+
+                                return (
+                                  <div className="mt-3 border border-slate-200 rounded-[8px] overflow-hidden bg-white">
+                                    <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 text-[10px] font-bold text-slate-650 uppercase tracking-wider">
+                                      {hasCost ? 'Cost Saving Data' : hasProductivity ? 'Productivity Improvement Data' : 'Quality Improvement Data'}
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                      <table className="w-full text-left border-collapse text-[11px]">
+                                        <thead>
+                                          <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
+                                            <th className="p-2">4M #</th>
+                                            <th className="p-2">Date</th>
+                                            {hasCost && (
+                                              <>
+                                                <th className="p-2">Save/Month</th>
+                                                <th className="p-2">Save/Annum</th>
+                                                <th className="p-2">ROI</th>
+                                              </>
+                                            )}
+                                            {hasProductivity && (
+                                              <>
+                                                <th className="p-2">Current</th>
+                                                <th className="p-2">Improved</th>
+                                              </>
+                                            )}
+                                            {hasQuality && (
+                                              <>
+                                                <th className="p-2">Current PPM</th>
+                                                <th className="p-2">Reduced PPM</th>
+                                              </>
+                                            )}
+                                          </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                          {tableData.map((row, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
+                                              <td className="p-2 font-mono font-medium">{row.changeNo}</td>
+                                              <td className="p-2">{row.date || '-'}</td>
+                                              {hasCost && (
+                                                <>
+                                                  <td className="p-2 font-semibold">Rs. {row.monthlySave || '0'}</td>
+                                                  <td className="p-2 font-semibold">Rs. {row.annualSave || '0'}</td>
+                                                  <td className="p-2">{row.roi || '-'}</td>
+                                                </>
+                                              )}
+                                              {hasProductivity && (
+                                                <>
+                                                  <td className="p-2">{row.currentProd || '0'} nos</td>
+                                                  <td className="p-2 font-semibold">{row.improvedProd || '0'} nos</td>
+                                                </>
+                                              )}
+                                              {hasQuality && (
+                                                <>
+                                                  <td className="p-2">{row.currentPpm || '0'}</td>
+                                                  <td className="p-2 font-semibold">{row.reducedPpm || '0'}</td>
+                                                </>
+                                              )}
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Start</span>
+                              <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                                <Calendar size={13} className="text-slate-400" />
+                                {l1Details.date_start ? formatDateToDDMMYYYY(l1Details.date_start) : '-'}
+                              </span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Close</span>
+                              <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                                <Calendar size={13} className="text-slate-400" />
+                                {l1Details.date_close ? formatDateToDDMMYYYY(l1Details.date_close) : '-'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Traceability, Risk & Approvals */}
+                        <div className="space-y-[12px] pt-4 border-t border-slate-100">
+                          <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                            <Cpu size={14} />
+                            <span>Traceability, Risk & Approvals</span>
+                          </h5>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                            <div className="space-y-[6px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability FROM (Before Change)</span>
+                              <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
+                                {l1Details.trace_from}
+                              </div>
+                              {l1Details.file_trace_from && renderL1FilePill(l1Details.file_trace_from, l1Details.change_no)}
+                            </div>
+
+                            <div className="space-y-[6px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability TO (After Change)</span>
+                              <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
+                                {l1Details.trace_to}
+                              </div>
+                              {l1Details.file_trace_to && renderL1FilePill(l1Details.file_trace_to, l1Details.change_no)}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                            <div className="space-y-[6px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis & Mitigations</span>
+                              <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
+                                {l1Details.risk_analysis}
+                              </div>
+                              {l1Details.file_risk && renderL1FilePill(l1Details.file_risk, l1Details.change_no)}
+                            </div>
+
+                            <div className="space-y-[6px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">SOP / WI / Control Plan Update</span>
+                              <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
+                                {l1Details.sop_update}
+                              </div>
+                              {l1Details.file_sop && renderL1FilePill(l1Details.file_sop, l1Details.change_no)}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mt-4">
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Approval</span>
+                              <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                                <CheckCircle2 size={14} className="text-emerald-500" />
+                                {l1Details.hod_approval}
+                              </span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required</span>
+                              <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                                <Clock size={14} className="text-slate-400" />
+                                {l1Details.customer_approval}
+                              </span>
+                            </div>
+                            <div className="space-y-[6px] md:col-span-1 min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Monitoring</span>
+                              <div className="font-semibold text-slate-750 leading-relaxed break-words">
+                                {l1Details.effectiveness_monitoring}
+                              </div>
+                              {l1Details.file_effectiveness && renderL1FilePill(l1Details.file_effectiveness, l1Details.change_no)}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* If already decided — show previous decision */}
+                        {alreadyDecided && (
+                          <section className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
+                            <h5 className="text-[11px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-1.5">
+                              <ShieldCheck size={13} /> Previous HOD Decision
+                            </h5>
+                            <div className="flex items-center gap-3">
+                              <StatusBadge status={selectedReq.hodStatus} />
+                              <span className="text-[12px] text-slate-500">
+                                by{' '}
+                                <span className="font-semibold text-slate-700">
+                                  {selectedReq.hodName || selectedReq.hodEmail}
+                                </span>{' '}
+                                {selectedReq.hodDept && (
+                                  <span className="text-slate-400 font-normal">({selectedReq.hodDept})</span>
+                                )}
+                              </span>
+                            </div>
+                            {selectedReq.hodRemarks && (
+                              <p className="text-[12px] text-slate-600 bg-white border border-slate-200 rounded-lg p-2.5 leading-relaxed">{selectedReq.hodRemarks}</p>
+                            )}
+                          </section>
+                        )}
+
+                        {/* Remarks input */}
+                        {!alreadyDecided && (isAdmin || isHOD) && (
+                          <div className="space-y-2 pt-2 border-t border-slate-100">
+                            <label className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+                              <MessageSquare size={12} /> Remarks <span className="text-slate-400 font-normal normal-case">(optional)</span>
+                            </label>
+                            <textarea
+                              rows={3}
+                              value={remarks}
+                              onChange={e => setRemarks(e.target.value)}
+                              placeholder="Enter your remarks or reason for decision..."
+                              className="w-full border border-slate-200 rounded-xl p-3 text-[12px] text-slate-700 outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all resize-none"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
+                        <FileText size={28} className="text-slate-300" />
+                        <p className="text-sm">No L1 request details found for this change.</p>
+                      </div>
+                    )
+                  )}
+
+                  {activeTab === 'l2' && (
+                    !selectedL2Details ? (
+                      <div className="text-center py-[64px] bg-slate-50 rounded-xl border border-dashed border-slate-200 w-full">
+                        <AlertTriangle className="mx-auto mb-[12px] text-slate-300" size={32} />
+                        <span className="text-slate-400 font-medium">No L2 Validation Details found for this request.</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-[20px]">
+                        <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                          <CheckCircle2 size={14} />
+                          <span>L2 Validation Details</span>
+                        </h5>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Date</span>
+                            <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
+                            <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
+                            <div>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                selectedL2Details.status === 'Accepted'
+                                  ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                                  : selectedL2Details.status === 'Rejected'
+                                  ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                  : 'bg-amber-50 border-amber-220 text-amber-700'
+                              }`}>
+                                L2 {selectedL2Details.status || 'Pending'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                            <span className="font-mono font-bold text-slate-800">{selectedL2Details.changeNo}</span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                          <div className="space-y-[6px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">PED Validation Attachment</span>
+                            <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
+                              <span className="font-medium text-slate-650 truncate max-w-[200px]" title={selectedL2Details.weldTest || '-'}>
+                                {selectedL2Details.weldTest || '-'}
+                              </span>
+                              {selectedL2Details.weldTest && selectedL2Details.weldTest !== '-' && (
+                                <span 
+                                  className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
+                                  onClick={() => handleViewAttachment(selectedL2Details.weldTest, selectedL2Details.changeNo, 'L2')}
+                                >
+                                  Preview
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="space-y-[6px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Setup Verification Attachment</span>
+                            <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
+                              <span className="font-medium text-slate-650 truncate max-w-[200px]" title={selectedL2Details.qaTest || '-'}>
+                                {selectedL2Details.qaTest || '-'}
+                              </span>
+                              {selectedL2Details.qaTest && selectedL2Details.qaTest !== '-' && (
+                                <span 
+                                  className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
+                                  onClick={() => handleViewAttachment(selectedL2Details.qaTest, selectedL2Details.changeNo, 'L2')}
+                                >
+                                  Preview
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-[4px] mt-4">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validator Remarks / Comments</span>
+                          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
+                            {selectedL2Details.remarks || 'No remarks provided.'}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )}
+
+                  {activeTab === 'l3' && selectedLog && (
+                    <div className="space-y-[20px]">
+                      <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                        <Cpu size={14} />
+                        <span>L3 Approval Status Matrix</span>
+                      </h5>
+
+                      {/* Metadata */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-[16px] pb-[16px] border-b border-slate-100">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</span>
+                          <span className="font-bold text-[#0066cc] text-[13px]">{selectedLog.changeNo}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By</span>
+                          <span className="font-medium text-slate-700">{selectedLog.requester}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                          <span className="font-medium text-slate-700">{selectedLog.date ? formatDateToDDMMYYYY(selectedLog.date) : '-'}</span>
+                        </div>
+                      </div>
+
+                      {/* Matrix Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
+                        {[
+                          { label: 'PED', value: selectedLog.ped },
+                          { label: 'Quality', value: selectedLog.quality },
+                          { label: 'Production', value: selectedLog.production },
+                          { label: 'Maintenance', value: selectedLog.maintenance },
+                          { label: 'PC & L', value: selectedLog.pcl },
+                          { label: 'Materials', value: selectedLog.materials },
+                          { label: 'Marketing', value: selectedLog.marketing },
+                          { label: 'HR', value: selectedLog.hr },
+                          { label: 'Safety', value: selectedLog.safety },
+                          { label: 'Unit Head', value: selectedLog.unitHead }
+                        ].map((dept, index) => {
+                          const propMap = {
+                            'PED': selectedLog.ped,
+                            'Quality': selectedLog.quality,
+                            'Production': selectedLog.production,
+                            'Maintenance': selectedLog.maintenance,
+                            'PC & L': selectedLog.pcl || selectedLog.ped,
+                            'Materials': selectedLog.materials,
+                            'Marketing': selectedLog.marketing,
+                            'HR': selectedLog.hr,
+                            'Safety': selectedLog.safety,
+                            'Unit Head': selectedLog.unitHead || selectedLog.unit_head
+                          };
+                          const status = propMap[dept.label] || 'Pending';
+                          const isAccepted = status === 'Accepted' || status === 'Approved';
+                          const isRejected = status === 'Rejected';
+                          const badgeClass = isAccepted 
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                            : isRejected 
+                            ? 'bg-rose-50 border-rose-200 text-rose-700' 
+                            : 'bg-amber-50 border-amber-200 text-amber-700';
+
+                          return (
+                            <div 
+                              key={index} 
+                              className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
+                            >
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
+                              <span className={`inline-block px-[10px] py-[3px] rounded-full border text-[10px] font-bold shadow-sm ${badgeClass}`}>
+                                L3 {status}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
