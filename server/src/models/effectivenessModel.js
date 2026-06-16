@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import { broadcast } from '../config/websocket.js';
+import { triggerEffectivenessQAAlert } from './notificationModel.js';
 
 // Self-healing: Ensure effectiveness tables exist on load
 const ensureTablesExist = async () => {
@@ -94,6 +95,13 @@ export const createLog = async (logData, attachments) => {
     
     await connection.commit();
     broadcast({ type: 'REFRESH_EFFECTIVENESS' });
+
+    if (qaApproval === 'Approved' || qaApproval === 'Rejected') {
+      triggerEffectivenessQAAlert(changeNo, qaApproval, remarks).catch(err =>
+        console.error('Error triggering effectiveness QA alert in createLog:', err)
+      );
+    }
+
     return logData;
   } catch (error) {
     await connection.rollback();
@@ -145,8 +153,21 @@ export const updateLog = async (id, logData, attachments) => {
       }
     }
     
+    // Fetch the change_no to send alerts
+    const [logRows] = await connection.query(
+      'SELECT change_no FROM effectiveness_logs WHERE id = ?',
+      [id]
+    );
+    const changeNo = logRows.length > 0 ? logRows[0].change_no : null;
+
     await connection.commit();
     broadcast({ type: 'REFRESH_EFFECTIVENESS' });
+
+    if ((qaApproval === 'Approved' || qaApproval === 'Rejected') && changeNo) {
+      triggerEffectivenessQAAlert(changeNo, qaApproval, remarks).catch(err =>
+        console.error('Error triggering effectiveness QA alert in updateLog:', err)
+      );
+    }
     
     const [rows] = await connection.query(
       `SELECT e.id, e.change_no as changeNo, 
