@@ -254,7 +254,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               onClick={() => handleTabChange('dashboard')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'dashboard'
                 ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
-                : 'text-slate-600 hover:text-[#0066cc] hover:bg-slate-50'
+                : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -268,7 +268,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               onClick={() => handleTabChange('all-requests')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'all-requests'
                 ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
-                : 'text-slate-600 hover:text-[#0066cc] hover:bg-slate-50'
+                : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -283,7 +283,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 onClick={() => handleTabChange('all-approvals')}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'all-approvals'
                   ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
-                  : 'text-slate-600 hover:text-[#0066cc] hover:bg-slate-50'
+                  : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -299,7 +299,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 onClick={() => setLevelOpen(!levelOpen)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${(activeTab === 'l1' || activeTab === 'approvals' || activeTab === 'l3')
                   ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
-                  : 'text-slate-600 hover:text-[#0066cc] hover:bg-slate-50'
+                  : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -317,7 +317,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                     onClick={() => handleTabChange('l1')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'l1'
                       ? 'bg-gradient-to-r from-sky-50/70 to-[#e6f0fa]/30 text-[#0066cc] border-l-[2.5px] border-[#0066cc] font-semibold'
-                      : 'text-slate-500 hover:text-[#0066cc] hover:bg-slate-50'
+                      : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -331,7 +331,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                     onClick={() => handleTabChange('approvals')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'approvals'
                       ? 'bg-gradient-to-r from-sky-50/70 to-[#e6f0fa]/30 text-[#0066cc] border-l-[2.5px] border-[#0066cc] font-semibold'
-                      : 'text-slate-505 hover:text-[#0066cc] hover:bg-slate-50'
+                      : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -345,7 +345,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                     onClick={() => handleTabChange('l3')}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'l3'
                       ? 'bg-gradient-to-r from-sky-50/70 to-[#e6f0fa]/30 text-[#0066cc] border-l-[2.5px] border-[#0066cc] font-semibold'
-                      : 'text-slate-500 hover:text-[#0066cc] hover:bg-slate-50'
+                      : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                       }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -362,7 +362,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               onClick={() => handleTabChange('effectiveness')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'effectiveness'
                 ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
-                : 'text-slate-655 hover:text-[#0066cc] hover:bg-slate-50'
+                : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -376,7 +376,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               onClick={() => handleTabChange('notifications')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'notifications'
                 ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
-                : 'text-slate-655 hover:text-[#0066cc] hover:bg-slate-50'
+                : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -396,7 +396,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 onClick={() => handleTabChange('users')}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'users'
                   ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
-                  : 'text-slate-655 hover:text-[#0066cc] hover:bg-slate-50'
+                  : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -411,7 +411,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               onClick={() => handleTabChange('settings')}
               className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'settings'
                 ? 'bg-gradient-to-r from-sky-50 to-[#e6f0fa]/40 text-[#0066cc] border-l-[3.5px] border-[#0066cc] font-semibold'
-                : 'text-slate-655 hover:text-[#0066cc] hover:bg-slate-50'
+                : 'text-black hover:text-[#0066cc] hover:bg-slate-50'
                 }`}
             >
               <div className="flex items-center gap-3">
