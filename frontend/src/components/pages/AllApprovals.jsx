@@ -1115,7 +1115,7 @@ export const AllApprovals = ({
                         )}
 
                         {/* Remarks input */}
-                        {!alreadyDecided && (isAdmin || isHOD) && (
+                        {!alreadyDecided && (isAdmin || (isHOD && (mapDept(selectedReq.dept) === actingDept || mapDept(selectedReq.hodApprovalNote) === actingDept))) && (
                           <div className="space-y-2 pt-2 border-t border-slate-100">
                             <label className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
                               <MessageSquare size={12} /> Remarks <span className="text-slate-400 font-normal normal-case">(optional)</span>
@@ -1328,7 +1328,7 @@ export const AllApprovals = ({
                   <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-emerald-700 bg-emerald-50 border-emerald-200">
                     <CheckCircle2 size={14} /> L1 HOD Approval Completed
                   </span>
-                ) : (isAdmin || (isHOD && mapDept(selectedReq.dept) === actingDept)) ? (
+                ) : (isAdmin || (isHOD && (mapDept(selectedReq.dept) === actingDept || mapDept(selectedReq.hodApprovalNote) === actingDept))) ? (
                   <>
                     <span className="text-[11px] font-bold text-slate-600">
                       Your L1 decision as <span className="text-[#0066cc]">{actingDept}</span> HOD:
@@ -1352,7 +1352,7 @@ export const AllApprovals = ({
                   </>
                 ) : (
                   <span className="text-[12px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
-                    Awaiting {mapDept(selectedReq.dept)} HOD Decision
+                    Awaiting {mapDept(selectedReq.hodApprovalNote || selectedReq.dept)} HOD Decision
                   </span>
                 )}
               </div>
