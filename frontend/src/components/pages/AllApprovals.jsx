@@ -387,7 +387,7 @@ export const AllApprovals = ({
       r.hodStatus === statusFilter;
     const stageInfo = workflowStageConfig(r.crStatus);
     const matchStage = stageFilter === 'All' || stageInfo.level === stageFilter;
-    const matchScope = scopeFilter === 'All' || mapDept(r.dept) === actingDept;
+    const matchScope = scopeFilter === 'All' || mapDept(r.dept) === actingDept || mapDept(r.hodApprovalNote) === actingDept;
     return matchSearch && matchStatus && matchStage && matchScope;
   });
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -404,7 +404,7 @@ export const AllApprovals = ({
   const pendingCount = requests.filter(r => {
     const isL1Pending = r.crStatus === 'Pending';
     const isPendingDecision = !r.hodStatus || r.hodStatus === 'Pending';
-    const isMyDept = isAdmin || (isHOD && mapDept(r.dept) === actingDept);
+    const isMyDept = isAdmin || (isHOD && (mapDept(r.dept) === actingDept || mapDept(r.hodApprovalNote) === actingDept));
     return isL1Pending && isPendingDecision && isMyDept;
   }).length;
   const approvedCount = requests.filter(r => r.hodStatus === 'Approved').length;
@@ -630,7 +630,7 @@ export const AllApprovals = ({
                   {paginated.map((req, idx) => {
                     const isL1Pending = req.crStatus === 'Pending';
                     const isPendingDecision = !req.hodStatus || req.hodStatus === 'Pending';
-                    const isMyDept = isAdmin || (isHOD && mapDept(req.dept) === actingDept);
+                    const isMyDept = isAdmin || (isHOD && (mapDept(req.dept) === actingDept || mapDept(req.hodApprovalNote) === actingDept));
                     const isActionable = isL1Pending && isPendingDecision && isMyDept;
                     const stage = workflowStageConfig(req.crStatus);
                     return (
