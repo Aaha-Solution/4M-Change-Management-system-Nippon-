@@ -61,6 +61,37 @@ const pool = mysql.createPool({
       console.warn('⚠️ Could not modify notifications id column:', err.message);
     }
 
+    // Ensure standard departments exist in departments table
+    try {
+      const depts = [
+        'General', 'PED', 'Quality', 'Production', 'Maintenance', 
+        'PC & L', 'Materials', 'Marketing', 'HR', 'Safety'
+      ];
+      for (const d of depts) {
+        await connection.query(
+          'INSERT IGNORE INTO departments (name) VALUES (?)',
+          [d]
+        );
+      }
+      console.log('✅ Ensured standard departments are seeded in departments table.');
+    } catch (err) {
+      console.warn('⚠️ Error seeding standard departments:', err.message);
+    }
+
+    // Ensure standard processes exist in processes table
+    try {
+      const procs = ['Wind', 'Gold', 'EOL', 'Pott', 'Load'];
+      for (const p of procs) {
+        await connection.query(
+          'INSERT IGNORE INTO processes (name) VALUES (?)',
+          [p]
+        );
+      }
+      console.log('✅ Ensured standard processes are seeded in processes table.');
+    } catch (err) {
+      console.warn('⚠️ Error seeding standard processes:', err.message);
+    }
+
     connection.release();
   } catch (error) {
     console.error('❌ Error connecting to MySQL database:', error.message);

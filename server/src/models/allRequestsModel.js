@@ -39,6 +39,21 @@ export const getChanges = async () => {
             c.requester as requesterEmail,
             v.status as l2Status,
             ha.status as hodStatus,
+            COALESCE(
+              CASE 
+                WHEN LOWER(COALESCE(l1.dept, u.department)) IN ('quality', 'qad', 'qa') THEN l3.quality
+                WHEN LOWER(COALESCE(l1.dept, u.department)) = 'ped' THEN l3.ped
+                WHEN LOWER(COALESCE(l1.dept, u.department)) = 'production' THEN l3.production
+                WHEN LOWER(COALESCE(l1.dept, u.department)) = 'maintenance' THEN l3.maintenance
+                WHEN LOWER(COALESCE(l1.dept, u.department)) IN ('pc & l', 'pcl') THEN l3.pcl
+                WHEN LOWER(COALESCE(l1.dept, u.department)) = 'materials' THEN l3.materials
+                WHEN LOWER(COALESCE(l1.dept, u.department)) = 'marketing' THEN l3.marketing
+                WHEN LOWER(COALESCE(l1.dept, u.department)) = 'hr' THEN l3.hr
+                WHEN LOWER(COALESCE(l1.dept, u.department)) = 'safety' THEN l3.safety
+                WHEN LOWER(COALESCE(l1.dept, u.department)) IN ('unit head', 'unit_head') THEN l3.unit_head
+              END, 
+              'Pending'
+            ) as l3Status,
             DATE_FORMAT(c.date, '%Y-%m-%d') as rawDate,
             DATE_FORMAT(l1.date_start, '%Y-%m-%d') as dateStart,
             DATE_FORMAT(l1.date_close, '%Y-%m-%d') as dateClose,

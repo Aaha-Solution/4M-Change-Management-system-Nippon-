@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ClipboardList, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '../../utils/dateUtils';
+import { getRequestDisplayStatus } from '../../utils/statusUtils';
 import { getSyncedDate } from '../../utils/timeSync';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
 import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Approvals } from '../../api/apiRoutes';
@@ -47,16 +48,7 @@ export const AllRequests = ({
 
   const formattedDbChanges = changes.map((c) => {
     const displayDate = formatDateToDDMMYY(c.date);
-
-    let displayStatus = c.status;
-    if (c.status === 'Pending' || c.status === 'Evaluating') {
-      if (c.hodStatus === 'Approved') {
-        displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
-      } else {
-        displayStatus = 'Pending L1 HOD';
-      }
-    }
-    if (c.status === 'Completed') displayStatus = 'Closed';
+    const displayStatus = getRequestDisplayStatus(c);
 
     return {
       id: c.id,

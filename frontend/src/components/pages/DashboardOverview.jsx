@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../../utils/dateUtils';
+import { getRequestDisplayStatus } from '../../utils/statusUtils';
 import { getSyncedDate } from '../../utils/timeSync';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
 import { getProcesses, getMachines } from '../../api/apiRoutes';
@@ -126,7 +127,17 @@ export const DashboardOverview = ({
     const matchesPerson = filterPerson === 'All' || c.requester === filterPerson;
     const matchesProcess = filterProcess === 'All' || c.processName === filterProcess;
     const matchesMachine = filterMachine === 'All' || c.machineNo === filterMachine;
-    const matchesStatus = filterStatus === 'All' || c.status === filterStatus;
+    
+    let matchesStatus = true;
+    if (filterStatus !== 'All') {
+      const dispStatus = getRequestDisplayStatus(c);
+      if (filterStatus === 'Approved') matchesStatus = dispStatus === 'Approved';
+      else if (filterStatus === 'Completed') matchesStatus = dispStatus === 'Closed';
+      else if (filterStatus === 'Rejected') matchesStatus = dispStatus === 'Rejected';
+      else if (filterStatus === 'Evaluating') matchesStatus = dispStatus === 'Pending L2';
+      else if (filterStatus === 'Pending') matchesStatus = dispStatus === 'Pending L1 HOD';
+      else matchesStatus = false;
+    }
 
     return matchesMonth && matchesFromDate && matchesToDate && matchesPerson && matchesProcess && matchesMachine && matchesStatus;
   });
@@ -166,27 +177,9 @@ export const DashboardOverview = ({
     }
   });
 
-  const dynamicApproved = filteredChanges.filter(c => c.status === 'Approved' || ((c.status === 'Pending' || c.status === 'Evaluating') && c.l2Status === 'Accepted')).length;
-  const dynamicPending = filteredChanges.filter(c => (c.status === 'Pending' || c.status === 'Evaluating') && c.l2Status !== 'Accepted').length;
-  const dynamicRejected = filteredChanges.filter(c => c.status === 'Rejected').length;
-
-  const totalCount = filteredChanges.length;
-  const approvedCount = dynamicApproved;
-  const pendingCount = dynamicPending;
-  const rejectedCount = dynamicRejected;
-
   const formattedDbChanges = filteredChanges.map((c, idx) => {
     const displayDate = formatDateToDDMMYY(c.date);
-
-    let displayStatus = c.status;
-    if (c.status === 'Pending' || c.status === 'Evaluating') {
-      if (c.hodStatus === 'Approved') {
-        displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
-      } else {
-        displayStatus = 'Pending L1 HOD';
-      }
-    }
-    if (c.status === 'Completed') displayStatus = 'Closed';
+    const displayStatus = getRequestDisplayStatus(c);
 
     return {
       slNo: idx + 1,
@@ -197,6 +190,11 @@ export const DashboardOverview = ({
       status: displayStatus
     };
   });
+
+  const totalCount = filteredChanges.length;
+  const approvedCount = formattedDbChanges.filter(c => c.status === 'Approved' || c.status === 'Closed').length;
+  const pendingCount = formattedDbChanges.filter(c => c.status === 'Pending L1 HOD' || c.status === 'Pending L2').length;
+  const rejectedCount = formattedDbChanges.filter(c => c.status === 'Rejected').length;
 
   const allTableRows = formattedDbChanges;
   const paginatedTableRows = allTableRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -682,10 +680,10 @@ export const DashboardOverview = ({
         const d = new Date(c.date);
         if (!isNaN(d.getTime())) {
           const monthIdx = d.getMonth();
-          const status = c.status;
-          if (status === 'Approved') {
+          const dispStatus = getRequestDisplayStatus(c);
+          if (dispStatus === 'Approved' || dispStatus === 'Closed') {
             dataMap[monthIdx].appr++;
-          } else if (status === 'Rejected') {
+          } else if (dispStatus === 'Rejected') {
             dataMap[monthIdx].rej++;
           } else {
             dataMap[monthIdx].pend++;
