@@ -470,12 +470,14 @@ export const DashboardOverview = ({
         {data.map((item, idx) => {
           const barHeight = (item.value / maxVal) * 100;
           return (
-            <div key={idx} className="flex flex-col items-center w-[9%] group">
+            <div key={idx} className="flex flex-col items-center w-[9%] h-full justify-end group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div
-                className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
-                style={{ height: `${barHeight}%`, minHeight: '4px' }}
-              />
+              <div className="w-full h-[65%] flex items-end justify-center">
+                <div
+                  className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
+                  style={{ height: `${barHeight}%`, minHeight: '4px' }}
+                />
+              </div>
               <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
                 {item.label === 'PRODUCTION' ? (
                   <>
@@ -547,12 +549,14 @@ export const DashboardOverview = ({
         {data.map((item, idx) => {
           const barHeight = (item.value / maxVal) * 100;
           return (
-            <div key={idx} className="flex flex-col items-center w-[12%] group">
+            <div key={idx} className="flex flex-col items-center w-[12%] h-full justify-end group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div
-                className="w-full bg-[#2e7d32] hover:bg-[#1b5e20] transition-all rounded-t-[2px]"
-                style={{ height: `${barHeight}%`, minHeight: '4px' }}
-              />
+              <div className="w-full h-[65%] flex items-end justify-center">
+                <div
+                  className="w-full bg-[#2e7d32] hover:bg-[#1b5e20] transition-all rounded-t-[2px]"
+                  style={{ height: `${barHeight}%`, minHeight: '4px' }}
+                />
+              </div>
               <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
                 {item.label}
               </span>
@@ -609,12 +613,14 @@ export const DashboardOverview = ({
         {data.map((item, idx) => {
           const barHeight = (item.value / maxVal) * 100;
           return (
-            <div key={idx} className="flex flex-col items-center w-[12%] group">
+            <div key={idx} className="flex flex-col items-center w-[12%] h-full justify-end group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div
-                className="w-full transition-all rounded-t-[2px]"
-                style={{ height: `${barHeight}%`, minHeight: '4px', backgroundColor: item.color }}
-              />
+              <div className="w-full h-[65%] flex items-end justify-center">
+                <div
+                  className="w-full transition-all rounded-t-[2px]"
+                  style={{ height: `${barHeight}%`, minHeight: '4px', backgroundColor: item.color }}
+                />
+              </div>
               <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
                 {item.label}
               </span>
@@ -654,12 +660,14 @@ export const DashboardOverview = ({
         {data.map((item, idx) => {
           const barHeight = (item.value / maxVal) * 100;
           return (
-            <div key={idx} className="flex flex-col items-center w-[7%] group">
+            <div key={idx} className="flex flex-col items-center w-[7%] h-full justify-end group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div
-                className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
-                style={{ height: `${barHeight}%`, minHeight: '4px' }}
-              />
+              <div className="w-full h-[65%] flex items-end justify-center">
+                <div
+                  className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
+                  style={{ height: `${barHeight}%`, minHeight: '4px' }}
+                />
+              </div>
               <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
                 {item.label}
               </span>
@@ -707,7 +715,7 @@ export const DashboardOverview = ({
           const hPend = (item.pend / maxVal) * 100;
 
           return (
-            <div key={idx} className="flex flex-col items-center w-[7%] group">
+            <div key={idx} className="flex flex-col items-center w-[7%] h-full justify-end group">
               <div className="flex gap-[2px] mb-[4px] text-[8px] font-bold">
                 {item.appr > 0 && <span className="text-[#1e60aa]">{item.appr}</span>}
                 {item.rej > 0 && <span className="text-[#f57c00]">{item.rej}</span>}
@@ -862,10 +870,12 @@ export const DashboardOverview = ({
                     return (
                       <div key={idx} className="flex flex-col items-center min-w-[70px] max-w-[100px] h-full justify-end group">
                         <span className="text-[9px] font-bold text-slate-600 mb-1">Rs. {val}</span>
-                        <div
-                          className="w-8 bg-gradient-to-t from-[#154a85] to-[#1e60aa] hover:from-[#1a5292] hover:to-[#226ec2] transition-all rounded-t-[3px] shadow-sm cursor-pointer"
-                          style={{ height: `${Math.max(pct, 4)}%` }}
-                        />
+                        <div className="w-full h-[65%] flex items-end justify-center">
+                          <div
+                            className="w-8 bg-gradient-to-t from-[#154a85] to-[#1e60aa] hover:from-[#1a5292] hover:to-[#226ec2] transition-all rounded-t-[3px] shadow-sm cursor-pointer"
+                            style={{ height: `${Math.max(pct, 4)}%` }}
+                          />
+                        </div>
                         <span className="text-[9px] font-bold text-slate-500 mt-2 truncate max-w-full" title={row.changeNo}>
                           {row.changeNo}
                         </span>
