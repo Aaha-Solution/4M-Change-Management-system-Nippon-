@@ -171,12 +171,15 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
     const now = new Date();
     const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
     
-    // Resolve target users (requester, admins, and HODs of raisedDept)
+    // Resolve target users (requester, admins, HODs of raisedDept, and HODs of approved hodDept)
     const [users] = await connection.query('SELECT email, role, department FROM users');
     const raisedDeptLower = (raisedDept || '').toLowerCase();
+    const hodDeptLower = (hodDept || '').toLowerCase();
     const targetUsers = [];
+    const seenEmails = new Set();
 
     if (requester) {
+      seenEmails.add(requester.toLowerCase());
       targetUsers.push({ email: requester, department: userDept || raisedDept || 'General' });
     }
 
@@ -188,8 +191,9 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
       const isAdmin = userRole.includes('admin') || userRole.includes('administrator');
       const isHOD = userRole.includes('hod') || userRole.includes('manager');
       
-      if (userEmail !== (requester || '').toLowerCase()) {
-        if (isAdmin || (userDeptName === raisedDeptLower && isHOD)) {
+      if (!seenEmails.has(userEmail)) {
+        if (isAdmin || (isHOD && (userDeptName === raisedDeptLower || userDeptName === hodDeptLower))) {
+          seenEmails.add(userEmail);
           targetUsers.push(user);
         }
       }
@@ -256,6 +260,7 @@ export const sendL1DecisionEmails = async (changeNo, hodDept, status, remarks, c
     }
 
     const raisedDeptLower = (raisedDept || '').toLowerCase();
+    const hodDeptLower = (hodDept || '').toLowerCase();
     for (const user of users) {
       const userEmail = user.email;
       const userRole = (user.role || '').toLowerCase();
@@ -264,8 +269,8 @@ export const sendL1DecisionEmails = async (changeNo, hodDept, status, remarks, c
       const isAdmin = userRole.includes('admin') || userRole.includes('administrator');
       const isHOD = userRole.includes('hod') || userRole.includes('manager');
       
-      // Email admins and other users in the same department
-      if (isAdmin || (userDept === raisedDeptLower && (isHOD || userEmail === requester))) {
+      // Email admins, HODs of raised department, and HODs of approved department
+      if (isAdmin || (isHOD && (userDept === raisedDeptLower || userDept === hodDeptLower)) || userEmail.toLowerCase() === requester.toLowerCase()) {
         targetEmails.add(userEmail);
       }
     }
