@@ -17,7 +17,15 @@ import { formatDateToDDMMYY, parseDDMMYYYYToDate } from '../../utils/dateUtils';
 import { getSyncedDate } from '../../utils/timeSync';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
 import { getProcesses, getMachines } from '../../api/apiRoutes';
-import { exportDashboardRequestsPDF } from '../../utils/pdfExport';
+import {
+  exportDashboardRequestsPDF,
+  exportDepartmentAnalyticsPDF,
+  exportProcessAnalyticsPDF,
+  exportCategoryAnalyticsPDF,
+  exportMonthlyAnalyticsPDF,
+  exportApprovalStatusAnalyticsPDF,
+  exportImprovementBenefitsPDF
+} from '../../utils/pdfExport';
 
 
 export const DashboardOverview = ({
@@ -203,6 +211,95 @@ export const DashboardOverview = ({
       machine: filterMachine,
       status: filterStatus
     }, setToastMsg);
+  };
+
+  const handleExportSpecificTab = (tabName) => {
+    const filtersInfo = {
+      month: filterMonth,
+      fromDate: filterFromDate,
+      toDate: filterToDate,
+      person: filterPerson,
+      process: filterProcess,
+      machine: filterMachine,
+      status: filterStatus
+    };
+
+    if (tabName === 'Department') {
+      exportDepartmentAnalyticsPDF(filteredChanges, filtersInfo, setToastMsg);
+    } else if (tabName === 'Process') {
+      exportProcessAnalyticsPDF(filteredChanges, filtersInfo, setToastMsg);
+    } else if (tabName === '6M Category') {
+      exportCategoryAnalyticsPDF(filteredChanges, filtersInfo, setToastMsg);
+    } else if (tabName === 'Monthly') {
+      exportMonthlyAnalyticsPDF(filteredChanges, filtersInfo, setToastMsg);
+    } else if (tabName === 'Approval Status') {
+      exportApprovalStatusAnalyticsPDF(filteredChanges, filtersInfo, setToastMsg);
+    } else if (tabName === 'Improvement Benefits') {
+      // For Improvement Benefits, apply its separate filters
+      const filteredCost = costSavingRows.filter(row => {
+        let matchesMonth = true;
+        if (benefitFilterMonth !== 'All') {
+          const parts = row.date.split('/');
+          if (parts.length === 3) {
+            const monthIdx = parseInt(parts[1], 10) - 1;
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            matchesMonth = months[monthIdx] === benefitFilterMonth;
+          } else {
+            matchesMonth = false;
+          }
+        }
+        const matchesSearch = !benefitFilterSearch || row.changeNo.toLowerCase().includes(benefitFilterSearch.toLowerCase());
+        return matchesMonth && matchesSearch;
+      });
+
+      const filteredProductivity = productivityRows.filter(row => {
+        let matchesMonth = true;
+        if (benefitFilterMonth !== 'All') {
+          const parts = row.date.split('/');
+          if (parts.length === 3) {
+            const monthIdx = parseInt(parts[1], 10) - 1;
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            matchesMonth = months[monthIdx] === benefitFilterMonth;
+          } else {
+            matchesMonth = false;
+          }
+        }
+        const matchesSearch = !benefitFilterSearch || row.changeNo.toLowerCase().includes(benefitFilterSearch.toLowerCase());
+        return matchesMonth && matchesSearch;
+      });
+
+      const filteredQuality = qualityRows.filter(row => {
+        let matchesMonth = true;
+        if (benefitFilterMonth !== 'All') {
+          const parts = row.date.split('/');
+          if (parts.length === 3) {
+            const monthIdx = parseInt(parts[1], 10) - 1;
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            matchesMonth = months[monthIdx] === benefitFilterMonth;
+          } else {
+            matchesMonth = false;
+          }
+        }
+        const matchesSearch = !benefitFilterSearch || row.changeNo.toLowerCase().includes(benefitFilterSearch.toLowerCase());
+        return matchesMonth && matchesSearch;
+      });
+
+      exportImprovementBenefitsPDF(
+        filteredCost,
+        filteredProductivity,
+        filteredQuality,
+        {
+          type: benefitFilterType,
+          month: benefitFilterMonth,
+          search: benefitFilterSearch
+        },
+        setToastMsg
+      );
+    }
+  };
+
+  const handleExportActiveTab = () => {
+    handleExportSpecificTab(activeAnalyticsTab);
   };
 
 
@@ -1130,7 +1227,7 @@ export const DashboardOverview = ({
         {!isGridView ? (
           /* TAB VIEW (Single Chart Layout) */
           <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px]">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <h4 className="text-[14px] font-bold text-slate-800">
                 {activeAnalyticsTab === 'Department' && 'Department Wise Change'}
                 {activeAnalyticsTab === 'Process' && 'Process Wise Change'}
@@ -1139,6 +1236,14 @@ export const DashboardOverview = ({
                 {activeAnalyticsTab === 'Approval Status' && 'Overall Change Approval Status'}
                 {activeAnalyticsTab === 'Improvement Benefits' && 'Improvement Benefits'}
               </h4>
+              <button
+                onClick={handleExportActiveTab}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
+                title={`Export ${activeAnalyticsTab} Analytics to PDF`}
+              >
+                <Download size={12} />
+                <span>Export PDF</span>
+              </button>
             </div>
 
             {/* Render filter block based on selected analytics tab */}
@@ -1161,7 +1266,16 @@ export const DashboardOverview = ({
               <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">Department Wise Change</h4>
-                  <GitBranch size={14} className="text-slate-400" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleExportSpecificTab('Department')}
+                      className="text-slate-400 hover:text-[#0066cc] p-1 transition-colors cursor-pointer"
+                      title="Export Department Analytics to PDF"
+                    >
+                      <Download size={14} />
+                    </button>
+                    <GitBranch size={14} className="text-slate-400" />
+                  </div>
                 </div>
                 {renderFilters()}
                 {renderDepartmentChart('h-[140px]')}
@@ -1171,7 +1285,16 @@ export const DashboardOverview = ({
               <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">Process Wise Change</h4>
-                  <Settings size={14} className="text-slate-400" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleExportSpecificTab('Process')}
+                      className="text-slate-400 hover:text-[#0066cc] p-1 transition-colors cursor-pointer"
+                      title="Export Process Analytics to PDF"
+                    >
+                      <Download size={14} />
+                    </button>
+                    <Settings size={14} className="text-slate-400" />
+                  </div>
                 </div>
                 {renderFilters()}
                 {renderProcessChart('h-[140px]')}
@@ -1181,7 +1304,16 @@ export const DashboardOverview = ({
               <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">6M Category Change</h4>
-                  <Layers size={14} className="text-slate-400" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleExportSpecificTab('6M Category')}
+                      className="text-slate-400 hover:text-[#0066cc] p-1 transition-colors cursor-pointer"
+                      title="Export 6M Category Analytics to PDF"
+                    >
+                      <Download size={14} />
+                    </button>
+                    <Layers size={14} className="text-slate-400" />
+                  </div>
                 </div>
                 {renderFilters()}
                 {renderCategoryChart('h-[140px]')}
@@ -1191,7 +1323,16 @@ export const DashboardOverview = ({
               <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">Monthly Change</h4>
-                  <Calendar size={14} className="text-slate-400" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleExportSpecificTab('Monthly')}
+                      className="text-slate-400 hover:text-[#0066cc] p-1 transition-colors cursor-pointer"
+                      title="Export Monthly Analytics to PDF"
+                    >
+                      <Download size={14} />
+                    </button>
+                    <Calendar size={14} className="text-slate-400" />
+                  </div>
                 </div>
                 {renderFilters()}
                 {renderMonthlyChart('h-[140px]')}
@@ -1200,25 +1341,34 @@ export const DashboardOverview = ({
 
             {/* 5. Overall Change Approval Status (Full-width Card at bottom of Grid Mode) */}
             <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-[8px]">
                   <h4 className="text-[13px] font-bold text-slate-800">Overall Change Approval Status</h4>
                   <ShieldAlert size={14} className="text-slate-400" />
                 </div>
-                {/* Legends */}
-                <div className="flex items-center gap-[12px] text-[10px] font-bold text-slate-500 select-none">
-                  <div className="flex items-center gap-[4px]">
-                    <span className="w-[8px] h-[8px] rounded-full bg-[#1e60aa]" />
-                    <span>Appr</span>
+                {/* Legends & Export */}
+                <div className="flex items-center gap-[16px] text-[10px] font-bold text-slate-500 select-none">
+                  <div className="flex items-center gap-[12px]">
+                    <div className="flex items-center gap-[4px]">
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#1e60aa]" />
+                      <span>Appr</span>
+                    </div>
+                    <div className="flex items-center gap-[4px]">
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#f57c00]" />
+                      <span>Rej</span>
+                    </div>
+                    <div className="flex items-center gap-[4px]">
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#b0bec5]" />
+                      <span>Pend</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-[4px]">
-                    <span className="w-[8px] h-[8px] rounded-full bg-[#f57c00]" />
-                    <span>Rej</span>
-                  </div>
-                  <div className="flex items-center gap-[4px]">
-                    <span className="w-[8px] h-[8px] rounded-full bg-[#b0bec5]" />
-                    <span>Pend</span>
-                  </div>
+                  <button
+                    onClick={() => handleExportSpecificTab('Approval Status')}
+                    className="text-slate-400 hover:text-[#0066cc] p-1 transition-colors cursor-pointer"
+                    title="Export Approval Status Analytics to PDF"
+                  >
+                    <Download size={14} />
+                  </button>
                 </div>
               </div>
               {renderStatusFilters()}
@@ -1227,11 +1377,19 @@ export const DashboardOverview = ({
 
             {/* 6. Improvement Benefits (Full-width Card at bottom of Grid Mode) */}
             <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-[8px]">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-[8px] flex-wrap gap-2">
                 <div className="flex items-center gap-[8px]">
                   <h4 className="text-[13px] font-bold text-slate-800">Improvement Benefits</h4>
                   <BarChart3 size={14} className="text-slate-400" />
                 </div>
+                <button
+                  onClick={() => handleExportSpecificTab('Improvement Benefits')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
+                  title="Export Improvement Benefits Report to PDF"
+                >
+                  <Download size={12} />
+                  <span>Export PDF</span>
+                </button>
               </div>
               {renderFilters()}
               {renderImprovementBenefits()}
