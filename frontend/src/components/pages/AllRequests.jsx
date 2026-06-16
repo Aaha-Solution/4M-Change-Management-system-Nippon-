@@ -400,6 +400,7 @@ export const AllRequests = ({
                     <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
                     <td className="p-[16px]">
                       <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
+                        r.status === 'Pending L3' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' :
                         r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
                         r.status === 'Pending L1 HOD' ? 'bg-blue-50 border-blue-200 text-blue-700' :
                         r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :

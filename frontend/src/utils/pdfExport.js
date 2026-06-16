@@ -987,7 +987,7 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
           } else if (val === 'Rejected') {
             data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Pending L2' || val === 'Pending') {
+          } else if (val && val.includes('Pending')) {
             data.cell.styles.textColor = [217, 119, 6]; // Amber
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Closed') {

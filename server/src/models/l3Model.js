@@ -164,19 +164,19 @@ export const addL3ApprovalLog = async (logData) => {
 
     const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
 
-    let isSpecificDecided = false;
-    if (mappedRaisedDept === 'PED') isSpecificDecided = ['Approved', 'Rejected'].includes(ped);
-    else if (mappedRaisedDept === 'Quality') isSpecificDecided = ['Approved', 'Rejected'].includes(quality);
-    else if (mappedRaisedDept === 'Production') isSpecificDecided = ['Approved', 'Rejected'].includes(production);
-    else if (mappedRaisedDept === 'Maintenance') isSpecificDecided = ['Approved', 'Rejected'].includes(maintenance);
-    else if (mappedRaisedDept === 'PC & L') isSpecificDecided = ['Approved', 'Rejected'].includes(pcl);
-    else if (mappedRaisedDept === 'Materials') isSpecificDecided = ['Approved', 'Rejected'].includes(materials);
-    else if (mappedRaisedDept === 'Marketing') isSpecificDecided = ['Approved', 'Rejected'].includes(marketing);
-    else if (mappedRaisedDept === 'HR') isSpecificDecided = ['Approved', 'Rejected'].includes(hr);
-    else if (mappedRaisedDept === 'Safety') isSpecificDecided = ['Approved', 'Rejected'].includes(safety);
-    else if (mappedRaisedDept === 'Unit Head') isSpecificDecided = ['Approved', 'Rejected'].includes(unitHead);
+    const isAllL3Decided = 
+      ped !== 'Pending' &&
+      quality !== 'Pending' &&
+      production !== 'Pending' &&
+      maintenance !== 'Pending' &&
+      pcl !== 'Pending' &&
+      materials !== 'Pending' &&
+      marketing !== 'Pending' &&
+      hr !== 'Pending' &&
+      safety !== 'Pending' &&
+      unitHead !== 'Pending';
 
-    if (isSpecificDecided) {
+    if (isAllL3Decided) {
       await connection.query(
         `UPDATE change_requests SET status = 'Completed' WHERE id = ?`,
         [changeNo]
