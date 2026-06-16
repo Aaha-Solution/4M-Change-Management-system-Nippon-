@@ -275,17 +275,30 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
       notifIds.push(notifId);
     }
 
-    // If approved, add an Action Required notification for the requester to fill L2
-    if (status === 'Approved' && requester) {
-      const actionNotifId = `L2-ACTION-${changeNo}-${Date.now()}`;
-      const actionTitle = `L1 Approved - Proceed to L2 Validation`;
-      const actionDetails = `Your Change Request ${changeNo} has been approved by the HOD. Please proceed to L2.`;
-      await connection.query(
-        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue', ?)`,
-        [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', raisedDept || userDept || 'General', timeStr, requester]
-      );
-      notifIds.push(actionNotifId);
+    // If approved, add an Action Required notification for the requester and admins to fill L2
+    if (status === 'Approved') {
+      const targetEmailsForL2Action = new Set();
+      if (requester) {
+        targetEmailsForL2Action.add(requester.toLowerCase().trim());
+      }
+      for (const u of users) {
+        const uRole = (u.role || '').toLowerCase();
+        if (uRole.includes('admin') || uRole.includes('administrator')) {
+          targetEmailsForL2Action.add(u.email.toLowerCase().trim());
+        }
+      }
+
+      for (const email of targetEmailsForL2Action) {
+        const actionNotifId = `L2-ACTION-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
+        const actionTitle = `L1 Approved - Proceed to L2 Validation`;
+        const actionDetails = `Your Change Request ${changeNo} has been approved by the HOD. Please proceed to L2.`;
+        await connection.query(
+          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue', ?)`,
+          [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', raisedDept || userDept || 'General', timeStr, email]
+        );
+        notifIds.push(actionNotifId);
+      }
     }
   }
 
@@ -350,9 +363,9 @@ export const sendL1DecisionEmails = async (changeNo, hodDept, status, remarks, c
           <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase;">L1 Approval Decision</p>
         </div>
         <div style="padding: 24px; background-color: #ffffff;">
-          <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Hello ${requesterName},</h2>
+          <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Hello Team,</h2>
           <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-            Your Change Request has been <strong>${status}</strong> by the <strong>${hodDept}</strong> HOD.
+            Change Request <strong>${changeNo}</strong> has been <strong>${status}</strong> by the <strong>${hodDept}</strong> HOD. ${status === 'Approved' ? 'Please proceed to L2 validation.' : ''}
           </p>
           <div style="background-color: ${bgLight}; border-left: 4px solid ${themeColor}; padding: 16px; margin: 20px 0; border-radius: 4px;">
             <div style="font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600;">Status Update</div>

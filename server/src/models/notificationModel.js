@@ -41,7 +41,7 @@ export const getNotifications = async (email, role) => {
   mainCondition += `))`;
 
   query += ` WHERE ` + mainCondition;
-  query += ` ORDER BY created_at DESC `;
+  query += ` ORDER BY created_at DESC, id DESC `;
 
   const [rows] = await pool.query(query, params);
   return rows.map(r => ({ ...r, isRead: !!r.isRead }));
