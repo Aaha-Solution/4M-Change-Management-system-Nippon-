@@ -158,6 +158,7 @@ CREATE TABLE notifications (
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     type VARCHAR(100) NOT NULL DEFAULT '',
     color VARCHAR(20) NOT NULL DEFAULT '',
+    recipient_email VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

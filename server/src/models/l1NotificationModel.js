@@ -11,15 +11,50 @@ export const createL1RequestNotifications = async (connection, changeNo, hodAppr
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
   const notifIds = [];
 
-  for (const dName of selectedDepts) {
-    const notifId = `L1-HOD-NOTIF-${changeNo}-${dName.replace(/\s+/g, '_')}-${Date.now()}`;
+  // Query all users to resolve target users
+  const [users] = await connection.query('SELECT email, role, department FROM users');
+  
+  // Get requester email from change_requests table
+  const [crRows] = await connection.query(
+    'SELECT requester FROM change_requests WHERE id = ?',
+    [changeNo]
+  );
+  const requesterEmail = crRows.length > 0 ? crRows[0].requester : null;
+
+  const selectedDeptsLower = selectedDepts.map(d => d.toLowerCase());
+  const targetUsers = [];
+  const seenEmails = new Set();
+
+  if (requesterEmail) {
+    seenEmails.add(requesterEmail.toLowerCase());
+    targetUsers.push({ email: requesterEmail, department: dept || 'General' });
+  }
+
+  for (const user of users) {
+    const userEmail = user.email.toLowerCase();
+    const userRole = (user.role || '').toLowerCase();
+    const userDept = (user.department || '').toLowerCase();
+    
+    const isHOD = userRole.includes('hod') || userRole.includes('manager');
+    const isAdmin = userRole.includes('admin') || userRole.includes('administrator');
+    
+    if (isAdmin || (isHOD && selectedDeptsLower.includes(userDept))) {
+      if (!seenEmails.has(userEmail)) {
+        seenEmails.add(userEmail);
+        targetUsers.push(user);
+      }
+    }
+  }
+
+  for (const targetUser of targetUsers) {
+    const notifId = `L1-HOD-NOTIF-${changeNo}-${targetUser.email.replace(/[@.]/g, '_')}-${Date.now()}`;
     const notifTitle = `HOD Approval Required – ${changeNo}`;
-    const notifDetails = `Change Request ${changeNo} created by ${requestBy} (${dept} department) requires HOD approval/validation (Approved or Rejected decision) from your department (${dName}).`;
+    const notifDetails = `Change Request ${changeNo} created by ${requestBy} (${dept} department) requires HOD approval/validation (Approved or Rejected decision) from your department (${targetUser.department}).`;
     
     await connection.query(
-      `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
-       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
-      [notifId, notifTitle, notifDetails, changeNo, changeIn || 'GENERAL', dName, timeStr, 'Action Required', 'blue']
+      `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
+      [notifId, notifTitle, notifDetails, changeNo, changeIn || 'GENERAL', targetUser.department || 'General', timeStr, 'Action Required', 'blue', targetUser.email]
     );
     notifIds.push(notifId);
   }
@@ -37,7 +72,7 @@ export const sendL1RequestEmails = async (changeNo, hodApproval, changeIn, reque
 
     // Fetch L1 details to populate the email table
     const [l1Rows] = await pool.query(
-      `SELECT l1.change_no, l1.dept, l1.change_in, l1.request_by, l1.process_name, l1.process_line, l1.machine_no, l1.description, cr.title
+      `SELECT l1.change_no, l1.dept, l1.change_in, l1.request_by, l1.process_name, l1.process_line, l1.machine_no, l1.description, cr.title, cr.requester as requesterEmail
        FROM l1_requests l1
        LEFT JOIN change_requests cr ON l1.change_no = cr.id
        WHERE l1.change_no = ?`,
@@ -50,6 +85,9 @@ export const sendL1RequestEmails = async (changeNo, hodApproval, changeIn, reque
     const [users] = await pool.query('SELECT email, role, department FROM users');
 
     const targetEmails = new Set();
+    if (l1Details.requesterEmail) {
+      targetEmails.add(l1Details.requesterEmail.toLowerCase());
+    }
     const selectedDeptsLower = selectedDepts.map(d => d.toLowerCase());
 
     for (const user of users) {
@@ -104,8 +142,7 @@ export const sendL1RequestEmails = async (changeNo, hodApproval, changeIn, reque
     `;
 
     await sendMail({
-      to: emailList[0],
-      bcc: emailList.slice(1).join(', '),
+      to: emailList.join(', '),
       subject: `[CMS] Alert: HOD & Admin Review Required for ${changeNo}`,
       html: emailContent
     });
@@ -134,27 +171,54 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
     const { requester, raisedDept, userDept, changeIn } = crRows[0];
     const now = new Date();
     const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
-    const notifId = `HOD-DECISION-${changeNo}-${hodDept.replace(/\s+/g, '_')}-${Date.now()}`;
+    
+    // Resolve target users (requester, admins, and HODs of raisedDept)
+    const [users] = await connection.query('SELECT email, role, department FROM users');
+    const raisedDeptLower = (raisedDept || '').toLowerCase();
+    const targetUsers = [];
+
+    if (requester) {
+      targetUsers.push({ email: requester, department: userDept || raisedDept || 'General' });
+    }
+
+    for (const user of users) {
+      const userEmail = user.email.toLowerCase();
+      const userRole = (user.role || '').toLowerCase();
+      const userDeptName = (user.department || '').toLowerCase();
+      
+      const isAdmin = userRole.includes('admin') || userRole.includes('administrator');
+      const isHOD = userRole.includes('hod') || userRole.includes('manager');
+      
+      if (userEmail !== (requester || '').toLowerCase()) {
+        if (isAdmin || (userDeptName === raisedDeptLower && isHOD)) {
+          targetUsers.push(user);
+        }
+      }
+    }
+
     const color = status === 'Approved' ? 'green' : 'red';
     const title = `HOD ${status} – ${changeNo}`;
     const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${status.toLowerCase()} by the ${hodDept} HOD.${remarks ? ` Remarks: ${remarks}` : ''}`;
 
-    await connection.query(
-      `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
-       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?)`,
-      [notifId, title, details, changeNo, changeIn || 'GENERAL', raisedDept || '', timeStr, color]
-    );
-    notifIds.push(notifId);
+    for (const targetUser of targetUsers) {
+      const notifId = `HOD-DECISION-${changeNo}-${hodDept.replace(/\s+/g, '_')}-${targetUser.email.replace(/[@.]/g, '_')}-${Date.now()}`;
+      await connection.query(
+        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?, ?)`,
+        [notifId, title, details, changeNo, changeIn || 'GENERAL', targetUser.department || 'General', timeStr, color, targetUser.email]
+      );
+      notifIds.push(notifId);
+    }
 
     // If approved, add an Action Required notification for the requester to fill L2
-    if (status === 'Approved') {
+    if (status === 'Approved' && requester) {
       const actionNotifId = `L2-ACTION-${changeNo}-${Date.now()}`;
       const actionTitle = `L1 Approved - Proceed to L2 Validation`;
       const actionDetails = `Your Change Request ${changeNo} has been approved by the HOD. Please proceed to L2.`;
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue', ?)`,
-        [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', userDept || raisedDept || '', timeStr, requester]
+        [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', userDept || raisedDept || 'General', timeStr, requester]
       );
       notifIds.push(actionNotifId);
     }
@@ -247,8 +311,7 @@ export const sendL1DecisionEmails = async (changeNo, hodDept, status, remarks, c
     `;
 
     await sendMail({
-      to: emailList[0],
-      bcc: emailList.slice(1).join(', '),
+      to: emailList.join(', '),
       subject: `[4M CMS] L1 HOD Decision: ${status} for ${changeNo}`,
       html: emailHtml
     });
