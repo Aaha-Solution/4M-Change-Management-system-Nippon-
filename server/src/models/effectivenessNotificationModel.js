@@ -36,8 +36,7 @@ export const triggerEffectivenessQAAlert = async (changeNo, qaApproval, remarks)
     for (const user of users) {
       const role = (user.role || '').toLowerCase();
       const isAdmin = role.includes('admin') || role.includes('administrator');
-      const isHOD = role.includes('hod') || role.includes('manager') || 
-                    role.includes('unit head') || role.includes('unit_head');
+      const isHOD = role.includes('hod') || role.includes('manager');
       if (isAdmin || isHOD) {
         recipientEmails.add(user.email.toLowerCase());
       }

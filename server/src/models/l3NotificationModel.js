@@ -72,7 +72,7 @@ export const sendL3DecisionEmails = async (changeNo, updatedDeptField, newDecisi
     for (const u of users) {
       const role = (u.role || '').toLowerCase();
       const isAdmin = role.includes('admin') || role.includes('administrator');
-      const isHOD = role.includes('hod') || role.includes('manager') || role.includes('unit head') || role.includes('unit_head');
+      const isHOD = role.includes('hod') || role.includes('manager');
       if (isAdmin || isHOD) {
         recipientEmails.add(u.email);
       }

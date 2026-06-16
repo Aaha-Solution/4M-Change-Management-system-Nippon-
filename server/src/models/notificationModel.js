@@ -10,7 +10,7 @@ export const getNotifications = async (email, role) => {
 
   const roleLower = (role || '').toLowerCase();
   const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
-  const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
+  const isHOD = roleLower.includes('hod') || roleLower.includes('manager');
 
   const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
   const department = userRows.length > 0 ? userRows[0].department : '';
@@ -66,7 +66,7 @@ export const toggleReadStatus = async (id) => {
 export const markAllRead = async (email, role) => {
   const roleLower = (role || '').toLowerCase();
   const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
-  const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
+  const isHOD = roleLower.includes('hod') || roleLower.includes('manager');
 
   const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
   const department = userRows.length > 0 ? userRows[0].department : '';
@@ -113,7 +113,7 @@ export const deleteNotification = async (id) => {
 export const clearRead = async (email, role) => {
   const roleLower = (role || '').toLowerCase();
   const isAdmin = roleLower.includes('admin') || roleLower.includes('administrator');
-  const isHOD = roleLower.includes('hod') || roleLower.includes('manager') || roleLower.includes('unit head') || roleLower.includes('unit_head');
+  const isHOD = roleLower.includes('hod') || roleLower.includes('manager');
 
   const [userRows] = await pool.query('SELECT department FROM users WHERE email = ?', [email]);
   const department = userRows.length > 0 ? userRows[0].department : '';

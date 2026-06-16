@@ -73,8 +73,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
     // 3. All Department HODs
     const [hods] = await connection.query(
       `SELECT email, name, department, role FROM users 
-       WHERE department != '' AND department IS NOT NULL 
-         AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%' OR LOWER(role) LIKE '%unit head%' OR LOWER(role) LIKE '%unit_head%')`
+       WHERE department != '' AND department IS NOT NULL AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%')`
     );
     for (const u of hods) {
       if (!seenEmails.has(u.email.toLowerCase())) {
@@ -170,7 +169,7 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
              OR LOWER(role) IN ('admin', 'administrator')
              OR (
                LOWER(department) = LOWER(?)
-               AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%' OR LOWER(role) LIKE '%unit head%' OR LOWER(role) LIKE '%unit_head%')
+                AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%')
              )
            )`,
         [l1Dept || '']
