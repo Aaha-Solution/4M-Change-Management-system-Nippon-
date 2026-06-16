@@ -34,17 +34,18 @@ export const createL3DecisionNotifications = async (connection, changeNo, update
     }
   }
 
+  const requestDept = l1Dept || 'General';
+
   for (const targetUser of targetUsers) {
-    const dept = targetUser.department || 'General';
     const email = targetUser.email;
-    const notifId = `L3-DECISION-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
+    const notifId = `L3-DECISION-NOTIF-${changeNo}-${requestDept.replace(/\s+/g, '_')}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
     const title = `L3 Approval ${newDecision} by ${updatedDeptField} HOD – ${changeNo}`;
-    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} raised by ${requestBy} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD at L3. Your department (${dept}) is notified.`;
+    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} raised by ${requestBy} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD at L3.`;
 
     await connection.query(
       `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
-      [notifId, title, details, changeNo, changeIn || 'GENERAL', dept, timeStr, 'System Logs', color, email]
+       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?, ?)`,
+      [notifId, title, details, changeNo, changeIn || 'GENERAL', requestDept, timeStr, color, email]
     );
     notifIdsToSend.push(notifId);
   }

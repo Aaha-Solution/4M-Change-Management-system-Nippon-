@@ -59,8 +59,8 @@ export const triggerEffectivenessQAAlert = async (changeNo, qaApproval, remarks)
       const personalNotifId = `EFF-QA-${qaApproval.toUpperCase()}-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
       await pool.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-         VALUES (?, ?, ?, ?, 'SYSTEM', '', ?, FALSE, 'Action Required', ?, ?)`,
-        [personalNotifId, title, details, changeNo, timeStr, color, email]
+         VALUES (?, ?, ?, ?, 'SYSTEM', ?, ?, FALSE, 'Action Required', ?, ?)`,
+        [personalNotifId, title, details, changeNo, cr.dept || 'General', timeStr, color, email]
       );
     }
 

@@ -48,12 +48,12 @@ export const createL1RequestNotifications = async (connection, changeNo, hodAppr
   for (const targetUser of targetUsers) {
     const notifId = `L1-HOD-NOTIF-${changeNo}-${targetUser.email.replace(/[@.]/g, '_')}-${Date.now()}`;
     const notifTitle = `HOD Approval Required – ${changeNo}`;
-    const notifDetails = `Change Request ${changeNo} created by ${requestBy} (${dept} department) requires HOD approval/validation (Approved or Rejected decision) from your department (${targetUser.department}).`;
+    const notifDetails = `Change Request ${changeNo} created by ${requestBy} (${dept} department) requires HOD approval/validation (Approved or Rejected decision) from the selected department(s) (${hodApproval}).`;
     
     await connection.query(
       `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
        VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue', ?)`,
-      [notifId, notifTitle, notifDetails, changeNo, changeIn || 'GENERAL', targetUser.department || 'General', timeStr, targetUser.email]
+      [notifId, notifTitle, notifDetails, changeNo, changeIn || 'GENERAL', dept || 'General', timeStr, targetUser.email]
     );
     notifIds.push(notifId);
   }
@@ -270,7 +270,7 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?, ?)`,
-        [notifId, title, details, changeNo, changeIn || 'GENERAL', targetUser.department || 'General', timeStr, color, targetUser.email]
+        [notifId, title, details, changeNo, changeIn || 'GENERAL', raisedDept || userDept || 'General', timeStr, color, targetUser.email]
       );
       notifIds.push(notifId);
     }
@@ -283,7 +283,7 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue', ?)`,
-        [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', userDept || raisedDept || 'General', timeStr, requester]
+        [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', raisedDept || userDept || 'General', timeStr, requester]
       );
       notifIds.push(actionNotifId);
     }

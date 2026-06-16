@@ -124,10 +124,12 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
         : `L2-NOTIF-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
     }
 
+    const notifDept = l1Dept || crRequesterDept || 'General';
+
     await connection.query(
       `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
        VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
-      [notifId, title, details, changeNo, changeIn || 'GENERAL', dept, timeStr, 'Action Required', statusColor, email]
+      [notifId, title, details, changeNo, changeIn || 'GENERAL', notifDept, timeStr, 'Action Required', statusColor, email]
     );
   }
 
@@ -138,14 +140,15 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
       [crRequesterEmail]
     );
     const reqDept = reqUserDeptRow.length > 0 ? reqUserDeptRow[0].department : '';
-    if (reqDept) {
+    const notifDept = l1Dept || reqDept || 'General';
+    if (notifDept) {
       const requesterNotifId = `L2-REQUESTER-CONFIRM-${changeNo}-${Date.now()}`;
       const requesterNotifTitle = `L2 Validation Submitted – ${changeNo}`;
       const requesterNotifDetails = `Your L2 Requester Validation attachment for Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been submitted successfully. The QA department will now review and verify your setup. You will be notified once a decision is made.`;
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
-        [requesterNotifId, requesterNotifTitle, requesterNotifDetails, changeNo, changeIn || 'GENERAL', reqDept, timeStr, 'Info', 'blue', crRequesterEmail]
+        [requesterNotifId, requesterNotifTitle, requesterNotifDetails, changeNo, changeIn || 'GENERAL', notifDept, timeStr, 'Info', 'blue', crRequesterEmail]
       );
     }
   }
