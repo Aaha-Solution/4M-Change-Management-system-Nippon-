@@ -86,7 +86,25 @@ INSERT INTO roles (name) VALUES
 ('Hod');
 
 -- Seed Departments
+INSERT INTO departments (name) VALUES
+('General'),
+('PED'),
+('Quality'),
+('Production'),
+('Maintenance'),
+('PC & L'),
+('Materials'),
+('Marketing'),
+('HR'),
+('Safety');
 
+-- Seed Processes
+INSERT INTO processes (name) VALUES
+('Wind'),
+('Gold'),
+('EOL'),
+('Pott'),
+('Load');
 
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES

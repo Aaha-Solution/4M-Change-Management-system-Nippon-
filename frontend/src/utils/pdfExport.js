@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatDateToDDMMYYYY } from './dateUtils';
+import { getRequestDisplayStatus } from './statusUtils';
 import { getSyncedDate } from './timeSync';
 import nipponLogoUrl from '../assets/Nippon Logo.png';
 
@@ -905,11 +906,7 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
     const headers = [['SL. NO.', 'CHANGE NO.', 'MACHINE NO.', 'DEPARTMENT', 'REQUEST DATE', 'STATUS']];
 
     const tableData = filteredChanges.map((item, idx) => {
-      let displayStatus = item.status;
-      if (item.status === 'Pending' || item.status === 'Evaluating') {
-        displayStatus = item.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
-      }
-      if (item.status === 'Completed') displayStatus = 'Closed';
+      const displayStatus = getRequestDisplayStatus(item);
 
       return [
         idx + 1,
@@ -1293,15 +1290,7 @@ export const exportDepartmentAnalyticsPDF = (filteredChanges, filtersInfo = {}, 
     const detailedHeaders = [['SL. NO.', 'CHANGE NO.', 'DEPARTMENT', 'MACHINE NO.', 'DATE', 'STATUS']];
     const detailedRows = filteredChanges.map((c, idx) => {
       const displayDate = c.date ? formatDateToDDMMYYYY(c.date) : '-';
-      let displayStatus = c.status;
-      if (c.status === 'Pending' || c.status === 'Evaluating') {
-        if (c.hodStatus === 'Approved') {
-          displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
-        } else {
-          displayStatus = 'Pending L1 HOD';
-        }
-      }
-      if (c.status === 'Completed') displayStatus = 'Closed';
+      const displayStatus = getRequestDisplayStatus(c);
 
       return [
         idx + 1,
@@ -1432,15 +1421,7 @@ export const exportProcessAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
     const detailedHeaders = [['SL. NO.', 'CHANGE NO.', 'PROCESS NAME', 'MACHINE NO.', 'DATE', 'STATUS']];
     const detailedRows = filteredChanges.map((c, idx) => {
       const displayDate = c.date ? formatDateToDDMMYYYY(c.date) : '-';
-      let displayStatus = c.status;
-      if (c.status === 'Pending' || c.status === 'Evaluating') {
-        if (c.hodStatus === 'Approved') {
-          displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
-        } else {
-          displayStatus = 'Pending L1 HOD';
-        }
-      }
-      if (c.status === 'Completed') displayStatus = 'Closed';
+      const displayStatus = getRequestDisplayStatus(c);
 
       return [
         idx + 1,
@@ -1572,15 +1553,7 @@ export const exportCategoryAnalyticsPDF = (filteredChanges, filtersInfo = {}, se
     const detailedHeaders = [['SL. NO.', 'CHANGE NO.', 'CHANGE IN / TITLE', 'MACHINE NO.', 'DATE', 'STATUS']];
     const detailedRows = filteredChanges.map((c, idx) => {
       const displayDate = c.date ? formatDateToDDMMYYYY(c.date) : '-';
-      let displayStatus = c.status;
-      if (c.status === 'Pending' || c.status === 'Evaluating') {
-        if (c.hodStatus === 'Approved') {
-          displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
-        } else {
-          displayStatus = 'Pending L1 HOD';
-        }
-      }
-      if (c.status === 'Completed') displayStatus = 'Closed';
+      const displayStatus = getRequestDisplayStatus(c);
 
       return [
         idx + 1,
@@ -1709,15 +1682,7 @@ export const exportMonthlyAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
     const detailedHeaders = [['SL. NO.', 'CHANGE NO.', 'DEPARTMENT', 'MACHINE NO.', 'DATE', 'STATUS']];
     const detailedRows = filteredChanges.map((c, idx) => {
       const displayDate = c.date ? formatDateToDDMMYYYY(c.date) : '-';
-      let displayStatus = c.status;
-      if (c.status === 'Pending' || c.status === 'Evaluating') {
-        if (c.hodStatus === 'Approved') {
-          displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
-        } else {
-          displayStatus = 'Pending L1 HOD';
-        }
-      }
-      if (c.status === 'Completed') displayStatus = 'Closed';
+      const displayStatus = getRequestDisplayStatus(c);
 
       return [
         idx + 1,
@@ -1788,10 +1753,10 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
         const d = new Date(c.date);
         if (!isNaN(d.getTime())) {
           const monthIdx = d.getMonth();
-          const status = c.status;
-          if (status === 'Approved') {
+          const dispStatus = getRequestDisplayStatus(c);
+          if (dispStatus === 'Approved' || dispStatus === 'Closed') {
             dataMap[monthIdx].appr++;
-          } else if (status === 'Rejected') {
+          } else if (dispStatus === 'Rejected') {
             dataMap[monthIdx].rej++;
           } else {
             dataMap[monthIdx].pend++;
@@ -1860,15 +1825,7 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
     const detailedHeaders = [['SL. NO.', 'CHANGE NO.', 'DEPARTMENT', 'MACHINE NO.', 'DATE', 'STATUS']];
     const detailedRows = filteredChanges.map((c, idx) => {
       const displayDate = c.date ? formatDateToDDMMYYYY(c.date) : '-';
-      let displayStatus = c.status;
-      if (c.status === 'Pending' || c.status === 'Evaluating') {
-        if (c.hodStatus === 'Approved') {
-          displayStatus = c.l2Status === 'Accepted' ? 'Approved' : 'Pending L2';
-        } else {
-          displayStatus = 'Pending L1 HOD';
-        }
-      }
-      if (c.status === 'Completed') displayStatus = 'Closed';
+      const displayStatus = getRequestDisplayStatus(c);
 
       return [
         idx + 1,
