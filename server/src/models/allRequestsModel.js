@@ -2,30 +2,48 @@ import pool from '../config/db.js';
 import { broadcast } from '../config/websocket.js';
 
 export const getChanges = async () => {
-  // Self-healing: auto-complete any change requests that have their specific L3 raised department approval set
+  // Self-healing: auto-complete any change requests that have all L3 department approvals set,
+  // and reset any that were completed too early back to Approved.
   try {
+    // 1. Reset back to Approved if marked Completed too early
     await pool.query(`
       UPDATE change_requests cr
       INNER JOIN l3_approvals l3 ON cr.id = l3.change_no
-      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
-      LEFT JOIN users u ON cr.requester = u.email
-      SET cr.status = 'Completed'
-      WHERE cr.status != 'Completed'
+      SET cr.status = 'Approved'
+      WHERE cr.status = 'Completed'
         AND (
-          (LOWER(COALESCE(l1.dept, u.department)) IN ('quality', 'qad', 'qa') AND l3.quality IN ('Approved', 'Rejected'))
-          OR (LOWER(COALESCE(l1.dept, u.department)) = 'ped' AND l3.ped IN ('Approved', 'Rejected'))
-          OR (LOWER(COALESCE(l1.dept, u.department)) = 'production' AND l3.production IN ('Approved', 'Rejected'))
-          OR (LOWER(COALESCE(l1.dept, u.department)) = 'maintenance' AND l3.maintenance IN ('Approved', 'Rejected'))
-          OR (LOWER(COALESCE(l1.dept, u.department)) IN ('pc & l', 'pcl') AND l3.pcl IN ('Approved', 'Rejected'))
-          OR (LOWER(COALESCE(l1.dept, u.department)) = 'materials' AND l3.materials IN ('Approved', 'Rejected'))
-          OR (LOWER(COALESCE(l1.dept, u.department)) = 'marketing' AND l3.marketing IN ('Approved', 'Rejected'))
-          OR (LOWER(COALESCE(l1.dept, u.department)) = 'hr' AND l3.hr IN ('Approved', 'Rejected'))
-          OR (LOWER(COALESCE(l1.dept, u.department)) = 'safety' AND l3.safety IN ('Approved', 'Rejected'))
-          OR (LOWER(COALESCE(l1.dept, u.department)) IN ('unit head', 'unit_head') AND l3.unit_head IN ('Approved', 'Rejected'))
+          l3.ped = 'Pending' OR
+          l3.quality = 'Pending' OR
+          l3.production = 'Pending' OR
+          l3.maintenance = 'Pending' OR
+          l3.pcl = 'Pending' OR
+          l3.materials = 'Pending' OR
+          l3.marketing = 'Pending' OR
+          l3.hr = 'Pending' OR
+          l3.safety = 'Pending' OR
+          l3.unit_head = 'Pending'
         )
     `);
+
+    // 2. Mark Completed if all departments have voted
+    await pool.query(`
+      UPDATE change_requests cr
+      INNER JOIN l3_approvals l3 ON cr.id = l3.change_no
+      SET cr.status = 'Completed'
+      WHERE cr.status != 'Completed'
+        AND l3.ped != 'Pending'
+        AND l3.quality != 'Pending'
+        AND l3.production != 'Pending'
+        AND l3.maintenance != 'Pending'
+        AND l3.pcl != 'Pending'
+        AND l3.materials != 'Pending'
+        AND l3.marketing != 'Pending'
+        AND l3.hr != 'Pending'
+        AND l3.safety != 'Pending'
+        AND l3.unit_head != 'Pending'
+    `);
   } catch (err) {
-    console.error('Error auto-completing L3 requests in getChanges:', err);
+    console.error('Error self-healing L3 requests in getChanges:', err);
   }
 
   const [rows] = await pool.query(
@@ -68,7 +86,32 @@ export const getChanges = async () => {
                       l3.hr = 'Approved' AND
                       l3.safety = 'Approved' AND
                       l3.unit_head = 'Approved'
-                    ) THEN 1 ELSE 0 END as isL3Approved
+                    ) THEN 1 ELSE 0 END as isL3Approved,
+            CASE WHEN (
+                      l3.ped = 'Rejected' OR
+                      l3.quality = 'Rejected' OR
+                      l3.production = 'Rejected' OR
+                      l3.maintenance = 'Rejected' OR
+                      l3.pcl = 'Rejected' OR
+                      l3.materials = 'Rejected' OR
+                      l3.marketing = 'Rejected' OR
+                      l3.hr = 'Rejected' OR
+                      l3.safety = 'Rejected' OR
+                      l3.unit_head = 'Rejected'
+                    ) THEN 1 ELSE 0 END as hasL3Rejection,
+            CASE WHEN l3.change_no IS NULL THEN 0
+                 WHEN (
+                      l3.ped = 'Pending' OR
+                      l3.quality = 'Pending' OR
+                      l3.production = 'Pending' OR
+                      l3.maintenance = 'Pending' OR
+                      l3.pcl = 'Pending' OR
+                      l3.materials = 'Pending' OR
+                      l3.marketing = 'Pending' OR
+                      l3.hr = 'Pending' OR
+                      l3.safety = 'Pending' OR
+                      l3.unit_head = 'Pending'
+                    ) THEN 0 ELSE 1 END as isL3Complete
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
