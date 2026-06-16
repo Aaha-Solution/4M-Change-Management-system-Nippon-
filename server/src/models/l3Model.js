@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import { broadcast } from '../config/websocket.js';
+import { createL3DecisionNotifications, sendL3DecisionEmails } from './l3NotificationModel.js';
 
 export const getL3Approvals = async () => {
   const [rows] = await pool.query(
@@ -194,7 +195,6 @@ export const addL3ApprovalLog = async (logData) => {
     }
 
     // Send L3 decision notifications to ALL department HODs + originating dept
-    const notifIdsToSend = [];
     if (updatedDeptField && newDecision) {
       const [l1Rows] = await connection.query(
         `SELECT dept, change_in, request_by FROM l1_requests WHERE change_no = ?`,
@@ -204,62 +204,20 @@ export const addL3ApprovalLog = async (logData) => {
       const changeIn = l1Rows.length > 0 ? l1Rows[0].change_in : '';
       const requestBy = l1Rows.length > 0 ? l1Rows[0].request_by : requester;
 
-      const now = new Date();
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
-      const color = newDecision === 'Approved' ? 'green' : 'red';
-
-      // Fetch ALL departments to notify every HOD
-      const [allDeptRows] = await connection.query(
-        `SELECT DISTINCT department FROM users WHERE department != '' AND department IS NOT NULL`
+      await createL3DecisionNotifications(
+        connection, changeNo, updatedDeptField, newDecision, changeIn, requestBy, requester, l1Dept
       );
-
-      for (const deptRow of allDeptRows) {
-        const dept = deptRow.department;
-        const notifId = `L3-DECISION-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-        const title = `L3 Approval ${newDecision} by ${updatedDeptField} HOD – ${changeNo}`;
-        const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} raised by ${requestBy} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD at L3. Your department (${dept}) is notified.`;
-
-        await connection.query(
-          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
-           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
-          [notifId, title, details, changeNo, changeIn || 'GENERAL', dept, timeStr, 'System Logs', color]
-        );
-        notifIdsToSend.push(notifId);
-      }
-
-      // Also notify the originating dept if not already covered
-      if (l1Dept && !allDeptRows.some(r => r.department === l1Dept)) {
-        const notifId = `L3-DECISION-NOTIF-${changeNo}-${l1Dept.replace(/\s+/g, '_')}-${Date.now()}`;
-        const title = `L3 Approval ${newDecision} by ${updatedDeptField} HOD – ${changeNo}`;
-        const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD.`;
-
-        await connection.query(
-          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
-           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
-          [notifId, title, details, changeNo, changeIn || 'GENERAL', l1Dept, timeStr, 'System Logs', color]
-        );
-        notifIdsToSend.push(notifId);
-      }
     }
 
     await connection.commit();
     broadcast({ type: 'REFRESH_CHANGES' });
     broadcast({ type: 'REFRESH_NOTIFICATIONS' });
 
-    // Send email notifications to all HOD users asynchronously after commit
-    if (notifIdsToSend.length > 0 && updatedDeptField && newDecision) {
-      (async () => {
-        try {
-          const { sendEmailForNotification } = await import('./notificationModel.js');
-          for (const notifId of notifIdsToSend) {
-            await sendEmailForNotification(notifId).catch(err =>
-              console.error(`Error sending L3 notification email for ${notifId}:`, err)
-            );
-          }
-        } catch (err) {
-          console.error('Error in L3 email notification loop:', err);
-        }
-      })();
+    // Send email notifications asynchronously after commit
+    if (updatedDeptField && newDecision) {
+      sendL3DecisionEmails(changeNo, updatedDeptField, newDecision, '', requester).catch(err =>
+        console.error('Error sending L3 decision emails:', err)
+      );
     }
 
     return logData;

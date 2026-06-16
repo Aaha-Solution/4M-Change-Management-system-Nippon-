@@ -1,6 +1,6 @@
 import pool from '../config/db.js';
 import { broadcast } from '../config/websocket.js';
-import { triggerEffectivenessQAAlert } from './notificationModel.js';
+import { triggerEffectivenessQAAlert } from './effectivenessNotificationModel.js';
 
 // Self-healing: Ensure effectiveness tables exist on load
 const ensureTablesExist = async () => {

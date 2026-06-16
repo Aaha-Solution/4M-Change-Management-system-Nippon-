@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import { broadcast } from '../config/websocket.js';
+import { createL1RequestNotifications, sendL1RequestEmails } from './l1NotificationModel.js';
 
 const formatDateToSql = (dateStr) => {
   if (!dateStr) return null;
@@ -72,34 +73,17 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
       }
     }
 
-    // Parse selected departments for HOD approval and create action required notifications
-    const selectedDepts = hodApproval ? hodApproval.split(',').map(s => s.trim()).filter(Boolean) : [];
-    const now = new Date();
-    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
-    const notifIds = [];
-
-    for (const dName of selectedDepts) {
-      const notifId = `L1-HOD-NOTIF-${changeNo}-${dName.replace(/\s+/g, '_')}-${Date.now()}`;
-      const notifTitle = `HOD Approval Required – ${changeNo}`;
-      const notifDetails = `Change Request ${changeNo} created by ${requestBy} (${dept} department) requires HOD approval/validation (Approved or Rejected decision) from your department (${dName}).`;
-      
-      await connection.query(
-        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
-         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)`,
-        [notifId, notifTitle, notifDetails, changeNo, changeIn || 'GENERAL', dName, timeStr, 'Action Required', 'blue']
-      );
-      notifIds.push(notifId);
-    }
+    // Create notifications for selected HODs
+    await createL1RequestNotifications(connection, changeNo, hodApproval, changeIn, requestBy, dept);
 
     await connection.commit();
     broadcast({ type: 'REFRESH_CHANGES' });
     broadcast({ type: 'REFRESH_NOTIFICATIONS' });
 
     // Send email notifications asynchronously after commit
-    const { sendEmailForNotification } = await import('./notificationModel.js');
-    for (const id of notifIds) {
-      sendEmailForNotification(id).catch(err => console.error('Error sending L1 HOD notification email:', err));
-    }
+    sendL1RequestEmails(changeNo, hodApproval, changeIn, requestBy, dept).catch(err =>
+      console.error('Error sending L1 HOD notification email:', err)
+    );
     return {
       id: changeNo,
       title,

@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import { broadcast } from '../config/websocket.js';
+import { createL1DecisionNotifications, sendL1DecisionEmails } from './l1NotificationModel.js';
 
 /**
  * Get all HOD approval requests — joins change_requests with l1_requests.
@@ -110,47 +111,8 @@ export const saveHodApproval = async ({ changeNo, hodEmail, hodDept, status, rem
       );
     }
 
-    // Fetch requester email to notify them
-    const [crRows] = await connection.query(
-      `SELECT cr.requester, COALESCE(l1.dept, u.department) as raisedDept, u.department as userDept, l1.change_in as changeIn
-       FROM change_requests cr
-       LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
-       LEFT JOIN users u ON cr.requester = u.email
-       WHERE cr.id = ?`,
-      [changeNo]
-    );
-
-    const notifIds = [];
-
-    if (crRows.length > 0) {
-      const { requester, raisedDept, userDept, changeIn } = crRows[0];
-      const now = new Date();
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
-      const notifId = `HOD-DECISION-${changeNo}-${hodDept.replace(/\s+/g, '_')}-${Date.now()}`;
-      const color = status === 'Approved' ? 'green' : 'red';
-      const title = `HOD ${status} – ${changeNo}`;
-      const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${status.toLowerCase()} by the ${hodDept} HOD.`;
-
-      await connection.query(
-        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color)
-         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?)`,
-        [notifId, title, details, changeNo, changeIn || 'GENERAL', raisedDept || '', timeStr, color]
-      );
-      notifIds.push(notifId);
-
-      // If approved, add an Action Required notification for the requester to fill L2
-      if (status === 'Approved') {
-        const actionNotifId = `L2-ACTION-${changeNo}-${Date.now()}`;
-        const actionTitle = `L1 Approved - Proceed to L2 Validation`;
-        const actionDetails = `Your Change Request ${changeNo} has been approved by the HOD. Please proceed to L2.`;
-        await connection.query(
-          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', 'blue', ?)`,
-          [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', userDept || raisedDept || '', timeStr, requester]
-        );
-        notifIds.push(actionNotifId);
-      }
-    }
+    // Create decision notifications and retrieve details for emails
+    const { crDetails } = await createL1DecisionNotifications(connection, changeNo, hodDept, status, remarks);
 
     await connection.commit();
 
@@ -159,10 +121,9 @@ export const saveHodApproval = async ({ changeNo, hodEmail, hodDept, status, rem
     broadcast({ type: 'REFRESH_NOTIFICATIONS' });
 
     // Send email notifications asynchronously after commit
-    const { sendEmailForNotification } = await import('./notificationModel.js');
-    for (const id of notifIds) {
-      sendEmailForNotification(id).catch(err => console.error('Error sending HOD decision notification email:', err));
-    }
+    sendL1DecisionEmails(changeNo, hodDept, status, remarks, crDetails).catch(err =>
+      console.error('Error sending L1 decision emails:', err)
+    );
 
     return { changeNo, hodEmail, hodDept, status, remarks };
   } catch (error) {
