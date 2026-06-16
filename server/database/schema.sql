@@ -114,7 +114,7 @@ INSERT INTO processes (name) VALUES
 -- Seed users (quick-login roles matching mockup)
 INSERT INTO users (email, password, role, name, department, status) VALUES
 ('suriya.p@plant.com', 'suriya123', 'Admin', 'Suriya Prabakaran', 'General', 'Active'),
-('admin@cms.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active');
+('suriyaiyyanar10@gmail.com', 'admin123', 'Admin', 'Admin User', 'General', 'Active');
 
 -- No initial change requests seeded
 
