@@ -1,6 +1,5 @@
 import pool from '../config/db.js';
 import { sendMail } from '../config/email.js';
-import { broadcast } from '../config/websocket.js';
 
 /**
  * Creates L1-specific HOD approval required notifications in the DB.

@@ -10,6 +10,14 @@ const runTests = async () => {
   try {
     const changeNo = '4M-TEST-SIM-9999';
 
+    // Query all admin emails
+    const [adminRows] = await connection.query("SELECT email FROM users WHERE role = 'Admin'");
+    if (adminRows.length === 0) {
+      throw new Error("No admin user found in database");
+    }
+    const adminEmail = adminRows[0].email;
+    console.log(`Resolved simulation admin email: ${adminEmail}`);
+
     // Cleanup any existing simulation data first
     console.log('Cleaning up previous test data if any...');
     await connection.query('DELETE FROM notifications WHERE change_no = ?', [changeNo]);
@@ -23,7 +31,7 @@ const runTests = async () => {
     await connection.query(
       `INSERT INTO change_requests (id, title, requester, date, priority, status) 
        VALUES (?, ?, ?, CURDATE(), 'High', 'Pending')`,
-      [changeNo, '[SIMULATION TEST] Decoupled Level Notifications', 'admin@cms.com']
+      [changeNo, '[SIMULATION TEST] Decoupled Level Notifications', adminEmail]
     );
 
     // Insert test L1 request with all required columns populated
@@ -64,12 +72,12 @@ const runTests = async () => {
     };
     const targetUsersPending = await createL2Notifications(
       connection, changeNo, 'Pending', l2LogPending, 'PED', 'Sim Tester L2', 
-      '[SIMULATION TEST] Decoupled Level Notifications', 'admin@cms.com', 'PED', 'METHOD', 'Test Process', 'M-9999'
+      '[SIMULATION TEST] Decoupled Level Notifications', adminEmail, 'PED', 'METHOD', 'Test Process', 'M-9999'
     );
     console.log('L2 Pending targets resolved:', targetUsersPending.map(u => u.email));
     await sendL2Emails(
       changeNo, 'Pending', l2LogPending, 'PED', 'Sim Tester L2', 
-      'admin@cms.com', 'PED', '[SIMULATION TEST] Decoupled Level Notifications', 'METHOD', 'Test Process', 'M-9999', targetUsersPending
+      adminEmail, 'PED', '[SIMULATION TEST] Decoupled Level Notifications', 'METHOD', 'Test Process', 'M-9999', targetUsersPending
     );
     console.log('L2 Pending email dispatch completed.');
 
@@ -83,21 +91,21 @@ const runTests = async () => {
     };
     const targetUsersAccepted = await createL2Notifications(
       connection, changeNo, 'Accepted', l2LogAccepted, 'PED', 'Sim Tester L2', 
-      '[SIMULATION TEST] Decoupled Level Notifications', 'admin@cms.com', 'PED', 'METHOD', 'Test Process', 'M-9999'
+      '[SIMULATION TEST] Decoupled Level Notifications', adminEmail, 'PED', 'METHOD', 'Test Process', 'M-9999'
     );
     console.log('L2 Accepted targets resolved:', targetUsersAccepted.map(u => u.email));
     await sendL2Emails(
       changeNo, 'Accepted', l2LogAccepted, 'PED', 'Sim Tester L2', 
-      'admin@cms.com', 'PED', '[SIMULATION TEST] Decoupled Level Notifications', 'METHOD', 'Test Process', 'M-9999', targetUsersAccepted
+      adminEmail, 'PED', '[SIMULATION TEST] Decoupled Level Notifications', 'METHOD', 'Test Process', 'M-9999', targetUsersAccepted
     );
     console.log('L2 Accepted email dispatch completed.');
 
     console.log('\n--- 5. Testing L3 Decision Notification/Email (Approved by PED HOD) ---');
     const l3NotifIds = await createL3DecisionNotifications(
-      connection, changeNo, 'PED', 'Approved', 'METHOD', 'Sim Tester', 'admin@cms.com', 'PED'
+      connection, changeNo, 'PED', 'Approved', 'METHOD', 'Sim Tester', adminEmail, 'PED'
     );
     console.log('L3 Decision notifications created:', l3NotifIds);
-    await sendL3DecisionEmails(changeNo, 'PED', 'Approved', 'L3 approved by PED HOD remarks', 'admin@cms.com');
+    await sendL3DecisionEmails(changeNo, 'PED', 'Approved', 'L3 approved by PED HOD remarks', adminEmail);
     console.log('L3 decision email dispatch completed.');
 
     console.log('\n--- 6. Testing Effectiveness QA Alert ---');

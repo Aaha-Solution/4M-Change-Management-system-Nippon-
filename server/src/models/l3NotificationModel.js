@@ -11,35 +11,40 @@ export const createL3DecisionNotifications = async (connection, changeNo, update
   const color = newDecision === 'Approved' ? 'green' : 'red';
   const notifIdsToSend = [];
 
-  // Fetch ALL departments to notify every HOD
-  const [allDeptRows] = await connection.query(
-    `SELECT DISTINCT department FROM users WHERE department != '' AND department IS NOT NULL`
-  );
+  // Fetch all users to notify HODs and admins
+  const [users] = await connection.query('SELECT email, role, department FROM users');
 
-  for (const deptRow of allDeptRows) {
-    const dept = deptRow.department;
-    const notifId = `L3-DECISION-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const targetUsers = [];
+  const seenEmails = new Set();
+
+  if (requester) {
+    seenEmails.add(requester.toLowerCase());
+    targetUsers.push({ email: requester, department: l1Dept || 'General' });
+  }
+
+  for (const u of users) {
+    const role = (u.role || '').toLowerCase();
+    const isAdmin = role.includes('admin') || role.includes('administrator');
+    const isHOD = role.includes('hod') || role.includes('manager');
+    if (isAdmin || isHOD) {
+      if (!seenEmails.has(u.email.toLowerCase())) {
+        seenEmails.add(u.email.toLowerCase());
+        targetUsers.push(u);
+      }
+    }
+  }
+
+  for (const targetUser of targetUsers) {
+    const dept = targetUser.department || 'General';
+    const email = targetUser.email;
+    const notifId = `L3-DECISION-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
     const title = `L3 Approval ${newDecision} by ${updatedDeptField} HOD – ${changeNo}`;
     const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} raised by ${requestBy} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD at L3. Your department (${dept}) is notified.`;
 
     await connection.query(
       `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, NULL)`,
-      [notifId, title, details, changeNo, changeIn || 'GENERAL', dept, timeStr, 'System Logs', color]
-    );
-    notifIdsToSend.push(notifId);
-  }
-
-  // Also notify the originating dept if not already covered
-  if (l1Dept && !allDeptRows.some(r => r.department === l1Dept)) {
-    const notifId = `L3-DECISION-NOTIF-${changeNo}-${l1Dept.replace(/\s+/g, '_')}-${Date.now()}`;
-    const title = `L3 Approval ${newDecision} by ${updatedDeptField} HOD – ${changeNo}`;
-    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD.`;
-
-    await connection.query(
-      `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, NULL)`,
-      [notifId, title, details, changeNo, changeIn || 'GENERAL', l1Dept, timeStr, 'System Logs', color]
+       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
+      [notifId, title, details, changeNo, changeIn || 'GENERAL', dept, timeStr, 'System Logs', color, email]
     );
     notifIdsToSend.push(notifId);
   }
@@ -119,10 +124,9 @@ export const sendL3DecisionEmails = async (changeNo, updatedDeptField, newDecisi
       </div>
     `;
 
-    // Send single batched email using BCC
+    // Send single batched email directly to everyone
     await sendMail({
-      to: emailList[0],
-      bcc: emailList.slice(1).join(', '),
+      to: emailList.join(', '),
       subject: emailSubject,
       html: emailHtml
     });

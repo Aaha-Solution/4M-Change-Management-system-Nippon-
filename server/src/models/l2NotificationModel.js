@@ -1,6 +1,5 @@
 import pool from '../config/db.js';
 import { sendMail } from '../config/email.js';
-import { broadcast } from '../config/websocket.js';
 
 /**
  * Creates L2 validation-related database notifications based on status.
@@ -12,23 +11,25 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
 
   let targetUsers = [];
-  let deptRows = [];
   let title = '';
   let details = '';
   let statusColor = 'blue';
 
   if (status === 'Pending') {
     const [rows] = await connection.query(
-      `SELECT DISTINCT department FROM users 
+      `SELECT email, name, department, role FROM users 
        WHERE department != '' AND department IS NOT NULL 
          AND (
            LOWER(department) IN ('quality', 'qad', 'qa', 'general') 
            OR LOWER(role) IN ('admin', 'administrator')
-           OR LOWER(department) = LOWER(?)
+           OR (
+             LOWER(department) = LOWER(?)
+              AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%')
+           )
          )`,
       [l1Dept || '']
     );
-    deptRows = rows;
+    targetUsers = rows;
     title = `L2 Setup Validation Awaiting QA Review – ${changeNo}`;
     details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has updated L2 requester validation attachment by ${requestBy}. QA Setup Verification review is now required.`;
     statusColor = 'blue';
@@ -87,47 +88,47 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
     statusColor = 'green';
   } else if (status === 'Rejected') {
     const [rows] = await connection.query(
-      `SELECT DISTINCT department FROM users 
+      `SELECT email, name, department, role FROM users 
        WHERE department != '' AND department IS NOT NULL 
-         AND (LOWER(department) IN ('quality', 'qad', 'qa', 'general', LOWER(?)) OR LOWER(role) IN ('admin', 'administrator'))`,
-      [crRequesterDept || '']
+         AND (
+           LOWER(department) IN ('quality', 'qad', 'qa') 
+           OR LOWER(role) IN ('admin', 'administrator') 
+           OR LOWER(email) = LOWER(?)
+         )`,
+      [crRequesterEmail || '']
     );
-    deptRows = rows;
+    targetUsers = rows;
     title = `L2 Validation Rejected – ${changeNo}`;
     details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been rejected at L2 validation by Quality.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''}`;
     statusColor = 'red';
   }
 
   // Insert Database Notifications
-  if (status === 'Accepted') {
-    for (const targetUser of targetUsers) {
-      const dept = targetUser.department;
-      const email = targetUser.email;
-      const notifId = `L2-NOTIF-ACCEPTED-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
-      
-      await connection.query(
-        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
-        [notifId, title, details, changeNo, changeIn || 'GENERAL', dept || 'General', timeStr, 'Action Required', statusColor, email]
-      );
+  const seenNotifEmails = new Set();
+  for (const targetUser of targetUsers) {
+    const email = targetUser.email;
+    if (!email || seenNotifEmails.has(email.toLowerCase())) continue;
+    seenNotifEmails.add(email.toLowerCase());
+
+    const dept = targetUser.department || 'General';
+    const deptLower = dept.toLowerCase();
+    const l1DeptLower = (l1Dept || '').toLowerCase();
+    const isL1DeptHODOnly = status === 'Pending' && deptLower === l1DeptLower && !['quality', 'qad', 'qa', 'general'].includes(deptLower);
+
+    let notifId = '';
+    if (status === 'Accepted') {
+      notifId = `L2-NOTIF-ACCEPTED-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
+    } else {
+      notifId = isL1DeptHODOnly
+        ? `L1-HOD-NOTIF-L2-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`
+        : `L2-NOTIF-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
     }
-  } else {
-    for (const deptRow of deptRows) {
-      const dept = deptRow.department;
-      const deptLower = (dept || '').toLowerCase();
-      const l1DeptLower = (l1Dept || '').toLowerCase();
-      const isL1DeptHODOnly = status === 'Pending' && deptLower === l1DeptLower && !['quality', 'qad', 'qa', 'general'].includes(deptLower);
-      
-      const notifId = isL1DeptHODOnly
-        ? `L1-HOD-NOTIF-L2-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`
-        : `L2-NOTIF-${changeNo}-${dept.replace(/\s+/g, '_')}-${Date.now()}`;
-        
-      await connection.query(
-        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, NULL)`,
-        [notifId, title, details, changeNo, changeIn || 'GENERAL', dept, timeStr, 'Action Required', statusColor]
-      );
-    }
+
+    await connection.query(
+      `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+       VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
+      [notifId, title, details, changeNo, changeIn || 'GENERAL', dept, timeStr, 'Action Required', statusColor, email]
+    );
   }
 
   // Send personal confirmation notification to the requester when they submit their PED validation
@@ -302,7 +303,7 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
       `;
 
       if (recipientEmails.length > 0) {
-        await sendMail({ to: recipientEmails[0], bcc: recipientEmails.slice(1).join(', '), subject: emailSubject, html: emailHtml });
+        await sendMail({ to: recipientEmails.join(', '), subject: emailSubject, html: emailHtml });
       }
     }
   } catch (err) {

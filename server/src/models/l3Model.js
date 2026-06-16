@@ -46,10 +46,15 @@ export const addL3ApprovalLog = async (logData) => {
     );
 
     if (existing.length === 0) {
+      const [adminRows] = await connection.query("SELECT email FROM users WHERE role = 'Admin'");
+      if (adminRows.length === 0) {
+        throw new Error("No admin user found in database");
+      }
+      const adminEmail = adminRows[0].email;
       await connection.query(
         `INSERT INTO change_requests (id, title, requester, date, priority, status) 
          VALUES (?, ?, ?, CURDATE(), 'Medium', 'Pending')`,
-        [changeNo, `[L3 Auto] Approval for ${changeNo}`, 'admin@cms.com']
+        [changeNo, `[L3 Auto] Approval for ${changeNo}`, adminEmail]
       );
     }
 

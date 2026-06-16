@@ -34,9 +34,18 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
   try {
     await connection.beginTransaction();
 
+    let requesterEmail = userEmail;
+    if (!requesterEmail || requesterEmail === 'unknown@cms.com') {
+      const [adminRows] = await connection.query("SELECT email FROM users WHERE role = 'Admin'");
+      if (adminRows.length === 0) {
+        throw new Error("No admin user found in database");
+      }
+      requesterEmail = adminRows[0].email;
+    }
+
     await connection.query(
       'INSERT INTO change_requests (id, title, requester, date, priority, status) VALUES (?, ?, ?, CURDATE(), ?, ?)',
-      [changeNo, title, userEmail, priority, status]
+      [changeNo, title, requesterEmail, priority, status]
     );
 
     const serializedTableData = improvementTableData ? JSON.stringify(improvementTableData) : null;

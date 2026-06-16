@@ -102,8 +102,7 @@ export const triggerEffectivenessQAAlert = async (changeNo, qaApproval, remarks)
     const emailList = [...recipientEmails].filter(Boolean);
     if (emailList.length > 0) {
       await sendMail({
-        to: emailList[0],
-        bcc: emailList.slice(1).join(', '),
+        to: emailList.join(', '),
         subject: `[CMS Alert] Effectiveness Evaluation ${qaApproval.toUpperCase()} - ${changeNo}`,
         html: emailContent,
         text: `Effectiveness Evaluation ${qaApproval} for Change Request ${changeNo}\n\nQA Comments: ${remarks}`
