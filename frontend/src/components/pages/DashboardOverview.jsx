@@ -1008,50 +1008,176 @@ export const DashboardOverview = ({
   };
 
   const renderMonthlyChart = (dataList, height = 'h-[160px]') => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const counts = Array(12).fill(0);
+    const hasDateFilter = !!(monthFilterFromDate || monthFilterToDate);
+    const hasMonthFilter = monthFilterMonth !== 'All';
+    let datesToShow = [];
 
-    dataList.forEach(c => {
-      if (!c.date) return;
-      try {
-        const d = new Date(c.date);
-        if (!isNaN(d.getTime())) {
-          const monthIdx = d.getMonth();
-          counts[monthIdx]++;
-        }
-      } catch {
-        // ignore
+    if (hasDateFilter) {
+      let startDate = null;
+      let endDate = null;
+
+      if (monthFilterFromDate) {
+        startDate = parseDDMMYYYYToDate(monthFilterFromDate);
       }
-    });
+      if (monthFilterToDate) {
+        endDate = parseDDMMYYYYToDate(monthFilterToDate);
+      }
 
-    const data = months.map((m, idx) => ({
-      label: m,
-      value: counts[idx]
-    }));
+      // Fallback: if one date is empty, find min/max from actual data
+      if (dataList.length > 0) {
+        const parsedDates = dataList
+          .map(c => parseDDMMYYYYToDate(c.date))
+          .filter(Boolean);
+        if (parsedDates.length > 0) {
+          if (!startDate) {
+            startDate = new Date(Math.min(...parsedDates.map(d => d.getTime())));
+          }
+          if (!endDate) {
+            endDate = new Date(Math.max(...parsedDates.map(d => d.getTime())));
+          }
+        }
+      }
 
-    const maxVal = Math.max(...data.map(item => item.value), 5);
+      if (startDate && endDate) {
+        const sD = new Date(startDate);
+        sD.setHours(0, 0, 0, 0);
+        const eD = new Date(endDate);
+        eD.setHours(0, 0, 0, 0);
 
-    return (
-      <div className={`flex justify-between items-end ${height} px-[5px] mt-[10px]`}>
-        {data.map((item, idx) => {
-          const barHeight = (item.value / maxVal) * 100;
-          return (
-            <div key={idx} className="flex flex-col items-center w-[7%] h-full justify-end group">
-              <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div className="w-full h-[65%] flex items-end justify-center">
-                <div
-                  className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
-                  style={{ height: `${barHeight}%`, minHeight: '4px' }}
-                />
+        const msDiff = eD.getTime() - sD.getTime();
+        const daysDiff = Math.ceil(msDiff / (1000 * 60 * 60 * 24)) + 1;
+
+        if (daysDiff > 0 && daysDiff <= 31) {
+          // Generate day-by-day dates
+          for (let i = 0; i < daysDiff; i++) {
+            const nextDate = new Date(sD);
+            nextDate.setDate(sD.getDate() + i);
+            const label = nextDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+            datesToShow.push({ label, dateStr: formatDateToDDMMYY(nextDate) });
+          }
+        } else {
+          // Range is wider than 31 days. Show only dates that have requests
+          const uniqueDateStrings = [...new Set(dataList.map(c => formatDateToDDMMYY(c.date)).filter(s => s && s !== '-'))];
+          const sortedDates = uniqueDateStrings
+            .map(str => ({ str, dateObj: parseDDMMYYYYToDate(str) }))
+            .filter(x => x.dateObj)
+            .sort((a, b) => a.dateObj - b.dateObj);
+
+          datesToShow = sortedDates.map(x => {
+            const label = x.dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+            return { label, dateStr: x.str };
+          });
+        }
+      }
+    } else if (hasMonthFilter) {
+      const monthsList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthIdx = monthsList.indexOf(monthFilterMonth);
+      if (monthIdx !== -1) {
+        const currentYear = getSyncedDate().getFullYear();
+        const daysInMonth = new Date(currentYear, monthIdx + 1, 0).getDate();
+        for (let i = 1; i <= daysInMonth; i++) {
+          const dateObj = new Date(currentYear, monthIdx, i);
+          const label = dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+          datesToShow.push({ label, dateStr: formatDateToDDMMYY(dateObj) });
+        }
+      }
+    }
+
+    if (datesToShow.length === 0) {
+      // Default: 12 months view
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const counts = Array(12).fill(0);
+
+      dataList.forEach(c => {
+        if (!c.date) return;
+        try {
+          const d = new Date(c.date);
+          if (!isNaN(d.getTime())) {
+            const monthIdx = d.getMonth();
+            counts[monthIdx]++;
+          }
+        } catch {
+          // ignore
+        }
+      });
+
+      const data = months.map((m, idx) => ({
+        label: m,
+        value: counts[idx]
+      }));
+
+      const maxVal = Math.max(...data.map(item => item.value), 5);
+
+      return (
+        <div className={`flex justify-between items-end ${height} px-[5px] mt-[10px]`}>
+          {data.map((item, idx) => {
+            const barHeight = (item.value / maxVal) * 100;
+            return (
+              <div key={idx} className="flex flex-col items-center w-[7%] h-full justify-end group">
+                <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
+                <div className="w-full h-[65%] flex items-end justify-center">
+                  <div
+                    className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
+                    style={{ height: `${barHeight}%`, minHeight: '4px' }}
+                  />
+                </div>
+                <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
+                  {item.label}
+                </span>
               </div>
-              <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
-                {item.label}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    );
+            );
+          })}
+        </div>
+      );
+    } else {
+      // Custom Date Range / Selected Month (Date-wise counts)
+      const dataMap = datesToShow.map(dInfo => ({
+        label: dInfo.label,
+        value: 0
+      }));
+
+      dataList.forEach(c => {
+        if (!c.date) return;
+        const cDateStr = formatDateToDDMMYY(c.date);
+        const idx = datesToShow.findIndex(dInfo => dInfo.dateStr === cDateStr);
+        if (idx !== -1) {
+          dataMap[idx].value++;
+        }
+      });
+
+      const maxVal = Math.max(...dataMap.map(item => item.value), 5);
+
+      const barWidthClass = datesToShow.length <= 10 
+        ? 'w-[8%]' 
+        : datesToShow.length <= 20 
+        ? 'w-[4%]' 
+        : 'w-[2.5%]';
+
+      return (
+        <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px] overflow-x-auto gap-2`}>
+          {dataMap.map((item, idx) => {
+            const barHeight = (item.value / maxVal) * 100;
+            return (
+              <div 
+                key={idx} 
+                className={`flex flex-col items-center h-full justify-end group min-w-[36px] ${barWidthClass}`}
+              >
+                <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
+                <div className="w-full h-[65%] flex items-end justify-center">
+                  <div
+                    className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
+                    style={{ height: `${barHeight}%`, minHeight: item.value > 0 ? '2px' : '0px' }}
+                  />
+                </div>
+                <span className="text-[8px] font-bold text-slate-500 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center rotate-45 sm:rotate-0 translate-y-0.5">
+                  {item.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
   };
 
   const renderApprovalStatusChart = (dataList, height = 'h-[180px]') => {
