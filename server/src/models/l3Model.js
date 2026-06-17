@@ -229,31 +229,9 @@ export const addL3ApprovalLog = async (logData) => {
       }
     }
 
-    // Send L3 decision notifications to ALL department HODs + originating dept
-    if (updatedDeptField && newDecision) {
-      const [l1Rows] = await connection.query(
-        `SELECT dept, change_in, request_by FROM l1_requests WHERE change_no = ?`,
-        [changeNo]
-      );
-      const l1Dept = l1Rows.length > 0 ? l1Rows[0].dept : '';
-      const changeIn = l1Rows.length > 0 ? l1Rows[0].change_in : '';
-      const requestBy = l1Rows.length > 0 ? l1Rows[0].request_by : requester;
-
-      await createL3DecisionNotifications(
-        connection, changeNo, updatedDeptField, newDecision, changeIn, requestBy, requester, l1Dept
-      );
-    }
-
     await connection.commit();
     broadcast({ type: 'REFRESH_CHANGES' });
     broadcast({ type: 'REFRESH_NOTIFICATIONS' });
-
-    // Send email notifications asynchronously after commit
-    if (updatedDeptField && newDecision) {
-      sendL3DecisionEmails(changeNo, updatedDeptField, newDecision, '', requester).catch(err =>
-        console.error('Error sending L3 decision emails:', err)
-      );
-    }
 
     if (isAllL3Decided && !wasAlreadyAllL3Decided) {
       sendL3CompletionEmails(changeNo, requester).catch(err =>
