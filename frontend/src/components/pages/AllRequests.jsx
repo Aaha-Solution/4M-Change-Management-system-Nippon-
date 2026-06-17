@@ -60,7 +60,11 @@ export const AllRequests = ({
       requester: c.requester,
       title: c.title,
       rawDate: c.date,
-      requesterEmail: c.requesterEmail
+      requesterEmail: c.requesterEmail,
+      hodStatus: c.hodStatus,
+      l2Status: c.l2Status,
+      hasL3Rejection: c.hasL3Rejection,
+      isL3Complete: c.isL3Complete
     };
   });
 
@@ -574,11 +578,13 @@ export const AllRequests = ({
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                         <div className="flex gap-1.5 items-center mt-0.5">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                            selectedL1Details.crStatus !== 'Pending' 
+                            selectedL1Details.hodStatus === 'Rejected'
+                              ? 'bg-rose-50 border-rose-220 text-rose-700'
+                              : (selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending')
                               ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
                               : 'bg-amber-50 border-amber-220 text-amber-700'
                           }`}>
-                            L1 {selectedL1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}
+                            L1 {selectedL1Details.hodStatus === 'Rejected' ? 'Rejected' : ((selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
                           </span>
                         </div>
                       </div>
@@ -824,6 +830,14 @@ export const AllRequests = ({
                         {selectedL1Details.file_effectiveness && renderL1FilePill(selectedL1Details.file_effectiveness, selectedL1Details.change_no)}
                       </div>
                     </div>
+                    {selectedL1Details.hodStatus && (
+                      <div className="space-y-[4px] mt-4 border-t border-slate-100 pt-4">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD {selectedL1Details.hodStatus} Remarks / Comments ({selectedL1Details.hodDept || 'HOD'})</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
+                          {selectedL1Details.hodRemarks || 'No remarks provided.'}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

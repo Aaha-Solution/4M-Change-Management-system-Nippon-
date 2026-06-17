@@ -123,18 +123,3 @@ export const getAttachmentFile = async (req, res) => {
     res.status(500).json({ error: 'Failed to retrieve attachment file' });
   }
 };
-
-export const resetLogs = async (req, res) => {
-  try {
-    const canUpdate = await checkCanUpdate(req.user?.email);
-    if (!canUpdate) {
-      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department and Administrators are allowed to reset effectiveness logs.' });
-    }
-
-    await effectivenessModel.resetLogsToDefaults();
-    res.status(200).json({ message: 'Effectiveness logs reset to defaults successfully' });
-  } catch (error) {
-    console.error('Error in resetLogs:', error);
-    res.status(500).json({ error: 'Failed to reset logs' });
-  }
-};

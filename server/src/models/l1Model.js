@@ -127,9 +127,21 @@ export const getL1Details = async (changeNo) => {
     `SELECT cr.title, cr.requester as crRequester, DATE_FORMAT(cr.date, '%Y-%m-%d') as crDate, cr.priority, cr.status as crStatus,
             l1.*,
             DATE_FORMAT(l1.date_start, '%Y-%m-%d') as date_start,
-            DATE_FORMAT(l1.date_close, '%Y-%m-%d') as date_close
+            DATE_FORMAT(l1.date_close, '%Y-%m-%d') as date_close,
+            ha.status as hodStatus,
+            ha.remarks as hodRemarks,
+            ha.hod_dept as hodDept
      FROM change_requests cr
      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
+     LEFT JOIN (
+       SELECT ha1.change_no, ha1.status, ha1.remarks, ha1.hod_dept
+       FROM hod_approvals ha1
+       INNER JOIN (
+         SELECT change_no, MAX(id) as max_id
+         FROM hod_approvals
+         GROUP BY change_no
+       ) ha2 ON ha1.id = ha2.max_id
+     ) ha ON cr.id = ha.change_no
      WHERE cr.id = ?`,
     [changeNo]
   );

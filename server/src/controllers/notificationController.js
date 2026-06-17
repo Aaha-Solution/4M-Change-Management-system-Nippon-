@@ -57,13 +57,3 @@ export const clearRead = async (req, res) => {
     res.status(500).json({ error: 'Failed to clear read notifications.' });
   }
 };
-
-export const resetNotifications = async (req, res) => {
-  try {
-    await notificationModel.resetNotifications();
-    res.status(200).json({ message: 'Notifications reset to defaults successfully.' });
-  } catch (error) {
-    console.error('Error in resetNotifications controller:', error);
-    res.status(500).json({ error: 'Failed to reset notifications.' });
-  }
-};
