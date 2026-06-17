@@ -217,9 +217,24 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                         );
                         const isAdmin = userRole && userRole.toLowerCase().includes('admin');
                         
-                        let targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'l3';
-                        if (alert.id && alert.id.startsWith('L2-ACTION')) {
+                        let targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'all-requests';
+                        
+                        const idStr = (alert.id || '').toUpperCase();
+                        const titleStr = (alert.title || '').toUpperCase();
+                        const detailsStr = (alert.details || '').toUpperCase();
+                        
+                        const isL2 = idStr.includes('L2') || titleStr.includes('L2') || detailsStr.includes('L2');
+                        const isL3 = idStr.includes('L3') || titleStr.includes('L3') || detailsStr.includes('L3');
+                        const isL1 = idStr.includes('L1') || titleStr.includes('L1') || detailsStr.includes('L1') || idStr.includes('HOD-DECISION');
+
+                        if (isL2) {
                           targetTab = 'approvals';
+                        } else if (isL3) {
+                          targetTab = 'l3';
+                        } else if (isL1) {
+                          targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'all-requests';
+                        } else {
+                          targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'all-requests';
                         }
                         
                         if (onTabChange) {
