@@ -1,6 +1,6 @@
 import pool from '../config/db.js';
 import { broadcast } from '../config/websocket.js';
-import { createL3DecisionNotifications, sendL3DecisionEmails } from './l3NotificationModel.js';
+import { createL3DecisionNotifications, sendL3DecisionEmails, createL3CompletionNotifications, sendL3CompletionEmails } from './l3NotificationModel.js';
 
 export const getL3Approvals = async () => {
   const [rows] = await pool.query(
@@ -64,6 +64,22 @@ export const addL3ApprovalLog = async (logData) => {
        FROM l3_approvals WHERE change_no = ?`,
       [changeNo]
     );
+
+    let wasAlreadyAllL3Decided = false;
+    if (existingL3Rows.length > 0) {
+      const dbL3 = existingL3Rows[0];
+      wasAlreadyAllL3Decided = 
+        dbL3.ped && dbL3.ped !== 'Pending' &&
+        dbL3.quality && dbL3.quality !== 'Pending' &&
+        dbL3.production && dbL3.production !== 'Pending' &&
+        dbL3.maintenance && dbL3.maintenance !== 'Pending' &&
+        dbL3.pcl && dbL3.pcl !== 'Pending' &&
+        dbL3.materials && dbL3.materials !== 'Pending' &&
+        dbL3.marketing && dbL3.marketing !== 'Pending' &&
+        dbL3.hr && dbL3.hr !== 'Pending' &&
+        dbL3.safety && dbL3.safety !== 'Pending' &&
+        dbL3.unitHead && dbL3.unitHead !== 'Pending';
+    }
 
     let updatedDeptField = null;
     let newDecision = null;
@@ -186,6 +202,20 @@ export const addL3ApprovalLog = async (logData) => {
         `UPDATE change_requests SET status = 'Completed' WHERE id = ?`,
         [changeNo]
       );
+
+      if (!wasAlreadyAllL3Decided) {
+        const [l1Rows] = await connection.query(
+          `SELECT dept, change_in, request_by FROM l1_requests WHERE change_no = ?`,
+          [changeNo]
+        );
+        const l1Dept = l1Rows.length > 0 ? l1Rows[0].dept : '';
+        const changeIn = l1Rows.length > 0 ? l1Rows[0].change_in : '';
+        const requestBy = l1Rows.length > 0 ? l1Rows[0].request_by : requester;
+
+        await createL3CompletionNotifications(
+          connection, changeNo, changeIn, requestBy, requester, l1Dept
+        );
+      }
     } else {
       const [crRow] = await connection.query(
         `SELECT status FROM change_requests WHERE id = ?`,
@@ -222,6 +252,12 @@ export const addL3ApprovalLog = async (logData) => {
     if (updatedDeptField && newDecision) {
       sendL3DecisionEmails(changeNo, updatedDeptField, newDecision, '', requester).catch(err =>
         console.error('Error sending L3 decision emails:', err)
+      );
+    }
+
+    if (isAllL3Decided && !wasAlreadyAllL3Decided) {
+      sendL3CompletionEmails(changeNo, requester).catch(err =>
+        console.error('Error sending L3 completion emails:', err)
       );
     }
 
