@@ -11,7 +11,9 @@ import { exportRequestsListPDF, exportRequestDetailsPDF } from '../../utils/pdfE
 export const AllRequests = ({
   changes,
   setToastMsg,
-  usersList = []
+  usersList = [],
+  autoOpenChangeNo = null,
+  clearAutoOpen = () => {}
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('All');
@@ -38,6 +40,8 @@ export const AllRequests = ({
   useEffect(() => {
     setPage(0);
   }, [searchQuery, selectedMonth, fromDate, toDate, selectedPerson, selectedProcess, selectedMachine]);
+
+
 
   const monthsList = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -189,6 +193,19 @@ export const AllRequests = ({
       setIsFetchingDetails(false);
     }
   };
+
+  // Auto-open request details modal when navigated from dashboard overview Eye icon
+  useEffect(() => {
+    if (autoOpenChangeNo && combinedData.length > 0) {
+      const match = combinedData.find(c => c.id === autoOpenChangeNo);
+      if (match) {
+        handleViewDetails(match);
+        if (clearAutoOpen) {
+          clearAutoOpen();
+        }
+      }
+    }
+  }, [autoOpenChangeNo, combinedData, clearAutoOpen]);
 
   const handleViewAttachment = async (filename, changeNo, type = 'L1') => {
     if (!filename || filename === '-') return;
