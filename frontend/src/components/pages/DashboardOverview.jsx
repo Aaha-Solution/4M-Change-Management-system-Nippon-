@@ -561,7 +561,14 @@ export const DashboardOverview = ({
         <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
           value={monthVal}
-          onChange={(e) => setMonthVal(e.target.value)}
+          onChange={(e) => {
+            const nextVal = e.target.value;
+            setMonthVal(nextVal);
+            if (nextVal !== 'All') {
+              setFromDateVal('');
+              setToDateVal('');
+            }
+          }}
         >
           <option value="All">All Months</option>
           {monthOptions.map(m => (
@@ -573,7 +580,12 @@ export const DashboardOverview = ({
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
         <CustomDatePicker
           value={fromDateVal}
-          onChange={setFromDateVal}
+          onChange={(val) => {
+            setFromDateVal(val);
+            if (val) {
+              setMonthVal('All');
+            }
+          }}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
           buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
@@ -582,7 +594,12 @@ export const DashboardOverview = ({
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
         <CustomDatePicker
           value={toDateVal}
-          onChange={setToDateVal}
+          onChange={(val) => {
+            setToDateVal(val);
+            if (val) {
+              setMonthVal('All');
+            }
+          }}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
           buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
@@ -672,7 +689,14 @@ export const DashboardOverview = ({
         <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
           value={monthVal}
-          onChange={(e) => setMonthVal(e.target.value)}
+          onChange={(e) => {
+            const nextVal = e.target.value;
+            setMonthVal(nextVal);
+            if (nextVal !== 'All') {
+              setFromDateVal('');
+              setToDateVal('');
+            }
+          }}
         >
           <option value="All">All Months</option>
           {monthOptions.map(m => (
@@ -684,7 +708,12 @@ export const DashboardOverview = ({
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
         <CustomDatePicker
           value={fromDateVal}
-          onChange={setFromDateVal}
+          onChange={(val) => {
+            setFromDateVal(val);
+            if (val) {
+              setMonthVal('All');
+            }
+          }}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
           buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
@@ -693,7 +722,12 @@ export const DashboardOverview = ({
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
         <CustomDatePicker
           value={toDateVal}
-          onChange={setToDateVal}
+          onChange={(val) => {
+            setToDateVal(val);
+            if (val) {
+              setMonthVal('All');
+            }
+          }}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
           buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
@@ -1021,72 +1055,230 @@ export const DashboardOverview = ({
   };
 
   const renderApprovalStatusChart = (dataList, height = 'h-[180px]') => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const dataMap = months.map(m => ({ label: m, appr: 0, rej: 0, pend: 0 }));
+    // Check if user has selected a custom date range filter or a specific month filter
+    const hasDateFilter = !!(apprFilterFromDate || apprFilterToDate);
+    const hasMonthFilter = apprFilterMonth !== 'All';
+    let datesToShow = []; // array of { label: string, dateStr: string } (dateStr is DD/MM/YY)
 
-    dataList.forEach(c => {
-      if (!c.date) return;
-      try {
-        const d = new Date(c.date);
-        if (!isNaN(d.getTime())) {
-          const monthIdx = d.getMonth();
-          const dispStatus = getRequestDisplayStatus(c);
-          if (dispStatus === 'Approved' || dispStatus === 'Closed') {
-            dataMap[monthIdx].appr++;
-          } else if (dispStatus === 'Rejected') {
-            dataMap[monthIdx].rej++;
-          } else {
-            dataMap[monthIdx].pend++;
+    if (hasDateFilter) {
+      let startDate = null;
+      let endDate = null;
+
+      if (apprFilterFromDate) {
+        startDate = parseDDMMYYYYToDate(apprFilterFromDate);
+      }
+      if (apprFilterToDate) {
+        endDate = parseDDMMYYYYToDate(apprFilterToDate);
+      }
+
+      // Fallback: if one date is empty, find min/max from actual data
+      if (dataList.length > 0) {
+        const parsedDates = dataList
+          .map(c => parseDDMMYYYYToDate(c.date))
+          .filter(Boolean);
+        if (parsedDates.length > 0) {
+          if (!startDate) {
+            startDate = new Date(Math.min(...parsedDates.map(d => d.getTime())));
+          }
+          if (!endDate) {
+            endDate = new Date(Math.max(...parsedDates.map(d => d.getTime())));
           }
         }
-      } catch {
-        // ignore
       }
-    });
 
-    const maxVal = Math.max(
-      ...dataMap.map(item => Math.max(item.appr, item.rej, item.pend)),
-      5
-    );
+      if (startDate && endDate) {
+        // Normalize times to midnight for comparison
+        const sD = new Date(startDate);
+        sD.setHours(0, 0, 0, 0);
+        const eD = new Date(endDate);
+        eD.setHours(0, 0, 0, 0);
 
-    return (
-      <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px]`}>
-        {dataMap.map((item, idx) => {
-          const hAppr = (item.appr / maxVal) * 100;
-          const hRej = (item.rej / maxVal) * 100;
-          const hPend = (item.pend / maxVal) * 100;
+        const msDiff = eD.getTime() - sD.getTime();
+        const daysDiff = Math.ceil(msDiff / (1000 * 60 * 60 * 24)) + 1;
 
-          return (
-            <div key={idx} className="flex flex-col items-center w-[7%] h-full justify-end group">
-              <div className="flex gap-[2px] mb-[4px] text-[8px] font-bold">
-                {item.appr > 0 && <span className="text-[#1e60aa]">{item.appr}</span>}
-                {item.rej > 0 && <span className="text-[#f57c00]">{item.rej}</span>}
-                {item.pend > 0 && <span className="text-slate-400">{item.pend}</span>}
+        if (daysDiff > 0 && daysDiff <= 31) {
+          // Generate day-by-day dates
+          for (let i = 0; i < daysDiff; i++) {
+            const nextDate = new Date(sD);
+            nextDate.setDate(sD.getDate() + i);
+            const label = nextDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+            datesToShow.push({ label, dateStr: formatDateToDDMMYY(nextDate) });
+          }
+        } else {
+          // Range is wider than 31 days. Show only dates that have requests to keep layout neat.
+          const uniqueDateStrings = [...new Set(dataList.map(c => formatDateToDDMMYY(c.date)).filter(s => s && s !== '-'))];
+          const sortedDates = uniqueDateStrings
+            .map(str => ({ str, dateObj: parseDDMMYYYYToDate(str) }))
+            .filter(x => x.dateObj)
+            .sort((a, b) => a.dateObj - b.dateObj);
+
+          datesToShow = sortedDates.map(x => {
+            const label = x.dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+            return { label, dateStr: x.str };
+          });
+        }
+      }
+    } else if (hasMonthFilter) {
+      const monthsList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthIdx = monthsList.indexOf(apprFilterMonth);
+      if (monthIdx !== -1) {
+        const currentYear = getSyncedDate().getFullYear();
+        const daysInMonth = new Date(currentYear, monthIdx + 1, 0).getDate();
+        for (let i = 1; i <= daysInMonth; i++) {
+          const dateObj = new Date(currentYear, monthIdx, i);
+          const label = dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+          datesToShow.push({ label, dateStr: formatDateToDDMMYY(dateObj) });
+        }
+      }
+    }
+
+    // If no date range filter or we couldn't resolve dates, default to 12 months view
+    if (datesToShow.length === 0) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const dataMap = months.map(m => ({ label: m, appr: 0, rej: 0, pend: 0 }));
+
+      dataList.forEach(c => {
+        if (!c.date) return;
+        try {
+          const d = new Date(c.date);
+          if (!isNaN(d.getTime())) {
+            const monthIdx = d.getMonth();
+            const dispStatus = getRequestDisplayStatus(c);
+            if (dispStatus === 'Approved' || dispStatus === 'Closed') {
+              dataMap[monthIdx].appr++;
+            } else if (dispStatus === 'Rejected') {
+              dataMap[monthIdx].rej++;
+            } else {
+              dataMap[monthIdx].pend++;
+            }
+          }
+        } catch {
+          // ignore
+        }
+      });
+
+      const maxVal = Math.max(
+        ...dataMap.map(item => Math.max(item.appr, item.rej, item.pend)),
+        5
+      );
+
+      return (
+        <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px]`}>
+          {dataMap.map((item, idx) => {
+            const hAppr = (item.appr / maxVal) * 100;
+            const hRej = (item.rej / maxVal) * 100;
+            const hPend = (item.pend / maxVal) * 100;
+
+            return (
+              <div key={idx} className="flex flex-col items-center w-[7%] h-full justify-end group">
+                <div className="flex gap-[2px] mb-[4px] text-[8px] font-bold">
+                  {item.appr > 0 && <span className="text-[#1e60aa]">{item.appr}</span>}
+                  {item.rej > 0 && <span className="text-[#f57c00]">{item.rej}</span>}
+                  {item.pend > 0 && <span className="text-slate-400">{item.pend}</span>}
+                </div>
+
+                <div className="flex items-end justify-center gap-[2px] w-full h-[65%]">
+                  <div
+                    className="w-[30%] bg-[#1e60aa] rounded-t-[1px]"
+                    style={{ height: `${hAppr}%`, minHeight: item.appr > 0 ? '2px' : '0px' }}
+                  />
+                  <div
+                    className="w-[30%] bg-[#f57c00] rounded-t-[1px]"
+                    style={{ height: `${hRej}%`, minHeight: item.rej > 0 ? '2px' : '0px' }}
+                  />
+                  <div
+                    className="w-[30%] bg-[#b0bec5] rounded-t-[1px]"
+                    style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }}
+                  />
+                </div>
+
+                <span className="text-[9px] font-bold text-slate-400 mt-[6px] uppercase tracking-wider">
+                  {item.label}
+                </span>
               </div>
+            );
+          })}
+        </div>
+      );
+    } else {
+      // Custom Date Range (Date-wise chart representation)
+      const dataMap = datesToShow.map(dInfo => ({
+        label: dInfo.label,
+        appr: 0,
+        rej: 0,
+        pend: 0
+      }));
 
-              <div className="flex items-end justify-center gap-[2px] w-full h-[65%]">
-                <div
-                  className="w-[30%] bg-[#1e60aa] rounded-t-[1px]"
-                  style={{ height: `${hAppr}%`, minHeight: item.appr > 0 ? '2px' : '0px' }}
-                />
-                <div
-                  className="w-[30%] bg-[#f57c00] rounded-t-[1px]"
-                  style={{ height: `${hRej}%`, minHeight: item.rej > 0 ? '2px' : '0px' }}
-                />
-                <div
-                  className="w-[30%] bg-[#b0bec5] rounded-t-[1px]"
-                  style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }}
-                />
+      dataList.forEach(c => {
+        if (!c.date) return;
+        const cDateStr = formatDateToDDMMYY(c.date);
+        const idx = datesToShow.findIndex(dInfo => dInfo.dateStr === cDateStr);
+        if (idx !== -1) {
+          const dispStatus = getRequestDisplayStatus(c);
+          if (dispStatus === 'Approved' || dispStatus === 'Closed') {
+            dataMap[idx].appr++;
+          } else if (dispStatus === 'Rejected') {
+            dataMap[idx].rej++;
+          } else {
+            dataMap[idx].pend++;
+          }
+        }
+      });
+
+      const maxVal = Math.max(
+        ...dataMap.map(item => Math.max(item.appr, item.rej, item.pend)),
+        5
+      );
+
+      // Dynamically calculate width of bar groups depending on count to prevent squeeze/overflow
+      const barWidthClass = datesToShow.length <= 10 
+        ? 'w-[8%]' 
+        : datesToShow.length <= 20 
+        ? 'w-[4%]' 
+        : 'w-[2.5%]';
+
+      return (
+        <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px] overflow-x-auto gap-2`}>
+          {dataMap.map((item, idx) => {
+            const hAppr = (item.appr / maxVal) * 100;
+            const hRej = (item.rej / maxVal) * 100;
+            const hPend = (item.pend / maxVal) * 100;
+
+            return (
+              <div 
+                key={idx} 
+                className={`flex flex-col items-center h-full justify-end group min-w-[36px] ${barWidthClass}`}
+              >
+                <div className="flex gap-[2px] mb-[4px] text-[8px] font-bold">
+                  {item.appr > 0 && <span className="text-[#1e60aa]">{item.appr}</span>}
+                  {item.rej > 0 && <span className="text-[#f57c00]">{item.rej}</span>}
+                  {item.pend > 0 && <span className="text-slate-400">{item.pend}</span>}
+                </div>
+
+                <div className="flex items-end justify-center gap-[2px] w-full h-[65%]">
+                  <div
+                    className="w-[30%] bg-[#1e60aa] rounded-t-[1px]"
+                    style={{ height: `${hAppr}%`, minHeight: item.appr > 0 ? '2px' : '0px' }}
+                  />
+                  <div
+                    className="w-[30%] bg-[#f57c00] rounded-t-[1px]"
+                    style={{ height: `${hRej}%`, minHeight: item.rej > 0 ? '2px' : '0px' }}
+                  />
+                  <div
+                    className="w-[30%] bg-[#b0bec5] rounded-t-[1px]"
+                    style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }}
+                  />
+                </div>
+
+                <span className="text-[8px] font-bold text-slate-500 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center rotate-45 sm:rotate-0 translate-y-0.5">
+                  {item.label}
+                </span>
               </div>
-
-              <span className="text-[9px] font-bold text-slate-400 mt-[6px] uppercase tracking-wider">
-                {item.label}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    );
+            );
+          })}
+        </div>
+      );
+    }
   };
 
   const renderImprovementBenefits = () => {
