@@ -47,8 +47,7 @@ export const AllRequests = ({
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
-  const currentYearShort = String(getSyncedDate().getFullYear()).slice(-2);
-  const monthOptions = monthsList.map(m => `${m}-${currentYearShort}`);
+  const monthOptions = monthsList;
 
   const formattedDbChanges = changes.map((c) => {
     const displayDate = formatDateToDDMMYY(c.date);
@@ -95,12 +94,10 @@ export const AllRequests = ({
     let matchesMonth = true;
     if (selectedMonth !== 'All') {
       try {
-        const [selMonthName, selYearShort] = selectedMonth.split('-');
         const d = new Date(item.rawDate);
         if (!isNaN(d.getTime())) {
           const itemMonthName = d.toLocaleDateString('en-US', { month: 'short' });
-          const itemYearShort = String(d.getFullYear()).slice(-2);
-          matchesMonth = (itemMonthName === selMonthName && itemYearShort === selYearShort);
+          matchesMonth = (itemMonthName === selectedMonth);
         } else {
           matchesMonth = false;
         }

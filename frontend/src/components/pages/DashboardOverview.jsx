@@ -146,8 +146,7 @@ export const DashboardOverview = ({
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
-  const currentYearShort = String(getSyncedDate().getFullYear()).slice(-2);
-  const monthOptions = monthsList.map(m => `${m}-${currentYearShort}`);
+  const monthOptions = monthsList;
 
   const uniquePersons = ['All', ...new Set(changes.map(c => c.requester).filter(Boolean))];
   const uniqueProcesses = ['All', ...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])];
@@ -166,12 +165,10 @@ export const DashboardOverview = ({
       let matchesMonth = true;
       if (monthVal !== 'All') {
         try {
-          const [selMonthName, selYearShort] = monthVal.split('-');
           const d = new Date(c.date);
           if (!isNaN(d.getTime())) {
             const itemMonthName = d.toLocaleDateString('en-US', { month: 'short' });
-            const itemYearShort = String(d.getFullYear()).slice(-2);
-            matchesMonth = (itemMonthName === selMonthName && itemYearShort === selYearShort);
+            matchesMonth = (itemMonthName === monthVal);
           } else {
             matchesMonth = false;
           }
