@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Search, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download, XCircle } from 'lucide-react';
+import { Save, Search, Eye, EyeOff, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download, XCircle } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getUsers } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
@@ -27,6 +27,13 @@ export const L3RequestTracker = ({
   const [activeTab, setActiveTab] = useState('l1');
   const [previewFile, setPreviewFile] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
+  const [showCustomerApproval, setShowCustomerApproval] = useState(false);
+
+  useEffect(() => {
+    if (!selectedLog) {
+      setShowCustomerApproval(false);
+    }
+  }, [selectedLog]);
 
   // Database approval logs
   const [approvalLogs, setApprovalLogs] = useState([]);
@@ -953,7 +960,15 @@ export const L3RequestTracker = ({
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required</span>
                         <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
                           <Clock size={14} className="text-slate-400" />
-                          {selectedL1Details.customer_approval}
+                          <span>{showCustomerApproval ? selectedL1Details.customer_approval : '••••'}</span>
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomerApproval(!showCustomerApproval)}
+                            className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
+                            title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
+                          >
+                            {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
+                          </button>
                         </span>
                       </div>
                       <div className="space-y-[6px] md:col-span-1 min-w-0">

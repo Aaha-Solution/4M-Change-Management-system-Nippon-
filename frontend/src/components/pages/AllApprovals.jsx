@@ -160,6 +160,13 @@ export const AllApprovals = ({
   const [remarks, setRemarks] = useState('');
   const [fileUrls, setFileUrls] = useState({});
   const [previewFile, setPreviewFile] = useState(null);
+  const [showCustomerApproval, setShowCustomerApproval] = useState(false);
+
+  useEffect(() => {
+    if (!selectedReq) {
+      setShowCustomerApproval(false);
+    }
+  }, [selectedReq]);
 
   // Filter & Search
   const [search, setSearch] = useState('');
@@ -1083,7 +1090,15 @@ export const AllApprovals = ({
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required</span>
                               <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
                                 <Clock size={14} className="text-slate-400" />
-                                {l1Details.customer_approval}
+                                <span>{showCustomerApproval ? l1Details.customer_approval : '••••'}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowCustomerApproval(!showCustomerApproval)}
+                                  className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
+                                  title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
+                                >
+                                  {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
+                                </button>
                               </span>
                             </div>
                             <div className="space-y-[6px] md:col-span-1 min-w-0">

@@ -13,6 +13,7 @@ import {
   Download,
   CheckCheck,
   Eye,
+  EyeOff,
   X,
   Paperclip,
   Folder,
@@ -65,6 +66,13 @@ export const DashboardOverview = ({
   const [previewFile, setPreviewFile] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Department');
+  const [showCustomerApproval, setShowCustomerApproval] = useState(false);
+
+  useEffect(() => {
+    if (!selectedLog) {
+      setShowCustomerApproval(false);
+    }
+  }, [selectedLog]);
 
   // Separate Benefit Filters
   const [benefitFilterType, setBenefitFilterType] = useState('All');
@@ -2562,7 +2570,15 @@ export const DashboardOverview = ({
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required</span>
                         <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
                           <Clock size={14} className="text-slate-400" />
-                          {selectedL1Details.customer_approval}
+                          <span>{showCustomerApproval ? selectedL1Details.customer_approval : '••••'}</span>
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomerApproval(!showCustomerApproval)}
+                            className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
+                            title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
+                          >
+                            {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
+                          </button>
                         </span>
                       </div>
                       <div className="space-y-[6px] md:col-span-1 min-w-0">
