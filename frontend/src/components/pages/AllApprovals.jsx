@@ -1358,7 +1358,7 @@ export const AllApprovals = ({
                       ) : (
                         <Clock size={14} />
                       )}
-                      L2 QA Validation {selectedL2Details.status || 'Pending'}
+                      L2 QA Validation {selectedL2Details.status === 'Accepted' ? 'Approved' : (selectedL2Details.status || 'Pending')}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-amber-700 bg-amber-50 border-amber-200">

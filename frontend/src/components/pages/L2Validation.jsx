@@ -478,7 +478,7 @@ export const L2Validation = ({
           <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Validation Locked:</span> L2 validation has already been completed (Status: <span className="font-bold uppercase">{matchedL2.status}</span>). Quality members and Admins cannot update these fields again.
+              <span className="font-bold">Validation Locked:</span> L2 validation has already been completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). Quality members and Admins cannot update these fields again.
             </div>
           </div>
         )}
@@ -487,7 +487,7 @@ export const L2Validation = ({
           <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-emerald-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Validation Completed:</span> This request has already been validated and Accepted by Quality. No further actions are required.
+              <span className="font-bold">Validation Completed:</span> This request has already been validated and Approved by Quality. No further actions are required.
             </div>
           </div>
         )}
@@ -744,7 +744,7 @@ export const L2Validation = ({
               }`}
             >
               <option value="">Select Status</option>
-              <option value="Accepted">Accepted</option>
+              <option value="Accepted">Approved</option>
               <option value="Rejected">Rejected</option>
             </select>
             {fieldErrors.status && (
@@ -795,7 +795,7 @@ export const L2Validation = ({
             ) : !canEdit ? (
               <span>Access Restricted</span>
             ) : (matchedL2 && matchedL2.status === 'Accepted') ? (
-              <span>Validation Locked (Accepted)</span>
+              <span>Validation Locked (Approved)</span>
             ) : (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0)) ? (
               <span>Validation Locked (Rejected)</span>
             ) : (matchedL2 && matchedL2.status === 'Rejected' && isRaisedByUserOrAdmin && pedFiles.length > 0) ? (
@@ -841,7 +841,7 @@ export const L2Validation = ({
             className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[120px] focus:border-[#0066cc]"
           >
             <option value="All">All Decisions</option>
-            <option value="Accepted">Accepted</option>
+            <option value="Accepted">Approved</option>
             <option value="Rejected">Rejected</option>
             <option value="Pending">Pending</option>
           </select>
@@ -953,7 +953,7 @@ export const L2Validation = ({
                               ? 'bg-amber-50 border-amber-250 text-amber-700'
                               : 'bg-rose-50 border-rose-250 text-rose-700'
                           }`}>
-                          {log.status}
+                          {log.status === 'Accepted' ? 'Approved' : log.status}
                         </span>
                       </td>
                       <td className="p-[12px] text-slate-500 max-w-[220px] truncate" title={log.remarks}>

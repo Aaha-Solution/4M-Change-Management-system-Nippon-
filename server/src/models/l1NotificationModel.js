@@ -48,7 +48,7 @@ export const createL1RequestNotifications = async (connection, changeNo, hodAppr
   for (const targetUser of targetUsers) {
     const notifId = `L1-HOD-NOTIF-${changeNo}-${targetUser.email.replace(/[@.]/g, '_')}-${Date.now()}`;
     const notifTitle = `HOD Approval Required – ${changeNo}`;
-    const notifDetails = `Change Request ${changeNo} created by ${requestBy} (${dept} department) requires HOD approval/validation (Approved or Rejected decision) from the selected department(s) (${hodApproval}).`;
+    const notifDetails = `Change Request ${changeNo} created by ${requestBy} (${dept} department) requires HOD approval/validation (Approved or Rejected decision) from the selected department(s) (${hodApproval}) (Status: Pending L1 HOD Approval).`;
     
     await connection.query(
       `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
@@ -62,7 +62,7 @@ export const createL1RequestNotifications = async (connection, changeNo, hodAppr
   if (requesterEmail) {
     const requesterNotifId = `L1-REQUESTER-CONFIRM-${changeNo}-${Date.now()}`;
     const requesterNotifTitle = `L1 Change Request Submitted – ${changeNo}`;
-    const requesterNotifDetails = `Your L1 Change Request ${changeNo} has been submitted successfully and is now awaiting HOD approval/validation.`;
+    const requesterNotifDetails = `Your L1 Change Request ${changeNo} has been submitted successfully and is now awaiting HOD approval/validation (Status: Pending L1 HOD Approval).`;
     
     await connection.query(
       `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
@@ -283,7 +283,7 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
     const color = status === 'Approved' ? 'green' : 'red';
     const title = `HOD ${status} – ${changeNo}`;
     const nextProcessStr = status === 'Approved' ? ' The next process is L2 Requester Validation (Requester uploads setup validation documentation).' : '';
-    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${status.toLowerCase()} by the ${hodDept} HOD.${remarks ? ` Remarks: ${remarks}` : ''}${nextProcessStr}`;
+    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${status.toLowerCase()} by the ${hodDept} HOD (Status: L1 ${status}).${remarks ? ` Remarks: ${remarks}` : ''}${nextProcessStr}`;
 
     for (const targetUser of targetUsers) {
       const notifId = `HOD-DECISION-${changeNo}-${hodDept.replace(/\s+/g, '_')}-${targetUser.email.replace(/[@.]/g, '_')}-${Date.now()}`;
@@ -311,8 +311,8 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
       const isApp = status === 'Approved';
       const actionTitle = isApp ? `L1 Approved - Proceed to L2 Validation` : `L1 Rejected – ${changeNo}`;
       const actionDetails = isApp 
-        ? `Your Change Request ${changeNo} has been approved by the HOD. The next process is L2 Requester Validation (Requester uploads setup validation documentation).`
-        : `Your Change Request ${changeNo} has been rejected by the HOD. Please review the remarks.`;
+        ? `Your Change Request ${changeNo} has been approved by the HOD (Status: L1 Approved). The next process is L2 Requester Validation (Requester uploads setup validation documentation).`
+        : `Your Change Request ${changeNo} has been rejected by the HOD (Status: L1 Rejected). Please review the remarks.`;
       const actionColor = isApp ? 'blue' : 'red';
       const notifPrefix = isApp ? 'L2-ACTION' : 'L1-REJECT-ACTION';
 
@@ -394,7 +394,7 @@ export const sendL1DecisionEmails = async (changeNo, hodDept, status, remarks, c
         <div style="padding: 24px;">
           <h2 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 600;">Hello Team,</h2>
           <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-            A decision has been recorded for L1 Change Request <strong>${changeNo}</strong> by the <strong>${hodDept}</strong> HOD.
+            A decision has been recorded for L1 Change Request <strong>${changeNo}</strong> by the <strong>${hodDept}</strong> HOD (Status: L1 ${status}).
           </p>
           <div style="background-color: ${bgLight}; border-left: 4px solid ${borderLeftColor}; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
             <div style="font-size: 12px; text-transform: uppercase; color: ${badgeTextColor}; font-weight: 600; letter-spacing: 0.5px;">Decision Status</div>

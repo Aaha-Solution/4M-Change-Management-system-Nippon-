@@ -860,7 +860,7 @@ export const AllRequests = ({
                               ? 'bg-rose-50 border-rose-220 text-rose-700'
                               : 'bg-amber-50 border-amber-220 text-amber-700'
                           }`}>
-                            L2 {selectedL2Details.status || 'Pending'}
+                            L2 {selectedL2Details.status === 'Accepted' ? 'Approved' : (selectedL2Details.status || 'Pending')}
                           </span>
                         </div>
                       </div>

@@ -40,7 +40,7 @@ export const createL3DecisionNotifications = async (connection, changeNo, update
     const email = targetUser.email;
     const notifId = `L3-DECISION-NOTIF-${changeNo}-${requestDept.replace(/\s+/g, '_')}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
     const title = `L3 Approval ${newDecision} by ${updatedDeptField} HOD – ${changeNo}`;
-    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} raised by ${requestBy} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD at L3.`;
+    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} raised by ${requestBy} has been ${newDecision.toLowerCase()} by the ${updatedDeptField} HOD at L3 (Status: L3 HOD Review - ${newDecision} by ${updatedDeptField}).`;
 
     await connection.query(
       `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
@@ -103,7 +103,7 @@ export const sendL3DecisionEmails = async (changeNo, updatedDeptField, newDecisi
         <div style="padding: 24px;">
           <h2 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 600;">Hello Team,</h2>
           <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-            A review decision has been recorded for L3 Change Request <strong>${changeNo}</strong> by the <strong>${updatedDeptField}</strong> HOD.
+            A review decision has been recorded for L3 Change Request <strong>${changeNo}</strong> by the <strong>${updatedDeptField}</strong> HOD (Status: L3 HOD Review - ${newDecision} by ${updatedDeptField}).
           </p>
           <div style="background-color: ${bgLight}; border-left: 4px solid ${borderLeftColor}; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
             <div style="font-size: 12px; text-transform: uppercase; color: ${badgeTextColor}; font-weight: 600; letter-spacing: 0.5px;">Review Status</div>
@@ -183,7 +183,7 @@ export const createL3CompletionNotifications = async (connection, changeNo, chan
     const email = targetUser.email;
     const notifId = `L3-COMPLETION-NOTIF-${changeNo}-${requestDept.replace(/\s+/g, '_')}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
     const title = `L3 All Department Approvals Completed – ${changeNo}`;
-    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} raised by ${requestBy} has been fully signed off by all department HODs at L3.`;
+    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} raised by ${requestBy} has been fully signed off by all department HODs at L3 (Status: L3 Completed).`;
 
     await connection.query(
       `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
@@ -241,7 +241,7 @@ export const sendL3CompletionEmails = async (changeNo, requester) => {
         <div style="padding: 24px;">
           <h2 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 600;">Hello Team,</h2>
           <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-            We are pleased to inform you that Change Request <strong>${changeNo}</strong> has been <strong>fully approved and signed off by all departments at L3</strong>.
+            We are pleased to inform you that Change Request <strong>${changeNo}</strong> has been <strong>fully approved and signed off by all departments at L3</strong> (Status: L3 Completed).
           </p>
           <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
             <div style="font-size: 12px; text-transform: uppercase; color: #15803d; font-weight: 600; letter-spacing: 0.5px;">Final Workflow Status</div>
