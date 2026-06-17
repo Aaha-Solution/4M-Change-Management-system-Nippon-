@@ -8,6 +8,7 @@ import effectivenessRoutes from './effectivenessRoutes.js';
 import notificationRoutes from './notificationRoutes.js';
 import optionRoutes from './optionRoutes.js';
 import hodApprovalRoutes from './hodApprovalRoutes.js';
+import dashboardRoutes from './dashboardRoutes.js';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use(effectivenessRoutes);
 router.use(notificationRoutes);
 router.use(optionRoutes);
 router.use(hodApprovalRoutes);
+router.use(dashboardRoutes);
 
 export default router;

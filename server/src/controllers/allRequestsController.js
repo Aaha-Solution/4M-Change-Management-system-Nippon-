@@ -1,14 +1,5 @@
 import * as allRequestsModel from '../models/allRequestsModel.js';
 
-export const getAllChanges = async (req, res) => {
-  try {
-    const list = await allRequestsModel.getChanges();
-    res.status(200).json(list);
-  } catch (error) {
-    console.error('Error in getAllChanges:', error);
-    res.status(500).json({ error: 'Failed to fetch changes' });
-  }
-};
 
 export const createChange = async (req, res) => {
   const { title, requester, priority } = req.body;

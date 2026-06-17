@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getChanges, getEffectivenessLogs, getNotifications, getUsers } from '../../api/apiRoutes';
+import { getDashboardChanges, getEffectivenessLogs, getNotifications, getUsers } from '../../api/apiRoutes';
 import { getSyncedDate } from '../../utils/timeSync';
 import {
   LogOut,
@@ -122,7 +122,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
   const fetchChanges = async () => {
     setIsFetchingChanges(true);
     try {
-      const response = await getChanges();
+      const response = await getDashboardChanges();
       setChanges(response.data);
     } catch (error) {
       console.error(error);
