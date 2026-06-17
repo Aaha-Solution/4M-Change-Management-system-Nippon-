@@ -15,7 +15,15 @@ export const getRequestDisplayStatus = (c) => {
     return 'Rejected';
   }
 
-  // 2. L3 decisions: only resolved after ALL departments have voted
+  // 2. Check effectiveness QA Approval Decision
+  if (c.qaApproval === 'Approved') {
+    return 'Closed';
+  }
+  if (c.qaApproval === 'Rejected') {
+    return 'Rejected';
+  }
+
+  // 3. L3 decisions: only resolved after ALL departments have voted
   if (c.isL3Complete === 1 || c.isL3Complete === true) {
     if (c.hasL3Rejection === 1 || c.hasL3Rejection === true) {
       return 'Rejected';
@@ -23,7 +31,7 @@ export const getRequestDisplayStatus = (c) => {
     return 'Approved';
   }
 
-  // 3. Fallback for Completed change request
+  // 4. Fallback for Completed change request
   if (c.status === 'Completed') {
     return 'Closed';
   }
@@ -31,16 +39,16 @@ export const getRequestDisplayStatus = (c) => {
     return 'Approved';
   }
 
-  // 4. Pending L3 (L3 is in progress, waiting for all departments)
+  // 5. Pending L3 (L3 is in progress, waiting for all departments)
   if (c.status === 'Approved' || (c.hodStatus === 'Approved' && c.l2Status === 'Accepted')) {
     return 'Pending L3';
   }
 
-  // 5. Pending L2
+  // 6. Pending L2
   if (c.hodStatus === 'Approved') {
     return 'Pending L2';
   }
 
-  // 6. Pending L1 HOD
+  // 7. Pending L1 HOD
   return 'Pending L1 HOD';
 };

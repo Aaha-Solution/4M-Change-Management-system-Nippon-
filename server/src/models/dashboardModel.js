@@ -110,12 +110,14 @@ export const getDashboardChanges = async () => {
                       l3.hr = 'Pending' OR
                       l3.safety = 'Pending' OR
                       l3.unit_head = 'Pending'
-                    ) THEN 0 ELSE 1 END as isL3Complete
+                    ) THEN 0 ELSE 1 END as isL3Complete,
+            e.qa_approval as qaApproval
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
      LEFT JOIN l2_validation_logs v ON c.id = v.change_no
      LEFT JOIN l3_approvals l3 ON c.id = l3.change_no
+     LEFT JOIN effectiveness_logs e ON c.id = e.change_no
      LEFT JOIN (
        SELECT ha1.change_no, ha1.status
        FROM hod_approvals ha1
