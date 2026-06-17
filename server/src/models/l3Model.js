@@ -1,6 +1,13 @@
 import pool from '../config/db.js';
 import { broadcast } from '../config/websocket.js';
-import { createL3DecisionNotifications, sendL3DecisionEmails, createL3CompletionNotifications, sendL3CompletionEmails } from './l3NotificationModel.js';
+import { 
+  createL3DecisionNotifications, 
+  sendL3DecisionEmails, 
+  createL3CompletionNotifications, 
+  sendL3CompletionEmails,
+  createL3RejectionNotifications,
+  sendL3RejectionEmails
+} from './l3NotificationModel.js';
 
 export const getL3Approvals = async () => {
   const [rows] = await pool.query(
@@ -156,9 +163,9 @@ export const addL3ApprovalLog = async (logData) => {
       ]
     );
 
-    // Fetch raisedDept
+    // Fetch raisedDept and requesterEmail
     const [crRows] = await connection.query(
-      `SELECT COALESCE(l1.dept, u.department) as raisedDept
+      `SELECT COALESCE(l1.dept, u.department) as raisedDept, c.requester as requesterEmail
        FROM change_requests c
        LEFT JOIN l1_requests l1 ON c.id = l1.change_no
        LEFT JOIN users u ON c.requester = u.email
@@ -166,6 +173,7 @@ export const addL3ApprovalLog = async (logData) => {
       [changeNo]
     );
     const raisedDept = crRows.length > 0 ? crRows[0].raisedDept : '';
+    const requesterEmail = crRows.length > 0 ? crRows[0].requesterEmail : '';
 
     const mapDbDeptToL3Dept = (dbDept) => {
       if (!dbDept) return 'Quality';
@@ -197,6 +205,33 @@ export const addL3ApprovalLog = async (logData) => {
       safety !== 'Pending' &&
       unitHead !== 'Pending';
 
+    // Calculate if any of the decisions is 'Rejected'
+    const rejectedDepts = [];
+    const labelMap = {
+      ped: 'PED',
+      quality: 'Quality',
+      production: 'Production',
+      maintenance: 'Maintenance',
+      pcl: 'PC & L',
+      materials: 'Materials',
+      marketing: 'Marketing',
+      hr: 'HR',
+      safety: 'Safety',
+      unitHead: 'Unit Head'
+    };
+    if (ped === 'Rejected') rejectedDepts.push(labelMap.ped);
+    if (quality === 'Rejected') rejectedDepts.push(labelMap.quality);
+    if (production === 'Rejected') rejectedDepts.push(labelMap.production);
+    if (maintenance === 'Rejected') rejectedDepts.push(labelMap.maintenance);
+    if (pcl === 'Rejected') rejectedDepts.push(labelMap.pcl);
+    if (materials === 'Rejected') rejectedDepts.push(labelMap.materials);
+    if (marketing === 'Rejected') rejectedDepts.push(labelMap.marketing);
+    if (hr === 'Rejected') rejectedDepts.push(labelMap.hr);
+    if (safety === 'Rejected') rejectedDepts.push(labelMap.safety);
+    if (unitHead === 'Rejected') rejectedDepts.push(labelMap.unitHead);
+
+    const hasRejection = rejectedDepts.length > 0;
+
     if (isAllL3Decided) {
       await connection.query(
         `UPDATE change_requests SET status = 'Completed' WHERE id = ?`,
@@ -212,9 +247,15 @@ export const addL3ApprovalLog = async (logData) => {
         const changeIn = l1Rows.length > 0 ? l1Rows[0].change_in : '';
         const requestBy = l1Rows.length > 0 ? l1Rows[0].request_by : requester;
 
-        await createL3CompletionNotifications(
-          connection, changeNo, changeIn, requestBy, requester, l1Dept
-        );
+        if (hasRejection) {
+          await createL3RejectionNotifications(
+            connection, changeNo, changeIn, requestBy, requesterEmail, l1Dept, rejectedDepts
+          );
+        } else {
+          await createL3CompletionNotifications(
+            connection, changeNo, changeIn, requestBy, requesterEmail, l1Dept
+          );
+        }
       }
     } else {
       const [crRow] = await connection.query(
@@ -234,9 +275,15 @@ export const addL3ApprovalLog = async (logData) => {
     broadcast({ type: 'REFRESH_NOTIFICATIONS' });
 
     if (isAllL3Decided && !wasAlreadyAllL3Decided) {
-      sendL3CompletionEmails(changeNo, requester).catch(err =>
-        console.error('Error sending L3 completion emails:', err)
-      );
+      if (hasRejection) {
+        sendL3RejectionEmails(changeNo, requesterEmail, rejectedDepts).catch(err =>
+          console.error('Error sending L3 rejection emails:', err)
+        );
+      } else {
+        sendL3CompletionEmails(changeNo, requesterEmail).catch(err =>
+          console.error('Error sending L3 completion emails:', err)
+        );
+      }
     }
 
     return logData;
