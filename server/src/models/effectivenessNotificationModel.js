@@ -51,7 +51,7 @@ export const triggerEffectivenessQAAlert = async (changeNo, qaApproval, remarks)
 
     // 3. Create a notification in the DB for each target user specifically (no department broadcast)
     const title = `Effectiveness QA ${qaApproval} – ${changeNo}`;
-    const details = `The effectiveness monitoring observations for Change Request ${changeNo} have been ${qaApproval} by QA HOD. Remarks: ${remarks}`;
+    const details = `The effectiveness monitoring observations for Change Request ${changeNo} have been ${qaApproval} by QA. Remarks: ${remarks}`;
     const now = new Date();
     const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
 
@@ -69,15 +69,15 @@ export const triggerEffectivenessQAAlert = async (changeNo, qaApproval, remarks)
     // 4. Send email notification to all recipients (using BCC to save SMTP requests)
     const emailContent = `
       <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background-color: #ffffff;">
-        <div style="background-color: ${headerBg}; color: white; padding: 24px; text-align: center;">
-          <h1 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">4M Change Management System</h1>
-          <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Effectiveness Evaluation ${qaApproval.toUpperCase()}</p>
-        </div>
-        <div style="padding: 24px;">
-          <h2 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 600;">Hello Team,</h2>
-          <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-            The QA HOD has recorded the effectiveness monitoring evaluation decision for Change Request <strong>${changeNo}</strong>.
-          </p>
+         <div style="background-color: ${headerBg}; color: white; padding: 24px; text-align: center;">
+           <h1 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">4M Change Management System</h1>
+           <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Effectiveness Evaluation ${qaApproval.toUpperCase()}</p>
+         </div>
+         <div style="padding: 24px;">
+           <h2 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 600;">Hello Team,</h2>
+           <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+             The Quality (QA) department has recorded the effectiveness monitoring evaluation decision for Change Request <strong>${changeNo}</strong>.
+           </p>
           
           <div style="background-color: ${remarksBg}; border-left: 4px solid ${borderLeftColor}; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
             <div style="font-size: 12px; text-transform: uppercase; color: ${remarksTextColor}; font-weight: 600; letter-spacing: 0.5px;">Evaluation Status</div>
