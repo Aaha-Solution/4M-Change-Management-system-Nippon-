@@ -192,9 +192,15 @@ export const DashboardOverview = ({
     };
   });
 
-  const totalCount = filteredChanges.length;
-  const approvedCount = formattedDbChanges.filter(c => c.status === 'Approved' || c.status === 'Closed').length;
-  const rejectedCount = formattedDbChanges.filter(c => c.status === 'Rejected').length;
+  const totalCount = changes.length;
+  const approvedCount = changes.filter(c => {
+    const status = getRequestDisplayStatus(c);
+    return status === 'Approved' || status === 'Closed';
+  }).length;
+  const rejectedCount = changes.filter(c => {
+    const status = getRequestDisplayStatus(c);
+    return status === 'Rejected';
+  }).length;
   const pendingCount = totalCount - approvedCount - rejectedCount;
 
   const allTableRows = formattedDbChanges;
