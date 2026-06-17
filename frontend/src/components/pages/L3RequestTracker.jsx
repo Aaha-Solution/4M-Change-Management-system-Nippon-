@@ -4,6 +4,7 @@ import TablePagination from '@mui/material/TablePagination';
 import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getUsers } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { exportL3ApprovalsPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 export const L3RequestTracker = ({
   userEmail,
@@ -262,6 +263,12 @@ export const L3RequestTracker = ({
     fetchLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useWebSocket((data) => {
+    if (data.type === 'REFRESH_CHANGES') {
+      fetchLogs();
+    }
+  });
 
   useEffect(() => {
     if (autoOpenChangeNo && approvalLogs.length > 0) {

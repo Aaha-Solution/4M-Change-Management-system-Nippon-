@@ -39,6 +39,7 @@ import {
 } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { exportApprovalsListPDF } from '../../utils/pdfExport';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 // Map raw DB dept string to display name
 const mapDept = (raw) => {
@@ -232,6 +233,12 @@ export const AllApprovals = ({
     if (actingDept || isAdmin) fetchRequests();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actingDept, isAdmin]);
+
+  useWebSocket((data) => {
+    if (data.type === 'REFRESH_CHANGES') {
+      fetchRequests();
+    }
+  });
 
   const handleOpenModal = async (req) => {
     setSelectedReq(req);
