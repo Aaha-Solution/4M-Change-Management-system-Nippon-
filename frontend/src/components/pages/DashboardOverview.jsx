@@ -47,18 +47,56 @@ export const DashboardOverview = ({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const [filterMonth, setFilterMonth] = useState('All');
-  const [filterFromDate, setFilterFromDate] = useState('');
-  const [filterToDate, setFilterToDate] = useState('');
-  const [filterPerson, setFilterPerson] = useState('All');
-  const [filterProcess, setFilterProcess] = useState('All');
-  const [filterMachine, setFilterMachine] = useState('All');
-  const [filterStatus, setFilterStatus] = useState('All');
+  // Department Filters
+  const [deptFilterMonth, setDeptFilterMonth] = useState('All');
+  const [deptFilterFromDate, setDeptFilterFromDate] = useState('');
+  const [deptFilterToDate, setDeptFilterToDate] = useState('');
+  const [deptFilterPerson, setDeptFilterPerson] = useState('All');
+  const [deptFilterProcess, setDeptFilterProcess] = useState('All');
+  const [deptFilterMachine, setDeptFilterMachine] = useState('All');
 
-  // Reset page when filters change
+  // Process Filters
+  const [procFilterMonth, setProcFilterMonth] = useState('All');
+  const [procFilterFromDate, setProcFilterFromDate] = useState('');
+  const [procFilterToDate, setProcFilterToDate] = useState('');
+  const [procFilterPerson, setProcFilterPerson] = useState('All');
+  const [procFilterProcess, setProcFilterProcess] = useState('All');
+  const [procFilterMachine, setProcFilterMachine] = useState('All');
+
+  // 6M Category Filters
+  const [catFilterMonth, setCatFilterMonth] = useState('All');
+  const [catFilterFromDate, setCatFilterFromDate] = useState('');
+  const [catFilterToDate, setCatFilterToDate] = useState('');
+  const [catFilterPerson, setCatFilterPerson] = useState('All');
+  const [catFilterProcess, setCatFilterProcess] = useState('All');
+  const [catFilterMachine, setCatFilterMachine] = useState('All');
+
+  // Monthly Filters
+  const [monthFilterMonth, setMonthFilterMonth] = useState('All');
+  const [monthFilterFromDate, setMonthFilterFromDate] = useState('');
+  const [monthFilterToDate, setMonthFilterToDate] = useState('');
+  const [monthFilterPerson, setMonthFilterPerson] = useState('All');
+  const [monthFilterProcess, setMonthFilterProcess] = useState('All');
+  const [monthFilterMachine, setMonthFilterMachine] = useState('All');
+
+  // Approval Status Filters
+  const [apprFilterMonth, setApprFilterMonth] = useState('All');
+  const [apprFilterFromDate, setApprFilterFromDate] = useState('');
+  const [apprFilterToDate, setApprFilterToDate] = useState('');
+  const [apprFilterStatus, setApprFilterStatus] = useState('All');
+
+  // Table Filters (Recent change requests)
+  const [tableFilterMonth, setTableFilterMonth] = useState('All');
+  const [tableFilterFromDate, setTableFilterFromDate] = useState('');
+  const [tableFilterToDate, setTableFilterToDate] = useState('');
+  const [tableFilterPerson, setTableFilterPerson] = useState('All');
+  const [tableFilterProcess, setTableFilterProcess] = useState('All');
+  const [tableFilterMachine, setTableFilterMachine] = useState('All');
+
+  // Reset page when table filters change
   useEffect(() => {
     setPage(0);
-  }, [filterMonth, filterFromDate, filterToDate, filterPerson, filterProcess, filterMachine, filterStatus]);
+  }, [tableFilterMonth, tableFilterFromDate, tableFilterToDate, tableFilterPerson, tableFilterProcess, tableFilterMachine]);
 
   const [dbProcesses, setDbProcesses] = useState([]);
   const [dbMachines, setDbMachines] = useState([]);
@@ -87,67 +125,77 @@ export const DashboardOverview = ({
   const uniqueProcesses = ['All', ...new Set([...dbProcesses, ...changes.map(c => c.processName).filter(Boolean)])];
   const uniqueMachines = ['All', ...new Set([...dbMachines, ...changes.map(c => c.machineNo).filter(Boolean)])];
 
-  const filteredChanges = changes.filter(c => {
-    let matchesMonth = true;
-    if (filterMonth !== 'All') {
-      try {
-        const [selMonthName, selYearShort] = filterMonth.split('-');
-        const d = new Date(c.date);
-        if (!isNaN(d.getTime())) {
-          const itemMonthName = d.toLocaleDateString('en-US', { month: 'short' });
-          const itemYearShort = String(d.getFullYear()).slice(-2);
-          matchesMonth = (itemMonthName === selMonthName && itemYearShort === selYearShort);
-        } else {
+  const getFilteredData = (
+    monthVal,
+    fromDateVal,
+    toDateVal,
+    personVal,
+    processVal,
+    machineVal,
+    statusVal = 'All'
+  ) => {
+    return changes.filter(c => {
+      let matchesMonth = true;
+      if (monthVal !== 'All') {
+        try {
+          const [selMonthName, selYearShort] = monthVal.split('-');
+          const d = new Date(c.date);
+          if (!isNaN(d.getTime())) {
+            const itemMonthName = d.toLocaleDateString('en-US', { month: 'short' });
+            const itemYearShort = String(d.getFullYear()).slice(-2);
+            matchesMonth = (itemMonthName === selMonthName && itemYearShort === selYearShort);
+          } else {
+            matchesMonth = false;
+          }
+        } catch {
           matchesMonth = false;
         }
-      } catch {
-        matchesMonth = false;
       }
-    }
 
-    let matchesFromDate = true;
-    if (filterFromDate) {
-      const fD = parseDDMMYYYYToDate(filterFromDate);
-      if (fD) {
-        fD.setHours(0, 0, 0, 0);
-        const itemD = parseDDMMYYYYToDate(c.date);
-        matchesFromDate = itemD && itemD >= fD;
+      let matchesFromDate = true;
+      if (fromDateVal) {
+        const fD = parseDDMMYYYYToDate(fromDateVal);
+        if (fD) {
+          fD.setHours(0, 0, 0, 0);
+          const itemD = parseDDMMYYYYToDate(c.date);
+          matchesFromDate = itemD && itemD >= fD;
+        }
       }
-    }
 
-    let matchesToDate = true;
-    if (filterToDate) {
-      const tD = parseDDMMYYYYToDate(filterToDate);
-      if (tD) {
-        tD.setHours(23, 59, 59, 999);
-        const itemD = parseDDMMYYYYToDate(c.date);
-        matchesToDate = itemD && itemD <= tD;
+      let matchesToDate = true;
+      if (toDateVal) {
+        const tD = parseDDMMYYYYToDate(toDateVal);
+        if (tD) {
+          tD.setHours(23, 59, 59, 999);
+          const itemD = parseDDMMYYYYToDate(c.date);
+          matchesToDate = itemD && itemD <= tD;
+        }
       }
-    }
 
-    const matchesPerson = filterPerson === 'All' || c.requester === filterPerson;
-    const matchesProcess = filterProcess === 'All' || c.processName === filterProcess;
-    const matchesMachine = filterMachine === 'All' || c.machineNo === filterMachine;
-    
-    let matchesStatus = true;
-    if (filterStatus !== 'All') {
-      const dispStatus = getRequestDisplayStatus(c);
-      if (filterStatus === 'Approved') matchesStatus = dispStatus === 'Approved';
-      else if (filterStatus === 'Closed') matchesStatus = dispStatus === 'Closed';
-      else if (filterStatus === 'Rejected') matchesStatus = dispStatus === 'Rejected';
-      else if (filterStatus === 'Pending') matchesStatus = dispStatus.startsWith('Pending');
-      else matchesStatus = false;
-    }
+      const matchesPerson = personVal === 'All' || c.requester === personVal;
+      const matchesProcess = processVal === 'All' || c.processName === processVal;
+      const matchesMachine = machineVal === 'All' || c.machineNo === machineVal;
+      
+      let matchesStatus = true;
+      if (statusVal !== 'All') {
+        const dispStatus = getRequestDisplayStatus(c);
+        if (statusVal === 'Approved') matchesStatus = dispStatus === 'Approved';
+        else if (statusVal === 'Closed') matchesStatus = dispStatus === 'Closed';
+        else if (statusVal === 'Rejected') matchesStatus = dispStatus === 'Rejected';
+        else if (statusVal === 'Pending') matchesStatus = dispStatus.startsWith('Pending');
+        else matchesStatus = false;
+      }
 
-    return matchesMonth && matchesFromDate && matchesToDate && matchesPerson && matchesProcess && matchesMachine && matchesStatus;
-  });
+      return matchesMonth && matchesFromDate && matchesToDate && matchesPerson && matchesProcess && matchesMachine && matchesStatus;
+    });
+  };
 
   // Extract all improvement data rows
   const costSavingRows = [];
   const productivityRows = [];
   const qualityRows = [];
 
-  filteredChanges.forEach(c => {
+  changes.forEach(c => {
     if (c.improvementTableData) {
       try {
         const rows = typeof c.improvementTableData === 'string'
@@ -177,7 +225,9 @@ export const DashboardOverview = ({
     }
   });
 
-  const formattedDbChanges = filteredChanges.map((c, idx) => {
+  const filteredChangesForTable = getFilteredData(tableFilterMonth, tableFilterFromDate, tableFilterToDate, tableFilterPerson, tableFilterProcess, tableFilterMachine);
+
+  const formattedDbChanges = filteredChangesForTable.map((c, idx) => {
     const displayDate = formatDateToDDMMYY(c.date);
     const displayStatus = getRequestDisplayStatus(c);
 
@@ -206,38 +256,73 @@ export const DashboardOverview = ({
   const paginatedTableRows = allTableRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleExportPDF = () => {
-    exportDashboardRequestsPDF(filteredChanges, {
-      month: filterMonth,
-      fromDate: filterFromDate,
-      toDate: filterToDate,
-      person: filterPerson,
-      process: filterProcess,
-      machine: filterMachine,
-      status: filterStatus
+    exportDashboardRequestsPDF(filteredChangesForTable, {
+      month: tableFilterMonth,
+      fromDate: tableFilterFromDate,
+      toDate: tableFilterToDate,
+      person: tableFilterPerson,
+      process: tableFilterProcess,
+      machine: tableFilterMachine,
+      status: 'All'
     }, setToastMsg);
   };
 
   const handleExportSpecificTab = (tabName) => {
-    const filtersInfo = {
-      month: filterMonth,
-      fromDate: filterFromDate,
-      toDate: filterToDate,
-      person: filterPerson,
-      process: filterProcess,
-      machine: filterMachine,
-      status: filterStatus
-    };
-
     if (tabName === 'Department') {
-      exportDepartmentAnalyticsPDF(filteredChanges, filtersInfo, setToastMsg);
+      const deptFiltered = getFilteredData(deptFilterMonth, deptFilterFromDate, deptFilterToDate, deptFilterPerson, deptFilterProcess, deptFilterMachine);
+      exportDepartmentAnalyticsPDF(deptFiltered, {
+        month: deptFilterMonth,
+        fromDate: deptFilterFromDate,
+        toDate: deptFilterToDate,
+        person: deptFilterPerson,
+        process: deptFilterProcess,
+        machine: deptFilterMachine,
+        status: 'All'
+      }, setToastMsg);
     } else if (tabName === 'Process') {
-      exportProcessAnalyticsPDF(filteredChanges, filtersInfo, setToastMsg);
+      const procFiltered = getFilteredData(procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine);
+      exportProcessAnalyticsPDF(procFiltered, {
+        month: procFilterMonth,
+        fromDate: procFilterFromDate,
+        toDate: procFilterToDate,
+        person: procFilterPerson,
+        process: procFilterProcess,
+        machine: procFilterMachine,
+        status: 'All'
+      }, setToastMsg);
     } else if (tabName === '6M Category') {
-      exportCategoryAnalyticsPDF(filteredChanges, filtersInfo, setToastMsg);
+      const catFiltered = getFilteredData(catFilterMonth, catFilterFromDate, catFilterToDate, catFilterPerson, catFilterProcess, catFilterMachine);
+      exportCategoryAnalyticsPDF(catFiltered, {
+        month: catFilterMonth,
+        fromDate: catFilterFromDate,
+        toDate: catFilterToDate,
+        person: catFilterPerson,
+        process: catFilterProcess,
+        machine: catFilterMachine,
+        status: 'All'
+      }, setToastMsg);
     } else if (tabName === 'Monthly') {
-      exportMonthlyAnalyticsPDF(filteredChanges, filtersInfo, setToastMsg);
+      const monthFiltered = getFilteredData(monthFilterMonth, monthFilterFromDate, monthFilterToDate, monthFilterPerson, monthFilterProcess, monthFilterMachine);
+      exportMonthlyAnalyticsPDF(monthFiltered, {
+        month: monthFilterMonth,
+        fromDate: monthFilterFromDate,
+        toDate: monthFilterToDate,
+        person: monthFilterPerson,
+        process: monthFilterProcess,
+        machine: monthFilterMachine,
+        status: 'All'
+      }, setToastMsg);
     } else if (tabName === 'Approval Status') {
-      exportApprovalStatusAnalyticsPDF(filteredChanges, filtersInfo, setToastMsg);
+      const apprFiltered = getFilteredData(apprFilterMonth, apprFilterFromDate, apprFilterToDate, 'All', 'All', 'All', apprFilterStatus);
+      exportApprovalStatusAnalyticsPDF(apprFiltered, {
+        month: apprFilterMonth,
+        fromDate: apprFilterFromDate,
+        toDate: apprFilterToDate,
+        person: 'All',
+        process: 'All',
+        machine: 'All',
+        status: apprFilterStatus
+      }, setToastMsg);
     } else if (tabName === 'Improvement Benefits') {
       // For Improvement Benefits, apply its separate filters
       const filteredCost = costSavingRows.filter(row => {
@@ -308,14 +393,21 @@ export const DashboardOverview = ({
 
 
   // Helper filters render
-  const renderFilters = () => (
+  const renderFilters = ({
+    monthVal, setMonthVal,
+    fromDateVal, setFromDateVal,
+    toDateVal, setToDateVal,
+    personVal, setPersonVal,
+    processVal, setProcessVal,
+    machineVal, setMachineVal
+  }) => (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-[8px] p-[12px] bg-slate-50/50 border-y border-slate-100 text-[10px]">
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Month</label>
         <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
-          value={filterMonth}
-          onChange={(e) => setFilterMonth(e.target.value)}
+          value={monthVal}
+          onChange={(e) => setMonthVal(e.target.value)}
         >
           <option value="All">All Months</option>
           {monthOptions.map(m => (
@@ -326,8 +418,8 @@ export const DashboardOverview = ({
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
         <CustomDatePicker
-          value={filterFromDate}
-          onChange={setFilterFromDate}
+          value={fromDateVal}
+          onChange={setFromDateVal}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
           buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
@@ -335,8 +427,8 @@ export const DashboardOverview = ({
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
         <CustomDatePicker
-          value={filterToDate}
-          onChange={setFilterToDate}
+          value={toDateVal}
+          onChange={setToDateVal}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
           buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
@@ -345,8 +437,8 @@ export const DashboardOverview = ({
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Person</label>
         <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
-          value={filterPerson}
-          onChange={(e) => setFilterPerson(e.target.value)}
+          value={personVal}
+          onChange={(e) => setPersonVal(e.target.value)}
         >
           {uniquePersons.map(p => {
             if (p === 'All') return <option key={p} value={p}>All Persons</option>;
@@ -391,8 +483,8 @@ export const DashboardOverview = ({
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Process</label>
         <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
-          value={filterProcess}
-          onChange={(e) => setFilterProcess(e.target.value)}
+          value={processVal}
+          onChange={(e) => setProcessVal(e.target.value)}
         >
           {uniqueProcesses.map(p => (
             <option key={p} value={p}>{p === 'All' ? 'All Processes' : p}</option>
@@ -403,8 +495,8 @@ export const DashboardOverview = ({
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By M/C No</label>
         <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
-          value={filterMachine}
-          onChange={(e) => setFilterMachine(e.target.value)}
+          value={machineVal}
+          onChange={(e) => setMachineVal(e.target.value)}
         >
           {uniqueMachines.map(m => (
             <option key={m} value={m}>{m === 'All' ? 'All Machines' : m}</option>
@@ -414,14 +506,19 @@ export const DashboardOverview = ({
     </div>
   );
 
-  const renderStatusFilters = () => (
+  const renderStatusFilters = ({
+    monthVal, setMonthVal,
+    fromDateVal, setFromDateVal,
+    toDateVal, setToDateVal,
+    statusVal, setStatusVal
+  }) => (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-[8px] p-[12px] bg-slate-50/50 border-y border-slate-100 text-[10px]">
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Month</label>
         <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
-          value={filterMonth}
-          onChange={(e) => setFilterMonth(e.target.value)}
+          value={monthVal}
+          onChange={(e) => setMonthVal(e.target.value)}
         >
           <option value="All">All Months</option>
           {monthOptions.map(m => (
@@ -432,8 +529,8 @@ export const DashboardOverview = ({
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
         <CustomDatePicker
-          value={filterFromDate}
-          onChange={setFilterFromDate}
+          value={fromDateVal}
+          onChange={setFromDateVal}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
           buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
@@ -441,8 +538,8 @@ export const DashboardOverview = ({
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
         <CustomDatePicker
-          value={filterToDate}
-          onChange={setFilterToDate}
+          value={toDateVal}
+          onChange={setToDateVal}
           inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
           buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
@@ -451,8 +548,8 @@ export const DashboardOverview = ({
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
         <select
           className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
+          value={statusVal}
+          onChange={(e) => setStatusVal(e.target.value)}
         >
           <option value="All">All Statuses</option>
           <option value="Approved">Approved</option>
@@ -464,8 +561,60 @@ export const DashboardOverview = ({
     </div>
   );
 
+  const renderFiltersForTab = (tabName) => {
+    if (tabName === 'Department') {
+      return renderFilters({
+        monthVal: deptFilterMonth, setMonthVal: setDeptFilterMonth,
+        fromDateVal: deptFilterFromDate, setFromDateVal: setDeptFilterFromDate,
+        toDateVal: deptFilterToDate, setToDateVal: setDeptFilterToDate,
+        personVal: deptFilterPerson, setPersonVal: setDeptFilterPerson,
+        processVal: deptFilterProcess, setProcessVal: setDeptFilterProcess,
+        machineVal: deptFilterMachine, setMachineVal: setDeptFilterMachine
+      });
+    }
+    if (tabName === 'Process') {
+      return renderFilters({
+        monthVal: procFilterMonth, setMonthVal: setProcFilterMonth,
+        fromDateVal: procFilterFromDate, setFromDateVal: setProcFilterFromDate,
+        toDateVal: procFilterToDate, setToDateVal: setProcFilterToDate,
+        personVal: procFilterPerson, setPersonVal: setProcFilterPerson,
+        processVal: procFilterProcess, setProcessVal: setProcFilterProcess,
+        machineVal: procFilterMachine, setMachineVal: setProcFilterMachine
+      });
+    }
+    if (tabName === '6M Category') {
+      return renderFilters({
+        monthVal: catFilterMonth, setMonthVal: setCatFilterMonth,
+        fromDateVal: catFilterFromDate, setFromDateVal: setCatFilterFromDate,
+        toDateVal: catFilterToDate, setToDateVal: setCatFilterToDate,
+        personVal: catFilterPerson, setPersonVal: setCatFilterPerson,
+        processVal: catFilterProcess, setProcessVal: setCatFilterProcess,
+        machineVal: catFilterMachine, setMachineVal: setCatFilterMachine
+      });
+    }
+    if (tabName === 'Monthly') {
+      return renderFilters({
+        monthVal: monthFilterMonth, setMonthVal: setMonthFilterMonth,
+        fromDateVal: monthFilterFromDate, setFromDateVal: setMonthFilterFromDate,
+        toDateVal: monthFilterToDate, setToDateVal: setMonthFilterToDate,
+        personVal: monthFilterPerson, setPersonVal: setMonthFilterPerson,
+        processVal: monthFilterProcess, setProcessVal: setMonthFilterProcess,
+        machineVal: monthFilterMachine, setMachineVal: setMonthFilterMachine
+      });
+    }
+    if (tabName === 'Approval Status') {
+      return renderStatusFilters({
+        monthVal: apprFilterMonth, setMonthVal: setApprFilterMonth,
+        fromDateVal: apprFilterFromDate, setFromDateVal: setApprFilterFromDate,
+        toDateVal: apprFilterToDate, setToDateVal: setApprFilterToDate,
+        statusVal: apprFilterStatus, setStatusVal: setApprFilterStatus
+      });
+    }
+    return null;
+  };
+
   // Reusable Chart Renderers
-  const renderDepartmentChart = (height = 'h-[160px]') => {
+  const renderDepartmentChart = (dataList, height = 'h-[160px]') => {
     const counts = {
       'PED': 0,
       'QAD': 0,
@@ -478,7 +627,7 @@ export const DashboardOverview = ({
       'SAFETY': 0
     };
 
-    filteredChanges.forEach(c => {
+    dataList.forEach(c => {
       const rawDept = (c.dept || c.department || '').trim().toUpperCase();
       let mapped;
       if (rawDept.includes('PED')) mapped = 'PED';
@@ -520,28 +669,28 @@ export const DashboardOverview = ({
               <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
                 {item.label === 'PRODUCTION' ? (
                   <>
-                    <span className="hidden sm:inline">PRODUCTION</span>
-                    <span className="inline sm:hidden">PROD</span>
+                     <span className="hidden sm:inline">PRODUCTION</span>
+                     <span className="inline sm:hidden">PROD</span>
                   </>
                 ) : item.label === 'MAINTENANCE' ? (
                   <>
-                    <span className="hidden sm:inline">MAINTENANCE</span>
-                    <span className="inline sm:hidden">MAINT</span>
+                     <span className="hidden sm:inline">MAINTENANCE</span>
+                     <span className="inline sm:hidden">MAINT</span>
                   </>
                 ) : item.label === 'MATERIALS' ? (
                   <>
-                    <span className="hidden sm:inline">MATERIALS</span>
-                    <span className="inline sm:hidden">MAT</span>
+                     <span className="hidden sm:inline">MATERIALS</span>
+                     <span className="inline sm:hidden">MAT</span>
                   </>
                 ) : item.label === 'MARKETING' ? (
                   <>
-                    <span className="hidden sm:inline">MARKETING</span>
-                    <span className="inline sm:hidden">MKTG</span>
+                     <span className="hidden sm:inline">MARKETING</span>
+                     <span className="inline sm:hidden">MKTG</span>
                   </>
                 ) : item.label === 'SAFETY' ? (
                   <>
-                    <span className="hidden sm:inline">SAFETY</span>
-                    <span className="inline sm:hidden">SAFE</span>
+                     <span className="hidden sm:inline">SAFETY</span>
+                     <span className="inline sm:hidden">SAFE</span>
                   </>
                 ) : (
                   item.label
@@ -554,7 +703,7 @@ export const DashboardOverview = ({
     );
   };
 
-  const renderProcessChart = (height = 'h-[160px]') => {
+  const renderProcessChart = (dataList, height = 'h-[160px]') => {
     const counts = {
       'Wind': 0,
       'Gold': 0,
@@ -563,7 +712,7 @@ export const DashboardOverview = ({
       'Load': 0
     };
 
-    filteredChanges.forEach(c => {
+    dataList.forEach(c => {
       const p = (c.processName || '').trim().toLowerCase();
       let mapped;
       if (p.includes('wind') || p.includes('weld')) mapped = 'Wind';
@@ -606,7 +755,7 @@ export const DashboardOverview = ({
     );
   };
 
-  const renderCategoryChart = (height = 'h-[160px]') => {
+  const renderCategoryChart = (dataList, height = 'h-[160px]') => {
     const counts = {
       'Man': 0,
       'Mac': 0,
@@ -616,7 +765,7 @@ export const DashboardOverview = ({
       'Mot': 0
     };
 
-    filteredChanges.forEach(c => {
+    dataList.forEach(c => {
       const catStr = (c.changeIn || c.title || c.id || '').trim().toLowerCase();
       let mapped;
       if (catStr.includes('man') || catStr.includes('train')) mapped = 'Man';
@@ -670,11 +819,11 @@ export const DashboardOverview = ({
     );
   };
 
-  const renderMonthlyChart = (height = 'h-[160px]') => {
+  const renderMonthlyChart = (dataList, height = 'h-[160px]') => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const counts = Array(12).fill(0);
 
-    filteredChanges.forEach(c => {
+    dataList.forEach(c => {
       if (!c.date) return;
       try {
         const d = new Date(c.date);
@@ -717,11 +866,11 @@ export const DashboardOverview = ({
     );
   };
 
-  const renderApprovalStatusChart = (height = 'h-[180px]') => {
+  const renderApprovalStatusChart = (dataList, height = 'h-[180px]') => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const dataMap = months.map(m => ({ label: m, appr: 0, rej: 0, pend: 0 }));
 
-    filteredChanges.forEach(c => {
+    dataList.forEach(c => {
       if (!c.date) return;
       try {
         const d = new Date(c.date);
@@ -1294,14 +1443,14 @@ export const DashboardOverview = ({
             </div>
 
             {/* Render filter block based on selected analytics tab */}
-            {activeAnalyticsTab === 'Approval Status' ? renderStatusFilters() : renderFilters()}
+            {renderFiltersForTab(activeAnalyticsTab)}
 
             {/* Render selected chart */}
-            {activeAnalyticsTab === 'Department' && renderDepartmentChart()}
-            {activeAnalyticsTab === 'Process' && renderProcessChart()}
-            {activeAnalyticsTab === '6M Category' && renderCategoryChart()}
-            {activeAnalyticsTab === 'Monthly' && renderMonthlyChart()}
-            {activeAnalyticsTab === 'Approval Status' && renderApprovalStatusChart()}
+            {activeAnalyticsTab === 'Department' && renderDepartmentChart(getFilteredData(deptFilterMonth, deptFilterFromDate, deptFilterToDate, deptFilterPerson, deptFilterProcess, deptFilterMachine))}
+            {activeAnalyticsTab === 'Process' && renderProcessChart(getFilteredData(procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine))}
+            {activeAnalyticsTab === '6M Category' && renderCategoryChart(getFilteredData(catFilterMonth, catFilterFromDate, catFilterToDate, catFilterPerson, catFilterProcess, catFilterMachine))}
+            {activeAnalyticsTab === 'Monthly' && renderMonthlyChart(getFilteredData(monthFilterMonth, monthFilterFromDate, monthFilterToDate, monthFilterPerson, monthFilterProcess, monthFilterMachine))}
+            {activeAnalyticsTab === 'Approval Status' && renderApprovalStatusChart(getFilteredData(apprFilterMonth, apprFilterFromDate, apprFilterToDate, 'All', 'All', 'All', apprFilterStatus))}
             {activeAnalyticsTab === 'Improvement Benefits' && renderImprovementBenefits()}
           </div>
         ) : (
@@ -1324,8 +1473,8 @@ export const DashboardOverview = ({
                     <GitBranch size={14} className="text-slate-400" />
                   </div>
                 </div>
-                {renderFilters()}
-                {renderDepartmentChart('h-[140px]')}
+                {renderFiltersForTab('Department')}
+                {renderDepartmentChart(getFilteredData(deptFilterMonth, deptFilterFromDate, deptFilterToDate, deptFilterPerson, deptFilterProcess, deptFilterMachine), 'h-[140px]')}
               </div>
 
               {/* 2. Process Wise Change */}
@@ -1343,8 +1492,8 @@ export const DashboardOverview = ({
                     <Settings size={14} className="text-slate-400" />
                   </div>
                 </div>
-                {renderFilters()}
-                {renderProcessChart('h-[140px]')}
+                {renderFiltersForTab('Process')}
+                {renderProcessChart(getFilteredData(procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine), 'h-[140px]')}
               </div>
 
               {/* 3. 6M Category Change */}
@@ -1362,8 +1511,8 @@ export const DashboardOverview = ({
                     <Layers size={14} className="text-slate-400" />
                   </div>
                 </div>
-                {renderFilters()}
-                {renderCategoryChart('h-[140px]')}
+                {renderFiltersForTab('6M Category')}
+                {renderCategoryChart(getFilteredData(catFilterMonth, catFilterFromDate, catFilterToDate, catFilterPerson, catFilterProcess, catFilterMachine), 'h-[140px]')}
               </div>
 
               {/* 4. Monthly Change */}
@@ -1381,8 +1530,8 @@ export const DashboardOverview = ({
                     <Calendar size={14} className="text-slate-400" />
                   </div>
                 </div>
-                {renderFilters()}
-                {renderMonthlyChart('h-[140px]')}
+                {renderFiltersForTab('Monthly')}
+                {renderMonthlyChart(getFilteredData(monthFilterMonth, monthFilterFromDate, monthFilterToDate, monthFilterPerson, monthFilterProcess, monthFilterMachine), 'h-[140px]')}
               </div>
             </div>
 
@@ -1418,8 +1567,8 @@ export const DashboardOverview = ({
                   </button>
                 </div>
               </div>
-              {renderStatusFilters()}
-              {renderApprovalStatusChart('h-[180px]')}
+              {renderFiltersForTab('Approval Status')}
+              {renderApprovalStatusChart(getFilteredData(apprFilterMonth, apprFilterFromDate, apprFilterToDate, 'All', 'All', 'All', apprFilterStatus), 'h-[180px]')}
             </div>
 
             {/* 6. Improvement Benefits (Full-width Card at bottom of Grid Mode) */}
@@ -1438,7 +1587,6 @@ export const DashboardOverview = ({
                   <span>Export PDF</span>
                 </button>
               </div>
-              {renderFilters()}
               {renderImprovementBenefits()}
             </div>
           </div>
@@ -1454,7 +1602,7 @@ export const DashboardOverview = ({
           </div>
           <div className="flex items-center gap-[12px] flex-wrap">
             <span className="bg-slate-100 border border-slate-200 text-slate-500 rounded-full px-[10px] py-[2px] text-[10px] font-bold select-none">
-              Showing {filteredChanges.length} of {changes.length}
+              Showing {filteredChangesForTable.length} of {changes.length}
             </span>
             <button
               onClick={handleExportPDF}
@@ -1467,7 +1615,14 @@ export const DashboardOverview = ({
           </div>
         </div>
 
-        {renderFilters()}
+        {renderFilters({
+          monthVal: tableFilterMonth, setMonthVal: setTableFilterMonth,
+          fromDateVal: tableFilterFromDate, setFromDateVal: setTableFilterFromDate,
+          toDateVal: tableFilterToDate, setToDateVal: setTableFilterToDate,
+          personVal: tableFilterPerson, setPersonVal: setTableFilterPerson,
+          processVal: tableFilterProcess, setProcessVal: setTableFilterProcess,
+          machineVal: tableFilterMachine, setMachineVal: setTableFilterMachine
+        })}
 
 
         <div className="overflow-x-auto">
