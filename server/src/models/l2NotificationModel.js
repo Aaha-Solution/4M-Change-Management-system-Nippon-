@@ -31,7 +31,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
     );
     targetUsers = rows.filter(u => u.email.toLowerCase() !== (crRequesterEmail || '').toLowerCase());
     title = `L2 Setup Validation Awaiting QA Review – ${changeNo}`;
-    details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has updated L2 requester validation attachment by ${requestBy}. QA Setup Verification review is now required.`;
+    details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has updated L2 requester validation attachment by ${requestBy}. The next process is L2 QA Validation (Quality Department setup verification review).`;
     statusColor = 'blue';
   } else if (status === 'Accepted') {
     const seenEmails = new Set();
@@ -84,7 +84,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
     }
 
     title = `L2 Validation Accepted – ${changeNo}`;
-    details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been accepted at L2 validation by ${requestBy}.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} L3 review is now required.`;
+    details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been accepted at L2 validation by ${requestBy}.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} The next process is L3 Multi-Department HOD Decisions (Awaiting decision / acknowledgement from all selected department HODs and Admin).`;
     statusColor = 'green';
   } else if (status === 'Rejected') {
     const [rows] = await connection.query(
@@ -99,7 +99,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
     );
     targetUsers = rows;
     title = `L2 Validation Rejected – ${changeNo}`;
-    details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been rejected at L2 validation by Quality.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''}`;
+    details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been rejected at L2 validation by Quality.${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} The next process is L2 Requester Validation (Requester re-uploads/corrects setup validation documentation).`;
     statusColor = 'red';
   }
 
@@ -139,8 +139,8 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
 
     const actionTitle = isAccepted ? `L2 Approved - Proceed to L3 Review` : `L2 Rejected – ${changeNo}`;
     const actionDetails = isAccepted
-      ? `Change Request ${changeNo} ("${crTitle}") has been accepted at L2 validation. Please proceed to L3.`
-      : `Change Request ${changeNo} ("${crTitle}") has been rejected at L2 validation. Please review the remarks.`;
+      ? `Change Request ${changeNo} ("${crTitle}") has been accepted at L2 validation. The next process is L3 Multi-Department HOD Decisions (Awaiting decision / acknowledgement from all selected department HODs and Admin).`
+      : `Change Request ${changeNo} ("${crTitle}") has been rejected at L2 validation. The next process is L2 Requester Validation (Requester re-uploads/corrects setup validation documentation).`;
     const actionColor = isAccepted ? 'blue' : 'red';
     const notifPrefix = isAccepted ? 'L2-VAL-ACTION-ACCEPTED' : 'L2-VAL-ACTION-REJECTED';
 
@@ -187,7 +187,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
     if (notifDept) {
       const requesterNotifId = `L2-REQUESTER-CONFIRM-${changeNo}-${Date.now()}`;
       const requesterNotifTitle = `L2 Validation Submitted – ${changeNo}`;
-      const requesterNotifDetails = `Your L2 Requester Validation attachment for Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been submitted successfully. The QA department will now review and verify your setup. You will be notified once a decision is made.`;
+      const requesterNotifDetails = `Your L2 Requester Validation attachment for Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been submitted successfully. The next process is L2 QA Validation (Quality Department setup verification review).`;
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
@@ -245,7 +245,7 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
                 <div style="font-size: 12px; text-transform: uppercase; color: #0284c7; font-weight: 600; letter-spacing: 0.5px;">Submission Status</div>
                 <div style="font-size: 16px; font-weight: 700; color: #0369a1; margin-top: 4px;">Pending QA Review</div>
                 <p style="margin: 6px 0 0 0; font-size: 13px; color: #0369a1; line-height: 1.4;">
-                  The QA department will now review and verify your setup. You will be notified once a decision is made.
+                  The next process is <strong>L2 QA Validation (Quality Department setup verification review)</strong>. The QA department will now review and verify your setup. You will be notified once a decision is made.
                 </p>
               </div>
               <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; margin-bottom: 12px;">Submission Details</h3>
@@ -300,15 +300,15 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
 
       if (status === 'Pending') {
         emailSubject = `[4M-CMS] Action Required: QA Setup Verification for ${changeNo}`;
-        emailIntro = `A change request has updated <strong>L2 Requester Validation documentation</strong> and is now pending your setup verification review.`;
+        emailIntro = `A change request has updated <strong>L2 Requester Validation documentation</strong>. The next process is <strong>L2 QA Validation (Quality Department setup verification review)</strong>.`;
         headerSubtitle = 'L2 Validation Alert';
       } else if (status === 'Accepted') {
         emailSubject = `[4M-CMS] L2 Validation Approved for Request: ${changeNo}`;
-        emailIntro = `Change Request <strong>${changeNo}</strong> has successfully completed and been <strong>Approved</strong> at L2 setup validation. L3 department reviews are now required.`;
+        emailIntro = `Change Request <strong>${changeNo}</strong> has successfully completed and been <strong>Approved</strong> at L2 setup validation. The next process is <strong>L3 Multi-Department HOD Decisions (Awaiting decision / acknowledgement from all selected department HODs and Admin)</strong>.`;
         headerSubtitle = 'L2 Validation Approved';
       } else if (status === 'Rejected') {
         emailSubject = `[4M-CMS] Alert: L2 Validation Rejected for ${changeNo}`;
-        emailIntro = `A change request L2 validation has been <strong>rejected</strong> by the Quality department.`;
+        emailIntro = `A change request L2 validation has been <strong>rejected</strong> by the Quality department. The next process is <strong>L2 Requester Validation (Requester re-uploads/corrects setup validation documentation)</strong>.`;
         headerSubtitle = 'L2 Validation Rejected';
       }
 
@@ -328,6 +328,11 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
             <div style="background-color: ${bgLight}; border-left: 4px solid ${themeColor}; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
               <div style="font-size: 12px; text-transform: uppercase; color: ${badgeTextColor}; font-weight: 600; letter-spacing: 0.5px;">Validation Status</div>
               <div style="font-size: 18px; font-weight: 700; color: ${badgeTextColor}; margin-top: 4px;">L2 Status: ${statusLabel}</div>
+              <p style="margin: 6px 0 0 0; font-size: 13.5px; color: #334155; line-height: 1.5;">
+                ${status === 'Pending' ? 'The next process is <strong>L2 QA Validation (Quality Department setup verification review)</strong>.' : 
+                  (status === 'Accepted' ? 'The next process is <strong>L3 Multi-Department HOD Decisions (Awaiting decision / acknowledgement from all selected department HODs and Admin)</strong>.' : 
+                   'The next process is <strong>L2 Requester Validation (Requester re-uploads/corrects setup validation documentation)</strong>.')}
+              </p>
             </div>
             
             <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; margin-bottom: 12px;">Validation Details</h3>
