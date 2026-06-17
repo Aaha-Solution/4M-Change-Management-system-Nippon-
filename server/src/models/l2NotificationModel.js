@@ -93,6 +93,8 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
          AND (
            LOWER(department) IN ('quality', 'qad', 'qa') 
            OR LOWER(role) IN ('admin', 'administrator') 
+           OR LOWER(role) LIKE '%hod%' 
+           OR LOWER(role) LIKE '%manager%'
            OR LOWER(email) = LOWER(?)
          )`,
       [crRequesterEmail || '']
@@ -282,6 +284,8 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
          WHERE department != '' AND department IS NOT NULL 
            AND (LOWER(department) IN ('quality', 'qad', 'qa') 
                 OR LOWER(role) IN ('admin', 'administrator') 
+                OR LOWER(role) LIKE '%hod%' 
+                OR LOWER(role) LIKE '%manager%'
                 OR LOWER(email) = LOWER(?))`,
         [crRequesterEmail || '']
       );
