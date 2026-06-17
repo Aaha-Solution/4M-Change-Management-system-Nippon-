@@ -1660,7 +1660,7 @@ export const DashboardOverview = ({
                         </div>
                         <div className="flex items-end gap-1.5 h-[65%] justify-center">
                           <div
-                            className="w-5 bg-slate-350 hover:bg-slate-400 transition-all rounded-t-[2px] shadow-sm cursor-pointer"
+                            className="w-5 bg-slate-400 hover:bg-slate-500 transition-all rounded-t-[2px] shadow-sm cursor-pointer"
                             style={{ height: `${Math.max(pctCurr, 4)}%` }}
                           />
                           <div
@@ -1891,7 +1891,7 @@ export const DashboardOverview = ({
           <div className="flex justify-between items-start">
             <div>
               <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Closed</h4>
-              <div className="text-[32px] font-bold text-teal-650 mt-2 font-heading tracking-tight">
+              <div className="text-[32px] font-bold text-teal-600 mt-2 font-heading tracking-tight">
                 {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : closedCount}
               </div>
             </div>
