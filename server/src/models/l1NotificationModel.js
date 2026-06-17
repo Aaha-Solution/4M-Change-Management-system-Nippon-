@@ -282,7 +282,8 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
 
     const color = status === 'Approved' ? 'green' : 'red';
     const title = `HOD ${status} – ${changeNo}`;
-    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${status.toLowerCase()} by the ${hodDept} HOD.${remarks ? ` Remarks: ${remarks}` : ''}`;
+    const nextProcessStr = status === 'Approved' ? ' The next process is L2 Requester Validation (Requester uploads setup validation documentation).' : '';
+    const details = `Change Request ${changeNo}${changeIn ? ` (${changeIn})` : ''} has been ${status.toLowerCase()} by the ${hodDept} HOD.${remarks ? ` Remarks: ${remarks}` : ''}${nextProcessStr}`;
 
     for (const targetUser of targetUsers) {
       const notifId = `HOD-DECISION-${changeNo}-${hodDept.replace(/\s+/g, '_')}-${targetUser.email.replace(/[@.]/g, '_')}-${Date.now()}`;
@@ -310,7 +311,7 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
       const isApp = status === 'Approved';
       const actionTitle = isApp ? `L1 Approved - Proceed to L2 Validation` : `L1 Rejected – ${changeNo}`;
       const actionDetails = isApp 
-        ? `Your Change Request ${changeNo} has been approved by the HOD. Please proceed to L2.`
+        ? `Your Change Request ${changeNo} has been approved by the HOD. The next process is L2 Requester Validation (Requester uploads setup validation documentation).`
         : `Your Change Request ${changeNo} has been rejected by the HOD. Please review the remarks.`;
       const actionColor = isApp ? 'blue' : 'red';
       const notifPrefix = isApp ? 'L2-ACTION' : 'L1-REJECT-ACTION';
@@ -399,7 +400,7 @@ export const sendL1DecisionEmails = async (changeNo, hodDept, status, remarks, c
             <div style="font-size: 12px; text-transform: uppercase; color: ${badgeTextColor}; font-weight: 600; letter-spacing: 0.5px;">Decision Status</div>
             <div style="font-size: 18px; font-weight: 700; color: ${badgeTextColor}; margin-top: 4px;">${badgeText}</div>
             <p style="margin: 6px 0 0 0; font-size: 13.5px; color: #334155; line-height: 1.5;">
-              ${status === 'Approved' ? 'The request is approved at L1. Please proceed with <strong>L2 validation</strong>.' : 'The request was rejected at L1. Please review the comments and feedback below.'}
+              ${status === 'Approved' ? 'The request is approved at L1. The next process is <strong>L2 Requester Validation (Requester uploads setup validation documentation)</strong>.' : 'The request was rejected at L1. Please review the comments and feedback below.'}
             </p>
           </div>
           
