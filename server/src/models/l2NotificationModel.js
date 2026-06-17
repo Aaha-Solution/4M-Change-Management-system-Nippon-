@@ -112,21 +112,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
   if (status === 'Accepted' || status === 'Rejected') {
     const isAccepted = status === 'Accepted';
     
-    // 1. Insert System Logs notification for all targetUsers
-    for (const targetUser of targetUsers) {
-      const email = targetUser.email;
-      if (!email || seenNotifEmails.has(email.toLowerCase())) continue;
-      seenNotifEmails.add(email.toLowerCase());
-
-      const notifId = `L2-LOG-${status.toUpperCase()}-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
-      await connection.query(
-        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
-         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?, ?)`,
-        [notifId, title, details, changeNo, changeIn || 'GENERAL', notifDept, timeStr, statusColor, email]
-      );
-    }
-
-    // 2. Insert Action Required notification for requester and admins
+    // 1. Resolve Action Required targets first to prevent duplicates in System Logs
     const targetEmailsForL2Action = new Set();
     if (crRequesterEmail) {
       targetEmailsForL2Action.add(crRequesterEmail.toLowerCase().trim());
@@ -139,6 +125,45 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
       targetEmailsForL2Action.add(admin.email.toLowerCase().trim());
     }
 
+    const targetEmailsForL3Action = new Set();
+    if (isAccepted) {
+      // Fetch all HODs
+      const [hodsRows] = await connection.query(
+        `SELECT email FROM users 
+         WHERE department != '' AND department IS NOT NULL AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%')`
+      );
+      for (const u of hodsRows) {
+        targetEmailsForL3Action.add(u.email.toLowerCase().trim());
+      }
+      // Add Admins
+      for (const admin of admins) {
+        targetEmailsForL3Action.add(admin.email.toLowerCase().trim());
+      }
+    }
+
+    // 2. Insert System Logs notification for targetUsers (excluding those getting Action Required)
+    for (const targetUser of targetUsers) {
+      const email = targetUser.email;
+      if (!email) continue;
+      const emailClean = email.toLowerCase().trim();
+      
+      // Skip if they are already getting an Action Required notification for this event
+      if (targetEmailsForL2Action.has(emailClean) || targetEmailsForL3Action.has(emailClean)) {
+        continue;
+      }
+      
+      if (seenNotifEmails.has(emailClean)) continue;
+      seenNotifEmails.add(emailClean);
+
+      const notifId = `L2-LOG-${status.toUpperCase()}-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
+      await connection.query(
+        `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+         VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?, ?)`,
+        [notifId, title, details, changeNo, changeIn || 'GENERAL', notifDept, timeStr, statusColor, email]
+      );
+    }
+
+    // 3. Insert Action Required notification for L2 action (requester and admins)
     const actionTitle = isAccepted ? `L2 Approved - Proceed to L3 Review` : `L2 Rejected – ${changeNo}`;
     const actionDetails = isAccepted
       ? `Change Request ${changeNo} ("${crTitle}") has been approved at L2 validation (Status: L2 Approved). The next process is L3 Multi-Department HOD Decisions (Awaiting decision / acknowledgement from all selected department HODs and Admin).`
@@ -156,23 +181,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
     }
 
     if (isAccepted) {
-      // 3. Insert Action Required notification for all HODs and Admins (Level 3 review)
-      const targetEmailsForL3Action = new Set();
-      
-      // Fetch all HODs
-      const [hodsRows] = await connection.query(
-        `SELECT email FROM users 
-         WHERE department != '' AND department IS NOT NULL AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%')`
-      );
-      for (const u of hodsRows) {
-        targetEmailsForL3Action.add(u.email.toLowerCase().trim());
-      }
-      
-      // Add Admins
-      for (const admin of admins) {
-        targetEmailsForL3Action.add(admin.email.toLowerCase().trim());
-      }
-
+      // 4. Insert Action Required notification for L3 HOD and Admin review
       const l3ActionTitle = `L3 Approval Required – ${changeNo}`;
       const l3ActionDetails = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} is awaiting your department's review and sign-off at L3 (Status: Awaiting L3 HOD Decisions).`;
       const l3ActionColor = 'orange';

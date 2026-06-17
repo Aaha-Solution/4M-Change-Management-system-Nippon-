@@ -411,22 +411,23 @@ export const AllRequests = ({
         </div>
 
         <div className="overflow-x-auto w-full">
-          <table className="w-full text-left border-collapse table-fixed min-w-[880px]">
+          <table className="w-full text-left border-collapse table-fixed min-w-[1120px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-150">
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[80px]">SL. NO.</th>
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[150px]">CHANGE NO.</th>
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[130px]">MACHINE NO.</th>
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[150px]">DEPARTMENT</th>
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[140px]">REQUEST DATE</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[70px]">SL. NO.</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[130px]">CHANGE NO.</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[280px]">TITLE / CONTEXT</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[180px]">REQUESTED BY</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[130px]">DEPARTMENT</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[120px]">REQUEST DATE</th>
                 <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[130px]">STATUS</th>
-                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center w-[100px]">ACTIONS</th>
+                <th className="p-[16px] text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-[48px] text-slate-400 text-[14px]">
+                  <td colSpan={8} className="text-center py-[48px] text-slate-400 text-[14px]">
                     No matching change requests found.
                   </td>
                 </tr>
@@ -435,7 +436,8 @@ export const AllRequests = ({
                   <tr key={idx} className="hover:bg-slate-50/50">
                     <td className="p-[16px] text-[12px] text-slate-500 font-semibold">{page * rowsPerPage + idx + 1}</td>
                     <td className="p-[16px] text-[12px] font-bold text-[#0066cc] hover:underline cursor-pointer" onClick={() => handleViewDetails(r)}>{r.id}</td>
-                    <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.machineNo}</td>
+                    <td className="p-[16px] text-[12px] text-slate-650 font-medium truncate" title={r.title}>{r.title}</td>
+                    <td className="p-[16px] text-[12px] text-slate-600 font-medium truncate" title={r.requester}>{r.requester}</td>
                     <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.department}</td>
                     <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
                     <td className="p-[16px]">
