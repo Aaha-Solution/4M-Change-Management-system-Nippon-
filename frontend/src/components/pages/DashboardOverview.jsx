@@ -133,10 +133,9 @@ export const DashboardOverview = ({
     if (filterStatus !== 'All') {
       const dispStatus = getRequestDisplayStatus(c);
       if (filterStatus === 'Approved') matchesStatus = dispStatus === 'Approved';
-      else if (filterStatus === 'Completed') matchesStatus = dispStatus === 'Closed';
+      else if (filterStatus === 'Closed') matchesStatus = dispStatus === 'Closed';
       else if (filterStatus === 'Rejected') matchesStatus = dispStatus === 'Rejected';
-      else if (filterStatus === 'Evaluating') matchesStatus = dispStatus === 'Pending L2' || dispStatus === 'Pending L3';
-      else if (filterStatus === 'Pending') matchesStatus = dispStatus === 'Pending L1 HOD';
+      else if (filterStatus === 'Pending') matchesStatus = dispStatus.startsWith('Pending');
       else matchesStatus = false;
     }
 
@@ -457,10 +456,9 @@ export const DashboardOverview = ({
         >
           <option value="All">All Statuses</option>
           <option value="Approved">Approved</option>
-          <option value="Pending">Pending</option>
-          <option value="Evaluating">Evaluating</option>
           <option value="Rejected">Rejected</option>
-          <option value="Completed">Completed</option>
+          <option value="Closed">Closed</option>
+          <option value="Pending">Pending</option>
         </select>
       </div>
     </div>
