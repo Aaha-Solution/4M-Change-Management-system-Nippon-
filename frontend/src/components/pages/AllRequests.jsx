@@ -11,7 +11,9 @@ import { exportRequestsListPDF, exportRequestDetailsPDF } from '../../utils/pdfE
 export const AllRequests = ({
   changes,
   setToastMsg,
-  usersList = []
+  usersList = [],
+  autoOpenChangeNo = null,
+  clearAutoOpen = () => {}
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('All');
@@ -39,12 +41,13 @@ export const AllRequests = ({
     setPage(0);
   }, [searchQuery, selectedMonth, fromDate, toDate, selectedPerson, selectedProcess, selectedMachine]);
 
+
+
   const monthsList = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
-  const currentYearShort = String(getSyncedDate().getFullYear()).slice(-2);
-  const monthOptions = monthsList.map(m => `${m}-${currentYearShort}`);
+  const monthOptions = monthsList;
 
   const formattedDbChanges = changes.map((c) => {
     const displayDate = formatDateToDDMMYY(c.date);
@@ -91,12 +94,10 @@ export const AllRequests = ({
     let matchesMonth = true;
     if (selectedMonth !== 'All') {
       try {
-        const [selMonthName, selYearShort] = selectedMonth.split('-');
         const d = new Date(item.rawDate);
         if (!isNaN(d.getTime())) {
           const itemMonthName = d.toLocaleDateString('en-US', { month: 'short' });
-          const itemYearShort = String(d.getFullYear()).slice(-2);
-          matchesMonth = (itemMonthName === selMonthName && itemYearShort === selYearShort);
+          matchesMonth = (itemMonthName === selectedMonth);
         } else {
           matchesMonth = false;
         }
@@ -189,6 +190,19 @@ export const AllRequests = ({
       setIsFetchingDetails(false);
     }
   };
+
+  // Auto-open request details modal when navigated from dashboard overview Eye icon
+  useEffect(() => {
+    if (autoOpenChangeNo && combinedData.length > 0) {
+      const match = combinedData.find(c => c.id === autoOpenChangeNo);
+      if (match) {
+        handleViewDetails(match);
+        if (clearAutoOpen) {
+          clearAutoOpen();
+        }
+      }
+    }
+  }, [autoOpenChangeNo, combinedData, clearAutoOpen]);
 
   const handleViewAttachment = async (filename, changeNo, type = 'L1') => {
     if (!filename || filename === '-') return;

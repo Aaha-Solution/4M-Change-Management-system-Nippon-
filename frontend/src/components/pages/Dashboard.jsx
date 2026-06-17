@@ -534,6 +534,8 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 onTabChange={handleTabChange}
                 setToastMsg={setToastMsg}
                 usersList={usersList}
+                autoOpenChangeNo={autoOpenChangeNo}
+                clearAutoOpen={() => setAutoOpenChangeNo(null)}
               />
             )}
 
