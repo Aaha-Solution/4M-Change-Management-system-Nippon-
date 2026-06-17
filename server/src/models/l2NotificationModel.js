@@ -154,6 +154,38 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
         [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', notifDept, timeStr, actionColor, email]
       );
     }
+
+    if (isAccepted) {
+      // 3. Insert Action Required notification for all HODs and Admins (Level 3 review)
+      const targetEmailsForL3Action = new Set();
+      
+      // Fetch all HODs
+      const [hodsRows] = await connection.query(
+        `SELECT email FROM users 
+         WHERE department != '' AND department IS NOT NULL AND (LOWER(role) LIKE '%hod%' OR LOWER(role) LIKE '%manager%')`
+      );
+      for (const u of hodsRows) {
+        targetEmailsForL3Action.add(u.email.toLowerCase().trim());
+      }
+      
+      // Add Admins
+      for (const admin of admins) {
+        targetEmailsForL3Action.add(admin.email.toLowerCase().trim());
+      }
+
+      const l3ActionTitle = `L3 Approval Required – ${changeNo}`;
+      const l3ActionDetails = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} is awaiting your department's review and sign-off at L3 (Status: Awaiting L3 HOD Decisions).`;
+      const l3ActionColor = 'orange';
+
+      for (const email of targetEmailsForL3Action) {
+        const l3ActionNotifId = `L3-VAL-ACTION-REQUIRED-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
+        await connection.query(
+          `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
+           VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', ?, ?)`,
+          [l3ActionNotifId, l3ActionTitle, l3ActionDetails, changeNo, changeIn || 'GENERAL', notifDept, timeStr, l3ActionColor, email]
+        );
+      }
+    }
   } else {
     // This is the status === 'Pending' block
     for (const targetUser of targetUsers) {

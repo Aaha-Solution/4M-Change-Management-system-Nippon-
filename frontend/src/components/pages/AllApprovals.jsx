@@ -824,11 +824,13 @@ export const AllApprovals = ({
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                               <div className="flex gap-1.5 items-center mt-0.5">
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                  l1Details.crStatus !== 'Pending' 
+                                  l1Details.hodStatus === 'Rejected'
+                                    ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                    : (l1Details.hodStatus === 'Approved' || l1Details.crStatus !== 'Pending')
                                     ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
                                     : 'bg-amber-50 border-amber-220 text-amber-700'
                                 }`}>
-                                  L1 {l1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}
+                                  L1 {l1Details.hodStatus === 'Rejected' ? 'Rejected' : ((l1Details.hodStatus === 'Approved' || l1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
                                 </span>
                               </div>
                             </div>
@@ -1074,6 +1076,15 @@ export const AllApprovals = ({
                               {l1Details.file_effectiveness && renderL1FilePill(l1Details.file_effectiveness, l1Details.change_no)}
                             </div>
                           </div>
+
+                          {l1Details.hodStatus && (
+                            <div className="space-y-[4px] mt-4 border-t border-slate-100 pt-4">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD {l1Details.hodStatus} Remarks / Comments ({l1Details.hodDept || 'HOD'})</span>
+                              <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
+                                {l1Details.hodRemarks || 'No remarks provided.'}
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* If already decided — show previous decision */}

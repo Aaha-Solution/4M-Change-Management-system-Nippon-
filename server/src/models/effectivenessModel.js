@@ -205,19 +205,3 @@ export const getAttachment = async (logId, fileName) => {
   );
   return rows.length > 0 ? rows[0] : null;
 };
-
-export const resetLogsToDefaults = async () => {
-  const connection = await pool.getConnection();
-  try {
-    await connection.beginTransaction();
-    await connection.query('DELETE FROM effectiveness_attachments');
-    await connection.query('DELETE FROM effectiveness_logs');
-    await connection.commit();
-    broadcast({ type: 'REFRESH_EFFECTIVENESS' });
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
-  }
-};

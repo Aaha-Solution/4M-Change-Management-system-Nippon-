@@ -109,12 +109,16 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
   const getNotifIcon = (alert) => {
     if (alert.type === 'System Logs') return <Activity size={18} />;
     if (alert.id && alert.id.startsWith('L2-NOTIF')) return <FileText size={18} />;
+    if (alert.id && alert.id.startsWith('L3-')) return <Layers size={18} />;
+    if (alert.id && alert.id.startsWith('L1-')) return <FileText size={18} />;
     return <Layers size={18} />;
   };
 
   // Determine the level badge text
   const getLevelBadge = (alert) => {
-    if (alert.id && alert.id.startsWith('L2-NOTIF')) return 'L2 VALIDATION';
+    if (alert.id && alert.id.startsWith('L2-NOTIF') || (alert.id && alert.id.includes('L2-VAL'))) return 'L2 VALIDATION';
+    if (alert.id && alert.id.startsWith('L3-')) return 'L3 APPROVAL';
+    if (alert.id && alert.id.startsWith('L1-')) return 'L1 APPROVAL';
     if (alert.id && alert.id.startsWith('ALR-')) return 'SYSTEM';
     return 'NOTIFICATION';
   };
