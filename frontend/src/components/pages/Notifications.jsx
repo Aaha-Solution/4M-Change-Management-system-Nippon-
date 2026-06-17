@@ -231,14 +231,27 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                         const isL3 = idStr.includes('L3') || titleStr.includes('L3') || detailsStr.includes('L3');
                         const isL1 = idStr.includes('L1') || titleStr.includes('L1') || detailsStr.includes('L1') || idStr.includes('HOD-DECISION');
 
-                        if (isL2) {
-                          targetTab = 'approvals';
-                        } else if (isL3) {
+                        if (idStr.startsWith('L3-')) {
                           targetTab = 'l3';
-                        } else if (isL1) {
+                        } else if (idStr.startsWith('L1-HOD-NOTIF-L2-')) {
+                          targetTab = 'approvals';
+                        } else if (idStr.startsWith('L2-')) {
+                          targetTab = 'approvals';
+                        } else if (idStr.startsWith('L1-') || idStr.startsWith('HOD-DECISION-')) {
                           targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'all-requests';
                         } else {
-                          targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'all-requests';
+                          // Fallback to substring matching if ID prefix is generic
+                          const isL3 = idStr.includes('L3') || titleStr.includes('L3') || detailsStr.includes('L3');
+                          const isL2 = idStr.includes('L2') || titleStr.includes('L2') || detailsStr.includes('L2');
+                          const isL1 = idStr.includes('L1') || titleStr.includes('L1') || detailsStr.includes('L1') || idStr.includes('HOD-DECISION');
+
+                          if (isL3) {
+                            targetTab = 'l3';
+                          } else if (isL2) {
+                            targetTab = 'approvals';
+                          } else if (isL1) {
+                            targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'all-requests';
+                          }
                         }
                         
                         if (onTabChange) {

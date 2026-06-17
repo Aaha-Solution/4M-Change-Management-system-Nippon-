@@ -269,8 +269,6 @@ export const L3RequestTracker = ({
       if (log) {
         // Auto-select the row to populate the form on the left
         handleSelectRow(log);
-        // Auto-open the details popup
-        handleViewDetails(log);
         // Clear the state so it doesn't open again on re-renders
         if (clearAutoOpen) {
           clearAutoOpen();
