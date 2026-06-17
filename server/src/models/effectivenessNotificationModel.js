@@ -68,45 +68,58 @@ export const triggerEffectivenessQAAlert = async (changeNo, qaApproval, remarks)
 
     // 4. Send email notification to all recipients (using BCC to save SMTP requests)
     const emailContent = `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background-color: #ffffff;">
-        <div style="background-color: ${headerBg}; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; margin: -24px -24px 20px -24px;">
-          <h1 style="margin: 0; font-size: 20px; font-weight: 700;">4M Change Management System</h1>
-          <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.9; text-transform: uppercase; tracking-wider: 1px;">Effectiveness Evaluation ${qaApproval.toUpperCase()}</p>
+      <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background-color: #ffffff;">
+        <div style="background-color: ${headerBg}; color: white; padding: 24px; text-align: center;">
+          <h1 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">4M Change Management System</h1>
+          <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">Effectiveness Evaluation ${qaApproval.toUpperCase()}</p>
         </div>
-        <p style="font-size: 15px; font-weight: bold; color: #1e293b; margin-bottom: 12px;">Alert: Effectiveness Evaluation ${qaApproval} by QA HOD</p>
-        <div style="background-color: ${remarksBg}; border-left: 4px solid ${borderLeftColor}; padding: 16px; margin: 20px 0; font-size: 14px; color: ${remarksTextColor}; line-height: 1.6; border-radius: 4px;">
-          <strong>QA Decision Comments / Remarks:</strong><br />
-          ${remarks}
+        <div style="padding: 24px;">
+          <h2 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 600;">Hello Team,</h2>
+          <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+            The QA HOD has recorded the effectiveness monitoring evaluation decision for Change Request <strong>${changeNo}</strong>.
+          </p>
+          
+          <div style="background-color: ${remarksBg}; border-left: 4px solid ${borderLeftColor}; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
+            <div style="font-size: 12px; text-transform: uppercase; color: ${remarksTextColor}; font-weight: 600; letter-spacing: 0.5px;">Evaluation Status</div>
+            <div style="font-size: 18px; font-weight: 700; color: ${remarksTextColor}; margin-top: 4px;">Effectiveness: ${qaApproval.toUpperCase()}</div>
+            <p style="margin: 6px 0 0 0; font-size: 13.5px; color: #334155; line-height: 1.5;">
+              <strong>QA Decision comments / remarks:</strong><br />
+              ${remarks || 'No remarks provided.'}
+            </p>
+          </div>
+          
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; margin-bottom: 12px;">Request Details</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13.5px; color: #475569;">
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 35%;"><strong>Change Request #</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
+            ${cr.title ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Title</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${cr.title}</td></tr>` : ''}
+            ${cr.requesterName ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Requested By</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 500;">${cr.requesterName} ${cr.dept ? `(${cr.dept})` : ''}</td></tr>` : ''}
+            ${cr.processName ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Process Name</strong></td><td style="padding: 10px 0; color: #1e293b;">${cr.processName}</td></tr>` : ''}
+            ${cr.machineNo ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Machine No</strong></td><td style="padding: 10px 0; color: #1e293b; font-family: monospace;">${cr.machineNo}</td></tr>` : ''}
+          </table>
+          
+          <div style="text-align: center; margin: 32px 0 12px 0;">
+            <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: ${headerBg}; color: white; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+              Access CMS Portal
+            </a>
+          </div>
         </div>
-        <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px; color: #475569;">
-          <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 30%;"><strong>Change Request #</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
-          ${cr.title ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Title</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${cr.title}</td></tr>` : ''}
-          ${cr.requesterName ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Requested By</strong></td><td style="padding: 10px 0; color: #1e293b;">${cr.requesterName} ${cr.dept ? `(${cr.dept})` : ''}</td></tr>` : ''}
-          ${cr.processName ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Process Name</strong></td><td style="padding: 10px 0; color: #1e293b;">${cr.processName}</td></tr>` : ''}
-          ${cr.machineNo ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Machine No</strong></td><td style="padding: 10px 0; color: #1e293b; font-family: monospace;">${cr.machineNo}</td></tr>` : ''}
-          <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>QA Decision</strong></td><td style="padding: 10px 0; color: ${headerBg}; font-weight: bold;">${qaApproval.toUpperCase()}</td></tr>
-        </table>
-        <div style="text-align: center; margin: 30px 0 10px 0;">
-          <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: ${headerBg}; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
-            Access CMS Portal
-          </a>
-        </div>
-        <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 24px 0;" />
-        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.5;">
+        <div style="background-color: #f8fafc; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9;">
           This is an automated notification from the Nippon QA 4M Change Management System.<br />
           Please do not reply directly to this email.
-        </p>
+        </div>
       </div>
     `;
 
     const emailList = [...recipientEmails].filter(Boolean);
     if (emailList.length > 0) {
-      await sendMail({
-        to: emailList.join(', '),
-        subject: `[CMS Alert] Effectiveness Evaluation ${qaApproval.toUpperCase()} - ${changeNo}`,
-        html: emailContent,
-        text: `Effectiveness Evaluation ${qaApproval} for Change Request ${changeNo}\n\nQA Comments: ${remarks}`
-      });
+      for (const email of emailList) {
+        await sendMail({
+          to: email,
+          subject: `[4M-CMS] Status Update: Effectiveness Evaluation ${qaApproval} for ${changeNo}`,
+          html: emailContent,
+          text: `Effectiveness Evaluation ${qaApproval} for Change Request ${changeNo}\n\nQA Comments: ${remarks}`
+        });
+      }
     }
   } catch (error) {
     console.error('Error triggering effectiveness QA alert:', error);

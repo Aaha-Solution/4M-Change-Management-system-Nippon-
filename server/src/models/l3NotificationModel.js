@@ -89,32 +89,41 @@ export const sendL3DecisionEmails = async (changeNo, updatedDeptField, newDecisi
 
     const themeColor = newDecision === 'Approved' ? '#10b981' : '#ef4444';
     const bgLight = newDecision === 'Approved' ? '#f0fdf4' : '#fef2f2';
-    const emailSubject = `[4M CMS] L3 Decision Alert: Change Request ${changeNo} is ${newDecision}`;
+    const badgeText = newDecision === 'Approved' ? 'L3 APPROVED' : 'L3 REJECTED';
+    const badgeTextColor = newDecision === 'Approved' ? '#15803d' : '#991b1b';
+    const borderLeftColor = newDecision === 'Approved' ? '#10b981' : '#ef4444';
+    const emailSubject = `[4M-CMS] Status Update: L3 Review ${newDecision} for ${changeNo}`;
 
     const emailHtml = `
-      <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+      <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background-color: #ffffff;">
         <div style="background-color: ${themeColor}; color: white; padding: 24px; text-align: center;">
-          <h1 style="margin: 0; font-size: 20px; font-weight: 700;">Change Management System</h1>
-          <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase;">L3 HOD Review Decision</p>
+          <h1 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">4M Change Management System</h1>
+          <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">L3 Review Decision</p>
         </div>
-        <div style="padding: 24px; background-color: #ffffff;">
-          <h2 style="margin-top: 0; color: #1e293b; font-size: 18px;">Hello Team,</h2>
-          <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-            A decision has been submitted for Change Request <strong>${changeNo}</strong> by the <strong>${updatedDeptField}</strong> HOD at L3.
+        <div style="padding: 24px;">
+          <h2 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 600;">Hello Team,</h2>
+          <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+            A review decision has been recorded for L3 Change Request <strong>${changeNo}</strong> by the <strong>${updatedDeptField}</strong> HOD.
           </p>
-          <div style="background-color: ${bgLight}; border-left: 4px solid ${themeColor}; padding: 16px; margin: 20px 0; border-radius: 4px;">
-            <div style="font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 600;">L3 Approval status update</div>
-            <div style="font-size: 18px; font-weight: 700; color: ${themeColor}; margin-top: 2px;">Decision: ${newDecision} by ${updatedDeptField}</div>
+          <div style="background-color: ${bgLight}; border-left: 4px solid ${borderLeftColor}; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
+            <div style="font-size: 12px; text-transform: uppercase; color: ${badgeTextColor}; font-weight: 600; letter-spacing: 0.5px;">Review Status</div>
+            <div style="font-size: 18px; font-weight: 700; color: ${badgeTextColor}; margin-top: 4px;">${badgeText} by ${updatedDeptField}</div>
+            <p style="margin: 6px 0 0 0; font-size: 13.5px; color: #334155; line-height: 1.5;">
+              ${newDecision === 'Approved' ? 'This L3 reviewer HOD has approved the request. Once all L3 departments approve, the request proceeds.' : 'This L3 reviewer HOD has rejected the request. Please review the comments and feedback below.'}
+            </p>
           </div>
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; color: #475569;">
-            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 35%;">Change Request #</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
-            ${cr.title ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Title</td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${cr.title}</td></tr>` : ''}
-            ${cr.change_in ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Category</td><td style="padding: 10px 0; color: #1e293b;">${cr.change_in}</td></tr>` : ''}
-            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">Requested By</td><td style="padding: 10px 0; color: #1e293b;">${cr.request_by || 'Requester'} (${cr.dept || ''})</td></tr>
-            ${remarks ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; vertical-align: top;">Remarks</td><td style="padding: 10px 0; color: #475569; line-height: 1.5;">${remarks}</td></tr>` : ''}
+          
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; margin-bottom: 12px;">Request Details</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13.5px; color: #475569;">
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; width: 35%;"><strong>Change Request #</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600; font-family: monospace;">${changeNo}</td></tr>
+            ${cr.title ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Title</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 600;">${cr.title}</td></tr>` : ''}
+            ${cr.change_in ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Category</strong></td><td style="padding: 10px 0; color: #1e293b;">${cr.change_in}</td></tr>` : ''}
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;"><strong>Requested By</strong></td><td style="padding: 10px 0; color: #1e293b; font-weight: 500;">${cr.request_by || 'Requester'} (${cr.dept || ''})</td></tr>
+            ${remarks ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b; vertical-align: top; padding-top: 10px;"><strong>HOD Remarks</strong></td><td style="padding: 10px 0; color: #334155; line-height: 1.5; font-size: 13px;">${remarks}</td></tr>` : ''}
           </table>
+          
           <div style="text-align: center; margin: 32px 0 12px 0;">
-            <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #0066cc; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
+            <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: #1e40af; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block; box-shadow: 0 2px 4px rgba(30, 64, 175, 0.2);">
               Access CMS Portal
             </a>
           </div>
@@ -125,12 +134,13 @@ export const sendL3DecisionEmails = async (changeNo, updatedDeptField, newDecisi
       </div>
     `;
 
-    // Send single batched email directly to everyone
-    await sendMail({
-      to: emailList.join(', '),
-      subject: emailSubject,
-      html: emailHtml
-    });
+    for (const email of emailList) {
+      await sendMail({
+        to: email,
+        subject: emailSubject,
+        html: emailHtml
+      });
+    }
   } catch (err) {
     console.error('Error sending L3 email decision alerts:', err);
   }
