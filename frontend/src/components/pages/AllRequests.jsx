@@ -10,7 +10,8 @@ import { exportRequestsListPDF, exportRequestDetailsPDF } from '../../utils/pdfE
 
 export const AllRequests = ({
   changes,
-  setToastMsg
+  setToastMsg,
+  usersList = []
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('All');
@@ -58,7 +59,8 @@ export const AllRequests = ({
       status: displayStatus,
       requester: c.requester,
       title: c.title,
-      rawDate: c.date
+      rawDate: c.date,
+      requesterEmail: c.requesterEmail
     };
   });
 
@@ -312,9 +314,43 @@ export const AllRequests = ({
             value={selectedPerson}
             onChange={(e) => setSelectedPerson(e.target.value)}
           >
-            {uniquePersons.map(p => (
-              <option key={p} value={p}>{p === 'All' ? 'All Persons' : p.split('@')[0]}</option>
-            ))}
+            {uniquePersons.map(p => {
+              if (p === 'All') return <option key={p} value={p}>All Persons</option>;
+              
+              const matchedChange = combinedData.find(c => c.requester === p);
+              let deptName = '';
+              let isUserHOD = false;
+              
+              if (matchedChange) {
+                const userEmailClean = matchedChange.requesterEmail || '';
+                const user = usersList.find(u => u.email.toLowerCase() === userEmailClean.toLowerCase());
+                if (user) {
+                  deptName = user.department || '';
+                  const roleLower = (user.role || '').toLowerCase();
+                  isUserHOD = roleLower.includes('hod') || 
+                              roleLower.includes('unit head') || 
+                              roleLower.includes('unit_head') || 
+                              roleLower.includes('manager');
+                } else {
+                  deptName = matchedChange.dept || matchedChange.department || '';
+                }
+              }
+              
+              const displayName = p.split('@')[0];
+              let labelSuffix = '';
+              if (deptName) {
+                labelSuffix = isUserHOD ? `${deptName} - HOD` : deptName;
+              } else if (isUserHOD) {
+                labelSuffix = 'HOD';
+              }
+              
+              const label = labelSuffix ? `${displayName} (${labelSuffix})` : displayName;
+              return (
+                <option key={p} value={p}>
+                  {label}
+                </option>
+              );
+            })}
           </select>
         </div>
 
