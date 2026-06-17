@@ -10,9 +10,7 @@ const checkCanUpdate = async (email) => {
     const role = (user.role || '').toLowerCase();
     const isAdmin = role === 'admin' || role === 'administrator';
     const isQADept = dept === 'quality' || dept === 'qad' || dept === 'qa';
-    const isAuthorizedRole = role.includes('hod') || role.includes('manager') || 
-                             role.includes('unit head') || role.includes('unit_head');
-    return isAdmin || (isQADept && isAuthorizedRole);
+    return isAdmin || isQADept;
   }
   return false;
 };
