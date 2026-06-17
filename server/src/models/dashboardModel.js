@@ -119,14 +119,15 @@ export const getDashboardChanges = async () => {
      LEFT JOIN l3_approvals l3 ON c.id = l3.change_no
      LEFT JOIN effectiveness_logs e ON c.id = e.change_no
      LEFT JOIN (
-       SELECT ha1.change_no, ha1.status
-       FROM hod_approvals ha1
-       INNER JOIN (
-         SELECT change_no, MAX(id) as max_id
-         FROM hod_approvals
-         GROUP BY change_no
-       ) ha2 ON ha1.id = ha2.max_id
-     ) ha ON c.id = ha.change_no
+        SELECT change_no,
+               COALESCE(
+                 MIN(CASE WHEN status = 'Rejected' THEN 'Rejected' END),
+                 MAX(CASE WHEN status = 'Approved' THEN 'Approved' END),
+                 'Pending'
+               ) as status
+        FROM hod_approvals
+        GROUP BY change_no
+      ) ha ON c.id = ha.change_no
      ORDER BY c.created_at DESC`
   );
   return rows;
