@@ -1887,15 +1887,15 @@ export const DashboardOverview = ({
 
         {/* Closed */}
         <div className="bg-white border border-slate-200/60 rounded-xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-full h-[3px] bg-teal-500" />
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-indigo-500" />
           <div className="flex justify-between items-start">
             <div>
               <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Closed</h4>
-              <div className="text-[32px] font-bold text-teal-600 mt-2 font-heading tracking-tight">
+              <div className="text-[32px] font-bold text-indigo-600 mt-2 font-heading tracking-tight">
                 {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : closedCount}
               </div>
             </div>
-            <div className="p-2.5 bg-teal-50 text-teal-600 rounded-lg group-hover:scale-110 transition-transform duration-300">
+            <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg group-hover:scale-110 transition-transform duration-300">
               <CheckCheck size={20} />
             </div>
           </div>
