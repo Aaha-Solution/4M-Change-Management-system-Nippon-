@@ -57,6 +57,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
 
   // Database States
   const [changes, setChanges] = useState([]);
+  const [usersList, setUsersList] = useState([]);
   const [isFetchingChanges, setIsFetchingChanges] = useState(false);
 
   // Global Toast State
@@ -172,16 +173,18 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
   }, [navigate]);
 
   const fetchUserDept = async () => {
-    if (!userEmail) return;
     try {
       const response = await getUsers();
-      const usersList = response.data || [];
-      const currentUser = usersList.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
-      if (currentUser && currentUser.department) {
-        setUserDept(currentUser.department);
+      const list = response.data || [];
+      setUsersList(list);
+      if (userEmail) {
+        const currentUser = list.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
+        if (currentUser && currentUser.department) {
+          setUserDept(currentUser.department);
+        }
       }
     } catch (err) {
-      console.error('Error fetching user department:', err);
+      console.error('Error fetching user department and users list:', err);
     }
   };
 
@@ -520,6 +523,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 isFetchingChanges={isFetchingChanges}
                 onTabChange={handleTabChange}
                 setToastMsg={setToastMsg}
+                usersList={usersList}
               />
             )}
 
@@ -529,6 +533,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 changes={changes}
                 onTabChange={handleTabChange}
                 setToastMsg={setToastMsg}
+                usersList={usersList}
               />
             )}
 
