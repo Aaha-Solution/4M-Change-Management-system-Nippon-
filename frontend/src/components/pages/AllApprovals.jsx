@@ -57,6 +57,14 @@ const mapDept = (raw) => {
   return raw;
 };
 
+// Check if target department is part of the required HOD approvals list
+const isDeptInRequired = (note, raisedDept, dept) => {
+  if (!note) {
+    return mapDept(raisedDept) === mapDept(dept);
+  }
+  return note.split(',').map(s => mapDept(s.trim())).includes(mapDept(dept));
+};
+
 // Workflow stage label + styling based on crStatus
 const workflowStageConfig = (crStatus) => {
   switch ((crStatus || '').toLowerCase()) {
@@ -368,12 +376,11 @@ export const AllApprovals = ({
       r.changeNo.toLowerCase().includes(q) ||
       (r.requestBy || '').toLowerCase().includes(q) ||
       (r.dept || '').toLowerCase().includes(q);
-    const matchStatus = statusFilter === 'All' ||
-      (statusFilter === 'Pending' && (!r.hodStatus || r.hodStatus === 'Pending')) ||
-      r.hodStatus === statusFilter;
+    const effectiveStatus = r.rejectCount > 0 ? 'Rejected' : (r.hodStatus || 'Pending');
+    const matchStatus = statusFilter === 'All' || effectiveStatus === statusFilter;
     const stageInfo = workflowStageConfig(r.crStatus);
     const matchStage = stageFilter === 'All' || stageInfo.level === stageFilter;
-    const matchScope = scopeFilter === 'All' || mapDept(r.dept) === actingDept || mapDept(r.hodApprovalNote) === actingDept;
+    const matchScope = scopeFilter === 'All' || mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept);
     return matchSearch && matchStatus && matchStage && matchScope;
   });
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -390,11 +397,12 @@ export const AllApprovals = ({
   const pendingCount = requests.filter(r => {
     const isL1Pending = r.crStatus === 'Pending';
     const isPendingDecision = !r.hodStatus || r.hodStatus === 'Pending';
-    const isMyDept = isAdmin || (isHOD && (mapDept(r.dept) === actingDept || mapDept(r.hodApprovalNote) === actingDept));
-    return isL1Pending && isPendingDecision && isMyDept;
+    const isMyDept = isAdmin || (isHOD && isDeptInRequired(r.hodApprovalNote, r.dept, actingDept));
+    const isRejected = r.rejectCount > 0;
+    return isL1Pending && isPendingDecision && isMyDept && !isRejected;
   }).length;
   const approvedCount = requests.filter(r => r.hodStatus === 'Approved').length;
-  const rejectedCount = requests.filter(r => r.hodStatus === 'Rejected').length;
+  const rejectedCount = requests.filter(r => r.rejectCount > 0 || r.hodStatus === 'Rejected').length;
 
   const alreadyDecided = selectedReq &&
     selectedReq.hodStatus &&
@@ -616,8 +624,9 @@ export const AllApprovals = ({
                   {paginated.map((req, idx) => {
                     const isL1Pending = req.crStatus === 'Pending';
                     const isPendingDecision = !req.hodStatus || req.hodStatus === 'Pending';
-                    const isMyDept = isAdmin || (isHOD && (mapDept(req.dept) === actingDept || mapDept(req.hodApprovalNote) === actingDept));
-                    const isActionable = isL1Pending && isPendingDecision && isMyDept;
+                    const isMyDept = isAdmin || (isHOD && isDeptInRequired(req.hodApprovalNote, req.dept, actingDept));
+                    const isRejected = req.rejectCount > 0;
+                    const isActionable = isL1Pending && isPendingDecision && isMyDept && !isRejected;
                     const stage = workflowStageConfig(req.crStatus);
                     return (
                       <tr key={idx} className="hover:bg-blue-50/30 transition-colors group">
@@ -656,7 +665,9 @@ export const AllApprovals = ({
                           <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">{req.dept || '-'}</span>
                         </td>
                         <td className="px-5 py-3.5">
-                          {req.crStatus && req.crStatus.toLowerCase() !== 'pending' ? (
+                          {req.rejectCount > 0 ? (
+                            <StatusBadge status="Rejected" />
+                          ) : req.crStatus && req.crStatus.toLowerCase() !== 'pending' ? (
                             <StatusBadge status="Approved" />
                           ) : (
                             <StatusBadge status={req.hodStatus} />
@@ -1112,7 +1123,7 @@ export const AllApprovals = ({
                         )}
 
                         {/* Remarks input */}
-                        {!alreadyDecided && (isAdmin || (isHOD && (mapDept(selectedReq.dept) === actingDept || mapDept(selectedReq.hodApprovalNote) === actingDept))) && (
+                        {!alreadyDecided && selectedReq.rejectCount === 0 && (isAdmin || (isHOD && isDeptInRequired(selectedReq.hodApprovalNote, selectedReq.dept, actingDept))) && (
                           <div className="space-y-2 pt-2 border-t border-slate-100">
                             <label className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
                               <MessageSquare size={12} /> Remarks <span className="text-slate-400 font-normal normal-case">(optional)</span>
@@ -1322,11 +1333,15 @@ export const AllApprovals = ({
                         }
                       })()}
                     </span>
+                  ) : selectedReq.rejectCount > 0 ? (
+                    <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-rose-700 bg-rose-50 border-rose-200">
+                      <XCircle size={14} /> L1 HOD Approval Rejected
+                    </span>
                   ) : selectedReq.crStatus && selectedReq.crStatus.toLowerCase() !== 'pending' ? (
                     <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-emerald-700 bg-emerald-50 border-emerald-200">
                       <CheckCircle2 size={14} /> L1 HOD Approval Completed
                     </span>
-                  ) : (isAdmin || (isHOD && (mapDept(selectedReq.dept) === actingDept || mapDept(selectedReq.hodApprovalNote) === actingDept))) ? (
+                  ) : (isAdmin || (isHOD && isDeptInRequired(selectedReq.hodApprovalNote, selectedReq.dept, actingDept))) ? (
                     <>
                       <span className="text-[11px] font-bold text-slate-600">
                         Your L1 decision as <span className="text-[#0066cc]">{actingDept}</span> HOD:

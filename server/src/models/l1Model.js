@@ -134,13 +134,22 @@ export const getL1Details = async (changeNo) => {
      FROM change_requests cr
      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
      LEFT JOIN (
-       SELECT ha1.change_no, ha1.status, ha1.remarks, ha1.hod_dept
-       FROM hod_approvals ha1
-       INNER JOIN (
-         SELECT change_no, MAX(id) as max_id
-         FROM hod_approvals
-         GROUP BY change_no
-       ) ha2 ON ha1.id = ha2.max_id
+       SELECT change_no,
+              COALESCE(
+                MIN(CASE WHEN status = 'Rejected' THEN 'Rejected' END),
+                MAX(CASE WHEN status = 'Approved' THEN 'Approved' END),
+                'Pending'
+              ) as status,
+              COALESCE(
+                MAX(CASE WHEN status = 'Rejected' THEN remarks END),
+                MAX(CASE WHEN status = 'Approved' THEN remarks END)
+              ) as remarks,
+              COALESCE(
+                MAX(CASE WHEN status = 'Rejected' THEN hod_dept END),
+                MAX(CASE WHEN status = 'Approved' THEN hod_dept END)
+              ) as hod_dept
+       FROM hod_approvals
+       GROUP BY change_no
      ) ha ON cr.id = ha.change_no
      WHERE cr.id = ?`,
     [changeNo]

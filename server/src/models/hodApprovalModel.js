@@ -23,7 +23,8 @@ export const getHodApprovals = async () => {
        ha.status      AS hodStatus,
        ha.remarks     AS hodRemarks,
        ha.decided_at  AS decidedAt,
-       uh.name        AS hodName
+       uh.name        AS hodName,
+       (SELECT COUNT(*) FROM hod_approvals WHERE change_no = cr.id AND status = 'Rejected') AS rejectCount
      FROM change_requests cr
      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
      LEFT JOIN users u ON cr.requester = u.email
@@ -54,7 +55,8 @@ export const getHodApprovalsByDept = async (dept) => {
        ha.status      AS hodStatus,
        ha.remarks     AS hodRemarks,
        ha.decided_at  AS decidedAt,
-       uh.name        AS hodName
+       uh.name        AS hodName,
+       (SELECT COUNT(*) FROM hod_approvals WHERE change_no = cr.id AND status = 'Rejected') AS rejectCount
      FROM change_requests cr
      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
      LEFT JOIN users u ON cr.requester = u.email
