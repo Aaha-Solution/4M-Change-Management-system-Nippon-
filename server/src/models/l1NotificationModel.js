@@ -273,9 +273,16 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
       const isHOD = userRole.includes('hod') || userRole.includes('manager');
       
       if (!seenEmails.has(userEmail)) {
-        if (isAdmin || (isHOD && (userDeptName === raisedDeptLower || userDeptName === hodDeptLower))) {
-          seenEmails.add(userEmail);
-          targetUsers.push(user);
+        if (status === 'Rejected') {
+          if (isAdmin || isHOD) {
+            seenEmails.add(userEmail);
+            targetUsers.push(user);
+          }
+        } else {
+          if (isAdmin || (isHOD && (userDeptName === raisedDeptLower || userDeptName === hodDeptLower))) {
+            seenEmails.add(userEmail);
+            targetUsers.push(user);
+          }
         }
       }
     }
@@ -370,9 +377,15 @@ export const sendL1DecisionEmails = async (changeNo, hodDept, status, remarks, c
       const isAdmin = userRole.includes('admin') || userRole.includes('administrator');
       const isHOD = userRole.includes('hod') || userRole.includes('manager');
       
-      // Email admins, HODs of raised department, and HODs of approved department
-      if (isAdmin || (isHOD && (userDept === raisedDeptLower || userDept === hodDeptLower)) || userEmail.toLowerCase() === requester.toLowerCase()) {
-        targetEmails.add(userEmail);
+      // Email admins, HODs of raised department, and HODs of approved department (or all HODs/Admins on rejection)
+      if (status === 'Rejected') {
+        if (isAdmin || isHOD || userEmail.toLowerCase() === requester.toLowerCase()) {
+          targetEmails.add(userEmail);
+        }
+      } else {
+        if (isAdmin || (isHOD && (userDept === raisedDeptLower || userDept === hodDeptLower)) || userEmail.toLowerCase() === requester.toLowerCase()) {
+          targetEmails.add(userEmail);
+        }
       }
     }
 
