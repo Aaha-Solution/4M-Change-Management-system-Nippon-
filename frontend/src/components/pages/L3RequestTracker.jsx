@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Search, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download } from 'lucide-react';
+import { Save, Search, Eye, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download, XCircle } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getUsers } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
@@ -1117,23 +1117,63 @@ export const L3RequestTracker = ({
         {/* Footer */}
         <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            {selectedLog && (
-              <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl border ${
-                getSelectedLogUserStatus() === 'Approved' || getSelectedLogUserStatus() === 'Accepted'
-                  ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
-                  : getSelectedLogUserStatus() === 'Rejected'
-                  ? 'text-rose-700 bg-rose-50 border-rose-200'
-                  : 'text-amber-700 bg-amber-50 border-amber-200'
-              }`}>
-                {getSelectedLogUserStatus() === 'Approved' || getSelectedLogUserStatus() === 'Accepted' ? (
-                  <CheckCircle2 size={13} />
-                ) : getSelectedLogUserStatus() === 'Rejected' ? (
-                  <X size={13} />
-                ) : (
-                  <Clock size={13} />
-                )}
-                <span>Your L3 Status ({actingDept}): <span className="font-extrabold uppercase">{getSelectedLogUserStatus() || 'Pending'}</span></span>
-              </span>
+            {activeTab === 'l1' ? (
+              selectedL1Details ? (
+                <span className={`inline-flex items-center gap-2 text-[11px] font-bold px-3 py-1.5 rounded-xl border ${
+                  selectedL1Details.crStatus !== 'Pending' 
+                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
+                    : 'text-amber-700 bg-amber-50 border-amber-200'
+                }`}>
+                  {selectedL1Details.crStatus !== 'Pending' ? <CheckCircle2 size={14} /> : <Clock size={14} />}
+                  L1 HOD Approval {selectedL1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2 text-[11px] font-bold px-3 py-1.5 rounded-xl border text-amber-700 bg-amber-50 border-amber-200">
+                  <Clock size={14} /> L1 HOD Approval Pending
+                </span>
+              )
+            ) : activeTab === 'l2' ? (
+              selectedL2Details ? (
+                <span className={`inline-flex items-center gap-2 text-[11px] font-bold px-3 py-1.5 rounded-xl border ${
+                  selectedL2Details.status === 'Accepted'
+                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                    : selectedL2Details.status === 'Rejected'
+                    ? 'text-rose-700 bg-rose-50 border-rose-200'
+                    : 'text-amber-700 bg-amber-50 border-amber-200'
+                }`}>
+                  {selectedL2Details.status === 'Accepted' ? (
+                    <CheckCircle2 size={14} />
+                  ) : selectedL2Details.status === 'Rejected' ? (
+                    <XCircle size={14} />
+                  ) : (
+                    <Clock size={14} />
+                  )}
+                  L2 QA Validation {selectedL2Details.status || 'Pending'}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2 text-[11px] font-bold px-3 py-1.5 rounded-xl border text-amber-700 bg-amber-50 border-amber-200">
+                  <Clock size={14} /> L2 QA Validation Pending
+                </span>
+              )
+            ) : (
+              selectedLog && (
+                <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl border ${
+                  getSelectedLogUserStatus() === 'Approved' || getSelectedLogUserStatus() === 'Accepted'
+                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
+                    : getSelectedLogUserStatus() === 'Rejected'
+                    ? 'text-rose-700 bg-rose-50 border-rose-200'
+                    : 'text-amber-700 bg-amber-50 border-amber-200'
+                }`}>
+                  {getSelectedLogUserStatus() === 'Approved' || getSelectedLogUserStatus() === 'Accepted' ? (
+                    <CheckCircle2 size={13} />
+                  ) : getSelectedLogUserStatus() === 'Rejected' ? (
+                    <X size={13} />
+                  ) : (
+                    <Clock size={13} />
+                  )}
+                  <span>Your L3 Status ({actingDept}): <span className="font-extrabold uppercase">{getSelectedLogUserStatus() || 'Pending'}</span></span>
+                </span>
+              )
             )}
           </div>
           <div className="flex items-center gap-[12px] self-end sm:self-auto">

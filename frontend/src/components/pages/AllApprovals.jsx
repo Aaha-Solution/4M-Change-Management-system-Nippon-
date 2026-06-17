@@ -1292,54 +1292,108 @@ export const AllApprovals = ({
             {/* Modal Footer — Decision */}
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                {alreadyDecided ? (
-                  <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${
-                    selectedReq.hodStatus === 'Approved' 
-                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
-                      : 'text-rose-700 bg-rose-50 border-rose-200'
-                  }`}>
-                    {selectedReq.hodStatus === 'Approved' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                    {(() => {
-                      const showAsSelf = !isAdmin && isHOD && userEmail && selectedReq.hodEmail && userEmail.toLowerCase() === selectedReq.hodEmail.toLowerCase();
-                      if (showAsSelf) {
-                        return `Already ${selectedReq.hodStatus} by You`;
-                      } else {
-                        const displayName = selectedReq.hodName || selectedReq.hodEmail || 'HOD';
-                        const displayDept = selectedReq.hodDept ? ` (${selectedReq.hodDept})` : '';
-                        return `Already ${selectedReq.hodStatus} by ${displayName}${displayDept}`;
-                      }
-                    })()}
-                  </span>
-                ) : selectedReq.crStatus && selectedReq.crStatus.toLowerCase() !== 'pending' ? (
-                  <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-emerald-700 bg-emerald-50 border-emerald-200">
-                    <CheckCircle2 size={14} /> L1 HOD Approval Completed
-                  </span>
-                ) : (isAdmin || (isHOD && (mapDept(selectedReq.dept) === actingDept || mapDept(selectedReq.hodApprovalNote) === actingDept))) ? (
-                  <>
-                    <span className="text-[11px] font-bold text-slate-600">
-                      Your L1 decision as <span className="text-[#0066cc]">{actingDept}</span> HOD:
+                {activeTab === 'l1' ? (
+                  alreadyDecided ? (
+                    <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${
+                      selectedReq.hodStatus === 'Approved' 
+                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
+                        : 'text-rose-700 bg-rose-50 border-rose-200'
+                    }`}>
+                      {selectedReq.hodStatus === 'Approved' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+                      {(() => {
+                        const showAsSelf = !isAdmin && isHOD && userEmail && selectedReq.hodEmail && userEmail.toLowerCase() === selectedReq.hodEmail.toLowerCase();
+                        if (showAsSelf) {
+                          return `Already ${selectedReq.hodStatus} by You`;
+                        } else {
+                          const displayName = selectedReq.hodName || selectedReq.hodEmail || 'HOD';
+                          const displayDept = selectedReq.hodDept ? ` (${selectedReq.hodDept})` : '';
+                          return `Already ${selectedReq.hodStatus} by ${displayName}${displayDept}`;
+                        }
+                      })()}
                     </span>
-                    <button
-                      onClick={() => handleDecision('Approved')}
-                      disabled={isSubmitting}
-                      className="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-[12px] font-bold shadow-md shadow-emerald-200 transition-all cursor-pointer"
-                    >
-                      {isSubmitting ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => handleDecision('Rejected')}
-                      disabled={isSubmitting}
-                      className="flex items-center gap-1.5 px-5 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl text-[12px] font-bold shadow-md shadow-rose-200 transition-all cursor-pointer"
-                    >
-                      {isSubmitting ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />}
-                      Reject
-                    </button>
-                  </>
+                  ) : selectedReq.crStatus && selectedReq.crStatus.toLowerCase() !== 'pending' ? (
+                    <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-emerald-700 bg-emerald-50 border-emerald-200">
+                      <CheckCircle2 size={14} /> L1 HOD Approval Completed
+                    </span>
+                  ) : (isAdmin || (isHOD && (mapDept(selectedReq.dept) === actingDept || mapDept(selectedReq.hodApprovalNote) === actingDept))) ? (
+                    <>
+                      <span className="text-[11px] font-bold text-slate-600">
+                        Your L1 decision as <span className="text-[#0066cc]">{actingDept}</span> HOD:
+                      </span>
+                      <button
+                        onClick={() => handleDecision('Approved')}
+                        disabled={isSubmitting}
+                        className="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-[12px] font-bold shadow-md shadow-emerald-200 transition-all cursor-pointer"
+                      >
+                        {isSubmitting ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleDecision('Rejected')}
+                        disabled={isSubmitting}
+                        className="flex items-center gap-1.5 px-5 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl text-[12px] font-bold shadow-md shadow-rose-200 transition-all cursor-pointer"
+                      >
+                        {isSubmitting ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />}
+                        Reject
+                      </button>
+                    </>
+                  ) : (
+                    <span className="text-[12px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
+                      Awaiting {mapDept(selectedReq.hodApprovalNote || selectedReq.dept)} HOD Decision
+                    </span>
+                  )
+                ) : activeTab === 'l2' ? (
+                  selectedL2Details ? (
+                    <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${
+                      selectedL2Details.status === 'Accepted'
+                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                        : selectedL2Details.status === 'Rejected'
+                        ? 'text-rose-700 bg-rose-50 border-rose-200'
+                        : 'text-amber-700 bg-amber-50 border-amber-200'
+                    }`}>
+                      {selectedL2Details.status === 'Accepted' ? (
+                        <CheckCircle2 size={14} />
+                      ) : selectedL2Details.status === 'Rejected' ? (
+                        <XCircle size={14} />
+                      ) : (
+                        <Clock size={14} />
+                      )}
+                      L2 QA Validation {selectedL2Details.status || 'Pending'}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-amber-700 bg-amber-50 border-amber-200">
+                      <Clock size={14} /> L2 QA Validation Pending
+                    </span>
+                  )
                 ) : (
-                  <span className="text-[12px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
-                    Awaiting {mapDept(selectedReq.hodApprovalNote || selectedReq.dept)} HOD Decision
-                  </span>
+                  (() => {
+                    const statusLower = (selectedReq.crStatus || '').toLowerCase();
+                    if (statusLower === 'completed') {
+                      return (
+                        <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-emerald-700 bg-emerald-50 border-emerald-200">
+                          <CheckCircle2 size={14} /> L3 HOD Decisions Completed
+                        </span>
+                      );
+                    } else if (statusLower === 'approved') {
+                      return (
+                        <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-indigo-700 bg-indigo-50 border-indigo-200">
+                          <Clock size={14} /> L3 HOD Decisions In Progress
+                        </span>
+                      );
+                    } else if (statusLower === 'rejected') {
+                      return (
+                        <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-rose-700 bg-rose-50 border-rose-200">
+                          <XCircle size={14} /> L3 HOD Decisions Rejected
+                        </span>
+                      );
+                    } else {
+                      return (
+                        <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-slate-500 bg-slate-100 border-slate-200">
+                          <Clock size={14} /> Awaiting L1 / L2 Completion
+                        </span>
+                      );
+                    }
+                  })()
                 )}
               </div>
               <button
