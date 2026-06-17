@@ -192,9 +192,15 @@ export const DashboardOverview = ({
     };
   });
 
-  const totalCount = filteredChanges.length;
-  const approvedCount = formattedDbChanges.filter(c => c.status === 'Approved' || c.status === 'Closed').length;
-  const rejectedCount = formattedDbChanges.filter(c => c.status === 'Rejected').length;
+  const totalCount = changes.length;
+  const approvedCount = changes.filter(c => {
+    const status = getRequestDisplayStatus(c);
+    return status === 'Approved' || status === 'Closed';
+  }).length;
+  const rejectedCount = changes.filter(c => {
+    const status = getRequestDisplayStatus(c);
+    return status === 'Rejected';
+  }).length;
   const pendingCount = totalCount - approvedCount - rejectedCount;
 
   const allTableRows = formattedDbChanges;
@@ -1448,15 +1454,22 @@ export const DashboardOverview = ({
             <h3 className="font-heading text-[18px] font-bold text-slate-900">Recent change requests</h3>
             <Clock size={18} className="text-slate-400" />
           </div>
-          <button
-            onClick={handleExportPDF}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
-            title="Export filtered dashboard requests to PDF"
-          >
-            <Download size={12} />
-            <span>Export PDF</span>
-          </button>
+          <div className="flex items-center gap-[12px] flex-wrap">
+            <span className="bg-slate-100 border border-slate-200 text-slate-500 rounded-full px-[10px] py-[2px] text-[10px] font-bold select-none">
+              Showing {filteredChanges.length} of {changes.length}
+            </span>
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
+              title="Export filtered dashboard requests to PDF"
+            >
+              <Download size={12} />
+              <span>Export PDF</span>
+            </button>
+          </div>
         </div>
+
+        {renderFilters()}
 
 
         <div className="overflow-x-auto">
