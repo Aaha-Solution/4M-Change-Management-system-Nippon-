@@ -74,7 +74,49 @@ export const AllRequests = ({
   const combinedData = formattedDbChanges;
 
   // Get unique filter options
-  const uniquePersons = ['All', ...new Set(combinedData.map(i => i.requester).filter(Boolean))];
+  const uniquePersons = [
+    { email: 'All', name: 'All Persons', department: '', role: '' },
+    ...(() => {
+      const peopleMap = new Map();
+      usersList.forEach(u => {
+        if (u.email) {
+          const emailLower = u.email.toLowerCase();
+          peopleMap.set(emailLower, {
+            email: u.email,
+            name: u.name || '',
+            department: u.department || '',
+            role: u.role || ''
+          });
+        }
+      });
+      combinedData.forEach(c => {
+        const email = c.requesterEmail;
+        const name = c.requester;
+        if (email) {
+          const emailLower = email.toLowerCase();
+          if (!peopleMap.has(emailLower)) {
+            peopleMap.set(emailLower, {
+              email: email,
+              name: name || email.split('@')[0],
+              department: c.dept || c.department || '',
+              role: ''
+            });
+          }
+        } else if (name) {
+          const nameLower = name.toLowerCase();
+          if (!peopleMap.has(nameLower)) {
+            peopleMap.set(nameLower, {
+              email: '',
+              name: name,
+              department: c.dept || c.department || '',
+              role: ''
+            });
+          }
+        }
+      });
+      return Array.from(peopleMap.values());
+    })()
+  ];
   const filterProcesses = ['All', ...new Set(combinedData.map(i => i.processName).filter(Boolean))];
   const filterMachines = ['All', ...new Set(combinedData.map(i => i.machineNo).filter(Boolean))];
 
@@ -87,7 +129,9 @@ export const AllRequests = ({
       (item.machineNo && item.machineNo.toLowerCase().includes(query)) ||
       (item.requester && item.requester.toLowerCase().includes(query));
 
-    const matchesPerson = selectedPerson === 'All' || item.requester === selectedPerson;
+    const matchesPerson = selectedPerson === 'All' || 
+      (item.requesterEmail && item.requesterEmail.toLowerCase() === selectedPerson.toLowerCase()) ||
+      (item.requester && item.requester.toLowerCase() === selectedPerson.toLowerCase());
     const matchesProcess = selectedProcess === 'All' || item.processName === selectedProcess;
     const matchesMachine = selectedMachine === 'All' || item.machineNo === selectedMachine;
 
@@ -333,38 +377,28 @@ export const AllRequests = ({
             onChange={(e) => setSelectedPerson(e.target.value)}
           >
             {uniquePersons.map(p => {
-              if (p === 'All') return <option key={p} value={p}>All Persons</option>;
+              if (p.email === 'All') return <option key="All" value="All">All Persons</option>;
               
-              const matchedChange = combinedData.find(c => c.requester === p);
-              let deptName = '';
-              let isUserHOD = false;
+              const value = p.email || p.name;
+              const displayName = p.name || (p.email ? p.email.split('@')[0] : 'Unknown');
               
-              if (matchedChange) {
-                const userEmailClean = matchedChange.requesterEmail || '';
-                const user = usersList.find(u => u.email.toLowerCase() === userEmailClean.toLowerCase());
-                if (user) {
-                  deptName = user.department || '';
-                  const roleLower = (user.role || '').toLowerCase();
-                  isUserHOD = roleLower.includes('hod') || 
-                              roleLower.includes('unit head') || 
-                              roleLower.includes('unit_head') || 
-                              roleLower.includes('manager');
-                } else {
-                  deptName = matchedChange.dept || matchedChange.department || '';
-                }
-              }
-              
-              const displayName = p.split('@')[0];
+              const roleLower = (p.role || '').toLowerCase();
+              const isUserHOD = roleLower.includes('hod') || 
+                                roleLower.includes('unit head') || 
+                                roleLower.includes('unit_head') || 
+                                roleLower.includes('manager');
+              const deptName = p.department || '';
+
               let labelSuffix = '';
               if (deptName) {
                 labelSuffix = isUserHOD ? `${deptName} - HOD` : deptName;
               } else if (isUserHOD) {
                 labelSuffix = 'HOD';
               }
-              
+
               const label = labelSuffix ? `${displayName} (${labelSuffix})` : displayName;
               return (
-                <option key={p} value={p}>
+                <option key={value} value={value}>
                   {label}
                 </option>
               );
