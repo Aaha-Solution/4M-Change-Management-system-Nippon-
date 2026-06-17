@@ -15,16 +15,19 @@ export const getRequestDisplayStatus = (c) => {
     return 'Rejected';
   }
 
-  // 2. Final L3 Rejection (only when ALL departments have voted/completed, and at least one is Rejected)
-  if (c.hasL3Rejection && c.isL3Complete) {
-    return 'Rejected';
+  // 2. L3 decisions: only resolved after ALL departments have voted
+  if (c.isL3Complete === 1 || c.isL3Complete === true) {
+    if (c.hasL3Rejection === 1 || c.hasL3Rejection === true) {
+      return 'Rejected';
+    }
+    return 'Approved';
   }
 
-  // 3. Fully Completed / Closed / Approved
+  // 3. Fallback for Completed change request
   if (c.status === 'Completed') {
     return 'Closed';
   }
-  if (c.l3Status === 'Approved' || (c.isL3Complete && !c.hasL3Rejection)) {
+  if (c.l3Status === 'Approved') {
     return 'Approved';
   }
 
