@@ -811,7 +811,7 @@ export const AllApprovals = ({
           <div className="relative bg-white w-full sm:w-[720px] max-w-full h-full sm:h-auto sm:max-h-[92vh] sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
 
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-[#0066cc] to-indigo-600 px-6 py-5">
+            <div className="bg-gradient-to-r from-[#0066cc] to-indigo-600 px-6 py-5 shrink-0">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
@@ -845,7 +845,7 @@ export const AllApprovals = ({
             </div>
 
             {/* Approval type info bar */}
-            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 flex items-center gap-2">
+            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 flex items-center gap-2 shrink-0">
               <ShieldCheck size={13} className="text-amber-600 shrink-0" />
               <p className="text-[11px] text-amber-800 font-semibold">
                 <strong>L1 HOD Approval</strong> — You are reviewing this change request as <span className="text-[#0066cc] font-black">{actingDept}</span> HOD.
@@ -857,7 +857,7 @@ export const AllApprovals = ({
             </div>
 
             {/* Tabs Header */}
-            <div className="flex border-b border-slate-200 bg-slate-50/50 overflow-x-auto scrollbar-none -webkit-overflow-scrolling-touch">
+            <div className="flex border-b border-slate-200 bg-slate-50/50 overflow-x-auto scrollbar-none -webkit-overflow-scrolling-touch shrink-0">
               <button
                 type="button"
                 onClick={() => setActiveTab('l1')}
