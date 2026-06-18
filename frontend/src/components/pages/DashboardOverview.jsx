@@ -51,7 +51,7 @@ import {
 export const DashboardOverview = ({
   changes,
   isFetchingChanges,
-  onTabChange,
+  // onTabChange,
   setToastMsg,
   usersList = []
 }) => {

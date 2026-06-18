@@ -8,13 +8,16 @@ import {
   FileText,
   Layers,
   Activity,
-  Clock
+  Clock,
+  Filter,
+  RotateCcw
 } from 'lucide-react';
 import {
   toggleNotificationRead,
   markAllNotificationsRead,
   clearReadNotifications,
-  deleteNotification
+  deleteNotification,
+  getDepartments
 } from '../../api/apiRoutes';
 
 
@@ -22,9 +25,26 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
   const alerts = notifications || [];
   const [search, setSearch] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('All'); // 'All' | 'Unread'
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [filterLevel, setFilterLevel] = useState('All');
+  const [filterCategory, setFilterCategory] = useState('All');
+  const [filterType, setFilterType] = useState('All');
+  const [filterDept, setFilterDept] = useState('All');
+  const [dbDepartments, setDbDepartments] = useState([]);
 
   useEffect(() => {
     fetchNotifications();
+    const fetchDepts = async () => {
+      try {
+        const res = await getDepartments();
+        if (Array.isArray(res.data)) {
+          setDbDepartments(res.data);
+        }
+      } catch (err) {
+        console.error('Error fetching departments:', err);
+      }
+    };
+    fetchDepts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -74,6 +94,34 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
     }
   };
 
+  // Departments are now fetched directly from the DB
+  const deptList = dbDepartments;
+
+  // Determine the level badge text
+  const getLevelBadge = (alert) => {
+    if ((alert.id && alert.id.startsWith('L2-NOTIF')) || (alert.id && alert.id.includes('L2-VAL'))) return 'L2 VALIDATION';
+    if (alert.id && alert.id.startsWith('L3-')) return 'L3 APPROVAL';
+    if (alert.id && alert.id.startsWith('L1-')) return 'L1 APPROVAL';
+    if (alert.id && alert.id.startsWith('ALR-')) return 'SYSTEM';
+    return 'NOTIFICATION';
+  };
+
+  const activeFilterCount =
+    (filterLevel !== 'All' ? 1 : 0) +
+    (filterCategory !== 'All' ? 1 : 0) +
+    (filterType !== 'All' ? 1 : 0) +
+    (filterDept !== 'All' ? 1 : 0);
+
+  const hasActiveFilters = activeFilterCount > 0;
+
+  const handleResetFilters = () => {
+    setFilterLevel('All');
+    setFilterCategory('All');
+    setFilterType('All');
+    setFilterDept('All');
+    setSearch('');
+  };
+
   // Filter and Search logic
   const filteredAlerts = alerts.filter(alert => {
     const matchesSearch =
@@ -85,7 +133,18 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
 
     if (!matchesSearch) return false;
 
-    if (activeFilterTab === 'Unread') return !alert.isRead;
+    if (activeFilterTab === 'Unread' && alert.isRead) return false;
+
+    if (filterLevel !== 'All' && getLevelBadge(alert) !== filterLevel) return false;
+
+    if (filterCategory !== 'All') {
+      const cat = (alert.category || 'GENERAL').toUpperCase();
+      if (cat !== filterCategory.toUpperCase()) return false;
+    }
+
+    if (filterType !== 'All' && alert.type !== filterType) return false;
+
+    if (filterDept !== 'All' && (alert.dept || '').trim().toLowerCase() !== filterDept.trim().toLowerCase()) return false;
 
     return true;
   });
@@ -114,14 +173,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
     return <Layers size={18} />;
   };
 
-  // Determine the level badge text
-  const getLevelBadge = (alert) => {
-    if (alert.id && alert.id.startsWith('L2-NOTIF') || (alert.id && alert.id.includes('L2-VAL'))) return 'L2 VALIDATION';
-    if (alert.id && alert.id.startsWith('L3-')) return 'L3 APPROVAL';
-    if (alert.id && alert.id.startsWith('L1-')) return 'L1 APPROVAL';
-    if (alert.id && alert.id.startsWith('ALR-')) return 'SYSTEM';
-    return 'NOTIFICATION';
-  };
+  // Level badge function has been moved up to be available to filtering logic.
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -134,16 +186,34 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
       {/* Control bar */}
       <div className="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 space-y-4">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-          {/* Search */}
-          <div className="flex-1 relative max-w-md">
-            <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
-            <input
-              type="text"
-              placeholder="Search by ID, title, department, category..."
-              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          {/* Search and Filters Toggle */}
+          <div className="flex-1 flex items-center gap-2 max-w-lg">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+              <input
+                type="text"
+                placeholder="Search by ID, title, department, category..."
+                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={() => setShowFilterPanel(!showFilterPanel)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer select-none ${
+                showFilterPanel || hasActiveFilters
+                  ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm'
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <Filter size={14} />
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 bg-blue-600 text-white rounded-full text-[9px] font-extrabold animate-pulse">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
           </div>
 
           {/* Action buttons */}
@@ -164,6 +234,92 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
             </button>
           </div>
         </div>
+
+        {/* Collapsible Filter Panel */}
+        {showFilterPanel && (
+          <div className="border-t border-slate-100 pt-4 mt-2 space-y-3 animate-fade-in-up">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <Filter size={12} className="text-[#0066cc]" />
+                Filter Options
+              </span>
+              {hasActiveFilters && (
+                <button
+                  onClick={handleResetFilters}
+                  className="text-[10px] font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 transition-colors uppercase tracking-wider cursor-pointer"
+                >
+                  <RotateCcw size={10} />
+                  Reset Filters
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Level Filter */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approval Level</label>
+                <select
+                  value={filterLevel}
+                  onChange={(e) => setFilterLevel(e.target.value)}
+                  className="w-full p-2 border border-slate-200 rounded-lg text-xs bg-slate-50 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 transition-all cursor-pointer font-medium text-slate-700"
+                >
+                  <option value="All">All Levels</option>
+                  <option value="L1 APPROVAL">L1 HOD Approval</option>
+                  <option value="L2 VALIDATION">L2 Validation</option>
+                  <option value="L3 APPROVAL">L3 Final Approval</option>
+                  <option value="SYSTEM">System Alert</option>
+                  <option value="NOTIFICATION">General Notification</option>
+                </select>
+              </div>
+
+              {/* 4M Category Filter */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Category</label>
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className="w-full p-2 border border-slate-200 rounded-lg text-xs bg-slate-50 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 transition-all cursor-pointer font-medium text-slate-700"
+                >
+                  <option value="All">All Categories</option>
+                  <option value="MAN">Man</option>
+                  <option value="MACHINE">Machine</option>
+                  <option value="MATERIAL">Material</option>
+                  <option value="METHOD">Method</option>
+                  <option value="GENERAL">General / System</option>
+                </select>
+              </div>
+
+              {/* Alert Type Filter */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Alert Type</label>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="w-full p-2 border border-slate-200 rounded-lg text-xs bg-slate-50 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 transition-all cursor-pointer font-medium text-slate-700"
+                >
+                  <option value="All">All Types</option>
+                  <option value="Action Required">Action Required</option>
+                  <option value="Info">Info</option>
+                  <option value="System Logs">System Logs</option>
+                </select>
+              </div>
+
+              {/* Department Filter */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</label>
+                <select
+                  value={filterDept}
+                  onChange={(e) => setFilterDept(e.target.value)}
+                  className="w-full p-2 border border-slate-200 rounded-lg text-xs bg-slate-50 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 transition-all cursor-pointer font-medium text-slate-700"
+                >
+                  <option value="All">All Departments</option>
+                  {deptList.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filters tabs bar */}
         <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
@@ -227,9 +383,9 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                         const titleStr = (alert.title || '').toUpperCase();
                         const detailsStr = (alert.details || '').toUpperCase();
                         
-                        const isL2 = idStr.includes('L2') || titleStr.includes('L2') || detailsStr.includes('L2');
-                        const isL3 = idStr.includes('L3') || titleStr.includes('L3') || detailsStr.includes('L3');
-                        const isL1 = idStr.includes('L1') || titleStr.includes('L1') || detailsStr.includes('L1') || idStr.includes('HOD-DECISION');
+                        // Removed isL2
+                        // Removed isL3
+                        // Removed isL1
 
                         if (idStr.startsWith('L3-')) {
                           targetTab = 'l3';
