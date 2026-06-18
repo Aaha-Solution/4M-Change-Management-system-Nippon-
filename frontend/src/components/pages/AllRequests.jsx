@@ -24,6 +24,7 @@ export const AllRequests = ({
   const [selectedPerson, setSelectedPerson] = useState('All');
   const [selectedProcess, setSelectedProcess] = useState('All');
   const [selectedMachine, setSelectedMachine] = useState('All');
+  const [selectedStatus, setSelectedStatus] = useState('All');
 
   // Pagination State
   const [page, setPage] = useState(0);
@@ -65,7 +66,7 @@ export const AllRequests = ({
   // Reset page when any filter changes
   useEffect(() => {
     setPage(0);
-  }, [searchQuery, selectedMonth, fromDate, toDate, selectedPerson, selectedProcess, selectedMachine]);
+  }, [searchQuery, selectedMonth, fromDate, toDate, selectedPerson, selectedProcess, selectedMachine, selectedStatus]);
 
 
 
@@ -145,6 +146,7 @@ export const AllRequests = ({
   ];
   const filterProcesses = ['All', ...new Set(combinedData.map(i => i.processName).filter(Boolean))];
   const filterMachines = ['All', ...new Set(combinedData.map(i => i.machineNo).filter(Boolean))];
+  const filterStatuses = ['All', ...new Set(combinedData.map(i => i.status).filter(Boolean))];
 
   // Apply filters
   const filteredData = combinedData.filter(item => {
@@ -160,6 +162,7 @@ export const AllRequests = ({
       (item.requester && item.requester.toLowerCase() === selectedPerson.toLowerCase());
     const matchesProcess = selectedProcess === 'All' || item.processName === selectedProcess;
     const matchesMachine = selectedMachine === 'All' || item.machineNo === selectedMachine;
+    const matchesStatus = selectedStatus === 'All' || item.status === selectedStatus;
 
     let matchesMonth = true;
     if (selectedMonth !== 'All') {
@@ -196,7 +199,7 @@ export const AllRequests = ({
       }
     }
 
-    return matchesSearch && matchesPerson && matchesProcess && matchesMachine && matchesMonth && matchesFromDate && matchesToDate;
+    return matchesSearch && matchesPerson && matchesProcess && matchesMachine && matchesMonth && matchesFromDate && matchesToDate && matchesStatus;
   });
 
   const paginatedData = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -434,7 +437,19 @@ export const AllRequests = ({
           <label className="block font-bold text-slate-400 uppercase tracking-wider">From Date</label>
           <CustomDatePicker 
             value={fromDate}
-            onChange={setFromDate}
+            onChange={(val) => {
+              if (val && toDate) {
+                 const [fd, fm, fy] = val.split('/');
+                 const [td, tm, ty] = toDate.split('/');
+                 const fDate = new Date(fy, fm - 1, fd);
+                 const tDate = new Date(ty, tm - 1, td);
+                 if (fDate > tDate) {
+                   setToastMsg("'From Date' cannot be later than 'To Date'.");
+                   return;
+                 }
+              }
+              setFromDate(val);
+            }}
             inputClassName="w-full pl-[8px] pr-[24px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-[11px] text-slate-500"
             buttonClassName="right-[8px] bottom-[8px]"
           />
@@ -443,12 +458,32 @@ export const AllRequests = ({
         {/* TO DATE */}
         <div className="flex-1 min-w-[130px] space-y-[4px] relative">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-          <CustomDatePicker 
-            value={toDate}
-            onChange={setToDate}
-            inputClassName="w-full pl-[8px] pr-[24px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-[11px] text-slate-500"
-            buttonClassName="right-[8px] bottom-[8px]"
-          />
+          <div onClickCapture={(e) => {
+            if (!fromDate) {
+              e.stopPropagation();
+              setToastMsg("Please select 'From Date' before selecting 'To Date'.");
+            }
+          }}>
+            <CustomDatePicker 
+              value={toDate}
+              onChange={(val) => {
+                if (val && fromDate) {
+                   const [fd, fm, fy] = fromDate.split('/');
+                   const [td, tm, ty] = val.split('/');
+                   const fDate = new Date(fy, fm - 1, fd);
+                   const tDate = new Date(ty, tm - 1, td);
+                   if (tDate < fDate) {
+                     setToastMsg("'To Date' cannot be earlier than 'From Date'.");
+                     return;
+                   }
+                }
+                setToDate(val);
+              }}
+              inputClassName={`w-full pl-[8px] pr-[24px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-[11px] text-slate-500 ${!fromDate ? 'opacity-70 cursor-not-allowed bg-slate-50' : ''}`}
+              buttonClassName="right-[8px] bottom-[8px]"
+              disabled={!fromDate}
+            />
+          </div>
         </div>
 
         {/* BY PERSON */}
@@ -516,6 +551,43 @@ export const AllRequests = ({
             ))}
           </select>
         </div>
+
+        {/* BY STATUS */}
+        <div className="flex-1 min-w-[120px] space-y-[4px]">
+          <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
+          <select 
+            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none text-[11px]"
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+          >
+            {filterStatuses.map(s => (
+              <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* RESET FILTERS */}
+        {(searchQuery || selectedMonth !== 'All' || fromDate || toDate || selectedPerson !== 'All' || selectedProcess !== 'All' || selectedMachine !== 'All' || selectedStatus !== 'All') && (
+          <div className="flex-[0.5] min-w-[80px] flex items-end animate-fade-in-up">
+            <button 
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedMonth('All');
+                setFromDate('');
+                setToDate('');
+                setSelectedPerson('All');
+                setSelectedProcess('All');
+                setSelectedMachine('All');
+                setSelectedStatus('All');
+              }}
+              className="w-full px-[10px] py-[6px] bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border border-rose-200 rounded-[4px] font-bold transition-colors shadow-sm flex items-center justify-center gap-[4px] text-[11px] cursor-pointer"
+              title="Reset all filters"
+            >
+              <X size={12} strokeWidth={3} />
+              Reset
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main requests Table card */}
