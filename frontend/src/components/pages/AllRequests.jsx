@@ -697,7 +697,7 @@ export const AllRequests = ({
           {/* Modal Container */}
           <div className="relative bg-white w-full max-w-[800px] max-h-[90vh] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-[10px]">
                 <span className="p-2 bg-[#e6f0fa] text-[#0066cc] rounded-lg">
                   <Eye size={18} />
@@ -738,7 +738,7 @@ export const AllRequests = ({
             </div>
 
             {/* Tabs Header */}
-            <div className="flex border-b border-slate-200 bg-slate-50/50">
+            <div className="flex border-b border-slate-200 bg-slate-50/50 shrink-0">
               <button
                 onClick={() => setActiveTab('l1')}
                 className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${

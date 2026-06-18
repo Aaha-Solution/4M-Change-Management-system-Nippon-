@@ -1676,8 +1676,8 @@ export const L1Request = ({
                             </td>
                             <td className="p-[8px]">
                               <input
-                                type="text"
-                                placeholder="e.g. 6 Months"
+                                type="number"
+                                placeholder="0"
                                 value={row.roi}
                                 onChange={(e) => handleUpdateCell(idx, 'roi', e.target.value)}
                                 className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
