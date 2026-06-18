@@ -152,7 +152,7 @@ export const Effectiveness = ({
     }
     if (val.includes('-')) {
       const parts = val.split("-");
-      if (parts.length === 2) {
+      if (parts.length >= 2) {
         const year = parseInt(parts[0], 10);
         const month = parseInt(parts[1], 10);
         const date = new Date(year, month - 1, 1);
@@ -292,9 +292,6 @@ export const Effectiveness = ({
 
 
 
-  // Extract unique months for filter
-  const uniqueMonths = Array.from(new Set(effectivenessLogs.map(l => l.monthWise ? formatMonthWise(l.monthWise) : null).filter(Boolean))).filter(Boolean);
-
   // Construct table logs combining changes and effectivenessLogs
   const tableLogs = (changes || [])
     .filter(change => change.isL3Approved)
@@ -317,6 +314,29 @@ export const Effectiveness = ({
       };
     });
 
+  // Extract unique months for filter from both saved logs and pending change requests
+  const uniqueMonthsRaw = Array.from(
+    new Set(
+      tableLogs.map(log => {
+        const val = log.monthWise || log.startDate || log.reqDate;
+        return val ? formatMonthWise(val) : null;
+      }).filter(Boolean)
+    )
+  ).filter(m => m !== '-' && m !== 'All' && m !== 'Pending');
+
+  // Sort unique months chronologically
+  const monthOrder = {
+    Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+    Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+  };
+  const uniqueMonths = uniqueMonthsRaw.sort((a, b) => {
+    const [aMonth, aYear] = a.split('-');
+    const [bMonth, bYear] = b.split('-');
+    const yearDiff = parseInt(aYear, 10) - parseInt(bYear, 10);
+    if (yearDiff !== 0) return yearDiff;
+    return monthOrder[aMonth] - monthOrder[bMonth];
+  });
+
   const filteredLogs = tableLogs.filter(log => {
     const query = effSearch.toLowerCase();
     const matchesSearch = (log.changeNo || '').toLowerCase().includes(query) ||
@@ -330,7 +350,8 @@ export const Effectiveness = ({
       if (effFilterMonth === 'Pending') {
         matchesMonth = log.isPending;
       } else {
-        matchesMonth = log.monthWise && formatMonthWise(log.monthWise) === effFilterMonth;
+        const logMonth = log.monthWise ? formatMonthWise(log.monthWise) : formatMonthWise(log.startDate || log.reqDate);
+        matchesMonth = logMonth === effFilterMonth;
       }
     }
     return matchesSearch && matchesStatus && matchesMonth;

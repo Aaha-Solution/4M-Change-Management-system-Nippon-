@@ -1974,7 +1974,7 @@ export const DashboardOverview = ({
           <div className="absolute top-0 left-0 w-full h-[3px] bg-[#0066cc]" />
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Total Requests</h4>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Total Requests</h4>
               <div className="text-[32px] font-bold text-slate-900 mt-2 font-heading tracking-tight">
                 {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : totalCount}
               </div>
@@ -1990,7 +1990,7 @@ export const DashboardOverview = ({
           <div className="absolute top-0 left-0 w-full h-[3px] bg-emerald-500" />
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Approved</h4>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Approved</h4>
               <div className="text-[32px] font-bold text-emerald-600 mt-2 font-heading tracking-tight">
                 {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : approvedCount}
               </div>
@@ -2006,7 +2006,7 @@ export const DashboardOverview = ({
           <div className="absolute top-0 left-0 w-full h-[3px] bg-amber-500" />
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Pending Approval</h4>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Pending Approval</h4>
               <div className="text-[32px] font-bold text-amber-600 mt-2 font-heading tracking-tight">
                 {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : pendingCount}
               </div>
@@ -2022,7 +2022,7 @@ export const DashboardOverview = ({
           <div className="absolute top-0 left-0 w-full h-[3px] bg-rose-500" />
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Rejected</h4>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Rejected</h4>
               <div className="text-[32px] font-bold text-rose-600 mt-2 font-heading tracking-tight">
                 {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : rejectedCount}
               </div>
@@ -2038,7 +2038,7 @@ export const DashboardOverview = ({
           <div className="absolute top-0 left-0 w-full h-[3px] bg-indigo-500" />
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans">Closed</h4>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Closed</h4>
               <div className="text-[32px] font-bold text-indigo-600 mt-2 font-heading tracking-tight">
                 {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : closedCount}
               </div>
