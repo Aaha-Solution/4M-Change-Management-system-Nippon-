@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, Eye, EyeOff, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText, Download } from 'lucide-react';
+import { useWebSocket } from '../../hooks/useWebSocket';
 import TablePagination from '@mui/material/TablePagination';
 import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment, getL2Details, getL3Approvals } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
@@ -96,6 +97,15 @@ export const L2Validation = ({
     fetchLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useWebSocket((data) => {
+    if (data.type === 'REFRESH_CHANGES') {
+      fetchLogs();
+      if (selectedL1Details) {
+        handleViewL1Details(selectedL1Details.change_no);
+      }
+    }
+  });
 
   // Auto-populate logic based on autoOpenChangeNo or first pending request
   useEffect(() => {

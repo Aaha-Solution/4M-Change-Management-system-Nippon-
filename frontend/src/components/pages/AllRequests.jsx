@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ClipboardList, Eye, EyeOff, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download } from 'lucide-react';
+import { useWebSocket } from '../../hooks/useWebSocket';
 import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { getRequestDisplayStatus } from '../../utils/statusUtils';
@@ -48,6 +49,18 @@ export const AllRequests = ({
       setShowCustomerApproval(false);
     }
   }, [selectedLog]);
+
+  useWebSocket((data) => {
+    if (data.type === 'REFRESH_CHANGES' && selectedLog) {
+      handleViewDetails({
+        id: selectedLog.changeNo,
+        requester: selectedLog.requester,
+        rawDate: selectedLog.date,
+        status: selectedLog.status,
+        hodStatus: selectedLog.hodStatus
+      });
+    }
+  });
 
   // Reset page when any filter changes
   useEffect(() => {
