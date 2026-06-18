@@ -31,3 +31,17 @@ export const updateChangeStatus = async (id, status) => {
   broadcast({ type: 'REFRESH_CHANGES' });
   return { id, status };
 };
+
+export const updateChangeDetails = async (changeNo, level, updateData) => {
+  if (!updateData || Object.keys(updateData).length === 0) return;
+  
+  const tableName = level === 'l1' ? 'l1_requests' : level === 'l2' ? 'l2_validations' : 'l3_approvals';
+  
+  const keys = Object.keys(updateData);
+  const setString = keys.map(k => `${k} = ?`).join(', ');
+  const values = Object.values(updateData);
+  values.push(changeNo);
+  
+  await pool.query(`UPDATE ${tableName} SET ${setString} WHERE change_no = ?`, values);
+  broadcast({ type: 'REFRESH_CHANGES' });
+};

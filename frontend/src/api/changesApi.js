@@ -12,6 +12,14 @@ export const updateChangeStatus = (id, status) => {
   });
 };
 
+export const updateChangeDetails = (id, level, updateData) => {
+  return axiosInstance.put(`/changes/${id}/details?level=${level}`, { updateData }, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
 export const createL1Request = (l1Data, attachments) => {
   return axiosInstance.post('/changes/l1', { l1Data, attachments }, {
     headers: {

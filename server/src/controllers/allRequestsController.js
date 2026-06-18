@@ -29,3 +29,25 @@ export const updateChangeStatus = async (req, res) => {
     res.status(500).json({ error: 'Failed to update change request status' });
   }
 };
+
+export const updateChangeDetails = async (req, res) => {
+  const { id } = req.params;
+  const { level } = req.query; // 'l1', 'l2', 'l3'
+  const { updateData } = req.body;
+
+  if (req.user?.role !== 'Admin') {
+    return res.status(403).json({ error: 'Only Admins can update change request data directly.' });
+  }
+
+  if (!level || !updateData) {
+    return res.status(400).json({ error: 'Level and updateData are required.' });
+  }
+
+  try {
+    await allRequestsModel.updateChangeDetails(id, level, updateData);
+    res.status(200).json({ message: `${level.toUpperCase()} details updated successfully.` });
+  } catch (error) {
+    console.error('Error in updateChangeDetails:', error);
+    res.status(500).json({ error: 'Failed to update change details.' });
+  }
+};

@@ -524,6 +524,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 onTabChange={handleTabChange}
                 setToastMsg={setToastMsg}
                 usersList={usersList}
+                isAdmin={isAdmin}
               />
             )}
 
@@ -536,6 +537,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 usersList={usersList}
                 autoOpenChangeNo={autoOpenChangeNo}
                 clearAutoOpen={() => setAutoOpenChangeNo(null)}
+                isAdmin={isAdmin}
               />
             )}
 

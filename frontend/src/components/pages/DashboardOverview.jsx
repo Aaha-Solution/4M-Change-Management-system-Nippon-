@@ -34,7 +34,8 @@ import {
   getL1Attachment,
   getL2Details,
   getL2Attachment,
-  getL3Approvals
+  getL3Approvals,
+  updateChangeDetails
 } from '../../api/apiRoutes';
 import {
   exportDashboardRequestsPDF,
@@ -53,7 +54,8 @@ export const DashboardOverview = ({
   isFetchingChanges,
   // onTabChange,
   setToastMsg,
-  usersList = []
+  usersList = [],
+  isAdmin = false
 }) => {
   const [isGridView, setIsGridView] = useState(false);
 
@@ -68,9 +70,17 @@ export const DashboardOverview = ({
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Department');
   const [showCustomerApproval, setShowCustomerApproval] = useState(false);
 
+  // Edit Mode States
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editL1Data, setEditL1Data] = useState({});
+  const [editL2Data, setEditL2Data] = useState({});
+  const [editL3Data, setEditL3Data] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     if (!selectedLog) {
       setShowCustomerApproval(false);
+      setIsEditMode(false);
     }
   }, [selectedLog]);
 
@@ -380,6 +390,8 @@ export const DashboardOverview = ({
 
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
+      setEditL1Data(l1Res.data || {});
+      setEditL2Data(l2Res.data || {});
 
       const matchedL3 = l3Res.data?.find(log => log.changeNo === request.id);
       const newLogData = matchedL3 ? { ...matchedL3, hodStatus: request.hodStatus } : {
@@ -399,6 +411,7 @@ export const DashboardOverview = ({
         unitHead: 'Pending'
       };
       setSelectedLog(newLogData);
+      setEditL3Data(newLogData || {});
     } catch (err) {
       console.error('Error fetching request details:', err);
     } finally {
@@ -633,6 +646,16 @@ export const DashboardOverview = ({
         <CustomDatePicker
           value={fromDateVal}
           onChange={(val) => {
+            if (val && toDateVal) {
+               const [fd, fm, fy] = val.split('/');
+               const [td, tm, ty] = toDateVal.split('/');
+               const fDate = new Date(fy, fm - 1, fd);
+               const tDate = new Date(ty, tm - 1, td);
+               if (fDate > tDate) {
+                 setToastMsg("'From Date' cannot be later than 'To Date'.");
+                 return;
+               }
+            }
             setFromDateVal(val);
             if (val) {
               setMonthVal('All');
@@ -644,17 +667,35 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <CustomDatePicker
-          value={toDateVal}
-          onChange={(val) => {
-            setToDateVal(val);
-            if (val) {
-              setMonthVal('All');
-            }
-          }}
-          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
-          buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
-        />
+        <div onClickCapture={(e) => {
+          if (!fromDateVal) {
+            e.stopPropagation();
+            setToastMsg("Please select 'From Date' before selecting 'To Date'.");
+          }
+        }}>
+          <CustomDatePicker
+            value={toDateVal}
+            onChange={(val) => {
+              if (val && fromDateVal) {
+                 const [fd, fm, fy] = fromDateVal.split('/');
+                 const [td, tm, ty] = val.split('/');
+                 const fDate = new Date(fy, fm - 1, fd);
+                 const tDate = new Date(ty, tm - 1, td);
+                 if (tDate < fDate) {
+                   setToastMsg("'To Date' cannot be earlier than 'From Date'.");
+                   return;
+                 }
+              }
+              setToDateVal(val);
+              if (val) {
+                setMonthVal('All');
+              }
+            }}
+            inputClassName={`w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500 ${!fromDateVal ? 'opacity-70 cursor-not-allowed bg-slate-50' : ''}`}
+            buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
+            disabled={!fromDateVal}
+          />
+        </div>
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Person</label>
@@ -751,6 +792,16 @@ export const DashboardOverview = ({
         <CustomDatePicker
           value={fromDateVal}
           onChange={(val) => {
+            if (val && toDateVal) {
+               const [fd, fm, fy] = val.split('/');
+               const [td, tm, ty] = toDateVal.split('/');
+               const fDate = new Date(fy, fm - 1, fd);
+               const tDate = new Date(ty, tm - 1, td);
+               if (fDate > tDate) {
+                 setToastMsg("'From Date' cannot be later than 'To Date'.");
+                 return;
+               }
+            }
             setFromDateVal(val);
             if (val) {
               setMonthVal('All');
@@ -762,17 +813,35 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <CustomDatePicker
-          value={toDateVal}
-          onChange={(val) => {
-            setToDateVal(val);
-            if (val) {
-              setMonthVal('All');
-            }
-          }}
-          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
-          buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
-        />
+        <div onClickCapture={(e) => {
+          if (!fromDateVal) {
+            e.stopPropagation();
+            setToastMsg("Please select 'From Date' before selecting 'To Date'.");
+          }
+        }}>
+          <CustomDatePicker
+            value={toDateVal}
+            onChange={(val) => {
+              if (val && fromDateVal) {
+                 const [fd, fm, fy] = fromDateVal.split('/');
+                 const [td, tm, ty] = val.split('/');
+                 const fDate = new Date(fy, fm - 1, fd);
+                 const tDate = new Date(ty, tm - 1, td);
+                 if (tDate < fDate) {
+                   setToastMsg("'To Date' cannot be earlier than 'From Date'.");
+                   return;
+                 }
+              }
+              setToDateVal(val);
+              if (val) {
+                setMonthVal('All');
+              }
+            }}
+            inputClassName={`w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500 ${!fromDateVal ? 'opacity-70 cursor-not-allowed bg-slate-50' : ''}`}
+            buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
+            disabled={!fromDateVal}
+          />
+        </div>
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
@@ -1825,6 +1894,60 @@ export const DashboardOverview = ({
     );
   };
 
+  const handleSaveEdits = async () => {
+    setIsSaving(true);
+    try {
+      if (activeTab === 'l1') {
+        await updateChangeDetails(selectedLog.changeNo, 'l1', editL1Data);
+        setSelectedL1Details(editL1Data);
+      } else if (activeTab === 'l2') {
+        await updateChangeDetails(selectedLog.changeNo, 'l2', editL2Data);
+        setSelectedL2Details(editL2Data);
+      } else if (activeTab === 'l3') {
+        await updateChangeDetails(selectedLog.changeNo, 'l3', editL3Data);
+        setSelectedLog(editL3Data);
+      }
+      setToastMsg(`${activeTab.toUpperCase()} details updated successfully!`);
+      setIsEditMode(false);
+    } catch (err) {
+      console.error(err);
+      setToastMsg('Failed to save updates.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const renderDynamicEditForm = (data, setData) => {
+    if (!data) return <div className="text-sm text-slate-500">No data available to edit.</div>;
+    return (
+      <div className="space-y-4 animate-fade-in-up">
+        {Object.entries(data).map(([key, value]) => {
+          if (['id', 'change_no', 'changeNo'].includes(key)) return null;
+          return (
+            <div key={key} className="space-y-1">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">{key.replace(/_/g, ' ')}</label>
+              {typeof value === 'string' && value.length > 100 ? (
+                <textarea
+                  className="w-full p-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
+                  rows={4}
+                  value={value || ''}
+                  onChange={(e) => setData({ ...data, [key]: e.target.value })}
+                />
+              ) : (
+                <input
+                  type="text"
+                  className="w-full p-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
+                  value={value || ''}
+                  onChange={(e) => setData({ ...data, [key]: e.target.value })}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-[32px] animate-fade-in-up">
       {/* KPIs Grid */}
@@ -2249,7 +2372,29 @@ export const DashboardOverview = ({
                   <Eye size={18} />
                 </span>
                 <div>
+                <div className="flex items-center gap-2">
                   <h4 className="text-[15px] font-bold text-slate-900">Change Request Details (L1, L2, L3)</h4>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setIsEditMode(!isEditMode)}
+                      className={`ml-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                        isEditMode ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {isEditMode ? 'Cancel Edit' : 'Edit Mode'}
+                    </button>
+                  )}
+                  {isEditMode && (
+                    <button
+                      onClick={handleSaveEdits}
+                      disabled={isSaving}
+                      className="ml-2 px-3 py-1 bg-emerald-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-emerald-700 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    >
+                      {isSaving ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                      Save
+                    </button>
+                  )}
+                </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">Tracking details for: <span className="font-mono font-bold text-slate-600">{selectedLog.changeNo}</span></p>
                 </div>
               </div>
@@ -2306,6 +2451,8 @@ export const DashboardOverview = ({
                 <>
               {activeTab === 'l1' && selectedL1Details && (
                 <div className="space-y-[20px]">
+                  {isEditMode ? renderDynamicEditForm(editL1Data, setEditL1Data) : (
+                    <>
                   {/* General Info */}
                   <div className="space-y-[12px]">
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
@@ -2598,6 +2745,8 @@ export const DashboardOverview = ({
                       </div>
                     )}
                   </div>
+                </>
+                    )}
                 </div>
               )}
 
@@ -2609,6 +2758,8 @@ export const DashboardOverview = ({
                   </div>
                 ) : (
                   <div className="space-y-[20px]">
+                    {isEditMode ? renderDynamicEditForm(editL2Data, setEditL2Data) : (
+                      <>
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                       <CheckCircle2 size={14} />
                       <span>L2 Validation Details</span>
@@ -2685,12 +2836,16 @@ export const DashboardOverview = ({
                         {selectedL2Details.remarks || 'No remarks provided.'}
                       </div>
                     </div>
+                      </>
+                    )}
                   </div>
                 )
               )}
 
               {activeTab === 'l3' && selectedLog && (
                 <div className="space-y-[20px]">
+                  {isEditMode ? renderDynamicEditForm(editL3Data, setEditL3Data) : (
+                    <>
                   <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                     <Cpu size={14} />
                     <span>L3 Approval Status Matrix</span>
@@ -2761,9 +2916,11 @@ export const DashboardOverview = ({
                       );
                     })}
                   </div>
+                    </>
+                  )}
                 </div>
               )}
-            </>
+              </>
             )}
             </div>
 

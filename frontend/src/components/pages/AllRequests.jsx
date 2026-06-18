@@ -5,7 +5,7 @@ import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '.
 import { getRequestDisplayStatus } from '../../utils/statusUtils';
 // import { getSyncedDate } from '../../utils/timeSync';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
-import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Approvals } from '../../api/apiRoutes';
+import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Approvals, updateChangeDetails } from '../../api/apiRoutes';
 import { exportRequestsListPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 
 export const AllRequests = ({
@@ -13,7 +13,8 @@ export const AllRequests = ({
   setToastMsg,
   usersList = [],
   autoOpenChangeNo = null,
-  clearAutoOpen = () => {}
+  clearAutoOpen = () => {},
+  isAdmin = false
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('All');
@@ -36,6 +37,11 @@ export const AllRequests = ({
   const [previewFile, setPreviewFile] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
   const [showCustomerApproval, setShowCustomerApproval] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editL1Data, setEditL1Data] = useState({});
+  const [editL2Data, setEditL2Data] = useState({});
+  const [editL3Data, setEditL3Data] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!selectedLog) {
@@ -216,6 +222,8 @@ export const AllRequests = ({
 
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
+      setEditL1Data(l1Res.data || {});
+      setEditL2Data(l2Res.data || {});
 
       const matchedL3 = l3Res.data?.find(log => log.changeNo === request.id);
       const newLogData = matchedL3 ? { ...matchedL3, hodStatus: request.hodStatus } : {
@@ -235,6 +243,7 @@ export const AllRequests = ({
         unitHead: 'Pending'
       };
       setSelectedLog(newLogData);
+      setEditL3Data(newLogData || {});
     } catch (err) {
       console.error('Error fetching request details:', err);
     } finally {
@@ -318,6 +327,60 @@ export const AllRequests = ({
             <span className="underline truncate max-w-[200px]">{file}</span>
           </span>
         ))}
+      </div>
+    );
+  };
+
+  const handleSaveEdits = async () => {
+    setIsSaving(true);
+    try {
+      if (activeTab === 'l1') {
+        await updateChangeDetails(selectedLog.changeNo, 'l1', editL1Data);
+        setSelectedL1Details(editL1Data);
+      } else if (activeTab === 'l2') {
+        await updateChangeDetails(selectedLog.changeNo, 'l2', editL2Data);
+        setSelectedL2Details(editL2Data);
+      } else if (activeTab === 'l3') {
+        await updateChangeDetails(selectedLog.changeNo, 'l3', editL3Data);
+        setSelectedLog(editL3Data);
+      }
+      setToastMsg(`${activeTab.toUpperCase()} details updated successfully!`);
+      setIsEditMode(false);
+    } catch (err) {
+      console.error(err);
+      setToastMsg('Failed to save updates.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const renderDynamicEditForm = (data, setData) => {
+    if (!data) return <div className="text-sm text-slate-500">No data available to edit.</div>;
+    return (
+      <div className="space-y-4 animate-fade-in-up">
+        {Object.entries(data).map(([key, value]) => {
+          if (['id', 'change_no', 'changeNo'].includes(key)) return null;
+          return (
+            <div key={key} className="space-y-1">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">{key.replace(/_/g, ' ')}</label>
+              {typeof value === 'string' && value.length > 100 ? (
+                <textarea
+                  className="w-full p-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
+                  rows={4}
+                  value={value || ''}
+                  onChange={(e) => setData({ ...data, [key]: e.target.value })}
+                />
+              ) : (
+                <input
+                  type="text"
+                  className="w-full p-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
+                  value={value || ''}
+                  onChange={(e) => setData({ ...data, [key]: e.target.value })}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -555,7 +618,29 @@ export const AllRequests = ({
                   <Eye size={18} />
                 </span>
                 <div>
+                <div className="flex items-center gap-2">
                   <h4 className="text-[15px] font-bold text-slate-900">Change Request Details (L1, L2, L3)</h4>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setIsEditMode(!isEditMode)}
+                      className={`ml-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                        isEditMode ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {isEditMode ? 'Cancel Edit' : 'Edit Mode'}
+                    </button>
+                  )}
+                  {isEditMode && (
+                    <button
+                      onClick={handleSaveEdits}
+                      disabled={isSaving}
+                      className="ml-2 px-3 py-1 bg-emerald-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-emerald-700 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    >
+                      {isSaving ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                      Save
+                    </button>
+                  )}
+                </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">Tracking details for: <span className="font-mono font-bold text-slate-600">{selectedLog.changeNo}</span></p>
                 </div>
               </div>
@@ -612,6 +697,8 @@ export const AllRequests = ({
                 <>
               {activeTab === 'l1' && selectedL1Details && (
                 <div className="space-y-[20px]">
+                  {isEditMode ? renderDynamicEditForm(editL1Data, setEditL1Data) : (
+                    <>
                   {/* General Info */}
                   <div className="space-y-[12px]">
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
@@ -904,6 +991,8 @@ export const AllRequests = ({
                       </div>
                     )}
                   </div>
+                  </>
+                  )}
                 </div>
               )}
 
@@ -915,6 +1004,8 @@ export const AllRequests = ({
                   </div>
                 ) : (
                   <div className="space-y-[20px]">
+                    {isEditMode ? renderDynamicEditForm(editL2Data, setEditL2Data) : (
+                      <>
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                       <CheckCircle2 size={14} />
                       <span>L2 Validation Details</span>
@@ -991,12 +1082,16 @@ export const AllRequests = ({
                         {selectedL2Details.remarks || 'No remarks provided.'}
                       </div>
                     </div>
+                    </>
+                    )}
                   </div>
                 )
               )}
 
               {activeTab === 'l3' && selectedLog && (
-                <div className="space-y-[20px]">
+                <div className="space-y-[24px]">
+                  {isEditMode ? renderDynamicEditForm(editL3Data, setEditL3Data) : (
+                    <>
                   <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                     <Cpu size={14} />
                     <span>L3 Approval Status Matrix</span>
@@ -1067,9 +1162,11 @@ export const AllRequests = ({
                       );
                     })}
                   </div>
+                    </>
+                  )}
                 </div>
               )}
-            </>
+              </>
             )}
             </div>
 
