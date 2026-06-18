@@ -111,23 +111,23 @@ const WorkflowStrip = ({ crStatus }) => {
   const activeIdx = crStatus === 'Pending' ? 0 : crStatus === 'Evaluating' ? 1 : crStatus === 'Approved' ? 2 : crStatus === 'Completed' ? 3 : 0;
 
   return (
-    <div className="flex items-center gap-0 px-1 mt-2">
+    <div className="flex items-center gap-0 px-[4px] mt-[8px] overflow-x-auto justify-center">
       {steps.map((s, i) => (
         <div key={s.key} className="flex items-center">
-          <div className={`flex flex-col items-center`}>
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-all ${
+          <div className="flex flex-col items-center relative">
+            <div className={`w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-black border-2 transition-all ${
               i < activeIdx ? 'bg-emerald-500 border-emerald-500 text-white' :
               i === activeIdx ? 'bg-white border-white text-[#0066cc] shadow' :
               'bg-white/20 border-white/30 text-white/50'
             }`}>
               {i < activeIdx ? '✓' : s.key.replace('Done', '✓')}
             </div>
-            <span className={`text-[9px] font-bold mt-0.5 whitespace-nowrap ${i === activeIdx ? 'text-white' : i < activeIdx ? 'text-emerald-200' : 'text-white/40'}`}>
+            <span className={`text-[8px] sm:text-[9px] font-bold mt-[2px] whitespace-nowrap ${i === activeIdx ? 'text-white' : i < activeIdx ? 'text-emerald-200' : 'text-white/40'}`}>
               {s.label}
             </span>
           </div>
           {i < steps.length - 1 && (
-            <div className={`w-8 h-0.5 mx-1 mb-4 transition-all ${i < activeIdx ? 'bg-emerald-400' : 'bg-white/20'}`} />
+            <div className={`w-[12px] sm:w-[32px] h-[2px] mx-[2px] sm:mx-[4px] mb-[16px] transition-all ${i < activeIdx ? 'bg-emerald-400' : 'bg-white/20'}`} />
           )}
         </div>
       ))}
@@ -428,7 +428,7 @@ export const AllApprovals = ({
     <div className="space-y-6 animate-fade-in-up pb-10">
 
       {/* ─── Header ─── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-[16px]">
         <div>
           <div className="flex items-center gap-2.5 mb-1">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0066cc] to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
@@ -441,10 +441,10 @@ export const AllApprovals = ({
             <span className="font-semibold text-[#0066cc]">{actingDept || '...'}</span>
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-[12px] w-full md:w-auto">
           <button
             onClick={() => setShowLegend(v => !v)}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all shadow-sm cursor-pointer"
+            className="flex-grow md:flex-grow-0 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all shadow-sm cursor-pointer"
             title="Show workflow guide"
           >
             <Info size={14} />
@@ -453,14 +453,14 @@ export const AllApprovals = ({
           <button
             onClick={fetchRequests}
             disabled={isFetching}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer disabled:opacity-60"
+            className="flex-grow md:flex-grow-0 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer disabled:opacity-60"
           >
             <RefreshCw size={14} className={isFetching ? 'animate-spin text-[#0066cc]' : ''} />
             Refresh
           </button>
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-xl text-sm font-semibold transition-all shadow-sm cursor-pointer"
+            className="flex-grow md:flex-grow-0 flex items-center justify-center gap-2 px-4 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-xl text-sm font-semibold transition-all shadow-sm cursor-pointer"
             title="Export filtered approvals to PDF"
           >
             <Download size={14} />
@@ -506,7 +506,7 @@ export const AllApprovals = ({
       )}
 
       {/* ─── Summary Cards ─── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px]">
         {[
           { label: 'Awaiting Your Decision', value: pendingCount, icon: <Clock size={18} />, gradient: 'from-amber-500 to-orange-500', border: 'border-amber-100', text: 'text-amber-700', sublabel: 'L1 HOD Review Pending' },
           { label: 'Approved by You', value: approvedCount, icon: <CheckCircle2 size={18} />, gradient: 'from-emerald-500 to-teal-500', border: 'border-emerald-100', text: 'text-emerald-700', sublabel: 'HOD Approved' },
@@ -525,9 +525,9 @@ export const AllApprovals = ({
       </div>
 
       {/* ─── Filters ─── */}
-      <div className="bg-white border border-slate-200/70 rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          <div className="relative flex-1 min-w-[200px]">
+      <div className="bg-white border border-slate-200/70 rounded-2xl p-[16px] shadow-sm space-y-3">
+        <div className="flex flex-col lg:flex-row gap-[12px] lg:items-center">
+          <div className="relative flex-1 w-full lg:w-auto lg:min-w-[200px]">
             <Search className="absolute left-3 top-2.5 text-slate-400" size={15} />
             <input
               type="text"
@@ -537,69 +537,75 @@ export const AllApprovals = ({
               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all"
             />
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Filter size={14} className="text-slate-400" />
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Decision:</span>
-            {['All', 'Pending', 'Approved', 'Rejected'].map(f => (
+          <div className="flex flex-wrap items-center gap-[8px]">
+            <Filter size={14} className="text-slate-400 shrink-0" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">HOD Decision:</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {['All', 'Pending', 'Approved', 'Rejected'].map(f => (
+                <button
+                  key={f}
+                  onClick={() => setStatusFilter(f)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                    statusFilter === f
+                      ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-200'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Stage filter row */}
+        <div className="flex flex-wrap items-center gap-[8px] pt-1">
+          <Layers size={14} className="text-slate-400 shrink-0" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Workflow Stage:</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {[
+              { key: 'All', label: 'All Stages' },
+              { key: 'L1', label: '🟡 L1 HOD Review' },
+              { key: 'L2', label: '🔵 L2 QA Validation' },
+              { key: 'L3', label: '🟣 L3 Multi-HOD' },
+              { key: '✓', label: '🟢 Completed' },
+            ].map(s => (
               <button
-                key={f}
-                onClick={() => setStatusFilter(f)}
+                key={s.key}
+                onClick={() => setStageFilter(s.key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                  statusFilter === f
-                    ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-200'
+                  stageFilter === s.key
+                    ? 'bg-slate-800 text-white border-slate-800 shadow-md'
                     : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 }`}
               >
-                {f}
+                {s.label}
               </button>
             ))}
           </div>
         </div>
-        {/* Stage filter row */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <Layers size={14} className="text-slate-400" />
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Workflow Stage:</span>
-          {[
-            { key: 'All', label: 'All Stages' },
-            { key: 'L1', label: '🟡 L1 HOD Review' },
-            { key: 'L2', label: '🔵 L2 QA Validation' },
-            { key: 'L3', label: '🟣 L3 Multi-HOD' },
-            { key: '✓', label: '🟢 Completed' },
-          ].map(s => (
-            <button
-              key={s.key}
-              onClick={() => setStageFilter(s.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                stageFilter === s.key
-                  ? 'bg-slate-800 text-white border-slate-800 shadow-md'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
         {/* Scope/Source filter row */}
         {!isAdmin && (
-          <div className="flex items-center gap-2 flex-wrap pt-2.5 border-t border-slate-100">
-            <Building2 size={14} className="text-slate-400" />
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Request Source:</span>
-            {[
-              { key: 'MyDept', label: `My Department (${actingDept || '...'})` },
-              { key: 'All', label: 'All Departments' },
-            ].map(sc => (
-              <button
-                key={sc.key}
-                onClick={() => setScopeFilter(sc.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                  scopeFilter === sc.key
-                    ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-100'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                }`}
-              >
-                {sc.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-[8px] pt-2.5 border-t border-slate-100">
+            <Building2 size={14} className="text-slate-400 shrink-0" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Request Source:</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { key: 'MyDept', label: `My Department (${actingDept || '...'})` },
+                { key: 'All', label: 'All Departments' },
+              ].map(sc => (
+                <button
+                  key={sc.key}
+                  onClick={() => setScopeFilter(sc.key)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                    scopeFilter === sc.key
+                      ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-100'
+                      : 'bg-white text-slate-650 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  {sc.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -621,94 +627,167 @@ export const AllApprovals = ({
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[700px]">
-                <thead>
-                  <tr className="bg-gradient-to-r from-slate-50 to-slate-100/50 border-b border-slate-200 text-[10px] uppercase tracking-wider">
-                    <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Hash size={11} />Change No.</div></th>
-                    <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Layers size={11} />Workflow Stage</div></th>
-                    <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Calendar size={11} />Date</div></th>
-                    <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><User size={11} />Requested By</div></th>
-                    <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Building2 size={11} />Dept</div></th>
-                    <th className="px-5 py-3.5 font-black text-slate-500">L1 HOD Decision</th>
-                    <th className="px-5 py-3.5 font-black text-slate-500 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {paginated.map((req, idx) => {
-                    const isL1Pending = req.crStatus === 'Pending';
-                    const isPendingDecision = !req.hodStatus || req.hodStatus === 'Pending';
-                    const isMyDept = isAdmin || (isHOD && isDeptInRequired(req.hodApprovalNote, req.dept, actingDept));
-                    const isRejected = req.rejectCount > 0;
-                    const isActionable = isL1Pending && isPendingDecision && isMyDept && !isRejected;
-                    const stage = workflowStageConfig(req.crStatus);
-                    return (
-                      <tr key={idx} className="hover:bg-blue-50/30 transition-colors group">
-                        <td className="px-5 py-3.5">
-                          <span className="font-mono font-bold text-[#0066cc] text-[12px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-                            {req.changeNo}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <div className="flex flex-col gap-1 items-start">
-                            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${stage.color}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${stage.dot} ${isActionable ? 'animate-pulse' : ''}`} />
-                              {stage.label}
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[700px]">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-slate-50 to-slate-100/50 border-b border-slate-200 text-[10px] uppercase tracking-wider">
+                      <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Hash size={11} />Change No.</div></th>
+                      <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Layers size={11} />Workflow Stage</div></th>
+                      <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Calendar size={11} />Date</div></th>
+                      <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><User size={11} />Requested By</div></th>
+                      <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Building2 size={11} />Dept</div></th>
+                      <th className="px-5 py-3.5 font-black text-slate-500">L1 HOD Decision</th>
+                      <th className="px-5 py-3.5 font-black text-slate-500 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {paginated.map((req, idx) => {
+                      const isL1Pending = req.crStatus === 'Pending';
+                      const isPendingDecision = !req.hodStatus || req.hodStatus === 'Pending';
+                      const isMyDept = isAdmin || (isHOD && isDeptInRequired(req.hodApprovalNote, req.dept, actingDept));
+                      const isRejected = req.rejectCount > 0;
+                      const isActionable = isL1Pending && isPendingDecision && isMyDept && !isRejected;
+                      const stage = workflowStageConfig(req.crStatus);
+                      return (
+                        <tr key={idx} className="hover:bg-blue-50/30 transition-colors group">
+                          <td className="px-5 py-3.5">
+                            <span className="font-mono font-bold text-[#0066cc] text-[12px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                              {req.changeNo}
                             </span>
-                            {req.crStatus && (
-                              <div className="text-[9px] font-bold tracking-wide mt-0.5 pl-1 select-none">
-                                {req.crStatus.toLowerCase() === 'evaluating' && (
-                                  <span className="text-blue-600 bg-blue-50/60 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-0.5">✓ L1 Completed</span>
-                                )}
-                                {req.crStatus.toLowerCase() === 'approved' && (
-                                  <span className="text-indigo-600 bg-indigo-50/60 px-1.5 py-0.5 rounded border border-indigo-100 flex items-center gap-0.5">✓ L1 & L2 Completed</span>
-                                )}
-                                {req.crStatus.toLowerCase() === 'completed' && (
-                                  <span className="text-emerald-600 bg-emerald-50/60 px-1.5 py-0.5 rounded border border-emerald-100 flex items-center gap-0.5">✓ L1, L2 & L3 Completed</span>
-                                )}
-                              </div>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <div className="flex flex-col gap-1 items-start">
+                              <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${stage.color}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${stage.dot} ${isActionable ? 'animate-pulse' : ''}`} />
+                                {stage.label}
+                              </span>
+                              {req.crStatus && (
+                                <div className="text-[9px] font-bold tracking-wide mt-0.5 pl-1 select-none">
+                                  {req.crStatus.toLowerCase() === 'evaluating' && (
+                                    <span className="text-blue-600 bg-blue-50/60 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-0.5">✓ L1 Completed</span>
+                                  )}
+                                  {req.crStatus.toLowerCase() === 'approved' && (
+                                    <span className="text-indigo-600 bg-indigo-50/60 px-1.5 py-0.5 rounded border border-indigo-100 flex items-center gap-0.5">✓ L1 & L2 Completed</span>
+                                  )}
+                                  {req.crStatus.toLowerCase() === 'completed' && (
+                                    <span className="text-emerald-600 bg-emerald-50/60 px-1.5 py-0.5 rounded border border-emerald-100 flex items-center gap-0.5">✓ L1, L2 & L3 Completed</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5 text-[12px] text-slate-500 font-medium">{req.date || '-'}</td>
+                          <td className="px-5 py-3.5">
+                            <div className="text-[12px] font-semibold text-slate-800 truncate max-w-[160px]">{req.requestBy || req.requesterEmail}</div>
+                            <div className="text-[10px] text-slate-400 font-mono">{req.requesterEmail}</div>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">{req.dept || '-'}</span>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            {req.rejectCount > 0 ? (
+                              <StatusBadge status="Rejected" />
+                            ) : req.crStatus && req.crStatus.toLowerCase() !== 'pending' ? (
+                              <StatusBadge status="Approved" />
+                            ) : (
+                              <StatusBadge status={req.hodStatus} />
                             )}
-                          </div>
-                        </td>
-                        <td className="px-5 py-3.5 text-[12px] text-slate-500 font-medium">{req.date || '-'}</td>
-                        <td className="px-5 py-3.5">
-                          <div className="text-[12px] font-semibold text-slate-800 truncate max-w-[160px]">{req.requestBy || req.requesterEmail}</div>
-                          <div className="text-[10px] text-slate-400 font-mono">{req.requesterEmail}</div>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">{req.dept || '-'}</span>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          {req.rejectCount > 0 ? (
-                            <StatusBadge status="Rejected" />
-                          ) : req.crStatus && req.crStatus.toLowerCase() !== 'pending' ? (
-                            <StatusBadge status="Approved" />
-                          ) : (
-                            <StatusBadge status={req.hodStatus} />
-                          )}
-                        </td>
-                        <td className="px-5 py-3.5 text-center">
-                          <button
-                            onClick={() => handleOpenModal(req)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer group-hover:shadow ${
-                              isActionable
-                                ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
-                                : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
-                            }`}
-                          >
-                            <Eye size={12} />
-                            {isActionable ? 'Review & Decide' : 'View'}
-                            {isActionable && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                            )}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                          <td className="px-5 py-3.5 text-center">
+                            <button
+                              onClick={() => handleOpenModal(req)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer group-hover:shadow ${
+                                isActionable
+                                  ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
+                                  : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
+                              }`}
+                            >
+                              <Eye size={12} />
+                              {isActionable ? 'Review & Decide' : 'View'}
+                              {isActionable && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                              )}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
+
+            {/* Mobile Cards View */}
+            <div className="flex md:hidden flex-col gap-[12px] p-[12px] bg-slate-50">
+              {paginated.map((req, idx) => {
+                const isL1Pending = req.crStatus === 'Pending';
+                const isPendingDecision = !req.hodStatus || req.hodStatus === 'Pending';
+                const isMyDept = isAdmin || (isHOD && isDeptInRequired(req.hodApprovalNote, req.dept, actingDept));
+                const isRejected = req.rejectCount > 0;
+                const isActionable = isL1Pending && isPendingDecision && isMyDept && !isRejected;
+                const stage = workflowStageConfig(req.crStatus);
+                return (
+                  <div key={idx} className="bg-white border border-slate-200 rounded-[12px] p-[16px] shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-[12px]">
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-[8px]">
+                      <span className="font-mono font-bold text-[#0066cc] text-[12px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                        {req.changeNo}
+                      </span>
+                      <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${stage.color}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${stage.dot} ${isActionable ? 'animate-pulse' : ''}`} />
+                        {stage.label}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-[8px] gap-x-[12px]">
+                      <div className="flex flex-col gap-[2px]">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                        <span className="text-[12px] font-semibold text-slate-700 break-words">{req.date || '-'}</span>
+                      </div>
+                      <div className="flex flex-col gap-[2px]">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
+                        <span className="text-[12px] font-semibold text-slate-700 break-words">{req.dept || '-'}</span>
+                      </div>
+                      <div className="flex flex-col gap-[2px] col-span-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
+                        <div className="text-[12px] font-semibold text-slate-800 break-words">{req.requestBy || req.requesterEmail}</div>
+                        <span className="text-[10px] text-slate-400 font-mono">{req.requesterEmail}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center border-t border-slate-100 pt-[12px] mt-[4px]">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Decision</span>
+                        {req.rejectCount > 0 ? (
+                          <StatusBadge status="Rejected" />
+                        ) : req.crStatus && req.crStatus.toLowerCase() !== 'pending' ? (
+                          <StatusBadge status="Approved" />
+                        ) : (
+                          <StatusBadge status={req.hodStatus} />
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => handleOpenModal(req)}
+                        className={`inline-flex items-center gap-1.5 px-4 py-2 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer ${
+                          isActionable
+                            ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100 shadow'
+                            : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
+                        }`}
+                      >
+                        <Eye size={12} />
+                        {isActionable ? 'Review & Decide' : 'View'}
+                        {isActionable && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             <div className="border-t border-slate-100">
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
@@ -726,10 +805,10 @@ export const AllApprovals = ({
 
       {/* ─── Details Modal ─── */}
       {selectedReq && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-[16px]">
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={handleCloseModal} />
 
-          <div className="relative bg-white w-full max-w-[720px] max-h-[92vh] rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
+          <div className="relative bg-white w-full sm:w-[720px] max-w-full h-full sm:h-auto sm:max-h-[92vh] sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
 
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-[#0066cc] to-indigo-600 px-6 py-5">
@@ -778,11 +857,11 @@ export const AllApprovals = ({
             </div>
 
             {/* Tabs Header */}
-            <div className="flex border-b border-slate-200 bg-slate-50/50">
+            <div className="flex border-b border-slate-200 bg-slate-50/50 overflow-x-auto scrollbar-none -webkit-overflow-scrolling-touch">
               <button
                 type="button"
                 onClick={() => setActiveTab('l1')}
-                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                className={`flex-1 min-w-[120px] sm:min-w-0 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === 'l1' 
                     ? 'border-[#0066cc] text-[#0066cc]' 
                     : 'border-transparent text-slate-500 hover:text-slate-850'
@@ -793,7 +872,7 @@ export const AllApprovals = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('l2')}
-                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                className={`flex-1 min-w-[120px] sm:min-w-0 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === 'l2' 
                     ? 'border-[#0066cc] text-[#0066cc]' 
                     : 'border-transparent text-slate-500 hover:text-slate-850'
@@ -804,7 +883,7 @@ export const AllApprovals = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('l3')}
-                className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
+                className={`flex-1 min-w-[120px] sm:min-w-0 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === 'l3' 
                     ? 'border-[#0066cc] text-[#0066cc]' 
                     : 'border-transparent text-slate-500 hover:text-slate-850'
@@ -832,7 +911,7 @@ export const AllApprovals = ({
                             <Folder size={14} />
                             <span>General Information</span>
                           </h5>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px]">
                             <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
                               <span className="font-mono font-bold text-slate-800">{l1Details.change_no}</span>
@@ -861,12 +940,12 @@ export const AllApprovals = ({
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[12px]">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-[12px]">
                             <div className="space-y-[4px] min-w-0">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
                               <span className="font-semibold text-slate-850 block break-words">{l1Details.title}</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-[16px]">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
                               <div className="space-y-[4px]">
                                 <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
                                 <span className="font-medium text-slate-700">{l1Details.unit}</span>
@@ -878,7 +957,7 @@ export const AllApprovals = ({
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
                             <div className="space-y-[4px] md:col-span-2 min-w-0">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                               <span className="font-semibold text-slate-800 block break-words">{l1Details.request_by}</span>
@@ -894,7 +973,7 @@ export const AllApprovals = ({
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
                             <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
                               <span className="font-medium text-slate-700">{l1Details.process_name}</span>
@@ -916,7 +995,7 @@ export const AllApprovals = ({
                             <FileText size={14} />
                             <span>Details & Justification</span>
                           </h5>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
                             <div className="space-y-[6px] min-w-0">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Description</span>
                               <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
@@ -1016,8 +1095,7 @@ export const AllApprovals = ({
                               })()}
                             </div>
                           </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                             <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Start</span>
                               <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
@@ -1042,7 +1120,7 @@ export const AllApprovals = ({
                             <span>Traceability, Risk & Approvals</span>
                           </h5>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
                             <div className="space-y-[6px] min-w-0">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability FROM (Before Change)</span>
                               <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
@@ -1060,7 +1138,7 @@ export const AllApprovals = ({
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                             <div className="space-y-[6px] min-w-0">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis & Mitigations</span>
                               <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
@@ -1078,7 +1156,7 @@ export const AllApprovals = ({
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mt-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-4">
                             <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Approval</span>
                               <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
@@ -1181,7 +1259,7 @@ export const AllApprovals = ({
                           <span>L2 Validation Details</span>
                         </h5>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-200 rounded-[10px] p-[16px]">
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Date</span>
                             <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
@@ -1210,7 +1288,7 @@ export const AllApprovals = ({
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                           <div className="space-y-[6px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">PED Validation Attachment</span>
                             <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
@@ -1271,7 +1349,7 @@ export const AllApprovals = ({
                         </div>
                         <div className="space-y-[4px]">
                           <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By</span>
-                          <span className="font-medium text-slate-700">{selectedLog.requester}</span>
+                          <span className="font-medium text-slate-750">{selectedLog.requester}</span>
                         </div>
                         <div className="space-y-[4px]">
                           <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
@@ -1280,7 +1358,7 @@ export const AllApprovals = ({
                       </div>
 
                       {/* Matrix Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-[12px]">
                         {[
                           { label: 'PED', value: selectedLog.ped },
                           { label: 'Quality', value: selectedLog.quality },
@@ -1334,8 +1412,8 @@ export const AllApprovals = ({
             </div>
 
             {/* Modal Footer — Decision */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+            <div className="border-t border-slate-200 bg-slate-50 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
                 {activeTab === 'l1' ? (
                   alreadyDecided ? (
                     <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${
