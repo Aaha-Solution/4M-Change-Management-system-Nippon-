@@ -343,6 +343,33 @@ export const L3RequestTracker = ({
     );
   };
 
+  // Helper to determine the overall L3 approval status of a row log
+  const getOverallL3Status = (logItem) => {
+    const statuses = [
+      logItem.ped,
+      logItem.quality,
+      logItem.production,
+      logItem.maintenance,
+      logItem.pcl,
+      logItem.materials,
+      logItem.marketing,
+      logItem.hr,
+      logItem.safety,
+      logItem.unitHead
+    ].map(s => (s || '').trim().toLowerCase());
+
+    if (statuses.includes('rejected')) {
+      return 'Rejected';
+    }
+    if (statuses.includes('pending') || statuses.includes('')) {
+      return 'Pending';
+    }
+    if (statuses.every(s => s === 'approved' || s === 'accepted')) {
+      return 'Approved';
+    }
+    return 'Pending';
+  };
+
   // Filter logic
   const filteredLogs = approvalLogs.filter(log => {
     const q = searchQuery.toLowerCase().trim();
@@ -350,8 +377,8 @@ export const L3RequestTracker = ({
       log.changeNo.toLowerCase().includes(q) ||
       log.requester.toLowerCase().includes(q);
 
-    const matchesStatus = statusFilter === 'All' || 
-      log.production === statusFilter;
+    const overallStatus = getOverallL3Status(log);
+    const matchesStatus = statusFilter === 'All' || overallStatus === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -518,7 +545,6 @@ export const L3RequestTracker = ({
             >
               <option value="">Select Status</option>
               <option value="Approved">Approved</option>
-              <option value="Pending">Pending</option>
               <option value="Rejected">Rejected</option>
             </select>
           </div>
