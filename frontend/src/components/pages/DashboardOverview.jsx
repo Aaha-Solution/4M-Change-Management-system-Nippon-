@@ -646,6 +646,16 @@ export const DashboardOverview = ({
         <CustomDatePicker
           value={fromDateVal}
           onChange={(val) => {
+            if (val && toDateVal) {
+               const [fd, fm, fy] = val.split('/');
+               const [td, tm, ty] = toDateVal.split('/');
+               const fDate = new Date(fy, fm - 1, fd);
+               const tDate = new Date(ty, tm - 1, td);
+               if (fDate > tDate) {
+                 setToastMsg("'From Date' cannot be later than 'To Date'.");
+                 return;
+               }
+            }
             setFromDateVal(val);
             if (val) {
               setMonthVal('All');
@@ -657,17 +667,35 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <CustomDatePicker
-          value={toDateVal}
-          onChange={(val) => {
-            setToDateVal(val);
-            if (val) {
-              setMonthVal('All');
-            }
-          }}
-          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
-          buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
-        />
+        <div onClickCapture={(e) => {
+          if (!fromDateVal) {
+            e.stopPropagation();
+            setToastMsg("Please select 'From Date' before selecting 'To Date'.");
+          }
+        }}>
+          <CustomDatePicker
+            value={toDateVal}
+            onChange={(val) => {
+              if (val && fromDateVal) {
+                 const [fd, fm, fy] = fromDateVal.split('/');
+                 const [td, tm, ty] = val.split('/');
+                 const fDate = new Date(fy, fm - 1, fd);
+                 const tDate = new Date(ty, tm - 1, td);
+                 if (tDate < fDate) {
+                   setToastMsg("'To Date' cannot be earlier than 'From Date'.");
+                   return;
+                 }
+              }
+              setToDateVal(val);
+              if (val) {
+                setMonthVal('All');
+              }
+            }}
+            inputClassName={`w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500 ${!fromDateVal ? 'opacity-70 cursor-not-allowed bg-slate-50' : ''}`}
+            buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
+            disabled={!fromDateVal}
+          />
+        </div>
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Person</label>
@@ -764,6 +792,16 @@ export const DashboardOverview = ({
         <CustomDatePicker
           value={fromDateVal}
           onChange={(val) => {
+            if (val && toDateVal) {
+               const [fd, fm, fy] = val.split('/');
+               const [td, tm, ty] = toDateVal.split('/');
+               const fDate = new Date(fy, fm - 1, fd);
+               const tDate = new Date(ty, tm - 1, td);
+               if (fDate > tDate) {
+                 setToastMsg("'From Date' cannot be later than 'To Date'.");
+                 return;
+               }
+            }
             setFromDateVal(val);
             if (val) {
               setMonthVal('All');
@@ -775,17 +813,35 @@ export const DashboardOverview = ({
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">To Date</label>
-        <CustomDatePicker
-          value={toDateVal}
-          onChange={(val) => {
-            setToDateVal(val);
-            if (val) {
-              setMonthVal('All');
-            }
-          }}
-          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
-          buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
-        />
+        <div onClickCapture={(e) => {
+          if (!fromDateVal) {
+            e.stopPropagation();
+            setToastMsg("Please select 'From Date' before selecting 'To Date'.");
+          }
+        }}>
+          <CustomDatePicker
+            value={toDateVal}
+            onChange={(val) => {
+              if (val && fromDateVal) {
+                 const [fd, fm, fy] = fromDateVal.split('/');
+                 const [td, tm, ty] = val.split('/');
+                 const fDate = new Date(fy, fm - 1, fd);
+                 const tDate = new Date(ty, tm - 1, td);
+                 if (tDate < fDate) {
+                   setToastMsg("'To Date' cannot be earlier than 'From Date'.");
+                   return;
+                 }
+              }
+              setToDateVal(val);
+              if (val) {
+                setMonthVal('All');
+              }
+            }}
+            inputClassName={`w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500 ${!fromDateVal ? 'opacity-70 cursor-not-allowed bg-slate-50' : ''}`}
+            buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
+            disabled={!fromDateVal}
+          />
+        </div>
       </div>
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
