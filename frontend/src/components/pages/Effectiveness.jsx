@@ -748,7 +748,7 @@ export const Effectiveness = ({
                   <tr className="bg-slate-50 border-b border-slate-150">
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Context of Change</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider w-[320px] min-w-[320px] max-w-[320px]">Context of Change</th>
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Change Date Start</th>
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Month Wise</th>
                     <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
@@ -775,7 +775,7 @@ export const Effectiveness = ({
                         >
                           <td className="p-3 font-bold text-[#0066cc]">{log.changeNo}</td>
                           <td className="p-3 text-slate-500">{formatDateShort(log.reqDate)}</td>
-                          <td className="p-3 font-medium text-slate-700 truncate" title={log.context}>{log.context}</td>
+                          <td className="p-3 font-medium text-slate-700 whitespace-normal break-words w-[320px] min-w-[320px] max-w-[320px]" title={log.context}>{log.context}</td>
                           <td className="p-3 text-slate-500">{formatDateShort(log.startDate)}</td>
                           <td className="p-3 font-medium text-slate-600">{log.monthWise || '-'}</td>
                           <td className="p-3 max-w-[200px] truncate text-slate-500" title={log.remarks}>{log.remarks}</td>

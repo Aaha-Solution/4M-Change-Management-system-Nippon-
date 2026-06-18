@@ -1242,7 +1242,7 @@ export const L2Validation = ({
             </div>
 
             {/* Content */}
-            <div className="p-[24px] overflow-y-auto space-y-[24px] text-[13px] text-slate-650 flex-1 flex flex-col justify-center">
+            <div className={`p-[24px] overflow-y-auto space-y-[24px] text-[13px] text-slate-650 flex-1 ${isFetchingL1 ? 'flex flex-col justify-center items-center' : ''}`}>
               {isFetchingL1 ? (
                 <div className="flex flex-col items-center justify-center py-[60px] gap-3 text-slate-400 my-auto">
                   <Loader2 className="animate-spin text-[#0066cc]" size={32} />
