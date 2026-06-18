@@ -266,8 +266,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                   <option value="L1 APPROVAL">L1 HOD Approval</option>
                   <option value="L2 VALIDATION">L2 Validation</option>
                   <option value="L3 APPROVAL">L3 Final Approval</option>
-                  <option value="SYSTEM">System Alert</option>
-                  <option value="NOTIFICATION">General Notification</option>
+                 
                 </select>
               </div>
 
@@ -286,7 +285,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                   <option value="METHOD">Method</option>
                   <option value="MEASUREMENT">Measurement</option>
                   <option value="MOTHER NATURE">Mother Nature</option>
-                  <option value="GENERAL">General / System</option>
+                
                 </select>
               </div>
 
