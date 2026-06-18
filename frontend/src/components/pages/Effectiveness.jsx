@@ -766,17 +766,17 @@ export const Effectiveness = ({
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-150">
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider w-[320px] min-w-[320px] max-w-[320px]">Context of Change</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Change Date Start</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Month Wise</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Attachment</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Effectiveness Status</th>
-                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">QA Approval</th>
-                    <th className="p-3 w-10 text-center">Actions</th>
+                  <tr className="bg-slate-50 border-b border-slate-150 text-[10px]">
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[320px] min-w-[320px] max-w-[320px]">Context of Change</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider">Change Date Start</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider">Month Wise</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider">Attachment</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider">Effectiveness Status</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider">QA Approval</th>
+                    <th className="p-[8px] w-10 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-[11px]">
