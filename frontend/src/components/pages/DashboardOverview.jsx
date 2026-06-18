@@ -1934,33 +1934,72 @@ export const DashboardOverview = ({
     }
   };
 
-  const renderDynamicEditForm = (data, setData) => {
+  const renderDynamicEditForm = (data, setData, tab = 'l1') => {
     if (!data) return <div className="text-sm text-slate-500">No data available to edit.</div>;
-    return (
-      <div className="space-y-4 animate-fade-in-up">
-        {Object.entries(data).map(([key, value]) => {
-          if (['id', 'change_no', 'changeNo'].includes(key)) return null;
-          return (
-            <div key={key} className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">{key.replace(/_/g, ' ')}</label>
-              {typeof value === 'string' && value.length > 100 ? (
-                <textarea
-                  className="w-full p-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
-                  rows={4}
-                  value={value || ''}
-                  onChange={(e) => setData({ ...data, [key]: e.target.value })}
-                />
-              ) : (
-                <input
-                  type="text"
-                  className="w-full p-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
-                  value={value || ''}
-                  onChange={(e) => setData({ ...data, [key]: e.target.value })}
-                />
-              )}
+
+    const renderInput = (key, value) => {
+      if (['id', 'change_no', 'changeNo'].includes(key)) return null;
+      return (
+        <div key={key} className="space-y-[4px]">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{key.replace(/_/g, ' ')}</label>
+          {typeof value === 'string' && value.length > 100 ? (
+            <textarea
+              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none"
+              rows={4}
+              value={value || ''}
+              onChange={(e) => setData({ ...data, [key]: e.target.value })}
+            />
+          ) : (
+            <input
+              type="text"
+              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200"
+              value={value || ''}
+              onChange={(e) => setData({ ...data, [key]: e.target.value })}
+            />
+          )}
+        </div>
+      );
+    };
+
+    if (tab === 'l1') {
+      const tKeys = ['trace_from', 'trace_to', 'risk_analysis', 'sop_update', 'customer_approval', 'effectiveness_monitoring', 'hod_approval', 'hodStatus', 'hodRemarks', 'file_trace_from', 'file_trace_to', 'file_risk', 'file_sop', 'file_effectiveness'];
+      const dKeys = ['description', 'improvement_area', 'date_start', 'date_close', 'file_desc', 'file_improvement', 'improvement_table_data'];
+      const gKeys = ['title', 'unit', 'change_in', 'dept', 'change_type', 'process_name', 'process_line', 'machine_no', 'request_by', 'crRequester', 'crDate', 'requested_time', 'crStatus'];
+
+      const tGroup = Object.entries(data).filter(([k]) => tKeys.includes(k));
+      const dGroup = Object.entries(data).filter(([k]) => dKeys.includes(k));
+      const gGroup = Object.entries(data).filter(([k]) => gKeys.includes(k));
+      const oGroup = Object.entries(data).filter(([k]) => !tKeys.includes(k) && !dKeys.includes(k) && !gKeys.includes(k));
+
+      return (
+        <div className="space-y-[24px] animate-fade-in-up">
+          <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
+            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5"><Folder size={14} className="text-[#0066cc]" /> General Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+              {gGroup.map(([k, v]) => renderInput(k, v))}
+              {oGroup.map(([k, v]) => renderInput(k, v))}
             </div>
-          );
-        })}
+          </div>
+          <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
+            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5"><FileText size={14} className="text-[#0066cc]" /> Details & Justification</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">{dGroup.map(([k, v]) => renderInput(k, v))}</div>
+          </div>
+          <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
+            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5"><Cpu size={14} className="text-[#0066cc]" /> Traceability, Risk & Approvals</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">{tGroup.map(([k, v]) => renderInput(k, v))}</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] animate-fade-in-up">
+        <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
+          <FileText size={14} className="text-[#0066cc]" /> {tab === 'l2' ? 'Validation Details' : 'Approval Details'}
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+          {Object.entries(data).map(([key, value]) => renderInput(key, value))}
+        </div>
       </div>
     );
   };
@@ -2468,7 +2507,7 @@ export const DashboardOverview = ({
                 <>
               {activeTab === 'l1' && selectedL1Details && (
                 <div className="space-y-[20px]">
-                  {isEditMode ? renderDynamicEditForm(editL1Data, setEditL1Data) : (
+                  {isEditMode ? renderDynamicEditForm(editL1Data, setEditL1Data, 'l1') : (
                     <>
                   {/* General Info */}
                   <div className="space-y-[12px]">
@@ -2775,7 +2814,7 @@ export const DashboardOverview = ({
                   </div>
                 ) : (
                   <div className="space-y-[20px]">
-                    {isEditMode ? renderDynamicEditForm(editL2Data, setEditL2Data) : (
+                    {isEditMode ? renderDynamicEditForm(editL2Data, setEditL2Data, 'l2') : (
                       <>
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                       <CheckCircle2 size={14} />
@@ -2861,7 +2900,7 @@ export const DashboardOverview = ({
 
               {activeTab === 'l3' && selectedLog && (
                 <div className="space-y-[20px]">
-                  {isEditMode ? renderDynamicEditForm(editL3Data, setEditL3Data) : (
+                  {isEditMode ? renderDynamicEditForm(editL3Data, setEditL3Data, 'l3') : (
                     <>
                   <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                     <Cpu size={14} />
