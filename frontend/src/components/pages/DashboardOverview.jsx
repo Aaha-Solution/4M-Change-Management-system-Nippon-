@@ -27,6 +27,7 @@ import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '.
 import { getRequestDisplayStatus } from '../../utils/statusUtils';
 import { getSyncedDate } from '../../utils/timeSync';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
+import { useWebSocket } from '../../hooks/useWebSocket';
 import {
   getProcesses,
   getMachines,
@@ -147,18 +148,34 @@ export const DashboardOverview = ({
   const [dbProcesses, setDbProcesses] = useState([]);
   const [dbMachines, setDbMachines] = useState([]);
 
-  useEffect(() => {
-    async function fetchOptions() {
-      try {
-        const [pRes, mRes] = await Promise.all([getProcesses(), getMachines()]);
-        setDbProcesses(pRes.data);
-        setDbMachines(mRes.data);
-      } catch (e) {
-        console.error('Error fetching process/machine options:', e);
-      }
+  const fetchOptions = async () => {
+    try {
+      const [pRes, mRes] = await Promise.all([getProcesses(), getMachines()]);
+      setDbProcesses(pRes.data);
+      setDbMachines(mRes.data);
+    } catch (e) {
+      console.error('Error fetching process/machine options:', e);
     }
+  };
+
+  useEffect(() => {
     fetchOptions();
   }, []);
+
+  useWebSocket((data) => {
+    if (data.type === 'REFRESH_CHANGES' && selectedLog) {
+      handleViewDetails({
+        id: selectedLog.changeNo,
+        requester: selectedLog.requester,
+        rawDate: selectedLog.date,
+        status: selectedLog.status,
+        hodStatus: selectedLog.hodStatus
+      });
+    } else if (data.type === 'REFRESH_USERS') {
+      fetchOptions();
+    }
+  });
+
 
   const monthsList = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

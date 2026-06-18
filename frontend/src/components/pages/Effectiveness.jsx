@@ -9,6 +9,7 @@ import {
 import { formatDateToDDMMYY } from '../../utils/dateUtils';
 import { exportEffectivenessLogsPDF } from '../../utils/pdfExport';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 const generateEffId = () => `EFF-${Date.now().toString().substring(7)}`;
 
@@ -73,6 +74,23 @@ export const Effectiveness = ({
       setEditingEffLogId(null);
     }
   }, [effChangeNo, effectivenessLogs]);
+
+  // Keep viewingLog in sync when effectivenessLogs updates in the background
+  useEffect(() => {
+    if (viewingLog) {
+      const updatedLog = effectivenessLogs.find(log => log.id === viewingLog.id);
+      if (updatedLog) {
+        setViewingLog(updatedLog);
+      } else {
+        setViewingLog(null);
+      }
+    }
+  }, [effectivenessLogs, viewingLog]);
+
+  // Hook WebSocket listener for real-time effectiveness monitoring
+  useWebSocket((data) => {
+    console.log('📩 Received WebSocket message in Effectiveness:', data);
+  });
 
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -354,11 +372,11 @@ export const Effectiveness = ({
         <p className="text-slate-500 text-sm">Add observations and track 3-month post-implementation effectiveness logs.</p>
       </div>
 
-      <div className={`grid grid-cols-1 ${canUpdate ? 'lg:grid-cols-[1fr_2.5fr]' : ''} gap-[24px]`}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[24px] items-start">
 
         {/* LEFT COLUMN: Add Effectiveness Log Form */}
         {canUpdate && (
-          <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] h-fit">
+          <div className="lg:col-span-4 bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] h-fit">
           <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
             <Save size={16} className="text-[#0066cc]" />
             <h4 className="text-[13px] font-bold text-slate-900">Add Monitoring Log</h4>
@@ -672,77 +690,78 @@ export const Effectiveness = ({
         )}
 
         {/* RIGHT COLUMN: Table Column */}
-        <div className="space-y-[16px]">
-          {/* Search and filters */}
-          <div className="flex gap-[8px] items-center text-[11px] flex-wrap">
-            <div className="relative flex-grow min-w-[200px]">
-              <Search className="absolute left-[10px] top-[10px] text-slate-400" size={14} />
+        <div className={`${canUpdate ? 'lg:col-span-8' : 'lg:col-span-12'} space-y-[16px]`}>
+          {/* Search and Filters */}
+          <div className="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-wrap gap-3 items-center w-full">
+            <div className="flex-grow min-w-[200px] relative">
+              <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
               <input
                 type="text"
                 placeholder="Search logs by change no or remarks..."
-                className="w-full pl-[30px] pr-[12px] py-[8px] border border-slate-200 rounded-[6px] outline-none bg-white text-[12px] focus:border-[#0066cc]"
+                className="w-full pl-8 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
                 value={effSearch}
                 onChange={(e) => setEffSearch(e.target.value)}
               />
             </div>
 
-            <select
-              className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[150px] focus:border-[#0066cc]"
-              value={effFilterStatus}
-              onChange={(e) => setEffFilterStatus(e.target.value)}
-            >
-              <option value="All">All Statuses</option>
-              <option value="Effectiveness Ok">Effectiveness Ok</option>
-              <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
-            </select>
+            <div>
+              <select
+                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none min-w-[150px] focus:border-[#0066cc]"
+                value={effFilterStatus}
+                onChange={(e) => setEffFilterStatus(e.target.value)}
+              >
+                <option value="All">All Statuses</option>
+                <option value="Effectiveness Ok">Effectiveness Ok</option>
+                <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
+              </select>
+            </div>
 
-            <select
-              className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[150px] focus:border-[#0066cc]"
-              value={effFilterMonth}
-              onChange={(e) => setEffFilterMonth(e.target.value)}
-            >
-              <option value="All">All Months</option>
-              {uniqueMonths.map(m => (
-                <option key={m} value={m}>{m}</option>
-              ))}
-            </select>
+            <div>
+              <select
+                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none min-w-[150px] focus:border-[#0066cc]"
+                value={effFilterMonth}
+                onChange={(e) => setEffFilterMonth(e.target.value)}
+              >
+                <option value="All">All Months</option>
+                {uniqueMonths.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
 
             <button
               type="button"
               onClick={handleExportPDF}
-              className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[8px] rounded-[6px] text-[12px] font-bold cursor-pointer transition-all shadow-sm duration-200 font-sans"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold cursor-pointer transition-all shadow-sm duration-200 font-sans"
               title="Export effectiveness monitoring logs as PDF"
             >
-              <Download size={14} />
+              <Download size={12} />
               <span>Export PDF</span>
             </button>
-
-
-
           </div>
 
           {/* Logs Table Card */}
           <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse table-fixed min-w-[1080px]">
+              <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-[#fdfaf5] border-b border-slate-150 text-[10px]">
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">4M Change No</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[95px]">Requested Date</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[170px]">Context of Change</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Change Date Start</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[90px]">Month Wise</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[170px]">Remarks</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Attachment</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[140px]">Effectiveness Status</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">QA Approval</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[65px]">Actions</th>
+                  <tr className="bg-slate-50 border-b border-slate-150">
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Context of Change</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Change Date Start</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Month Wise</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Attachment</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Effectiveness Status</th>
+                    <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">QA Approval</th>
+                    <th className="p-3 w-10 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-[11px]">
                   {filteredLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="text-center py-[48px] text-slate-400">
+                      <td colSpan={10} className="text-center py-10 text-slate-400">
                         No observations logs recorded.
                       </td>
                     </tr>
@@ -754,14 +773,14 @@ export const Effectiveness = ({
                           className="hover:bg-slate-50/50 cursor-pointer transition-colors"
                           onClick={() => handleSelectChangeNo(log.changeNo)}
                         >
-                          <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
-                          <td className="p-[8px] text-slate-500">{formatDateShort(log.reqDate)}</td>
-                          <td className="p-[8px] font-medium text-slate-700 truncate" title={log.context}>{log.context}</td>
-                          <td className="p-[8px] text-slate-500">{formatDateShort(log.startDate)}</td>
-                          <td className="p-[8px] font-medium text-slate-600">{log.monthWise || '-'}</td>
-                          <td className="p-[8px] max-w-[200px] truncate text-slate-500" title={log.remarks}>{log.remarks}</td>
+                          <td className="p-3 font-bold text-[#0066cc]">{log.changeNo}</td>
+                          <td className="p-3 text-slate-500">{formatDateShort(log.reqDate)}</td>
+                          <td className="p-3 font-medium text-slate-700 truncate" title={log.context}>{log.context}</td>
+                          <td className="p-3 text-slate-500">{formatDateShort(log.startDate)}</td>
+                          <td className="p-3 font-medium text-slate-600">{log.monthWise || '-'}</td>
+                          <td className="p-3 max-w-[200px] truncate text-slate-500" title={log.remarks}>{log.remarks}</td>
 
-                          <td className="p-[8px] font-mono text-teal-655" onClick={(e) => e.stopPropagation()}>
+                          <td className="p-3 font-mono text-teal-655" onClick={(e) => e.stopPropagation()}>
                             {log.attachment ? (
                               <div className="flex flex-col gap-[4px]">
                                 {log.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
@@ -779,7 +798,7 @@ export const Effectiveness = ({
                             ) : '-'}
                           </td>
 
-                          <td className="p-[8px]">
+                          <td className="p-3">
                             <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${log.status === 'Effectiveness Ok'
                                 ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
                                 : log.status === 'Pending'
@@ -790,7 +809,7 @@ export const Effectiveness = ({
                             </span>
                           </td>
 
-                          <td className="p-[8px]">
+                          <td className="p-3">
                             <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${log.qaApproval === 'Approved'
                                 ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
                                 : log.qaApproval === 'Pending'
@@ -801,7 +820,7 @@ export const Effectiveness = ({
                             </span>
                           </td>
 
-                          <td className="p-[8px] text-center" onClick={(e) => e.stopPropagation()}>
+                          <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
                             {!log.isPending ? (
                               <button
                                 type="button"

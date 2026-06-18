@@ -274,8 +274,21 @@ export const L3RequestTracker = ({
   useWebSocket((data) => {
     if (data.type === 'REFRESH_CHANGES') {
       fetchLogs();
+      if (selectedLog) {
+        handleViewDetails(selectedLog);
+      }
     }
   });
+
+  // Keep selectedLog in sync when approvalLogs updates in the background
+  useEffect(() => {
+    if (selectedLog) {
+      const updatedLog = approvalLogs.find(l => l.changeNo === selectedLog.changeNo);
+      if (updatedLog) {
+        setSelectedLog(updatedLog);
+      }
+    }
+  }, [approvalLogs, selectedLog]);
 
   useEffect(() => {
     if (autoOpenChangeNo && approvalLogs.length > 0) {
