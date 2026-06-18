@@ -284,6 +284,8 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                   <option value="MACHINE">Machine</option>
                   <option value="MATERIAL">Material</option>
                   <option value="METHOD">Method</option>
+                  <option value="MEASUREMENT">Measurement</option>
+                  <option value="MOTHER NATURE">Mother Nature</option>
                   <option value="GENERAL">General / System</option>
                 </select>
               </div>
