@@ -290,21 +290,6 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                 </select>
               </div>
 
-              {/* Alert Type Filter */}
-              <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Alert Type</label>
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="w-full p-2 border border-slate-200 rounded-lg text-xs bg-slate-50 outline-none focus:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc]/10 transition-all cursor-pointer font-medium text-slate-700"
-                >
-                  <option value="All">All Types</option>
-                  <option value="Action Required">Action Required</option>
-                  <option value="Info">Info</option>
-                  <option value="System Logs">System Logs</option>
-                </select>
-              </div>
-
               {/* Department Filter */}
               <div className="space-y-1">
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</label>
