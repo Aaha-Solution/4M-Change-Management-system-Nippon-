@@ -405,10 +405,11 @@ export const L3RequestTracker = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_3.5fr] gap-[24px] animate-fade-in-up text-slate-800 pb-[40px]">
-      
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-[24px] animate-fade-in-up text-slate-800 pb-[40px] items-start">
+
       {/* LEFT COLUMN: Add L3 Approval Log Form */}
-      <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] h-fit">
+      <div className="lg:col-span-4 bg-white border border-slate-200/60 rounded-xl p-[24px] shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] h-fit relative">
+        <div className="absolute inset-x-0 top-0 h-1 bg-[#0066cc] rounded-t-xl" />
         <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
           <Save size={16} className="text-[#0066cc]" />
           <h4 className="text-[13px] font-bold text-slate-900">Add L3 Approval Log</h4>
@@ -551,7 +552,7 @@ export const L3RequestTracker = ({
       </div>
 
       {/* RIGHT COLUMN: Table area */}
-      <div className="space-y-[16px]">
+      <div className="lg:col-span-8 space-y-[16px]">
         {/* Search & Actions bar */}
         <div className="flex gap-[8px] items-center text-[11px] flex-wrap">
           <div className="relative flex-grow min-w-[200px]">

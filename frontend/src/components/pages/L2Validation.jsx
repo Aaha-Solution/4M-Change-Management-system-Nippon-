@@ -152,7 +152,8 @@ export const L2Validation = ({
       setFormStatus('');
       setFormRemarks('');
     }
-  }, [formChangeNo, validationLogs, changes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formChangeNo, validationLogs]);
 
   const handleSaveLog = async (e) => {
     e.preventDefault();
@@ -445,14 +446,16 @@ export const L2Validation = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_2.5fr] gap-[24px] animate-fade-in-up text-slate-800">
+    <div className="space-y-6 min-w-0 animate-fade-in-up">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[24px] text-slate-800 items-start">
 
-      {/* LEFT COLUMN: Add L2 Validation Log Form */}
-      <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] h-fit">
-        <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
-          <Save size={16} className="text-[#0066cc]" />
-          <h4 className="text-[13px] font-bold text-slate-900">Add L2 Validation Log</h4>
-        </div>
+        {/* LEFT COLUMN: Add L2 Validation Log Form */}
+        <div className="lg:col-span-4 min-w-0 bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] h-fit relative">
+          <div className="absolute inset-x-0 top-0 h-1 bg-[#0066cc] rounded-t-xl" />
+          <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
+            <Save size={16} className="text-[#0066cc]" />
+            <h4 className="text-[13px] font-bold text-slate-900">Add L2 Validation Log</h4>
+          </div>
 
         {formChangeNo && isRaisedByUser && !isQualityOrAdmin && (
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
@@ -828,42 +831,42 @@ export const L2Validation = ({
       </div>
 
       {/* RIGHT COLUMN: Table Area */}
-      <div className="space-y-[16px]">
+      <div className="lg:col-span-8 min-w-0 space-y-[16px]">
         {/* Search & Action bar */}
-        <div className="flex gap-[8px] items-center text-[11px] flex-wrap">
-          <div className="relative flex-grow min-w-[200px]">
-            <Search className="absolute left-[10px] top-[10px] text-slate-400" size={14} />
+        <div className="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-wrap gap-3 items-center">
+          <div className="flex-1 min-w-[200px] relative">
+            <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
             <input
               type="text"
               placeholder="Search by change no or remarks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-[30px] pr-[12px] py-[8px] border border-slate-200 rounded-[6px] outline-none bg-white text-[12px] focus:border-[#0066cc]"
+              className="w-full pl-8 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
             />
           </div>
 
-          <select
-            value={decisionFilter}
-            onChange={(e) => setDecisionFilter(e.target.value)}
-            className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[120px] focus:border-[#0066cc]"
-          >
-            <option value="All">All Decisions</option>
-            <option value="Accepted">Approved</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Pending">Pending</option>
-          </select>
+          <div>
+            <select
+              value={decisionFilter}
+              onChange={(e) => setDecisionFilter(e.target.value)}
+              className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none focus:border-[#0066cc]"
+            >
+              <option value="All">All Decisions</option>
+              <option value="Accepted">Approved</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
 
           <button
             type="button"
             onClick={handleExportPDF}
-            className="flex items-center gap-[6px] bg-[#0066cc] hover:bg-[#0052a3] text-white px-[12px] py-[8px] rounded-[6px] text-[12px] font-bold cursor-pointer transition-all shadow-sm duration-200 font-sans"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
             title="Export L2 validation logs as PDF"
           >
-            <Download size={14} />
+            <Download size={12} />
             <span>Export PDF</span>
           </button>
-
-
         </div>
 
         {/* Table layout */}
@@ -871,7 +874,7 @@ export const L2Validation = ({
           {/* Desktop Table View */}
           <div className="hidden md:block">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                   <tr className="bg-[#fdfaf5] border-b border-slate-150">
                     <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
@@ -1116,6 +1119,7 @@ export const L2Validation = ({
             className="border-t border-slate-100"
           />
         </div>
+      </div>
       </div>
       {/* Validation Warning Modal */}
       {validationError && (

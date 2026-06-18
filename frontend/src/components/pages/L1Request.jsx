@@ -10,6 +10,7 @@ import {
 import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo, getUsers, getDepartments, getServerTime } from '../../api/apiRoutes';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
 import { formatDateToDDMMYYYY, parseDDMMYYYYToDate } from '../../utils/dateUtils';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 export const L1Request = ({
   userEmail,
@@ -41,6 +42,12 @@ export const L1Request = ({
     fetchOptions();
     fetchNextChangeNo();
   }, []);
+
+  useWebSocket((data) => {
+    if (data.type === 'REFRESH_CHANGES') {
+      fetchNextChangeNo();
+    }
+  });
 
   async function fetchNextChangeNo() {
     try {
@@ -282,7 +289,7 @@ export const L1Request = ({
         setImprovementTableData([]);
       }
     } else {
-      setImprovementTableData(prev => prev.map(row => ({ ...row, changeNo: row.changeNo || changeNo })));
+      setImprovementTableData(prev => prev.map(row => ({ ...row, changeNo: changeNo })));
     }
   }, [improvementArea, changeNo]);
 
