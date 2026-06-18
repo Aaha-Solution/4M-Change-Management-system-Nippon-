@@ -448,17 +448,18 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
       {/* 2. Main Content Right Panel */}
       <div className="flex-1 md:pl-64 flex flex-col min-h-screen min-w-0">
 
-        {/* Top Header Bar */}        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-[12px] sm:px-[24px] py-[12px] sm:py-[16px] flex items-center justify-between">
-          <div className="flex items-center gap-[12px]">
+        {/* Top Header Bar */}
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-[10px] sm:px-[24px] py-[10px] sm:py-[16px] flex items-center justify-between">
+          <div className="flex items-center gap-[6px] sm:gap-[12px] min-w-0">
             {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-[8px] text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-[8px]"
+              className="md:hidden p-[6px] text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-[8px] shrink-0"
             >
-              <Menu size={20} />
+              <Menu size={18} />
             </button>
-            <div>
-              <h2 className="font-heading text-[22px] font-bold text-slate-900">
+            <div className="min-w-0">
+              <h2 className="font-heading text-[13px] xs:text-[15px] sm:text-[20px] md:text-[22px] font-bold text-slate-900 leading-tight truncate">
                 {activeTab === 'dashboard' ? 'Overview' :
                   activeTab === 'approvals' ? 'L2 Validation Workflow' :
                     activeTab === 'notifications' ? 'Notifications Feed' :
@@ -471,9 +472,9 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-[16px]">
+          <div className="flex items-center gap-[8px] sm:gap-[16px] shrink-0">
             {/* Email always visible */}
-            <span className="text-[14px] font-medium text-slate-600 hidden sm:inline">{userEmail}</span>
+            <span className="text-[13px] font-medium text-slate-600 hidden sm:inline">{userEmail}</span>
 
 
 
@@ -495,7 +496,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
             <button
               onClick={handleLocalSignOut}
               title="Sign Out"
-              className="flex items-center gap-[6px] bg-white border border-slate-250 hover:bg-rose-50 hover:border-rose-500 hover:text-rose-600 text-slate-600 px-[8px] sm:px-[14px] py-[6px] rounded-[8px] text-[12px] font-semibold cursor-pointer transition-colors"
+              className="flex items-center gap-[6px] bg-white border border-slate-250 hover:bg-rose-50 hover:border-rose-500 hover:text-rose-600 text-slate-600 p-[6px] sm:px-[14px] sm:py-[6px] rounded-[8px] text-[12px] font-semibold cursor-pointer transition-colors"
             >
               <LogOut size={12} />
               <span className="hidden sm:inline">Sign Out</span>

@@ -591,76 +591,163 @@ export const L3RequestTracker = ({
 
         {/* Table Matrix */}
         <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse table-fixed min-w-[1020px]">
-              <thead>
-                <tr className="bg-[#fdfaf5] border-b border-slate-150 text-[10px]">
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[105px]">4M Change No</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[90px]">Requested Date</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Change Request By</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">PED</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">Quality</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Production</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Maintenance</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">PC & L</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Materials</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Marketing</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">HR</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">Safety</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[85px]">Unit Head</th>
-                  <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[65px]">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-[11px]">
-                {isFetchingLogs ? (
-                  <tr>
-                    <td colSpan={14} className="text-center py-[48px] text-slate-400">
-                      <div className="flex flex-col items-center justify-center gap-[8px]">
-                        <Loader2 className="animate-spin text-[#0066cc]" size={20} />
-                        <span>Fetching approvals data...</span>
-                      </div>
-                    </td>
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse table-fixed min-w-[1020px]">
+                <thead>
+                  <tr className="bg-[#fdfaf5] border-b border-slate-150 text-[10px]">
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[105px]">4M Change No</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[90px]">Requested Date</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Change Request By</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">PED</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">Quality</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Production</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Maintenance</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">PC & L</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Materials</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Marketing</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">HR</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">Safety</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[85px]">Unit Head</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[65px]">Actions</th>
                   </tr>
-                ) : filteredLogs.length === 0 ? (
-                  <tr>
-                    <td colSpan={14} className="text-center py-[48px] text-slate-400">
-                      No L3 validation approval records found.
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedLogs.map((log, idx) => {
-                    const isSelected = selectedChangeId === log.changeNo;
-                    return (
-                      <tr 
-                        key={idx} 
-                        onClick={() => handleSelectRow(log)}
-                        className={`hover:bg-slate-50/50 cursor-pointer transition-colors ${
-                          isSelected ? 'bg-sky-50/60 hover:bg-sky-50/60 border-l-[3px] border-l-[#0066cc]' : ''
-                        }`}
-                      >
-                        <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
-                        <td className="p-[8px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
-                        <td className="p-[8px] font-medium text-slate-700 truncate" title={log.requester}>{log.requester}</td>
-                        
-                        {/* Department Badges */}
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-[11px]">
+                  {isFetchingLogs ? (
+                    <tr>
+                      <td colSpan={14} className="text-center py-[48px] text-slate-400">
+                        <div className="flex flex-col items-center justify-center gap-[8px]">
+                          <Loader2 className="animate-spin text-[#0066cc]" size={20} />
+                          <span>Fetching approvals data...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={14} className="text-center py-[48px] text-slate-400">
+                        No L3 validation approval records found.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedLogs.map((log, idx) => {
+                      const isSelected = selectedChangeId === log.changeNo;
+                      return (
+                        <tr 
+                          key={idx} 
+                          onClick={() => handleSelectRow(log)}
+                          className={`hover:bg-slate-50/50 cursor-pointer transition-colors ${
+                            isSelected ? 'bg-sky-50/60 hover:bg-sky-50/60 border-l-[3px] border-l-[#0066cc]' : ''
+                          }`}
+                        >
+                          <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
+                          <td className="p-[8px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
+                          <td className="p-[8px] font-medium text-slate-700 truncate" title={log.requester}>{log.requester}</td>
+                          
+                          {/* Department Badges */}
+                          {[
+                            { val: log.ped, type: 'ped' },
+                            { val: log.quality, type: 'quality' },
+                            { val: log.production, type: 'production' },
+                            { val: log.maintenance, type: 'maintenance' },
+                            { val: log.pcl, type: 'pcl' },
+                            { val: log.materials, type: 'materials' },
+                            { val: log.marketing, type: 'marketing' },
+                            { val: log.hr, type: 'hr' },
+                            { val: log.safety, type: 'safety' },
+                            { val: log.unitHead, type: 'unitHead' }
+                          ].map((cell, cIdx) => {
+                            const status = cell.val;
+                            const isAccepted = status === 'Accepted' || status === 'Approved';
+                            const isRejected = status === 'Rejected';
+                            return (
+                              <td key={cIdx} className="p-[8px] text-center">
+                                <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${
+                                  isAccepted 
+                                    ? 'bg-emerald-50 border-emerald-250 text-emerald-700' 
+                                    : isRejected 
+                                    ? 'bg-rose-50 border-rose-250 text-rose-700' 
+                                    : 'bg-amber-50 border-amber-250 text-amber-700'
+                                }`}>
+                                  {status}
+                                </span>
+                              </td>
+                            );
+                          })}
+
+                          <td className="p-[8px] text-center" onClick={(e) => e.stopPropagation()}>
+                            <button 
+                              onClick={() => handleViewDetails(log)}
+                              className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
+                            >
+                              <Eye size={12} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Cards View */}
+          <div className="flex md:hidden flex-col gap-[12px] p-[12px] bg-slate-50">
+            {isFetchingLogs ? (
+              <div className="flex flex-col items-center justify-center py-[24px] text-slate-400">
+                <Loader2 className="animate-spin text-[#0066cc]" size={20} />
+                <span className="text-[12px] mt-1">Fetching approvals data...</span>
+              </div>
+            ) : filteredLogs.length === 0 ? (
+              <div className="text-center py-[24px] text-slate-400 text-[12px]">
+                No L3 validation approval records found.
+              </div>
+            ) : (
+              paginatedLogs.map((log, idx) => {
+                const isSelected = selectedChangeId === log.changeNo;
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => handleSelectRow(log)}
+                    className={`bg-white border rounded-[12px] p-[16px] shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-[12px] ${
+                      isSelected ? 'border-[#0066cc] ring-2 ring-[#0066cc]/10' : 'border-slate-200'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-[8px]">
+                      <span className="font-mono font-bold text-[#0066cc] text-[12px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                        {log.changeNo}
+                      </span>
+                      <span className="text-[11px] text-slate-550 font-semibold">{formatDateToDDMMYYYY(log.date)}</span>
+                    </div>
+
+                    <div className="flex flex-col gap-[2px]">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Change Request By</span>
+                      <span className="text-[12px] font-semibold text-slate-800 break-words">{log.requester}</span>
+                    </div>
+
+                    <div className="flex flex-col gap-[6px] border-t border-slate-100 pt-[10px]">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">L3 Approval Matrix</span>
+                      <div className="grid grid-cols-2 gap-2 mt-1">
                         {[
-                          { val: log.ped, type: 'ped' },
-                          { val: log.quality, type: 'quality' },
-                          { val: log.production, type: 'production' },
-                          { val: log.maintenance, type: 'maintenance' },
-                          { val: log.pcl, type: 'pcl' },
-                          { val: log.materials, type: 'materials' },
-                          { val: log.marketing, type: 'marketing' },
-                          { val: log.hr, type: 'hr' },
-                          { val: log.safety, type: 'safety' },
-                          { val: log.unitHead, type: 'unitHead' }
-                        ].map((cell, cIdx) => {
-                          const status = cell.val;
+                          { label: 'PED', val: log.ped },
+                          { label: 'Quality', val: log.quality },
+                          { label: 'Production', val: log.production },
+                          { label: 'Maintenance', val: log.maintenance },
+                          { label: 'PC & L', val: log.pcl },
+                          { label: 'Materials', val: log.materials },
+                          { label: 'Marketing', val: log.marketing },
+                          { label: 'HR', val: log.hr },
+                          { label: 'Safety', val: log.safety },
+                          { label: 'Unit Head', val: log.unitHead }
+                        ].map((dept, dIdx) => {
+                          const status = dept.val || 'Pending';
                           const isAccepted = status === 'Accepted' || status === 'Approved';
                           const isRejected = status === 'Rejected';
                           return (
-                            <td key={cIdx} className="p-[8px] text-center">
-                              <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${
+                            <div key={dIdx} className="flex justify-between items-center bg-slate-50 border border-slate-100 rounded px-2 py-1 text-[10px]">
+                              <span className="font-bold text-slate-550">{dept.label}</span>
+                              <span className={`inline-block px-[5px] py-[0.5px] rounded-[3px] border text-[8px] font-bold ${
                                 isAccepted 
                                   ? 'bg-emerald-50 border-emerald-250 text-emerald-700' 
                                   : isRejected 
@@ -669,24 +756,28 @@ export const L3RequestTracker = ({
                               }`}>
                                 {status}
                               </span>
-                            </td>
+                            </div>
                           );
                         })}
+                      </div>
+                    </div>
 
-                        <td className="p-[8px] text-center" onClick={(e) => e.stopPropagation()}>
-                          <button 
-                            onClick={() => handleViewDetails(log)}
-                            className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
-                          >
-                            <Eye size={12} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                    <div className="flex justify-end border-t border-slate-100 pt-[12px] mt-[4px]">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewDetails(log);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50 transition-all shadow-sm cursor-pointer"
+                      >
+                        <Eye size={12} />
+                        View Full Details
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50]}
@@ -706,7 +797,7 @@ export const L3RequestTracker = ({
 
       {/* L3 Details Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-[16px]">
           {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
@@ -714,7 +805,7 @@ export const L3RequestTracker = ({
           />
           
           {/* Modal Container */}
-          <div className="relative bg-white w-full max-w-[800px] max-h-[90vh] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
+          <div className="relative bg-white w-full sm:w-[720px] max-w-full h-full sm:h-auto sm:max-h-[92vh] sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
             <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-[10px]">
@@ -735,7 +826,7 @@ export const L3RequestTracker = ({
             </div>
 
             {/* Tabs Header */}
-            <div className="flex border-b border-slate-200 bg-slate-50/50">
+            <div className="flex border-b border-slate-200 bg-slate-50/50 overflow-x-auto whitespace-nowrap scrollbar-none">
               <button
                 onClick={() => setActiveTab('l1')}
                 className={`flex-1 py-[12px] text-center text-[12px] font-bold border-b-2 transition-colors ${
@@ -778,132 +869,132 @@ export const L3RequestTracker = ({
               ) : (
                 <>
                   {activeTab === 'l1' && selectedL1Details && (
-                <div className="space-y-[20px]">
-                  {/* General Info */}
-                  <div className="space-y-[12px]">
-                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                      <Folder size={14} />
-                      <span>General Information</span>
-                    </h5>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
-                        <span className="font-mono font-bold text-slate-800">{selectedL1Details.change_no}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.crDate ? formatDateToDDMMYYYY(selectedL1Details.crDate) : '-'}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Time</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.requested_time}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
-                        <div className="flex gap-1.5 items-center mt-0.5">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                            selectedL1Details.hodStatus === 'Rejected'
-                              ? 'bg-rose-50 border-rose-220 text-rose-700'
-                              : (selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending')
-                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
-                              : 'bg-amber-50 border-amber-220 text-amber-700'
-                          }`}>
-                            L1 {selectedL1Details.hodStatus === 'Rejected' ? 'Rejected' : ((selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
-                          </span>
+                    <div className="space-y-[20px]">
+                      {/* General Info */}
+                      <div className="space-y-[12px]">
+                        <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                          <Folder size={14} />
+                          <span>General Information</span>
+                        </h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px]">
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                            <span className="font-mono font-bold text-slate-800">{selectedL1Details.change_no}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                            <span className="font-medium text-slate-700">{selectedL1Details.crDate ? formatDateToDDMMYYYY(selectedL1Details.crDate) : '-'}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Time</span>
+                            <span className="font-medium text-slate-700">{selectedL1Details.requested_time}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
+                            <div className="flex gap-1.5 items-center mt-0.5">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                selectedL1Details.hodStatus === 'Rejected'
+                                  ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                  : (selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending')
+                                  ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
+                                  : 'bg-amber-50 border-amber-220 text-amber-700'
+                              }`}>
+                                L1 {selectedL1Details.hodStatus === 'Rejected' ? 'Rejected' : ((selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-[12px]">
+                          <div className="space-y-[4px] min-w-0">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
+                            <span className="font-semibold text-slate-855 block break-words">{selectedL1Details.title}</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
+                              <span className="font-medium text-slate-700">{selectedL1Details.unit}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In</span>
+                              <span className="font-medium text-slate-750">{selectedL1Details.change_in}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                          <div className="space-y-[4px] md:col-span-2 min-w-0">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
+                            <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
+                            <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
+                            <span className="font-medium text-slate-700">{selectedL1Details.dept}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
+                            <span className="font-medium text-slate-700">{selectedL1Details.change_type}</span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
+                            <span className="font-medium text-slate-700">{selectedL1Details.process_name}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line</span>
+                            <span className="font-medium text-slate-700">{selectedL1Details.process_line}</span>
+                          </div>
+                          <div className="space-y-[4px] col-span-2 md:col-span-1">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No</span>
+                            <span className="font-mono text-slate-700">{selectedL1Details.machine_no}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[12px]">
-                      <div className="space-y-[4px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
-                        <span className="font-semibold text-slate-850 block break-words">{selectedL1Details.title}</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-[16px]">
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
-                          <span className="font-medium text-slate-700">{selectedL1Details.unit}</span>
+                      {/* Details & Justification */}
+                      <div className="space-y-[12px] pt-4 border-t border-slate-100">
+                        <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                          <FileText size={14} />
+                          <span>Details & Justification</span>
+                        </h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+                          <div className="space-y-[6px] min-w-0">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Change Description</span>
+                            <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
+                              {selectedL1Details.description}
+                            </div>
+                            {selectedL1Details.file_desc && renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
+                          </div>
+
+                          <div className="space-y-[6px] min-w-0">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Area of Improvement / Benefit</span>
+                            <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
+                              {selectedL1Details.improvement_area}
+                            </div>
+                            {selectedL1Details.file_improvement && renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no)}
+                          </div>
                         </div>
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In</span>
-                          <span className="font-medium text-slate-750">{selectedL1Details.change_in}</span>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Target Date Start</span>
+                            <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                              <Calendar size={13} className="text-slate-400" />
+                              {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
+                            </span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Target Date Close</span>
+                            <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                              <Calendar size={13} className="text-slate-400" />
+                              {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
-                      <div className="space-y-[4px] md:col-span-2 min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
-                        <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
-                        <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.dept}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.change_type}</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.process_name}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.process_line}</span>
-                      </div>
-                      <div className="space-y-[4px] col-span-2 md:col-span-1">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No</span>
-                        <span className="font-mono text-slate-700">{selectedL1Details.machine_no}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Details & Justification */}
-                  <div className="space-y-[12px] pt-4 border-t border-slate-100">
-                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                      <FileText size={14} />
-                      <span>Details & Justification</span>
-                    </h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Description</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
-                          {selectedL1Details.description}
-                        </div>
-                        {selectedL1Details.file_desc && renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
-                      </div>
-
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Area of Improvement / Benefit</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
-                          {selectedL1Details.improvement_area}
-                        </div>
-                        {selectedL1Details.file_improvement && renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no)}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Start</span>
-                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                          <Calendar size={13} className="text-slate-400" />
-                          {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
-                        </span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Close</span>
-                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                          <Calendar size={13} className="text-slate-400" />
-                          {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Traceability, Risk & Approvals */}
                   <div className="space-y-[12px] pt-4 border-t border-slate-100">
@@ -912,9 +1003,9 @@ export const L3RequestTracker = ({
                       <span>Traceability, Risk & Approvals</span>
                     </h5>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
                       <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability FROM (Before Change)</span>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Traceability FROM (Before Change)</span>
                         <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                           {selectedL1Details.trace_from}
                         </div>
@@ -922,7 +1013,7 @@ export const L3RequestTracker = ({
                       </div>
 
                       <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability TO (After Change)</span>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Traceability TO (After Change)</span>
                         <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                           {selectedL1Details.trace_to}
                         </div>
@@ -930,9 +1021,9 @@ export const L3RequestTracker = ({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                       <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis & Mitigations</span>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Risk Analysis & Mitigations</span>
                         <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                           {selectedL1Details.risk_analysis}
                         </div>
@@ -940,7 +1031,7 @@ export const L3RequestTracker = ({
                       </div>
 
                       <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">SOP / WI / Control Plan Update</span>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">SOP / WI / Control Plan Update</span>
                         <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                           {selectedL1Details.sop_update}
                         </div>
@@ -948,7 +1039,7 @@ export const L3RequestTracker = ({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-4">
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Approval</span>
                         <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
@@ -1004,7 +1095,7 @@ export const L3RequestTracker = ({
                       <span>L2 Validation Details</span>
                     </h5>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-200 rounded-[10px] p-[16px]">
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Date</span>
                         <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
@@ -1033,7 +1124,7 @@ export const L3RequestTracker = ({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                       <div className="space-y-[6px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">PED Validation Attachment</span>
                         <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
@@ -1103,7 +1194,7 @@ export const L3RequestTracker = ({
                   </div>
 
                   {/* Matrix Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-[12px]">
                     {[
                       { label: 'PED', value: selectedLog.ped },
                       { label: 'Quality', value: selectedLog.quality },
@@ -1206,7 +1297,7 @@ export const L3RequestTracker = ({
               )
             )}
           </div>
-          <div className="flex items-center gap-[12px] self-end sm:self-auto">
+          <div className="flex items-center gap-[12px] w-full sm:w-auto justify-center sm:justify-end">
             <button 
               onClick={handleExportRequestDetailsPDF}
               className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"

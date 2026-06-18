@@ -868,120 +868,239 @@ export const L2Validation = ({
 
         {/* Table layout */}
         <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#fdfaf5] border-b border-slate-150">
-                  <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
-                  <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
-                  <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Change Request By</th>
-                  <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requester Validation</th>
-                  <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approver Set Up Verification(QA)</th>
-                  <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approver Validation Status</th>
-                  <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
-                  <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-[12px]">
-                {isFetchingLogs ? (
-                  <tr>
-                    <td colSpan={8} className="text-center py-[48px] text-slate-400">
-                      <div className="flex flex-col items-center justify-center gap-[8px]">
-                        <Loader2 className="animate-spin text-[#0066cc]" size={20} />
-                        <span>Fetching validation logs...</span>
-                      </div>
-                    </td>
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#fdfaf5] border-b border-slate-150">
+                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
+                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
+                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Change Request By</th>
+                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requester Validation</th>
+                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approver Set Up Verification(QA)</th>
+                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approver Validation Status</th>
+                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
+                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Actions</th>
                   </tr>
-                ) : filteredLogs.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="text-center py-[48px] text-slate-400">
-                      No L2 validation records found.
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedLogs.map((log, idx) => (
-                    <tr
-                      key={idx}
-                      className="hover:bg-slate-50/50 cursor-pointer"
-                      onClick={() => {
-                        setFormChangeNo(log.changeNo || '');
-                        setFormDate(formatDateToDDMMYYYY(log.date));
-                        setFormRequester(log.requester || '');
-                      }}
-                    >
-                      <td className="p-[12px] font-bold text-[#0066cc]">{log.changeNo}</td>
-                      <td className="p-[12px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
-                      <td className="p-[12px] font-medium text-slate-700">{log.requester}</td>
-                      <td className="p-[12px]">
-                        <div className="flex flex-wrap gap-[4px]">
-                          {(log.weldTest && log.weldTest !== '-'
-                            ? log.weldTest.split(',').map(s => s.trim()).filter(Boolean)
-                            : [log.weldTest || '-']
-                          ).map((fname, fi) => (
-                            <span
-                              key={fi}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewAttachment(fname, log.changeNo, 'L2');
-                              }}
-                              className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
-                            >
-                              <Paperclip size={12} className="text-slate-400" />
-                              <span className="underline truncate max-w-[120px]">{fname}</span>
-                            </span>
-                          ))}
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-[12px]">
+                  {isFetchingLogs ? (
+                    <tr>
+                      <td colSpan={8} className="text-center py-[48px] text-slate-400">
+                        <div className="flex flex-col items-center justify-center gap-[8px]">
+                          <Loader2 className="animate-spin text-[#0066cc]" size={20} />
+                          <span>Fetching validation logs...</span>
                         </div>
-                      </td>
-                      <td className="p-[12px]">
-                        <div className="flex flex-wrap gap-[4px]">
-                          {(log.qaTest && log.qaTest !== '-'
-                            ? log.qaTest.split(',').map(s => s.trim()).filter(Boolean)
-                            : [log.qaTest || '-']
-                          ).map((fname, fi) => (
-                            <span
-                              key={fi}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewAttachment(fname, log.changeNo, 'L2');
-                              }}
-                              className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
-                            >
-                              <Paperclip size={12} className="text-slate-400" />
-                              <span className="underline truncate max-w-[120px]">{fname}</span>
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="p-[12px]">
-                        <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
-                            log.status === 'Accepted'
-                              ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                              : log.status === 'Pending'
-                              ? 'bg-amber-50 border-amber-250 text-amber-700'
-                              : 'bg-rose-50 border-rose-250 text-rose-700'
-                          }`}>
-                          {log.status === 'Accepted' ? 'Approved' : log.status}
-                        </span>
-                      </td>
-                      <td className="p-[12px] text-slate-500 max-w-[220px] truncate" title={log.remarks}>
-                        {log.remarks}
-                      </td>
-                      <td className="p-[12px] text-center">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewL1Details(log.changeNo);
-                          }}
-                          className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
-                        >
-                          <Eye size={14} />
-                        </button>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : filteredLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="text-center py-[48px] text-slate-400">
+                        No L2 validation records found.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedLogs.map((log, idx) => (
+                      <tr
+                        key={idx}
+                        className="hover:bg-slate-50/50 cursor-pointer"
+                        onClick={() => {
+                          setFormChangeNo(log.changeNo || '');
+                          setFormDate(formatDateToDDMMYYYY(log.date));
+                          setFormRequester(log.requester || '');
+                        }}
+                      >
+                        <td className="p-[12px] font-bold text-[#0066cc]">{log.changeNo}</td>
+                        <td className="p-[12px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
+                        <td className="p-[12px] font-medium text-slate-700">{log.requester}</td>
+                        <td className="p-[12px]">
+                          <div className="flex flex-wrap gap-[4px]">
+                            {(log.weldTest && log.weldTest !== '-'
+                              ? log.weldTest.split(',').map(s => s.trim()).filter(Boolean)
+                              : [log.weldTest || '-']
+                            ).map((fname, fi) => (
+                              <span
+                                key={fi}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewAttachment(fname, log.changeNo, 'L2');
+                                }}
+                                className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
+                              >
+                                <Paperclip size={12} className="text-slate-400" />
+                                <span className="underline truncate max-w-[120px]">{fname}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="p-[12px]">
+                          <div className="flex flex-wrap gap-[4px]">
+                            {(log.qaTest && log.qaTest !== '-'
+                              ? log.qaTest.split(',').map(s => s.trim()).filter(Boolean)
+                              : [log.qaTest || '-']
+                            ).map((fname, fi) => (
+                              <span
+                                key={fi}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewAttachment(fname, log.changeNo, 'L2');
+                                }}
+                                className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
+                              >
+                                <Paperclip size={12} className="text-slate-400" />
+                                <span className="underline truncate max-w-[120px]">{fname}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="p-[12px]">
+                          <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
+                              log.status === 'Accepted'
+                                ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                                : log.status === 'Pending'
+                                ? 'bg-amber-50 border-amber-250 text-amber-700'
+                                : 'bg-rose-50 border-rose-250 text-rose-700'
+                            }`}>
+                            {log.status === 'Accepted' ? 'Approved' : log.status}
+                          </span>
+                        </td>
+                        <td className="p-[12px] text-slate-500 max-w-[220px] truncate" title={log.remarks}>
+                          {log.remarks}
+                        </td>
+                        <td className="p-[12px] text-center">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewL1Details(log.changeNo);
+                            }}
+                            className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
+                          >
+                            <Eye size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Cards View */}
+          <div className="flex md:hidden flex-col gap-[12px] p-[12px] bg-slate-50">
+            {isFetchingLogs ? (
+              <div className="flex flex-col items-center justify-center py-[24px] text-slate-400">
+                <Loader2 className="animate-spin text-[#0066cc]" size={20} />
+                <span className="text-[12px] mt-1">Fetching validation logs...</span>
+              </div>
+            ) : filteredLogs.length === 0 ? (
+              <div className="text-center py-[24px] text-slate-400 text-[12px]">
+                No L2 validation records found.
+              </div>
+            ) : (
+              paginatedLogs.map((log, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => {
+                    setFormChangeNo(log.changeNo || '');
+                    setFormDate(formatDateToDDMMYYYY(log.date));
+                    setFormRequester(log.requester || '');
+                  }}
+                  className="bg-white border border-slate-200 rounded-[12px] p-[16px] shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-[12px]"
+                >
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-[8px]">
+                    <span className="font-mono font-bold text-[#0066cc] text-[12px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                      {log.changeNo}
+                    </span>
+                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
+                        log.status === 'Accepted'
+                          ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                          : log.status === 'Pending'
+                          ? 'bg-amber-50 border-amber-250 text-amber-700'
+                          : 'bg-rose-50 border-rose-250 text-rose-700'
+                      }`}>
+                      {log.status === 'Accepted' ? 'Approved' : log.status}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-[8px] gap-x-[12px]">
+                    <div className="flex flex-col gap-[2px]">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                      <span className="text-[12px] font-semibold text-slate-755">{formatDateToDDMMYYYY(log.date)}</span>
+                    </div>
+                    <div className="flex flex-col gap-[2px]">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
+                      <span className="text-[12px] font-semibold text-slate-755 break-words">{log.requester}</span>
+                    </div>
+
+                    <div className="flex flex-col gap-[2px] col-span-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Requester Validation</span>
+                      <div className="flex flex-wrap gap-[4px] mt-0.5">
+                        {(log.weldTest && log.weldTest !== '-'
+                          ? log.weldTest.split(',').map(s => s.trim()).filter(Boolean)
+                          : [log.weldTest || '-']
+                        ).map((fname, fi) => (
+                          <span
+                            key={fi}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewAttachment(fname, log.changeNo, 'L2');
+                            }}
+                            className="inline-flex items-center gap-[4px] text-[#0066cc] hover:underline cursor-pointer bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[11px]"
+                          >
+                            <Paperclip size={11} className="text-slate-400" />
+                            <span className="truncate max-w-[120px]">{fname}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-[2px] col-span-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Setup Verification</span>
+                      <div className="flex flex-wrap gap-[4px] mt-0.5">
+                        {(log.qaTest && log.qaTest !== '-'
+                          ? log.qaTest.split(',').map(s => s.trim()).filter(Boolean)
+                          : [log.qaTest || '-']
+                        ).map((fname, fi) => (
+                          <span
+                            key={fi}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewAttachment(fname, log.changeNo, 'L2');
+                            }}
+                            className="inline-flex items-center gap-[4px] text-[#0066cc] hover:underline cursor-pointer bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[11px]"
+                          >
+                            <Paperclip size={11} className="text-slate-400" />
+                            <span className="truncate max-w-[120px]">{fname}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {log.remarks && log.remarks !== '-' && (
+                      <div className="flex flex-col gap-[2px] col-span-2 border-t border-slate-100 pt-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Remarks</span>
+                        <p className="text-[12px] text-slate-655 bg-slate-50 border border-slate-150 rounded p-2 mt-0.5 break-words">{log.remarks}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end border-t border-slate-100 pt-[12px] mt-[4px]">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewL1Details(log.changeNo);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50 transition-all shadow-sm cursor-pointer"
+                    >
+                      <Eye size={12} />
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50]}
@@ -1080,7 +1199,7 @@ export const L2Validation = ({
 
       {/* L1 Request Details Modal */}
       {selectedL1Details && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-[16px]">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
@@ -1088,7 +1207,7 @@ export const L2Validation = ({
           />
 
           {/* Modal Container */}
-          <div className="relative bg-white w-full max-w-[800px] max-h-[90vh] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
+          <div className="relative bg-white w-full sm:w-[720px] max-w-full h-full sm:h-auto sm:max-h-[92vh] sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
             <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-[10px]">
@@ -1124,7 +1243,7 @@ export const L2Validation = ({
                   <Folder size={14} />
                   <span>General Information</span>
                 </h5>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px]">
                   <div className="space-y-[4px]">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
                     <span className="font-mono font-bold text-slate-800">{selectedL1Details.change_no}</span>
@@ -1151,12 +1270,12 @@ export const L2Validation = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[12px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-[12px]">
                   <div className="space-y-[4px]">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
-                    <span className="font-semibold text-slate-850">{selectedL1Details.title}</span>
+                    <span className="font-semibold text-slate-855 block break-words">{selectedL1Details.title}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-[16px]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
                     <div className="space-y-[4px]">
                       <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
                       <span className="font-medium text-slate-700">{selectedL1Details.unit}</span>
@@ -1168,11 +1287,11 @@ export const L2Validation = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
                   <div className="space-y-[4px] md:col-span-2">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
-                    <span className="font-semibold text-slate-800">{selectedL1Details.request_by}</span>
-                    <span className="block text-[11px] text-slate-400 mt-0.5 font-mono">{selectedL1Details.crRequester}</span>
+                    <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
+                    <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
                   </div>
                   <div className="space-y-[4px]">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
@@ -1184,7 +1303,7 @@ export const L2Validation = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
                   <div className="space-y-[4px]">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
                     <span className="font-medium text-slate-700">{selectedL1Details.process_name}</span>
@@ -1206,9 +1325,9 @@ export const L2Validation = ({
                   <FileText size={14} />
                   <span>Details & Justification</span>
                 </h5>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
                   <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Description</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Change Description</span>
                     <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
                       {selectedL1Details.description}
                     </div>
@@ -1216,7 +1335,7 @@ export const L2Validation = ({
                   </div>
 
                   <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Area of Improvement / Benefit</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Area of Improvement / Benefit</span>
                     <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
                       {selectedL1Details.improvement_area}
                     </div>
@@ -1224,7 +1343,7 @@ export const L2Validation = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                   <div className="space-y-[4px]">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Start</span>
                     <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
@@ -1249,9 +1368,9 @@ export const L2Validation = ({
                   <span>Traceability, Risk & Approvals</span>
                 </h5>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
                   <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability FROM (Before Change)</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Traceability FROM (Before Change)</span>
                     <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
                       {selectedL1Details.trace_from}
                     </div>
@@ -1259,7 +1378,7 @@ export const L2Validation = ({
                   </div>
 
                   <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability TO (After Change)</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Traceability TO (After Change)</span>
                     <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
                       {selectedL1Details.trace_to}
                     </div>
@@ -1267,9 +1386,9 @@ export const L2Validation = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                   <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis & Mitigations</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Risk Analysis & Mitigations</span>
                     <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
                       {selectedL1Details.risk_analysis}
                     </div>
@@ -1277,7 +1396,7 @@ export const L2Validation = ({
                   </div>
 
                   <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">SOP / WI / Control Plan Update</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">SOP / WI / Control Plan Update</span>
                     <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
                       {selectedL1Details.sop_update}
                     </div>
@@ -1285,7 +1404,7 @@ export const L2Validation = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-4">
                   <div className="space-y-[4px]">
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Approval</span>
                     <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
@@ -1294,7 +1413,7 @@ export const L2Validation = ({
                     </span>
                   </div>
                   <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Customer Approval Required</span>
                     <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
                       <Clock size={14} className="text-slate-400" />
                       <span>{showCustomerApproval ? selectedL1Details.customer_approval : '••••'}</span>
@@ -1309,7 +1428,7 @@ export const L2Validation = ({
                     </span>
                   </div>
                   <div className="space-y-[6px] md:col-span-1 min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Monitoring</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Monitoring</span>
                     <div className="font-semibold text-slate-750 leading-relaxed break-words">
                       {selectedL1Details.effectiveness_monitoring}
                     </div>
@@ -1323,22 +1442,25 @@ export const L2Validation = ({
             </div>
 
             {/* Footer */}
-            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px]">
-              <button 
-                onClick={handleExportRequestDetailsPDF}
-                disabled={isFetchingL1}
-                className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
-                title="Export this request's full details (L1, L2, L3) as PDF"
-              >
-                <Download size={14} />
-                <span>Export PDF</span>
-              </button>
-              <button
-                onClick={handleCloseModal}
-                className="px-[16px] py-[8px] bg-white border border-slate-200 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
-              >
-                Close
-              </button>
+            <div className="px-[16px] sm:px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="hidden sm:inline text-[11px] font-semibold text-slate-400">Nippon Change Management System</span>
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
+                <button 
+                  onClick={handleExportRequestDetailsPDF}
+                  disabled={isFetchingL1}
+                  className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
+                  title="Export this request's full details (L1, L2, L3) as PDF"
+                >
+                  <Download size={14} />
+                  <span>Export PDF</span>
+                </button>
+                <button
+                  onClick={handleCloseModal}
+                  className="px-[16px] py-[8px] bg-white border border-slate-200 rounded-[6px] text-slate-655 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
