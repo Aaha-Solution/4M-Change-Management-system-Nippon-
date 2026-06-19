@@ -266,6 +266,92 @@ export const DashboardOverview = ({
     setPage(0);
   }, [tableFilterMonth, tableFilterFromDate, tableFilterToDate, tableFilterPerson, tableFilterProcess, tableFilterMachine]);
 
+  // Helper checks to see if filters are applied
+  const isDeptFilterApplied = deptFilterMonth !== 'All' || deptFilterFromDate !== '' || deptFilterToDate !== '' || deptFilterPerson !== 'All' || deptFilterProcess !== 'All' || deptFilterMachine !== 'All';
+  const isProcFilterApplied = procFilterMonth !== 'All' || procFilterFromDate !== '' || procFilterToDate !== '' || procFilterPerson !== 'All' || procFilterProcess !== 'All' || procFilterMachine !== 'All';
+  const isCatFilterApplied = catFilterMonth !== 'All' || catFilterFromDate !== '' || catFilterToDate !== '' || catFilterPerson !== 'All' || catFilterProcess !== 'All' || catFilterMachine !== 'All';
+  const isMonthFilterApplied = monthFilterMonth !== 'All' || monthFilterFromDate !== '' || monthFilterToDate !== '' || monthFilterPerson !== 'All' || monthFilterProcess !== 'All' || monthFilterMachine !== 'All';
+  const isApprFilterApplied = apprFilterMonth !== 'All' || apprFilterFromDate !== '' || apprFilterToDate !== '' || apprFilterStatus !== 'All';
+  const isBenefitFilterApplied = benefitFilterType !== 'All' || benefitFilterMonth !== 'All' || benefitFilterSearch !== '';
+  const isTableFilterApplied = tableFilterMonth !== 'All' || tableFilterFromDate !== '' || tableFilterToDate !== '' || tableFilterPerson !== 'All' || tableFilterProcess !== 'All' || tableFilterMachine !== 'All';
+
+  const resetDeptFilters = () => {
+    setDeptFilterMonth('All');
+    setDeptFilterFromDate('');
+    setDeptFilterToDate('');
+    setDeptFilterPerson('All');
+    setDeptFilterProcess('All');
+    setDeptFilterMachine('All');
+  };
+
+  const resetProcFilters = () => {
+    setProcFilterMonth('All');
+    setProcFilterFromDate('');
+    setProcFilterToDate('');
+    setProcFilterPerson('All');
+    setProcFilterProcess('All');
+    setProcFilterMachine('All');
+  };
+
+  const resetCatFilters = () => {
+    setCatFilterMonth('All');
+    setCatFilterFromDate('');
+    setCatFilterToDate('');
+    setCatFilterPerson('All');
+    setCatFilterProcess('All');
+    setCatFilterMachine('All');
+  };
+
+  const resetMonthFilters = () => {
+    setMonthFilterMonth('All');
+    setMonthFilterFromDate('');
+    setMonthFilterToDate('');
+    setMonthFilterPerson('All');
+    setMonthFilterProcess('All');
+    setMonthFilterMachine('All');
+  };
+
+  const resetApprFilters = () => {
+    setApprFilterMonth('All');
+    setApprFilterFromDate('');
+    setApprFilterToDate('');
+    setApprFilterStatus('All');
+  };
+
+  const resetBenefitFilters = () => {
+    setBenefitFilterType('All');
+    setBenefitFilterMonth('All');
+    setBenefitFilterSearch('');
+  };
+
+  const resetTableFilters = () => {
+    setTableFilterMonth('All');
+    setTableFilterFromDate('');
+    setTableFilterToDate('');
+    setTableFilterPerson('All');
+    setTableFilterProcess('All');
+    setTableFilterMachine('All');
+  };
+
+  const isTabFilterApplied = (tab) => {
+    if (tab === 'Department') return isDeptFilterApplied;
+    if (tab === 'Process') return isProcFilterApplied;
+    if (tab === '6M Category') return isCatFilterApplied;
+    if (tab === 'Monthly') return isMonthFilterApplied;
+    if (tab === 'Approval Status') return isApprFilterApplied;
+    if (tab === 'Improvement Benefits') return isBenefitFilterApplied;
+    return false;
+  };
+
+  const resetTabFilters = (tab) => {
+    if (tab === 'Department') resetDeptFilters();
+    else if (tab === 'Process') resetProcFilters();
+    else if (tab === '6M Category') resetCatFilters();
+    else if (tab === 'Monthly') resetMonthFilters();
+    else if (tab === 'Approval Status') resetApprFilters();
+    else if (tab === 'Improvement Benefits') resetBenefitFilters();
+  };
+
   const [dbProcesses, setDbProcesses] = useState([]);
   const [dbMachines, setDbMachines] = useState([]);
 
@@ -3402,14 +3488,25 @@ export const DashboardOverview = ({
                 {activeAnalyticsTab === 'Approval Status' && 'Overall Change Approval Status'}
                 {activeAnalyticsTab === 'Improvement Benefits' && 'Improvement Benefits'}
               </h4>
-              <button
-                onClick={handleExportActiveTab}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
-                title={`Export ${activeAnalyticsTab} Analytics to PDF`}
-              >
-                <Download size={12} />
-                <span>Export PDF</span>
-              </button>
+              <div className="flex items-center gap-[8px]">
+                {isTabFilterApplied(activeAnalyticsTab) && (
+                  <button
+                    onClick={() => resetTabFilters(activeAnalyticsTab)}
+                    className="flex items-center gap-1 px-2.5 py-1.5 text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:border-rose-200 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans shadow-sm"
+                  >
+                    <X size={12} />
+                    <span>Reset Filters</span>
+                  </button>
+                )}
+                <button
+                  onClick={handleExportActiveTab}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
+                  title={`Export ${activeAnalyticsTab} Analytics to PDF`}
+                >
+                  <Download size={12} />
+                  <span>Export PDF</span>
+                </button>
+              </div>
             </div>
 
             {/* Render filter block based on selected analytics tab */}
@@ -3433,6 +3530,15 @@ export const DashboardOverview = ({
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">Department Wise Change</h4>
                   <div className="flex items-center gap-2">
+                    {isDeptFilterApplied && (
+                      <button
+                        onClick={resetDeptFilters}
+                        className="flex items-center gap-0.5 px-2 py-0.5 text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:border-rose-200 rounded text-[10px] font-bold transition-all cursor-pointer font-sans"
+                      >
+                        <X size={10} />
+                        <span>Reset</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => handleExportSpecificTab('Department')}
                       className="text-slate-400 hover:text-[#0066cc] p-1 transition-colors cursor-pointer"
@@ -3452,6 +3558,15 @@ export const DashboardOverview = ({
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">Process Wise Change</h4>
                   <div className="flex items-center gap-2">
+                    {isProcFilterApplied && (
+                      <button
+                        onClick={resetProcFilters}
+                        className="flex items-center gap-0.5 px-2 py-0.5 text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:border-rose-200 rounded text-[10px] font-bold transition-all cursor-pointer font-sans"
+                      >
+                        <X size={10} />
+                        <span>Reset</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => handleExportSpecificTab('Process')}
                       className="text-slate-400 hover:text-[#0066cc] p-1 transition-colors cursor-pointer"
@@ -3471,6 +3586,15 @@ export const DashboardOverview = ({
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">6M Category Change</h4>
                   <div className="flex items-center gap-2">
+                    {isCatFilterApplied && (
+                      <button
+                        onClick={resetCatFilters}
+                        className="flex items-center gap-0.5 px-2 py-0.5 text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:border-rose-200 rounded text-[10px] font-bold transition-all cursor-pointer font-sans"
+                      >
+                        <X size={10} />
+                        <span>Reset</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => handleExportSpecificTab('6M Category')}
                       className="text-slate-400 hover:text-[#0066cc] p-1 transition-colors cursor-pointer"
@@ -3490,6 +3614,15 @@ export const DashboardOverview = ({
                 <div className="flex items-center justify-between">
                   <h4 className="text-[13px] font-bold text-slate-800">Monthly Change</h4>
                   <div className="flex items-center gap-2">
+                    {isMonthFilterApplied && (
+                      <button
+                        onClick={resetMonthFilters}
+                        className="flex items-center gap-0.5 px-2 py-0.5 text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:border-rose-200 rounded text-[10px] font-bold transition-all cursor-pointer font-sans"
+                      >
+                        <X size={10} />
+                        <span>Reset</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => handleExportSpecificTab('Monthly')}
                       className="text-slate-400 hover:text-[#0066cc] p-1 transition-colors cursor-pointer"
@@ -3532,6 +3665,15 @@ export const DashboardOverview = ({
                       <span>Pend</span>
                     </div>
                   </div>
+                  {isApprFilterApplied && (
+                    <button
+                      onClick={resetApprFilters}
+                      className="flex items-center gap-0.5 px-2 py-0.5 text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:border-rose-200 rounded text-[10px] font-bold transition-all cursor-pointer font-sans"
+                    >
+                      <X size={10} />
+                      <span>Reset</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => handleExportSpecificTab('Approval Status')}
                     className="text-slate-400 hover:text-[#0066cc] p-1 transition-colors cursor-pointer"
@@ -3552,14 +3694,25 @@ export const DashboardOverview = ({
                   <h4 className="text-[13px] font-bold text-slate-800">Improvement Benefits</h4>
                   <BarChart3 size={14} className="text-slate-400" />
                 </div>
-                <button
-                  onClick={() => handleExportSpecificTab('Improvement Benefits')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
-                  title="Export Improvement Benefits Report to PDF"
-                >
-                  <Download size={12} />
-                  <span>Export PDF</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {isBenefitFilterApplied && (
+                    <button
+                      onClick={resetBenefitFilters}
+                      className="flex items-center gap-1 px-2.5 py-1.5 text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:border-rose-200 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans shadow-sm"
+                    >
+                      <X size={12} />
+                      <span>Reset Filters</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleExportSpecificTab('Improvement Benefits')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
+                    title="Export Improvement Benefits Report to PDF"
+                  >
+                    <Download size={12} />
+                    <span>Export PDF</span>
+                  </button>
+                </div>
               </div>
               {renderImprovementBenefits()}
             </div>
@@ -3575,6 +3728,15 @@ export const DashboardOverview = ({
             <Clock size={18} className="text-slate-400" />
           </div>
           <div className="flex items-center gap-[12px] flex-wrap">
+            {isTableFilterApplied && (
+              <button
+                onClick={resetTableFilters}
+                className="flex items-center gap-1 px-2.5 py-1.5 text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:border-rose-200 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans shadow-sm"
+              >
+                <X size={12} />
+                <span>Reset Filters</span>
+              </button>
+            )}
             <span className="bg-slate-100 border border-slate-200 text-slate-500 rounded-full px-[10px] py-[2px] text-[10px] font-bold select-none">
               Showing {filteredChangesForTable.length} of {changes.length}
             </span>
