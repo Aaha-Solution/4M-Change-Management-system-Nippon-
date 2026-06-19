@@ -126,6 +126,24 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
         doc.setTextColor(148, 163, 184); // Slate-400
         doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
         doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL', 40, doc.internal.pageSize.height - 20);
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 7 && data.row.index > 0) {
+          const val = data.cell.text[0];
+          if (val === 'Approved' || val === 'Accepted') {
+            data.cell.styles.textColor = [0, 128, 128]; // Teal text
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Rejected') {
+            data.cell.styles.textColor = [219, 16, 119]; // Deep Pink text
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val && val.includes('Pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Amber text
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Closed') {
+            data.cell.styles.textColor = [79, 70, 229]; // Indigo/Violet text
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
       }
     });
 
@@ -404,13 +422,13 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
           } else if (data.column.index === 1 && data.row.index > 0) {
             const val = data.cell.text[0];
             if (val === 'Accepted' || val === 'Approved') {
-              data.cell.styles.textColor = [16, 124, 65]; // Green text
+              data.cell.styles.textColor = [0, 128, 128]; // Teal text
               data.cell.styles.fontStyle = 'bold';
             } else if (val === 'Rejected') {
-              data.cell.styles.textColor = [220, 38, 38]; // Red text
+              data.cell.styles.textColor = [219, 16, 119]; // Deep Pink text
               data.cell.styles.fontStyle = 'bold';
             } else if (val === 'Pending') {
-              data.cell.styles.textColor = [217, 119, 6]; // Amber text
+              data.cell.styles.textColor = [217, 119, 6]; // Amber/Orange text
               data.cell.styles.fontStyle = 'bold';
             }
           }
@@ -521,10 +539,10 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
         if (data.column.index === 6 && data.row.index > 0) {
           const val = data.cell.text[0];
           if (val === 'Accepted') {
-            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.textColor = [0, 128, 128]; // Teal
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Rejected') {
-            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.textColor = [219, 16, 119]; // Deep Pink
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Pending') {
             data.cell.styles.textColor = [217, 119, 6]; // Amber
@@ -641,10 +659,10 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
         if (data.column.index >= 4 && data.column.index <= 13 && data.row.index > 0) {
           const val = data.cell.text[0];
           if (val === 'Accepted' || val === 'Approved') {
-            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.textColor = [0, 128, 128]; // Teal
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Rejected') {
-            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.textColor = [219, 16, 119]; // Deep Pink
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Pending') {
             data.cell.styles.textColor = [217, 119, 6]; // Amber
@@ -761,10 +779,10 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
         if (data.column.index === 5 && data.row.index > 0) {
           const val = data.cell.text[0];
           if (val === 'Approved') {
-            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.textColor = [0, 128, 128]; // Teal
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Rejected') {
-            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.textColor = [219, 16, 119]; // Deep Pink
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Pending') {
             data.cell.styles.textColor = [217, 119, 6]; // Amber
@@ -1006,16 +1024,16 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
         if (data.column.index === 5 && data.row.index > 0) {
           const val = data.cell.text[0];
           if (val === 'Approved') {
-            data.cell.styles.textColor = [16, 124, 65]; // Green
+            data.cell.styles.textColor = [0, 128, 128]; // Teal
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Rejected') {
-            data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.textColor = [219, 16, 119]; // Deep Pink
             data.cell.styles.fontStyle = 'bold';
           } else if (val && val.includes('Pending')) {
             data.cell.styles.textColor = [217, 119, 6]; // Amber
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Closed') {
-            data.cell.styles.textColor = [100, 116, 139]; // Slate-500
+            data.cell.styles.textColor = [79, 70, 229]; // Indigo/Violet
             data.cell.styles.fontStyle = 'bold';
           }
         }
