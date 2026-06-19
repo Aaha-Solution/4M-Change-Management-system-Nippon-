@@ -33,7 +33,7 @@ export const updateChangeStatus = async (req, res) => {
 export const updateChangeDetails = async (req, res) => {
   const { id } = req.params;
   const { level } = req.query; // 'l1', 'l2', 'l3'
-  const { updateData } = req.body;
+  const { updateData, attachments } = req.body;
 
   if (req.user?.role !== 'Admin') {
     return res.status(403).json({ error: 'Only Admins can update change request data directly.' });
@@ -44,7 +44,7 @@ export const updateChangeDetails = async (req, res) => {
   }
 
   try {
-    await allRequestsModel.updateChangeDetails(id, level, updateData);
+    await allRequestsModel.updateChangeDetails(id, level, updateData, attachments);
     res.status(200).json({ message: `${level.toUpperCase()} details updated successfully.` });
   } catch (error) {
     console.error('Error in updateChangeDetails:', error);
