@@ -64,7 +64,7 @@ export const AllRequests = ({
     (selectedLog?.requester && selectedLog.requester.toLowerCase().trim() === userName.toLowerCase().trim()) ||
     (selectedL1Details?.request_by && selectedL1Details.request_by.toLowerCase().trim() === userName.toLowerCase().trim())
   ));
-  const canEdit = isAdmin || isRequester;
+  const canEdit = isAdmin;
   const [editL2Data, setEditL2Data] = useState({});
   const [editL3Data, setEditL3Data] = useState({});
   const [isSaving, setIsSaving] = useState(false);
