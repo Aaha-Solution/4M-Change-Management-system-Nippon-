@@ -129,7 +129,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
       if (error.response?.status === 401 || error.response?.status === 403) {
         handleLocalSignOut();
       } else {
-        setToastMsg('Error loading changes from backend.');
+        setToastMsg('Failed to load changes from backend.');
       }
     } finally {
       setIsFetchingChanges(false);
@@ -144,7 +144,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
       setEffectivenessLogs(response.data);
     } catch (error) {
       console.error(error);
-      setToastMsg('Error loading effectiveness logs from server.');
+      setToastMsg('Failed to load effectiveness logs from server.');
     }
   };
 
@@ -155,7 +155,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
       setNotifications(response.data);
     } catch (error) {
       console.error(error);
-      setToastMsg('Error loading notifications from server.');
+      setToastMsg('Failed to load notifications from server.');
     }
   };
 
@@ -643,13 +643,17 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
       {/* Global Toast Notification */}
       {toastMsg && (() => {
         const isError = /error|please|must be|should be|failed|invalid|required|at least/i.test(toastMsg);
+        // Replace "Error" or "error" with more meaningful words like "Failed"
+        const cleanedMsg = toastMsg
+          .replace(/\bError\b/g, 'Failed')
+          .replace(/\berror\b/g, 'failed');
         return (
           <div className={`fixed bottom-6 right-6 text-white rounded-xl px-4 py-3 flex items-center gap-2 shadow-xl z-50 animate-slide-in-right text-xs sm:text-sm font-medium ${isError ? 'bg-rose-700' : 'bg-slate-900'}`}>
             {isError
               ? <AlertTriangle size={16} className="text-rose-200" />
               : <CheckCircle size={16} className="text-emerald-400" />
             }
-            <span>{toastMsg}</span>
+            <span>{cleanedMsg}</span>
           </div>
         );
       })()}

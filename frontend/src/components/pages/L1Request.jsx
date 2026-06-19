@@ -551,7 +551,7 @@ export const L1Request = ({
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
-      setToastMsg('Please fix the errors before submitting.');
+      setToastMsg('Please complete all required fields before submitting.');
       const firstErrorKey = Object.keys(formErrors)[0];
       const errorElement = document.getElementById(firstErrorKey);
       if (errorElement) {
@@ -610,7 +610,7 @@ export const L1Request = ({
       onTabChange('dashboard');
     } catch (err) {
       console.error(err);
-      const errMsg = err.response?.data?.error || 'Error saving L1 request to server.';
+      const errMsg = err.response?.data?.error || 'Failed to save L1 request to server.';
       setToastMsg(errMsg);
     } finally {
       setIsSubmitting(false);
@@ -1020,7 +1020,6 @@ export const L1Request = ({
                 }`}
               />
               <div className="flex justify-between items-center text-[9px] text-slate-400">
-                <span>{context.length} / 10 min</span>
                 {errors.context && <span className="text-rose-500 font-bold">{errors.context}</span>}
               </div>
             </div>
@@ -1044,7 +1043,6 @@ export const L1Request = ({
                 }`}
               />
               <div className="flex justify-between items-center text-[9px] text-slate-400">
-                <span>{description.length} / 20 min</span>
                 {errors.description && <span className="text-rose-500 font-bold">{errors.description}</span>}
               </div>
             </div>
@@ -1177,7 +1175,6 @@ export const L1Request = ({
                 }`}
               />
               <div className="flex justify-between items-center text-[9px] text-slate-400">
-                <span>{traceFrom.length} / 20 min</span>
                 {errors.traceFrom && <span className="text-rose-500 font-bold">{errors.traceFrom}</span>}
               </div>
             </div>
@@ -1227,7 +1224,6 @@ export const L1Request = ({
                 }`}
               />
               <div className="flex justify-between items-center text-[9px] text-slate-400">
-                <span>{traceTo.length} / 20 min</span>
                 {errors.traceTo && <span className="text-rose-500 font-bold">{errors.traceTo}</span>}
               </div>
             </div>
