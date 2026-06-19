@@ -12,8 +12,8 @@ import nipponLogoUrl from '../assets/Nippon Logo.png';
 const addLogoToDoc = (doc) => {
   try {
     const pw = doc.internal.pageSize.width;
-    // Logo placed top-right: 100 pt wide, 40 pt tall, with 10 pt padding
-    doc.addImage(nipponLogoUrl, 'PNG', pw - 120, 8, 100, 40);
+    // Logo placed top-right: 50×50 pt (square) to preserve the circular shape
+    doc.addImage(nipponLogoUrl, 'PNG', pw - 70, 5, 50, 50);
   } catch {
     // Silently skip if image fails to load (e.g. offline/test)
   }

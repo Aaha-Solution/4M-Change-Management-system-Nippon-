@@ -385,7 +385,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 <span>Notifications</span>
               </div>
               {notifications.filter(n => !n.isRead).length > 0 && (
-                <span className="min-w-[20px] h-[20px] px-1.5 flex items-center justify-center bg-rose-600 text-white font-bold text-[10px] rounded-full">
+                <span className="min-w-[20px] h-[20px] px-1.5 flex items-center justify-center bg-rose-600 text-white font-bold text-[10px] rounded-full animate-badge-blink">
                   {notifications.filter(n => !n.isRead).length}
                 </span>
               )}
@@ -486,7 +486,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
             >
               <Bell size={20} />
               {notifications.filter(n => !n.isRead).length > 0 && (
-                <span className="absolute -top-[4px] -right-[4px] min-w-[18px] h-[18px] px-[4px] flex items-center justify-center bg-rose-600 text-white font-bold text-[9px] rounded-full border-2 border-white">
+                <span className="absolute -top-[4px] -right-[4px] min-w-[18px] h-[18px] px-[4px] flex items-center justify-center bg-rose-600 text-white font-bold text-[9px] rounded-full border-2 border-white animate-badge-blink">
                   {notifications.filter(n => !n.isRead).length}
                 </span>
               )}
