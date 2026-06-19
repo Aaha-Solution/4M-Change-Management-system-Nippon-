@@ -1976,7 +1976,7 @@ export const DashboardOverview = ({
                 <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
                   <thead>
                     <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
-                      <th className="p-[10px] border-r border-[#1a5596] w-[18%]">4M #</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[18%]">4M </th>
                       <th className="p-[10px] border-r border-[#1a5596] w-[20%]">Implementation date</th>
                       <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Total Cost Saved / month(Rs)</th>
                       <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Total Cost Saved / Annum(Rs)</th>
@@ -2074,7 +2074,7 @@ export const DashboardOverview = ({
                 <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
                   <thead>
                     <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
-                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M #</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M</th>
                       <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Implementation date</th>
                       <th className="p-[10px] border-r border-[#1a5596] w-[29%]">Current Productivity (nos)</th>
                       <th className="p-[10px] w-[29%]">Productivity Improved (nos)</th>
@@ -2170,7 +2170,7 @@ export const DashboardOverview = ({
                 <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
                   <thead>
                     <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
-                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M #</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M </th>
                       <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Implementation date</th>
                       <th className="p-[10px] border-r border-[#1a5596] w-[29%]">Current PPM</th>
                       <th className="p-[10px] w-[29%]">Reduced PPM</th>
