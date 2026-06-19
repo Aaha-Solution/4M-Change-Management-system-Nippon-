@@ -492,6 +492,7 @@ export const Effectiveness = ({
               <CustomDatePicker
                 value={effMonthWise}
                 onChange={setEffMonthWise}
+                readOnly={true}
                 disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
                 inputClassName={`w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[30px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'}`}
                 buttonClassName="right-[10px] top-[50%] -translate-y-1/2"

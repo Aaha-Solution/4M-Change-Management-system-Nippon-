@@ -165,7 +165,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
               <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
               <input
                 type="text"
-                placeholder="Search by ID, title, department, category..."
+                placeholder="Search by ID, title, department..."
                 className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

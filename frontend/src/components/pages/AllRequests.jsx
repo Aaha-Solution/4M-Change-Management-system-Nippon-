@@ -962,6 +962,7 @@ export const AllRequests = ({
                   value={data.date_start ? formatDateToDDMMYYYY(data.date_start) : ''}
                   placeholder="dd/mm/yyyy"
                   onChange={(val) => setData({ ...data, date_start: convertDDMMYYYYToYYYYMMDD(val) })}
+                  readOnly={true}
                   inputClassName="w-full pl-[12px] pr-[32px] py-[8px] border border-slate-200 bg-slate-50 rounded-[6px] text-[12px] font-medium text-slate-700 outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                   buttonClassName="right-[12px] top-[10px]"
                 />
@@ -999,6 +1000,7 @@ export const AllRequests = ({
                   value={data.date_close ? formatDateToDDMMYYYY(data.date_close) : ''}
                   placeholder="dd/mm/yyyy"
                   onChange={(val) => setData({ ...data, date_close: convertDDMMYYYYToYYYYMMDD(val) })}
+                  readOnly={true}
                   inputClassName="w-full pl-[12px] pr-[32px] py-[8px] border border-slate-200 bg-slate-50 rounded-[6px] text-[12px] font-medium text-slate-700 outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                   buttonClassName="right-[12px] top-[10px]"
                 />
@@ -1474,6 +1476,7 @@ export const AllRequests = ({
               }
               setFromDate(val);
             }}
+            readOnly={true}
             inputClassName="w-full pl-[8px] pr-[24px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-[11px] text-slate-500"
             buttonClassName="right-[8px] bottom-[8px]"
           />
@@ -1503,6 +1506,7 @@ export const AllRequests = ({
                 }
                 setToDate(val);
               }}
+              readOnly={true}
               inputClassName={`w-full pl-[8px] pr-[24px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-[11px] text-slate-500 ${!fromDate ? 'opacity-70 cursor-not-allowed bg-slate-50' : ''}`}
               buttonClassName="right-[8px] bottom-[8px]"
               disabled={!fromDate}

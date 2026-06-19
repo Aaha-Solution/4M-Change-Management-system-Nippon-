@@ -719,7 +719,8 @@ export const DashboardOverview = ({
               setMonthVal('All');
             }
           }}
-          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
+          readOnly={true}
+          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
           buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
       </div>
@@ -749,6 +750,7 @@ export const DashboardOverview = ({
                 setMonthVal('All');
               }
             }}
+            readOnly={true}
             inputClassName={`w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500 ${!fromDateVal ? 'opacity-70 cursor-not-allowed bg-slate-50' : ''}`}
             buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
             disabled={!fromDateVal}
@@ -865,7 +867,8 @@ export const DashboardOverview = ({
               setMonthVal('All');
             }
           }}
-          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-slate-500"
+          readOnly={true}
+          inputClassName="w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500"
           buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
         />
       </div>
@@ -895,6 +898,7 @@ export const DashboardOverview = ({
                 setMonthVal('All');
               }
             }}
+            readOnly={true}
             inputClassName={`w-full pl-[6px] pr-[24px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-355 text-slate-500 ${!fromDateVal ? 'opacity-70 cursor-not-allowed bg-slate-50' : ''}`}
             buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
             disabled={!fromDateVal}
@@ -2531,6 +2535,7 @@ export const DashboardOverview = ({
                   value={data.date_start ? formatDateToDDMMYYYY(data.date_start) : ''}
                   placeholder="dd/mm/yyyy"
                   onChange={(val) => setData({ ...data, date_start: convertDDMMYYYYToYYYYMMDD(val) })}
+                  readOnly={true}
                   inputClassName="w-full pl-[12px] pr-[32px] py-[8px] border border-slate-200 bg-slate-50 rounded-[6px] text-[12px] font-medium text-slate-700 outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                   buttonClassName="right-[12px] top-[10px]"
                 />
@@ -2568,6 +2573,7 @@ export const DashboardOverview = ({
                   value={data.date_close ? formatDateToDDMMYYYY(data.date_close) : ''}
                   placeholder="dd/mm/yyyy"
                   onChange={(val) => setData({ ...data, date_close: convertDDMMYYYYToYYYYMMDD(val) })}
+                  readOnly={true}
                   inputClassName="w-full pl-[12px] pr-[32px] py-[8px] border border-slate-200 bg-slate-50 rounded-[6px] text-[12px] font-medium text-slate-700 outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
                   buttonClassName="right-[12px] top-[10px]"
                 />
