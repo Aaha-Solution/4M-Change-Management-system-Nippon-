@@ -611,12 +611,17 @@ export const L3RequestTracker = ({
           <select 
             value={statusFilter} 
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-[12px] py-[8px] border border-slate-200 bg-white rounded-[6px] outline-none text-[12px] min-w-[150px] focus:border-[#0066cc]"
+            className={`px-[12px] py-[8px] border rounded-[6px] outline-none text-[12px] min-w-[150px] transition-all duration-200 ${
+              statusFilter === 'Approved' ? 'text-emerald-600 border-emerald-300 bg-emerald-50/10 font-bold' :
+              statusFilter === 'Rejected' ? 'text-rose-600 border-rose-300 bg-rose-50/10 font-bold' :
+              statusFilter === 'Pending' ? 'text-amber-600 border-amber-300 bg-amber-50/10 font-bold' :
+              'text-slate-500 border-slate-200 bg-white font-medium'
+            }`}
           >
-            <option value="All">All Approval Status</option>
-            <option value="Approved">Approved</option>
-            <option value="Pending">Pending</option>
-            <option value="Rejected">Rejected</option>
+            <option value="All" className="text-slate-500 bg-white font-medium" style={{ color: '#64748b' }}>All Approval Status</option>
+            <option value="Approved" className="text-emerald-600 bg-white font-bold" style={{ color: '#059669', fontWeight: 'bold' }}>Approved</option>
+            <option value="Pending" className="text-amber-600 bg-white font-bold" style={{ color: '#d97706', fontWeight: 'bold' }}>Pending</option>
+            <option value="Rejected" className="text-rose-600 bg-white font-bold" style={{ color: '#e11d48', fontWeight: 'bold' }}>Rejected</option>
           </select>
 
           <button

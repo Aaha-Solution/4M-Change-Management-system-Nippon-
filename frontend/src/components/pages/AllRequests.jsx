@@ -1790,13 +1790,44 @@ export const AllRequests = ({
         <div className="flex-1 min-w-[120px] space-y-[4px]">
           <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
           <select 
-            className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none text-[11px]"
+            className={`w-full px-[8px] py-[6px] border rounded-[4px] bg-white outline-none text-[11px] transition-all duration-200 ${
+              selectedStatus === 'Approved' ? 'text-emerald-600 border-emerald-300 bg-emerald-50/10 font-bold' :
+              selectedStatus === 'Rejected' ? 'text-rose-600 border-rose-300 bg-rose-50/10 font-bold' :
+              selectedStatus === 'Closed' ? 'text-slate-600 border-slate-300 bg-slate-50/10 font-bold' :
+              selectedStatus.startsWith('Pending') ? 'text-amber-600 border-amber-300 bg-amber-50/10 font-bold' :
+              'text-slate-500 border-slate-200 bg-white font-medium'
+            }`}
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
           >
-            {filterStatuses.map(s => (
-              <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>
-            ))}
+            {filterStatuses.map(s => {
+              const isAppr = s === 'Approved';
+              const isRej = s === 'Rejected';
+              const isClosed = s === 'Closed';
+              const isPend = s.startsWith('Pending') || s === 'Pending';
+              
+              let color = '#64748b';
+              let cls = 'text-slate-500 bg-white font-medium';
+              if (isAppr) {
+                color = '#059669';
+                cls = 'text-emerald-600 bg-white font-bold';
+              } else if (isRej) {
+                color = '#e11d48';
+                cls = 'text-rose-600 bg-white font-bold';
+              } else if (isClosed) {
+                color = '#475569';
+                cls = 'text-slate-600 bg-white font-bold';
+              } else if (isPend) {
+                color = '#d97706';
+                cls = 'text-amber-600 bg-white font-bold';
+              }
+              
+              return (
+                <option key={s} value={s} className={cls} style={{ color, fontWeight: 'bold' }}>
+                  {s === 'All' ? 'All Statuses' : s}
+                </option>
+              );
+            })}
           </select>
         </div>
 

@@ -990,15 +990,21 @@ export const DashboardOverview = ({
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
         <select
-          className="w-full px-[6px] py-[4px] border border-slate-200 rounded-[4px] bg-white outline-none"
+          className={`w-full px-[6px] py-[4px] border rounded-[4px] outline-none transition-all duration-200 ${
+            statusVal === 'Approved' ? 'text-emerald-600 border-emerald-350 bg-emerald-50/10 font-bold' :
+            statusVal === 'Rejected' ? 'text-rose-600 border-rose-350 bg-rose-50/10 font-bold' :
+            statusVal === 'Closed' ? 'text-slate-600 border-slate-355 bg-slate-50/10 font-bold' :
+            statusVal === 'Pending' ? 'text-amber-600 border-amber-350 bg-amber-50/10 font-bold' :
+            'text-slate-500 border-slate-200 bg-white font-medium'
+          }`}
           value={statusVal}
           onChange={(e) => setStatusVal(e.target.value)}
         >
-          <option value="All">All Statuses</option>
-          <option value="Approved">Approved</option>
-          <option value="Rejected">Rejected</option>
-          <option value="Closed">Closed</option>
-          <option value="Pending">Pending</option>
+          <option value="All" className="text-slate-500 bg-white font-medium" style={{ color: '#64748b' }}>All Statuses</option>
+          <option value="Approved" className="text-emerald-600 bg-white font-bold" style={{ color: '#059669', fontWeight: 'bold' }}>Approved</option>
+          <option value="Rejected" className="text-rose-600 bg-white font-bold" style={{ color: '#e11d48', fontWeight: 'bold' }}>Rejected</option>
+          <option value="Closed" className="text-slate-600 bg-white font-bold" style={{ color: '#475569', fontWeight: 'bold' }}>Closed</option>
+          <option value="Pending" className="text-amber-600 bg-white font-bold" style={{ color: '#d97706', fontWeight: 'bold' }}>Pending</option>
         </select>
       </div>
     </div>
