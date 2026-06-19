@@ -83,6 +83,31 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
     days.push(new Date(year, month + 1, i));
   }
 
+  const handleInputChange = (e) => {
+    let val = e.target.value;
+    
+    // Clean to only digits and slashes
+    val = val.replace(/[^0-9/]/g, '');
+    
+    const prevVal = value || '';
+    const cleanDigits = val.replace(/\D/g, '');
+    
+    // Auto-format pasted block of digits
+    if (cleanDigits.length === 8 && !val.includes('/')) {
+      val = `${cleanDigits.substring(0, 2)}/${cleanDigits.substring(2, 4)}/${cleanDigits.substring(4, 8)}`;
+    } else if (cleanDigits.length === 6 && !val.includes('/')) {
+      val = `${cleanDigits.substring(0, 2)}/${cleanDigits.substring(2, 4)}/${cleanDigits.substring(4, 6)}`;
+    } else if (val.length > prevVal.length) {
+      // Auto-append slash during typing
+      if (val.length === 2 && !val.includes('/')) {
+        val = val + '/';
+      } else if (val.length === 5 && val.split('/').length - 1 === 1) {
+        val = val + '/';
+      }
+    }
+    
+    onChange(val);
+  };
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
@@ -94,7 +119,8 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
         id={id}
         type="text" 
         placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
+        maxLength={10}
+        onChange={handleInputChange}
         onClick={() => { if (!disabled) setIsOpen(!isOpen); }}
         disabled={disabled}
         onKeyDown={(e) => {
