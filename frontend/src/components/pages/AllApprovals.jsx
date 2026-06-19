@@ -369,7 +369,19 @@ export const AllApprovals = ({
     setIsSubmitting(true);
     try {
       await submitHodApproval(selectedReq.changeNo, actingDept, status, remarks);
-      if (setToastMsg) setToastMsg(`✅ ${actingDept} HOD approval saved as "${status}" for ${selectedReq.changeNo}`);
+      if (setToastMsg) {
+        if (status === 'Approved') {
+          setToastMsg({
+            text: `✅ ${actingDept} HOD approval saved as "${status}" for ${selectedReq.changeNo}`,
+            isError: false
+          });
+        } else {
+          setToastMsg({
+            text: `❌ ${actingDept} HOD approval saved as "${status}" for ${selectedReq.changeNo}`,
+            isError: true
+          });
+        }
+      }
       if (logAction) logAction('HOD Approval', `${status} for ${selectedReq.changeNo} by ${actingDept} HOD`);
       await fetchRequests();
       if (fetchChanges) await fetchChanges();
@@ -377,7 +389,7 @@ export const AllApprovals = ({
     } catch (err) {
       console.error(err);
       const msg = err.response?.data?.error || 'Failed to save HOD approval.';
-      if (setToastMsg) setToastMsg(msg);
+      if (setToastMsg) setToastMsg({ text: msg, isError: true });
     } finally {
       setIsSubmitting(false);
     }

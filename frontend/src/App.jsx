@@ -123,11 +123,17 @@ function App() {
       
       {/* Toast Notification */}
       {toastMsg && (() => {
-        const isError = /fail|error|denied|invalid|required|must|limit|locked/i.test(toastMsg);
+        const text = typeof toastMsg === 'object' ? toastMsg.text : toastMsg;
+        const isError = typeof toastMsg === 'object' 
+          ? !!toastMsg.isError 
+          : /fail|error|denied|invalid|required|must|limit|locked/i.test(text);
         return (
           <div className={`fixed bottom-8 right-8 ${isError ? 'bg-rose-600 border border-rose-700' : 'bg-emerald-600 border border-emerald-700'} rounded-xl px-5 py-4 flex items-center gap-3 shadow-xl z-50 animate-slide-in-right`}>
-            <CheckCircle size={18} className="text-white" />
-            <span className="text-sm text-white font-medium">{toastMsg}</span>
+            {isError 
+              ? <span className="text-sm select-none">❌</span>
+              : <CheckCircle size={18} className="text-white" />
+            }
+            <span className="text-sm text-white font-medium">{text}</span>
           </div>
         );
       })()}
