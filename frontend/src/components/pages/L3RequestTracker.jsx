@@ -951,7 +951,7 @@ export const L3RequestTracker = ({
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-[12px]">
                           <div className="space-y-[4px] min-w-0">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
-                            <span className="font-semibold text-slate-855 block break-words">{selectedL1Details.title}</span>
+                            <span className="font-semibold text-slate-855 block break-words">{selectedL1Details.title ? selectedL1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}</span>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
                             <div className="space-y-[4px]">
@@ -969,7 +969,9 @@ export const L3RequestTracker = ({
                           <div className="space-y-[4px] md:col-span-2 min-w-0">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                             <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
-                            <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
+                            {selectedL1Details.crRequester && selectedL1Details.crRequester.toLowerCase() !== selectedL1Details.request_by?.toLowerCase() && (
+                              <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
+                            )}
                           </div>
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>

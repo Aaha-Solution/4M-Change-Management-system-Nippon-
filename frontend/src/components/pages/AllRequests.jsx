@@ -1824,7 +1824,7 @@ export const AllRequests = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[12px]">
                       <div className="space-y-[4px] min-w-0">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
-                        <span className="font-semibold text-slate-850 block break-words">{selectedL1Details.title}</span>
+                        <span className="font-semibold text-slate-855 block break-words">{selectedL1Details.title ? selectedL1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}</span>
                       </div>
                       <div className="grid grid-cols-2 gap-[16px]">
                         <div className="space-y-[4px]">
@@ -1842,7 +1842,9 @@ export const AllRequests = ({
                       <div className="space-y-[4px] md:col-span-2 min-w-0">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                         <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
-                        <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
+                        {selectedL1Details.crRequester && selectedL1Details.crRequester.toLowerCase() !== selectedL1Details.request_by?.toLowerCase() && (
+                          <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
+                        )}
                       </div>
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
@@ -1876,16 +1878,10 @@ export const AllRequests = ({
                       <FileText size={14} />
                       <span>Change Description</span>
                     </h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                    <div className="grid grid-cols-1 gap-[16px]">
                       <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words font-semibold">
-                          {selectedL1Details.title}
-                        </div>
-                      </div>
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Detailed Change Description</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Detailed Change Description</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
                           {selectedL1Details.description}
                         </div>
                       </div>
