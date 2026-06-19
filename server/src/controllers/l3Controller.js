@@ -1,5 +1,6 @@
 import * as l3Model from '../models/l3Model.js';
 import pool from '../config/db.js';
+import { validateLimits } from '../utils/validation.js';
 
 // Department fields mapping
 const deptFields = {
@@ -42,6 +43,11 @@ export const getL3Approvals = async (req, res) => {
 };
 
 export const createL3Approval = async (req, res) => {
+  const lengthError = validateLimits(req.body);
+  if (lengthError) {
+    return res.status(400).json({ error: lengthError });
+  }
+
   const { logData } = req.body;
   if (!logData || !logData.changeNo || !logData.date || !logData.requester) {
     return res.status(400).json({ error: 'Required L3 approval data fields are missing.' });
