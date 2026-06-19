@@ -171,7 +171,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(148, 163, 184); // Slate-400
-    doc.text(`Generated on: ${formatDateToDDMMYYYY(getSyncedDate())}`, doc.internal.pageSize.width - 160, 45);
+    doc.text(`Generated on: ${formatDateToDDMMYYYY(getSyncedDate())}`, doc.internal.pageSize.width - 230, 45);
 
     // Section 1: General Info
     const generalInfoData = [

@@ -449,7 +449,7 @@ export const AllRequests = ({
           <label className="block font-bold text-slate-400 uppercase tracking-wider">Search Query</label>
           <input 
             type="text" 
-            placeholder="Search ID, Dept, Person, Category..." 
+            placeholder="Search ID, Dept, Person..." 
             className="w-full px-[8px] py-[6px] border border-slate-200 rounded-[4px] bg-white outline-none placeholder-slate-350 text-[11px]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
