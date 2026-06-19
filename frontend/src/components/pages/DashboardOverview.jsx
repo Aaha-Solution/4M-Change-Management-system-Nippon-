@@ -1690,12 +1690,12 @@ export const DashboardOverview = ({
                   {/* Pending */}
                   <div className="flex flex-col items-center justify-end w-[22%] h-full">
                     {item.pend > 0 && (
-                      <span className="text-slate-400 text-[8px] font-bold mb-[2px]">
+                      <span className="text-[#d97706] text-[8px] font-bold mb-[2px]">
                         {item.pend}
                       </span>
                     )}
                     <div
-                      className="w-full bg-[#b0bec5] rounded-t-[1px]"
+                      className="w-full bg-[#d97706] rounded-t-[1px]"
                       style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }}
                     />
                   </div>
@@ -1805,12 +1805,12 @@ export const DashboardOverview = ({
                   {/* Pending */}
                   <div className="flex flex-col items-center justify-end w-[22%] h-full">
                     {item.pend > 0 && (
-                      <span className="text-slate-400 text-[8px] font-bold mb-[2px]">
+                      <span className="text-[#d97706] text-[8px] font-bold mb-[2px]">
                         {item.pend}
                       </span>
                     )}
                     <div
-                      className="w-full bg-[#b0bec5] rounded-t-[1px]"
+                      className="w-full bg-[#d97706] rounded-t-[1px]"
                       style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }}
                     />
                   </div>
@@ -3650,7 +3650,7 @@ export const DashboardOverview = ({
                   <div className="flex items-center gap-[12px]">
                     <div className="flex items-center gap-[4px]">
                       <span className="w-[8px] h-[8px] rounded-full bg-[#059669]" />
-                      <span>Appr</span>
+                      <span>Approved</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <span className="w-[8px] h-[8px] rounded-full bg-[#475569]" />
@@ -3658,11 +3658,11 @@ export const DashboardOverview = ({
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <span className="w-[8px] h-[8px] rounded-full bg-[#dc2626]" />
-                      <span>Rej</span>
+                      <span>Rejected</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
-                      <span className="w-[8px] h-[8px] rounded-full bg-[#b0bec5]" />
-                      <span>Pend</span>
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#d97706]" />
+                      <span>Pending</span>
                     </div>
                   </div>
                   {isApprFilterApplied && (
