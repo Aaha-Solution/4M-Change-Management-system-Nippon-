@@ -126,7 +126,7 @@ export const L3RequestTracker = ({
         else if (actingDept === 'Safety') currentStatus = currentLog.safety;
         else if (actingDept === 'Unit Head') currentStatus = currentLog.unitHead;
         
-        setFormStatus(currentStatus || 'Pending');
+        setFormStatus(currentStatus === 'Pending' ? '' : (currentStatus || ''));
       }
     }
   }, [actingDept, selectedChangeId, approvalLogs]);
@@ -159,8 +159,13 @@ export const L3RequestTracker = ({
   const handleSaveApproval = async (e) => {
     e.preventDefault();
 
-    if (!selectedChangeId || !formChangeNo.trim() || !formStatus) {
-      setValidationError('Please select a change request and choose an approval status.');
+    if (!selectedChangeId || !formChangeNo.trim()) {
+      setToastMsg('Please select a change request.');
+      return;
+    }
+
+    if (!formStatus || formStatus === 'Pending') {
+      setToastMsg('Please choose an approval status.');
       return;
     }
 
