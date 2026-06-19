@@ -1771,7 +1771,7 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
     addLogoToDoc(doc);
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const dataMap = months.map(m => ({ label: m, appr: 0, rej: 0, pend: 0 }));
+    const dataMap = months.map(m => ({ label: m, appr: 0, closed: 0, rej: 0, pend: 0 }));
 
     filteredChanges.forEach(c => {
       if (!c.date) return;
@@ -1780,8 +1780,10 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
         if (!isNaN(d.getTime())) {
           const monthIdx = d.getMonth();
           const dispStatus = getRequestDisplayStatus(c);
-          if (dispStatus === 'Approved' || dispStatus === 'Closed') {
+          if (dispStatus === 'Approved') {
             dataMap[monthIdx].appr++;
+          } else if (dispStatus === 'Closed') {
+            dataMap[monthIdx].closed++;
           } else if (dispStatus === 'Rejected') {
             dataMap[monthIdx].rej++;
           } else {
@@ -1793,20 +1795,22 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
       }
     });
 
-    const summaryHeaders = [['MONTH', 'APPROVED', 'REJECTED', 'PENDING', 'TOTAL']];
+    const summaryHeaders = [['MONTH', 'APPROVED', 'CLOSED', 'REJECTED', 'PENDING', 'TOTAL']];
     const summaryRows = dataMap.map(item => {
-      const monthTotal = item.appr + item.rej + item.pend;
-      return [item.label, item.appr, item.rej, item.pend, monthTotal];
+      const monthTotal = item.appr + item.closed + item.rej + item.pend;
+      return [item.label, item.appr, item.closed, item.rej, item.pend, monthTotal];
     });
 
     const totalAppr = dataMap.reduce((a, b) => a + b.appr, 0);
+    const totalClosed = dataMap.reduce((a, b) => a + b.closed, 0);
     const totalRej = dataMap.reduce((a, b) => a + b.rej, 0);
     const totalPend = dataMap.reduce((a, b) => a + b.pend, 0);
-    const totalAll = totalAppr + totalRej + totalPend;
+    const totalAll = totalAppr + totalClosed + totalRej + totalPend;
 
     summaryRows.push([
       { content: 'TOTAL', fontStyle: 'bold' },
       { content: totalAppr, fontStyle: 'bold' },
+      { content: totalClosed, fontStyle: 'bold' },
       { content: totalRej, fontStyle: 'bold' },
       { content: totalPend, fontStyle: 'bold' },
       { content: totalAll, fontStyle: 'bold' }
@@ -1835,11 +1839,12 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
       headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontStyle: 'bold' },
       bodyStyles: { textColor: [51, 65, 85] },
       columnStyles: {
-        0: { cellWidth: 135 },
-        1: { cellWidth: 95, halign: 'center' },
-        2: { cellWidth: 95, halign: 'center' },
-        3: { cellWidth: 95, halign: 'center' },
-        4: { cellWidth: 95, halign: 'center' }
+        0: { cellWidth: 115 },
+        1: { cellWidth: 80, halign: 'center' },
+        2: { cellWidth: 80, halign: 'center' },
+        3: { cellWidth: 80, halign: 'center' },
+        4: { cellWidth: 80, halign: 'center' },
+        5: { cellWidth: 80, halign: 'center' }
       },
       margin: { left: 40, right: 40 }
     });

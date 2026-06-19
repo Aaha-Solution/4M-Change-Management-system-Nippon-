@@ -1522,7 +1522,7 @@ export const DashboardOverview = ({
     // If no date range filter or we couldn't resolve dates, default to 12 months view
     if (datesToShow.length === 0) {
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const dataMap = months.map(m => ({ label: m, appr: 0, rej: 0, pend: 0 }));
+      const dataMap = months.map(m => ({ label: m, appr: 0, closed: 0, rej: 0, pend: 0 }));
 
       dataList.forEach(c => {
         if (!c.date) return;
@@ -1531,8 +1531,10 @@ export const DashboardOverview = ({
           if (!isNaN(d.getTime())) {
             const monthIdx = d.getMonth();
             const dispStatus = getRequestDisplayStatus(c);
-            if (dispStatus === 'Approved' || dispStatus === 'Closed') {
+            if (dispStatus === 'Approved') {
               dataMap[monthIdx].appr++;
+            } else if (dispStatus === 'Closed') {
+              dataMap[monthIdx].closed++;
             } else if (dispStatus === 'Rejected') {
               dataMap[monthIdx].rej++;
             } else {
@@ -1545,7 +1547,7 @@ export const DashboardOverview = ({
       });
 
       const maxVal = Math.max(
-        ...dataMap.map(item => Math.max(item.appr, item.rej, item.pend)),
+        ...dataMap.map(item => Math.max(item.appr, item.closed, item.rej, item.pend)),
         5
       );
 
@@ -1553,30 +1555,64 @@ export const DashboardOverview = ({
         <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px]`}>
           {dataMap.map((item, idx) => {
             const hAppr = (item.appr / maxVal) * 100;
+            const hClosed = (item.closed / maxVal) * 100;
             const hRej = (item.rej / maxVal) * 100;
             const hPend = (item.pend / maxVal) * 100;
 
             return (
               <div key={idx} className="flex flex-col items-center w-[7%] h-full justify-end group">
-                <div className="flex gap-[2px] mb-[4px] text-[8px] font-bold">
-                  {item.appr > 0 && <span className="text-[#1e60aa]">{item.appr}</span>}
-                  {item.rej > 0 && <span className="text-[#f57c00]">{item.rej}</span>}
-                  {item.pend > 0 && <span className="text-slate-400">{item.pend}</span>}
-                </div>
+                <div className="flex items-end justify-center gap-[2px] w-full h-[85%]">
+                  {/* Approved */}
+                  <div className="flex flex-col items-center justify-end w-[22%] h-full">
+                    {item.appr > 0 && (
+                      <span className="text-[#059669] text-[8px] font-bold mb-[2px]">
+                        {item.appr}
+                      </span>
+                    )}
+                    <div
+                      className="w-full bg-[#059669] rounded-t-[1px]"
+                      style={{ height: `${hAppr}%`, minHeight: item.appr > 0 ? '2px' : '0px' }}
+                    />
+                  </div>
 
-                <div className="flex items-end justify-center gap-[2px] w-full h-[65%]">
-                  <div
-                    className="w-[30%] bg-[#1e60aa] rounded-t-[1px]"
-                    style={{ height: `${hAppr}%`, minHeight: item.appr > 0 ? '2px' : '0px' }}
-                  />
-                  <div
-                    className="w-[30%] bg-[#f57c00] rounded-t-[1px]"
-                    style={{ height: `${hRej}%`, minHeight: item.rej > 0 ? '2px' : '0px' }}
-                  />
-                  <div
-                    className="w-[30%] bg-[#b0bec5] rounded-t-[1px]"
-                    style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }}
-                  />
+                  {/* Closed */}
+                  <div className="flex flex-col items-center justify-end w-[22%] h-full">
+                    {item.closed > 0 && (
+                      <span className="text-[#475569] text-[8px] font-bold mb-[2px]">
+                        {item.closed}
+                      </span>
+                    )}
+                    <div
+                      className="w-full bg-[#475569] rounded-t-[1px]"
+                      style={{ height: `${hClosed}%`, minHeight: item.closed > 0 ? '2px' : '0px' }}
+                    />
+                  </div>
+
+                  {/* Rejected */}
+                  <div className="flex flex-col items-center justify-end w-[22%] h-full">
+                    {item.rej > 0 && (
+                      <span className="text-[#dc2626] text-[8px] font-bold mb-[2px]">
+                        {item.rej}
+                      </span>
+                    )}
+                    <div
+                      className="w-full bg-[#dc2626] rounded-t-[1px]"
+                      style={{ height: `${hRej}%`, minHeight: item.rej > 0 ? '2px' : '0px' }}
+                    />
+                  </div>
+
+                  {/* Pending */}
+                  <div className="flex flex-col items-center justify-end w-[22%] h-full">
+                    {item.pend > 0 && (
+                      <span className="text-slate-400 text-[8px] font-bold mb-[2px]">
+                        {item.pend}
+                      </span>
+                    )}
+                    <div
+                      className="w-full bg-[#b0bec5] rounded-t-[1px]"
+                      style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }}
+                    />
+                  </div>
                 </div>
 
                 <span className="text-[9px] font-bold text-slate-400 mt-[6px] uppercase tracking-wider">
@@ -1592,6 +1628,7 @@ export const DashboardOverview = ({
       const dataMap = datesToShow.map(dInfo => ({
         label: dInfo.label,
         appr: 0,
+        closed: 0,
         rej: 0,
         pend: 0
       }));
@@ -1602,8 +1639,10 @@ export const DashboardOverview = ({
         const idx = datesToShow.findIndex(dInfo => dInfo.dateStr === cDateStr);
         if (idx !== -1) {
           const dispStatus = getRequestDisplayStatus(c);
-          if (dispStatus === 'Approved' || dispStatus === 'Closed') {
+          if (dispStatus === 'Approved') {
             dataMap[idx].appr++;
+          } else if (dispStatus === 'Closed') {
+            dataMap[idx].closed++;
           } else if (dispStatus === 'Rejected') {
             dataMap[idx].rej++;
           } else {
@@ -1613,7 +1652,7 @@ export const DashboardOverview = ({
       });
 
       const maxVal = Math.max(
-        ...dataMap.map(item => Math.max(item.appr, item.rej, item.pend)),
+        ...dataMap.map(item => Math.max(item.appr, item.closed, item.rej, item.pend)),
         5
       );
 
@@ -1628,6 +1667,7 @@ export const DashboardOverview = ({
         <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px] overflow-x-auto gap-2`}>
           {dataMap.map((item, idx) => {
             const hAppr = (item.appr / maxVal) * 100;
+            const hClosed = (item.closed / maxVal) * 100;
             const hRej = (item.rej / maxVal) * 100;
             const hPend = (item.pend / maxVal) * 100;
 
@@ -1636,25 +1676,58 @@ export const DashboardOverview = ({
                 key={idx} 
                 className={`flex flex-col items-center h-full justify-end group min-w-[36px] ${barWidthClass}`}
               >
-                <div className="flex gap-[2px] mb-[4px] text-[8px] font-bold">
-                  {item.appr > 0 && <span className="text-[#1e60aa]">{item.appr}</span>}
-                  {item.rej > 0 && <span className="text-[#f57c00]">{item.rej}</span>}
-                  {item.pend > 0 && <span className="text-slate-400">{item.pend}</span>}
-                </div>
+                <div className="flex items-end justify-center gap-[2px] w-full h-[85%]">
+                  {/* Approved */}
+                  <div className="flex flex-col items-center justify-end w-[22%] h-full">
+                    {item.appr > 0 && (
+                      <span className="text-[#059669] text-[8px] font-bold mb-[2px]">
+                        {item.appr}
+                      </span>
+                    )}
+                    <div
+                      className="w-full bg-[#059669] rounded-t-[1px]"
+                      style={{ height: `${hAppr}%`, minHeight: item.appr > 0 ? '2px' : '0px' }}
+                    />
+                  </div>
 
-                <div className="flex items-end justify-center gap-[2px] w-full h-[65%]">
-                  <div
-                    className="w-[30%] bg-[#1e60aa] rounded-t-[1px]"
-                    style={{ height: `${hAppr}%`, minHeight: item.appr > 0 ? '2px' : '0px' }}
-                  />
-                  <div
-                    className="w-[30%] bg-[#f57c00] rounded-t-[1px]"
-                    style={{ height: `${hRej}%`, minHeight: item.rej > 0 ? '2px' : '0px' }}
-                  />
-                  <div
-                    className="w-[30%] bg-[#b0bec5] rounded-t-[1px]"
-                    style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }}
-                  />
+                  {/* Closed */}
+                  <div className="flex flex-col items-center justify-end w-[22%] h-full">
+                    {item.closed > 0 && (
+                      <span className="text-[#475569] text-[8px] font-bold mb-[2px]">
+                        {item.closed}
+                      </span>
+                    )}
+                    <div
+                      className="w-full bg-[#475569] rounded-t-[1px]"
+                      style={{ height: `${hClosed}%`, minHeight: item.closed > 0 ? '2px' : '0px' }}
+                    />
+                  </div>
+
+                  {/* Rejected */}
+                  <div className="flex flex-col items-center justify-end w-[22%] h-full">
+                    {item.rej > 0 && (
+                      <span className="text-[#dc2626] text-[8px] font-bold mb-[2px]">
+                        {item.rej}
+                      </span>
+                    )}
+                    <div
+                      className="w-full bg-[#dc2626] rounded-t-[1px]"
+                      style={{ height: `${hRej}%`, minHeight: item.rej > 0 ? '2px' : '0px' }}
+                    />
+                  </div>
+
+                  {/* Pending */}
+                  <div className="flex flex-col items-center justify-end w-[22%] h-full">
+                    {item.pend > 0 && (
+                      <span className="text-slate-400 text-[8px] font-bold mb-[2px]">
+                        {item.pend}
+                      </span>
+                    )}
+                    <div
+                      className="w-full bg-[#b0bec5] rounded-t-[1px]"
+                      style={{ height: `${hPend}%`, minHeight: item.pend > 0 ? '2px' : '0px' }}
+                    />
+                  </div>
                 </div>
 
                 <span className="text-[8px] font-bold text-slate-500 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center rotate-45 sm:rotate-0 translate-y-0.5">
@@ -3443,11 +3516,15 @@ export const DashboardOverview = ({
                 <div className="flex items-center gap-[16px] text-[10px] font-bold text-slate-500 select-none">
                   <div className="flex items-center gap-[12px]">
                     <div className="flex items-center gap-[4px]">
-                      <span className="w-[8px] h-[8px] rounded-full bg-[#1e60aa]" />
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#059669]" />
                       <span>Appr</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
-                      <span className="w-[8px] h-[8px] rounded-full bg-[#f57c00]" />
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#475569]" />
+                      <span>Closed</span>
+                    </div>
+                    <div className="flex items-center gap-[4px]">
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#dc2626]" />
                       <span>Rej</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
