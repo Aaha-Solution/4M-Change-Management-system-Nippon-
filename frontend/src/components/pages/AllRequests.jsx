@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ClipboardList, Eye, EyeOff, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download } from 'lucide-react';
+import { ClipboardList, Eye, EyeOff, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download, Upload } from 'lucide-react';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '../../utils/dateUtils';
@@ -44,6 +44,20 @@ export const AllRequests = ({
   const [editL2Data, setEditL2Data] = useState({});
   const [editL3Data, setEditL3Data] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadedFilesList, setUploadedFilesList] = useState([]);
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
 
   useEffect(() => {
     if (!selectedLog) {
@@ -351,10 +365,10 @@ export const AllRequests = ({
     setIsSaving(true);
     try {
       if (activeTab === 'l1') {
-        await updateChangeDetails(selectedLog.changeNo, 'l1', editL1Data);
+        await updateChangeDetails(selectedLog.changeNo, 'l1', editL1Data, uploadedFilesList);
         setSelectedL1Details(editL1Data);
       } else if (activeTab === 'l2') {
-        await updateChangeDetails(selectedLog.changeNo, 'l2', editL2Data);
+        await updateChangeDetails(selectedLog.changeNo, 'l2', editL2Data, uploadedFilesList);
         setSelectedL2Details(editL2Data);
       } else if (activeTab === 'l3') {
         await updateChangeDetails(selectedLog.changeNo, 'l3', editL3Data);
@@ -362,6 +376,7 @@ export const AllRequests = ({
       }
       setToastMsg(`${activeTab.toUpperCase()} details updated successfully!`);
       setIsEditMode(false);
+      setUploadedFilesList([]);
     } catch (err) {
       console.error(err);
       setToastMsg('Failed to save updates.');
@@ -373,23 +388,147 @@ export const AllRequests = ({
   const renderDynamicEditForm = (data, setData, tab = 'l1') => {
     if (!data) return <div className="text-sm text-slate-500">No data available to edit.</div>;
 
-    const renderInput = (key, value) => {
-      if (['id', 'change_no', 'changeNo'].includes(key)) return null;
+    const renderFieldInput = (label, key, options = {}) => {
+      const value = data[key];
+      const placeholder = options.placeholder || '';
+      const type = options.type || 'text';
+      const disabled = options.disabled || false;
+      
+      const fileKeys = [
+        'file_desc', 'file_improvement', 'file_trace_from', 'file_trace_to', 
+        'file_risk', 'file_sop', 'file_effectiveness', 
+        'weldTest', 'qaTest'
+      ];
+      
+      if (fileKeys.includes(key)) {
+        return (
+          <div key={key} className="space-y-[4px] min-w-0">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</label>
+            <div className="flex gap-[8px]">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  readOnly
+                  placeholder="No file attached"
+                  className="w-full bg-slate-50 disabled:bg-slate-100 disabled:text-slate-500 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none text-slate-550 select-none font-medium text-slate-700"
+                  value={value || ''}
+                />
+                {value && value !== '-' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to clear all attachments from this field?')) {
+                        setData({ ...data, [key]: '' });
+                        setUploadedFilesList(prev => prev.filter(f => f.fieldName !== key));
+                      }
+                    }}
+                    className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                    title="Clear attachments"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+              <label className="flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 bg-white hover:bg-slate-50 text-[#0066cc] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none">
+                <Upload size={12} />
+                <span>Upload</span>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const target = e.target;
+                    if (target.files && target.files.length > 0) {
+                      const files = Array.from(target.files);
+                      const names = files.map(f => f.name.replace(/,/g, '_'));
+                      target.value = '';
+
+                      const base64Files = await Promise.all(
+                        files.map(async (file) => {
+                          const name = file.name.replace(/,/g, '_');
+                          // Create local blob URL for immediate preview before save
+                          const localUrl = URL.createObjectURL(file);
+                          setFileUrls(prev => ({ ...prev, [name]: localUrl }));
+                          
+                          return {
+                            name,
+                            type: file.type || 'application/octet-stream',
+                            data: await fileToBase64(file),
+                            fieldName: key
+                          };
+                        })
+                      );
+
+                      setUploadedFilesList(prev => {
+                        const filtered = prev.filter(f => !(f.fieldName === key && names.includes(f.name)));
+                        return [...filtered, ...base64Files];
+                      });
+
+                      const existing = value && value !== '-' ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
+                      const updated = Array.from(new Set([...existing, ...names])).join(', ');
+                      setData({ ...data, [key]: updated });
+                    }
+                  }}
+                />
+              </label>
+            </div>
+
+            {/* Selected File Pills */}
+            {value && value !== '-' && (
+              <div className="flex flex-wrap gap-[6px] pt-[4px]">
+                {value.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
+                  <span key={i} className="inline-flex items-center gap-[6px] bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 px-[8px] py-[2px] rounded-full select-none">
+                    <span 
+                      className="truncate max-w-[150px] font-semibold text-[#0066cc] cursor-pointer hover:underline"
+                      onClick={() => handleViewAttachment(file, data.change_no || data.changeNo || selectedLog.changeNo, tab === 'l2' ? 'L2' : 'L1')}
+                      title="Click to preview file"
+                    >
+                      📎 {file}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to delete "${file}"?`)) {
+                          const existing = value.split(',').map(s => s.trim()).filter(Boolean);
+                          const updated = existing.filter(f => f !== file).join(', ');
+                          setData({ ...data, [key]: updated });
+                          setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === key && f.name === file)));
+                        }
+                      }}
+                      className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-[12px]"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      const isTextArea = type === 'textarea' || (typeof value === 'string' && value.length > 80);
+
       return (
-        <div key={key} className="space-y-[4px]">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{key.replace(/_/g, ' ')}</label>
-          {typeof value === 'string' && value.length > 100 ? (
+        <div key={key} className="space-y-[4px] min-w-0">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</label>
+          {isTextArea ? (
             <textarea
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none"
-              rows={4}
+              className="w-full bg-slate-50 disabled:bg-slate-105 disabled:text-slate-500 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700"
+              rows={options.rows || 3}
               value={value || ''}
+              disabled={disabled}
+              placeholder={placeholder}
               onChange={(e) => setData({ ...data, [key]: e.target.value })}
             />
           ) : (
             <input
-              type="text"
-              className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200"
+              type={type}
+              className="w-full bg-slate-50 disabled:bg-slate-105 disabled:text-slate-500 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 font-medium text-slate-700"
               value={value || ''}
+              disabled={disabled}
+              placeholder={placeholder}
               onChange={(e) => setData({ ...data, [key]: e.target.value })}
             />
           )}
@@ -397,33 +536,678 @@ export const AllRequests = ({
       );
     };
 
-    if (tab === 'l1') {
-      const tKeys = ['trace_from', 'trace_to', 'risk_analysis', 'sop_update', 'customer_approval', 'effectiveness_monitoring', 'hod_approval', 'hodStatus', 'hodRemarks', 'file_trace_from', 'file_trace_to', 'file_risk', 'file_sop', 'file_effectiveness'];
-      const dKeys = ['description', 'improvement_area', 'date_start', 'date_close', 'file_desc', 'file_improvement', 'improvement_table_data'];
-      const gKeys = ['title', 'unit', 'change_in', 'dept', 'change_type', 'process_name', 'process_line', 'machine_no', 'request_by', 'crRequester', 'crDate', 'requested_time', 'crStatus'];
+    const renderMockupFileInput = (label, key, isRequired = false) => {
+      const val = data[key] || '';
+      return (
+        <div key={key} className="space-y-[4px] min-w-0">
+          <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+            {label} {isRequired && <span className="text-rose-500">*</span>}
+          </label>
+          <div className="flex gap-[8px]">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                readOnly
+                placeholder="e.g. proof-log.pdf, image.png"
+                value={val}
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 select-none font-medium text-slate-700"
+              />
+              {val && val !== '-' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to clear all attachments from this field?')) {
+                      setData({ ...data, [key]: '' });
+                      setUploadedFilesList(prev => prev.filter(f => f.fieldName !== key));
+                    }
+                  }}
+                  className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                  title="Clear attachments"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+            <label className="flex items-center justify-center gap-[6px] px-[16px] py-[8px] border border-[#0066cc] bg-white hover:bg-slate-50 text-[#0066cc] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none">
+              <Upload size={12} />
+              <span>Upload</span>
+              <input
+                type="file"
+                multiple
+                accept="image/*,application/pdf"
+                className="hidden"
+                onChange={async (e) => {
+                  const target = e.target;
+                  if (target.files && target.files.length > 0) {
+                    const files = Array.from(target.files);
+                    const names = files.map(f => f.name.replace(/,/g, '_'));
+                    target.value = '';
 
-      const tGroup = Object.entries(data).filter(([k]) => tKeys.includes(k));
-      const dGroup = Object.entries(data).filter(([k]) => dKeys.includes(k));
-      const gGroup = Object.entries(data).filter(([k]) => gKeys.includes(k));
-      const oGroup = Object.entries(data).filter(([k]) => !tKeys.includes(k) && !dKeys.includes(k) && !gKeys.includes(k));
+                    const base64Files = await Promise.all(
+                      files.map(async (file) => {
+                        const name = file.name.replace(/,/g, '_');
+                        const localUrl = URL.createObjectURL(file);
+                        setFileUrls(prev => ({ ...prev, [name]: localUrl }));
+                        
+                        return {
+                          name,
+                          type: file.type || 'application/octet-stream',
+                          data: await fileToBase64(file),
+                          fieldName: key
+                        };
+                      })
+                    );
+
+                    setUploadedFilesList(prev => {
+                      const filtered = prev.filter(f => !(f.fieldName === key && names.includes(f.name)));
+                      return [...filtered, ...base64Files];
+                    });
+
+                    const existing = val && val !== '-' ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
+                    const updated = Array.from(new Set([...existing, ...names])).join(', ');
+                    setData({ ...data, [key]: updated });
+                  }
+                }}
+              />
+            </label>
+          </div>
+
+          {/* Selected File Pills */}
+          {val && val !== '-' && (
+            <div className="flex flex-wrap gap-[6px] pt-[4px]">
+              {val.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
+                <span key={i} className="inline-flex items-center gap-[6px] bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 px-[8px] py-[2px] rounded-full select-none">
+                  <span 
+                    className="truncate max-w-[150px] font-semibold text-[#0066cc] cursor-pointer hover:underline"
+                    onClick={() => handleViewAttachment(file, data.change_no || data.changeNo || selectedLog.changeNo, 'L1')}
+                    title="Click to preview file"
+                  >
+                    📎 {file}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`Are you sure you want to delete "${file}"?`)) {
+                        const existing = val.split(',').map(s => s.trim()).filter(Boolean);
+                        const updated = existing.filter(f => f !== file).join(', ');
+                        setData({ ...data, [key]: updated });
+                        setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === key && f.name === file)));
+                      }
+                    }}
+                    className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-[12px]"
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    if (tab === 'l1') {
+      const dKeys = ['description', 'improvement_area', 'date_start', 'date_close', 'file_desc', 'file_improvement', 'improvement_table_data'];
+      const tKeys = ['trace_from', 'trace_to', 'risk_analysis', 'sop_update', 'customer_approval', 'effectiveness_monitoring', 'hod_approval', 'hodStatus', 'hodRemarks', 'file_trace_from', 'file_trace_to', 'file_risk', 'file_sop', 'file_effectiveness'];
+      
+      const allDefinedKeys = ['title', 'unit', 'change_in', 'dept', 'change_type', 'process_name', 'process_line', 'machine_no', 'request_by', 'crRequester', 'crDate', 'requested_time', 'crStatus', ...dKeys, ...tKeys, 'id', 'change_no', 'changeNo'];
+      const otherFields = Object.keys(data).filter(k => !allDefinedKeys.includes(k));
+
+      const processOptions = [...new Set(combinedData.map(i => i.processName).filter(Boolean))];
+      const machineOptions = [...new Set(combinedData.map(i => i.machineNo).filter(Boolean))];
 
       return (
-        <div className="space-y-[24px] animate-fade-in-up">
+        <div className="space-y-[24px] animate-fade-in-up text-slate-800">
+          {/* Identifiers Card */}
           <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
-            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5"><Folder size={14} className="text-[#0066cc]" /> General Information</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-              {gGroup.map(([k, v]) => renderInput(k, v))}
-              {oGroup.map(([k, v]) => renderInput(k, v))}
+            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Identifiers</h4>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+              {/* UNIT */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit <span className="text-rose-500">*</span></label>
+                <select
+                  value={data.unit || ''}
+                  onChange={(e) => setData({ ...data, unit: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+                >
+                  <option value="">— Select Unit —</option>
+                  <option value="UNIT-2">UNIT-2</option>
+                </select>
+              </div>
+
+              {/* 4M CHANGE NO */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-[12px] text-slate-400 text-[12px]">#</span>
+                  <input
+                    type="text"
+                    disabled
+                    value={data.change_no || ''}
+                    className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] pl-[24px] pr-[54px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-medium"
+                  />
+                  <span className="absolute right-[8px] bg-sky-50 border border-sky-100 text-[#0066cc] text-[9px] font-bold rounded px-[6px] py-[2px] uppercase select-none">
+                    Auto
+                  </span>
+                </div>
+                <span className="block text-[9px] text-slate-400 mt-[2px]">Unique ID auto-assigned on submission</span>
+              </div>
+
+              {/* REQUESTED DATE */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    disabled
+                    value={data.crDate ? formatDateToDDMMYYYY(data.crDate) : '-'}
+                    className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[54px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-medium"
+                  />
+                  <span className="absolute right-[8px] bg-sky-50 border border-sky-100 text-[#0066cc] text-[9px] font-bold rounded px-[6px] py-[2px] uppercase select-none">
+                    Auto
+                  </span>
+                </div>
+                <span className="block text-[9px] text-slate-400 mt-[2px]">Auto-captured: today's date</span>
+              </div>
+
+              {/* TIME */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Time <span className="text-rose-500">*</span></label>
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    disabled
+                    value={data.requested_time || ''}
+                    className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[54px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-medium"
+                  />
+                  <span className="absolute right-[8px] bg-slate-50 border border-slate-200 text-slate-600 text-[9px] font-bold rounded px-[6px] py-[2px] uppercase select-none">
+                    Captured
+                  </span>
+                </div>
+                <span className="block text-[9px] text-slate-400 mt-[2px]">Auto-captured on load</span>
+              </div>
+            </div>
+
+            {/* CHANGE IN */}
+            <div className="space-y-[6px] pt-[8px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In <span className="text-rose-500">*</span></label>
+              <div className="flex flex-wrap gap-x-[16px] gap-y-[8px] text-[12px] text-slate-700 font-medium select-none">
+                {['Man', 'Machine', 'Material', 'Method', 'Measurement', 'Mother Nature'].map(key => {
+                  const isChecked = (data.change_in || '').split(',').map(s => s.trim()).includes(key);
+                  return (
+                    <label key={key} className="flex items-center gap-[6px] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {
+                          const existing = (data.change_in || '').split(',').map(s => s.trim()).filter(Boolean);
+                          let updated;
+                          if (existing.includes(key)) {
+                            updated = existing.filter(k => k !== key);
+                          } else {
+                            updated = [...existing, key];
+                          }
+                          setData({ ...data, change_in: updated.join(', ') });
+                        }}
+                        className="w-[14px] h-[14px] rounded border-slate-300 text-[#0066cc] focus:ring-[#0066cc]"
+                      />
+                      <span>{key}</span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
           </div>
+
+          {/* Request Details Card */}
           <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
-            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5"><FileText size={14} className="text-[#0066cc]" /> Details & Justification</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">{dGroup.map(([k, v]) => renderInput(k, v))}</div>
+            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Request Details</h4>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+              {/* CHANGE REQUEST DEPT */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request Dept <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  disabled
+                  value={data.dept || ''}
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-semibold"
+                />
+                <span className="block text-[9px] text-slate-400 mt-[2px]">Auto-captured from logged-in user</span>
+              </div>
+
+              {/* CHANGE REQUEST BY */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  disabled
+                  value={data.request_by || ''}
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-semibold"
+                />
+              </div>
+
+              {/* PROCESS NAME */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name <span className="text-rose-500">*</span></label>
+                <select
+                  value={data.process_name || ''}
+                  onChange={(e) => setData({ ...data, process_name: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+                >
+                  <option value="">— Select or Add Process —</option>
+                  {processOptions.filter(p => p !== 'All').map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* PROCESS LINE */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  placeholder="e.g. Line 3 / Bay B"
+                  value={data.process_line || ''}
+                  onChange={(e) => setData({ ...data, process_line: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+                />
+              </div>
+
+              {/* MACHINE NO */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No <span className="text-rose-500">*</span></label>
+                <select
+                  value={data.machine_no || ''}
+                  onChange={(e) => setData({ ...data, machine_no: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+                >
+                  <option value="">— Select or Add Machine —</option>
+                  {machineOptions.filter(m => m !== 'All').map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
+
+          {/* Change Description */}
+          <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px]">
+            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Change Description</h4>
+            
+            {/* CONTEXT OF CHANGE */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                Context of Change <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                value={data.title || ''}
+                onChange={(e) => setData({ ...data, title: e.target.value })}
+                placeholder="Brief description of WHY this change is needed (min 10 characters)..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
+              />
+              <span className="block text-[10px] text-slate-400">
+                {(data.title || '').length} / 10 min
+              </span>
+            </div>
+
+            {/* DETAILED CHANGE DESCRIPTION */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                Detailed Change Description <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                value={data.description || ''}
+                onChange={(e) => setData({ ...data, description: e.target.value })}
+                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[100px]"
+              />
+              <span className="block text-[10px] text-slate-400">
+                {(data.description || '').length} / 20 min
+              </span>
+            </div>
+
+            {/* UPLOAD SUPPORTING FILES */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                Upload Supporting Files <span className="text-rose-500">*</span>
+              </label>
+              <div className="flex gap-[8px]">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    readOnly
+                    placeholder="e.g. proof-log.pdf, image.png"
+                    value={data.file_desc || ''}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 select-none font-medium text-slate-700"
+                  />
+                  {data.file_desc && data.file_desc !== '-' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to clear all attachments from this field?')) {
+                          setData({ ...data, file_desc: '' });
+                          setUploadedFilesList(prev => prev.filter(f => f.fieldName !== 'file_desc'));
+                        }
+                      }}
+                      className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                      title="Clear attachments"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+                <label className="flex items-center justify-center gap-[6px] px-[16px] py-[8px] border border-[#0066cc] bg-white hover:bg-slate-50 text-[#0066cc] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none">
+                  <Upload size={12} />
+                  <span>Upload</span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const target = e.target;
+                      if (target.files && target.files.length > 0) {
+                        const files = Array.from(target.files);
+                        const names = files.map(f => f.name.replace(/,/g, '_'));
+                        target.value = '';
+
+                        const base64Files = await Promise.all(
+                          files.map(async (file) => {
+                            const name = file.name.replace(/,/g, '_');
+                            const localUrl = URL.createObjectURL(file);
+                            setFileUrls(prev => ({ ...prev, [name]: localUrl }));
+                            
+                            return {
+                              name,
+                              type: file.type || 'application/octet-stream',
+                              data: await fileToBase64(file),
+                              fieldName: 'file_desc'
+                            };
+                          })
+                        );
+
+                        setUploadedFilesList(prev => {
+                          const filtered = prev.filter(f => !(f.fieldName === 'file_desc' && names.includes(f.name)));
+                          return [...filtered, ...base64Files];
+                        });
+
+                        const existing = data.file_desc && data.file_desc !== '-' ? data.file_desc.split(',').map(s => s.trim()).filter(Boolean) : [];
+                        const updated = Array.from(new Set([...existing, ...names])).join(', ');
+                        setData({ ...data, file_desc: updated });
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              {/* Selected File Pills */}
+              {data.file_desc && data.file_desc !== '-' && (
+                <div className="flex flex-wrap gap-[6px] pt-[4px]">
+                  {data.file_desc.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
+                    <span key={i} className="inline-flex items-center gap-[6px] bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 px-[8px] py-[2px] rounded-full select-none">
+                      <span 
+                        className="truncate max-w-[150px] font-semibold text-[#0066cc] cursor-pointer hover:underline"
+                        onClick={() => handleViewAttachment(file, data.change_no || data.changeNo || selectedLog.changeNo, 'L1')}
+                        title="Click to preview file"
+                      >
+                        📎 {file}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to delete "${file}"?`)) {
+                            const existing = data.file_desc.split(',').map(s => s.trim()).filter(Boolean);
+                            const updated = existing.filter(f => f !== file).join(', ');
+                            setData({ ...data, file_desc: updated });
+                            setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === 'file_desc' && f.name === file)));
+                          }
+                        }}
+                        className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-[12px]"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Implementation Timeline */}
+          <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px]">
+            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Implementation Timeline</h4>
+
+            {/* CHANGE IMPROVEMENT AREA */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                Change Improvement Area <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={data.improvement_area || ''}
+                onChange={(e) => setData({ ...data, improvement_area: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+              >
+                <option value="">— Select Area —</option>
+                <option value="Cost">Cost</option>
+                <option value="Quality">Quality</option>
+                <option value="Productivity">Productivity</option>
+                <option value="Safety">Safety</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+
+            {/* UPLOAD SUPPORTING FILES (improvement_area) */}
+            {renderMockupFileInput('Upload Supporting Files', 'file_improvement', true)}
+
+            {/* PERMANENT / TEMPORARY CHANGE */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                Permanent / Temporary Change <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={data.change_type || ''}
+                onChange={(e) => setData({ ...data, change_type: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+              >
+                <option value="">— Select —</option>
+                <option value="Permanent">Permanent</option>
+                <option value="Temporary">Temporary</option>
+              </select>
+            </div>
+
+            {/* IMPLEMENT / CHANGE DATE START */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                Implement / Change Date Start <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={data.date_start ? data.date_start.slice(0, 10) : ''}
+                onChange={(e) => setData({ ...data, date_start: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+              />
+            </div>
+
+            {/* PART TRACEABILITY DETAILS (FROM CHANGES) */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                Part Traceability Details (From Changes) <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                value={data.trace_from || ''}
+                onChange={(e) => setData({ ...data, trace_from: e.target.value })}
+                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
+              />
+              <span className="block text-[10px] text-slate-400">
+                {(data.trace_from || '').length} / 20 min
+              </span>
+            </div>
+
+            {/* UPLOAD SUPPORTING FILES (trace_from) */}
+            {renderMockupFileInput('Upload Supporting Files', 'file_trace_from', false)}
+
+            {/* CHANGE DATE CLOSE */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                Change Date Close <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={data.date_close ? data.date_close.slice(0, 10) : ''}
+                onChange={(e) => setData({ ...data, date_close: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+              />
+            </div>
+
+            {/* PART TRACEABILITY DETAILS (TO CHANGES) */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                Part Traceability Details (To Changes) <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                value={data.trace_to || ''}
+                onChange={(e) => setData({ ...data, trace_to: e.target.value })}
+                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
+              />
+              <span className="block text-[10px] text-slate-400">
+                {(data.trace_to || '').length} / 20 min
+              </span>
+            </div>
+
+            {/* UPLOAD SUPPORTING FILES (trace_to) */}
+            {renderMockupFileInput('Upload Supporting Files', 'file_trace_to', true)}
+          </div>
+
+          {/* Risk, SOP & Approvals */}
           <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
-            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5"><Cpu size={14} className="text-[#0066cc]" /> Traceability, Risk & Approvals</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">{tGroup.map(([k, v]) => renderInput(k, v))}</div>
+            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
+              <Cpu size={14} className="text-[#0066cc]" />
+              <span>Risk, SOP & Approvals</span>
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+              {renderFieldInput('Risk Analysis & Mitigations', 'risk_analysis', { type: 'textarea' })}
+              {renderFieldInput('SOP / WI / Control Plan Update', 'sop_update', { type: 'textarea' })}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mt-4">
+              {renderFieldInput('HOD Approval Status', 'hod_approval')}
+              {renderFieldInput('Customer Approval Required', 'customer_approval')}
+              {renderFieldInput('Effectiveness Monitoring', 'effectiveness_monitoring', { type: 'textarea' })}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] border-t border-slate-100 pt-4">
+              {renderFieldInput('HOD Remarks / Comments', 'hodRemarks', { type: 'textarea' })}
+              {renderFieldInput('HOD Status', 'hodStatus', { disabled: true })}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+              {renderFieldInput('Improvement Table Data', 'improvement_table_data')}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] border-t border-slate-100 pt-4">
+              {renderMockupFileInput('File Risk', 'file_risk')}
+              {renderMockupFileInput('File SOP', 'file_sop')}
+              {renderMockupFileInput('File Effectiveness', 'file_effectiveness')}
+            </div>
           </div>
+
+          {otherFields.length > 0 && (
+            <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
+              <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
+                <FileText size={14} className="text-[#0066cc]" />
+                <span>Other Fields</span>
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                {otherFields.map(k => renderFieldInput(k.replace(/_/g, ' '), k))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (tab === 'l2') {
+      const l2Keys = ['date', 'requester', 'status', 'changeNo', 'weldTest', 'qaTest', 'remarks'];
+      const otherFields = Object.keys(data).filter(k => !l2Keys.includes(k) && !['id', 'change_no', 'changeNo'].includes(k));
+      return (
+        <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px] animate-fade-in-up">
+          <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
+            <CheckCircle2 size={14} className="text-[#0066cc]" />
+            <span>L2 Validation Details</span>
+          </h4>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+            {renderFieldInput('Validation Date', 'date')}
+            {renderFieldInput('Validated By', 'requester')}
+            {renderFieldInput('Validation Status', 'status')}
+            {renderFieldInput('Change No', 'changeNo', { disabled: true })}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+            {renderFieldInput('PED Validation Attachment', 'weldTest')}
+            {renderFieldInput('QA Setup Verification Attachment', 'qaTest')}
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            {renderFieldInput('Validator Remarks / Comments', 'remarks', { type: 'textarea' })}
+          </div>
+
+          {otherFields.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-slate-100 space-y-[16px]">
+              <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Other Fields</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                {otherFields.map(k => renderFieldInput(k.replace(/_/g, ' '), k))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (tab === 'l3') {
+      const l3Keys = ['changeNo', 'requester', 'date', 'ped', 'quality', 'production', 'maintenance', 'pcl', 'materials', 'marketing', 'hr', 'safety', 'unitHead'];
+      const otherFields = Object.keys(data).filter(k => !l3Keys.includes(k) && !['id', 'change_no', 'changeNo'].includes(k));
+      return (
+        <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px] animate-fade-in-up">
+          <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
+            <Cpu size={14} className="text-[#0066cc]" />
+            <span>L3 Approval Status Matrix</span>
+          </h4>
+
+          {/* Metadata */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-[16px] pb-[16px] border-b border-slate-100">
+            {renderFieldInput('4M Change No', 'changeNo', { disabled: true })}
+            {renderFieldInput('Change Request By', 'requester', { disabled: true })}
+            {renderFieldInput('Requested Date', 'date', { disabled: true })}
+          </div>
+
+          {/* Matrix Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
+            {renderFieldInput('PED', 'ped')}
+            {renderFieldInput('Quality', 'quality')}
+            {renderFieldInput('Production', 'production')}
+            {renderFieldInput('Maintenance', 'maintenance')}
+            {renderFieldInput('PC & L', 'pcl')}
+            {renderFieldInput('Materials', 'materials')}
+            {renderFieldInput('Marketing', 'marketing')}
+            {renderFieldInput('HR', 'hr')}
+            {renderFieldInput('Safety', 'safety')}
+            {renderFieldInput('Unit Head', 'unitHead')}
+          </div>
+
+          {otherFields.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-slate-100 space-y-[16px]">
+              <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Other Fields</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                {otherFields.map(k => renderFieldInput(k.replace(/_/g, ' '), k))}
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -434,7 +1218,10 @@ export const AllRequests = ({
           <FileText size={14} className="text-[#0066cc]" /> {tab === 'l2' ? 'Validation Details' : 'Approval Details'}
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-          {Object.entries(data).map(([key, value]) => renderInput(key, value))}
+          {Object.entries(data).map(([key, value]) => {
+            if (['id', 'change_no', 'changeNo'].includes(key)) return null;
+            return renderFieldInput(key.replace(/_/g, ' '), key);
+          })}
         </div>
       </div>
     );
