@@ -473,7 +473,7 @@ export const L1Request = ({
     }
 
     if (!dateStart || !dateStart.trim()) {
-      newErrors.dateStart = 'Please enter an Implement / Change Date Start.';
+      newErrors.dateStart = 'Please enter an Implement / Change Start Date .';
     } else {
       const parsedRequestDate = parseDDMMYYYYToDate(requestedDate);
       const parsedDateStart = parseDDMMYYYYToDate(dateStart);
@@ -493,7 +493,7 @@ export const L1Request = ({
     }
 
     if (!dateClose || !dateClose.trim()) {
-      newErrors.dateClose = 'Please enter a Change Date Close.';
+      newErrors.dateClose = 'Please enter a Change Close Date .';
     } else {
       const parsedDateStart = parseDDMMYYYYToDate(dateStart);
       const parsedDateClose = parseDDMMYYYYToDate(dateClose);
@@ -1168,7 +1168,7 @@ export const L1Request = ({
 
             {/* IMPLEMENT / CHANGE DATE START */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start <span className="text-rose-500">*</span></label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Start Date  <span className="text-rose-500">*</span></label>
               <CustomDatePicker
                 id="dateStart"
                 value={dateStart}
@@ -1227,7 +1227,7 @@ export const L1Request = ({
 
             {/* CHANGE DATE CLOSE */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close <span className="text-rose-500">*</span></label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Close Date  <span className="text-rose-500">*</span></label>
               <CustomDatePicker
                 id="dateClose"
                 value={dateClose}
