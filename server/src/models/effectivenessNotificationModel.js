@@ -99,7 +99,7 @@ export const triggerEffectivenessQAAlert = async (changeNo, qaApproval, remarks)
           
           <div style="text-align: center; margin: 32px 0 12px 0;">
             <a href="${process.env.APP_URL || 'http://localhost:5173'}" style="background-color: ${headerBg}; color: white; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-              Access CMS Portal
+              Go to Dashboard
             </a>
           </div>
         </div>
