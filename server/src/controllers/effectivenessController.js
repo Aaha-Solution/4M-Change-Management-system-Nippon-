@@ -79,12 +79,29 @@ export const updateLog = async (req, res) => {
   }
 
   try {
-    const canUpdate = await checkCanUpdate(req.user?.email);
-    if (!canUpdate) {
+    const [userRows] = await pool.query('SELECT department, role FROM users WHERE email = ?', [req.user?.email]);
+    if (userRows.length === 0) {
+      return res.status(403).json({ error: 'Access Denied: User not found.' });
+    }
+    const user = userRows[0];
+    const dept = (user.department || '').toLowerCase();
+    const role = (user.role || '').toLowerCase();
+    const isAdmin = role === 'admin' || role === 'administrator';
+    const isQADept = dept === 'quality' || dept === 'qad' || dept === 'qa';
+
+    if (!isAdmin && !isQADept) {
       return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department and Administrators are allowed to update effectiveness logs.' });
     }
 
-    const updated = await effectivenessModel.updateLog(id, logData, attachments);
+    if (!isAdmin && isQADept) {
+      const [logRows] = await pool.query('SELECT qa_update_count FROM effectiveness_logs WHERE id = ?', [id]);
+      if (logRows.length > 0 && logRows[0].qa_update_count >= 1) {
+        return res.status(403).json({ error: 'Access Denied: QA users are only allowed to update an effectiveness log once. Unlimited updates are allowed for Administrators.' });
+      }
+    }
+
+    const isQaUser = !isAdmin && isQADept;
+    const updated = await effectivenessModel.updateLog(id, logData, attachments, isQaUser);
     res.status(200).json({
       message: 'Effectiveness log updated successfully',
       log: updated

@@ -33,6 +33,17 @@ const ensureTablesExist = async () => {
         FOREIGN KEY (log_id) REFERENCES effectiveness_logs(id) ON UPDATE CASCADE ON DELETE CASCADE
       )
     `);
+
+    // Ensure qa_update_count column exists in effectiveness_logs
+    try {
+      const [columns] = await pool.query("SHOW COLUMNS FROM effectiveness_logs LIKE 'qa_update_count'");
+      if (columns.length === 0) {
+        await pool.query("ALTER TABLE effectiveness_logs ADD COLUMN qa_update_count INT NOT NULL DEFAULT 0");
+        console.log('✅ Added column qa_update_count to effectiveness_logs table.');
+      }
+    } catch (err) {
+      console.error('⚠️ Error adding qa_update_count column to effectiveness_logs:', err.message);
+    }
   } catch (err) {
     console.error('Error ensuring and seeding effectiveness tables:', err);
   }
@@ -58,7 +69,8 @@ export const getLogs = async () => {
             DATE_FORMAT(COALESCE(c.date, e.req_date), '%Y-%m-%d') as reqDate, 
             COALESCE(c.title, e.context) as context, 
             DATE_FORMAT(COALESCE(l1.date_start, e.start_date, c.date), '%Y-%m-%d') as startDate, 
-            e.month_wise as monthWise, e.remarks, e.attachment, e.status, e.qa_approval as qaApproval 
+            e.month_wise as monthWise, e.remarks, e.attachment, e.status, e.qa_approval as qaApproval,
+            e.qa_update_count as qaUpdateCount
      FROM effectiveness_logs e
      LEFT JOIN change_requests c ON e.change_no = c.id
      LEFT JOIN l1_requests l1 ON e.change_no = l1.change_no
@@ -111,7 +123,7 @@ export const createLog = async (logData, attachments) => {
   }
 };
 
-export const updateLog = async (id, logData, attachments) => {
+export const updateLog = async (id, logData, attachments, isQaUser = false) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -119,12 +131,21 @@ export const updateLog = async (id, logData, attachments) => {
     const { monthWise, remarks, attachment, status, qaApproval } = logData;
     
     // 1. Update the log details
-    await connection.query(
-      `UPDATE effectiveness_logs 
-       SET month_wise = ?, remarks = ?, attachment = ?, status = ?, qa_approval = ? 
-       WHERE id = ?`,
-      [monthWise, remarks, attachment || '', status, qaApproval, id]
-    );
+    if (isQaUser) {
+      await connection.query(
+        `UPDATE effectiveness_logs 
+         SET month_wise = ?, remarks = ?, attachment = ?, status = ?, qa_approval = ?, qa_update_count = qa_update_count + 1 
+         WHERE id = ?`,
+        [monthWise, remarks, attachment || '', status, qaApproval, id]
+      );
+    } else {
+      await connection.query(
+        `UPDATE effectiveness_logs 
+         SET month_wise = ?, remarks = ?, attachment = ?, status = ?, qa_approval = ? 
+         WHERE id = ?`,
+        [monthWise, remarks, attachment || '', status, qaApproval, id]
+      );
+    }
     
     // 2. Delete any attachments that are no longer in the updated attachment list
     const currentAttachments = attachment ? attachment.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -174,14 +195,15 @@ export const updateLog = async (id, logData, attachments) => {
               DATE_FORMAT(COALESCE(c.date, e.req_date), '%Y-%m-%d') as reqDate, 
               COALESCE(c.title, e.context) as context, 
               DATE_FORMAT(COALESCE(l1.date_start, e.start_date, c.date), '%Y-%m-%d') as startDate, 
-              e.month_wise as monthWise, e.remarks, e.attachment, e.status, e.qa_approval as qaApproval 
+              e.month_wise as monthWise, e.remarks, e.attachment, e.status, e.qa_approval as qaApproval,
+              e.qa_update_count as qaUpdateCount
        FROM effectiveness_logs e
        LEFT JOIN change_requests c ON e.change_no = c.id
        LEFT JOIN l1_requests l1 ON e.change_no = l1.change_no
        WHERE e.id = ?`,
       [id]
     );
-    return rows.length > 0 ? rows[0] : { id, ...logData };
+    return rows.length > 0 ? rows[0] : { id, ...logData, qaUpdateCount: isQaUser ? 1 : 0 };
   } catch (error) {
     await connection.rollback();
     throw error;
