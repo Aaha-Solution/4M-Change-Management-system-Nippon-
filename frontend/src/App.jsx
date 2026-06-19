@@ -15,42 +15,15 @@ const PageLoader = () => (
 
 function App() {
   const [userEmail, setUserEmail] = useState(() => {
-    const token = localStorage.getItem('cms_token') || sessionStorage.getItem('cms_token');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.email || '';
-      } catch (error) {
-        console.warn('Failed to parse email from token:', error);
-      }
-    }
-    return '';
+    return localStorage.getItem('cms_email') || sessionStorage.getItem('cms_email') || '';
   });
 
   const [userRole, setUserRole] = useState(() => {
-    const token = localStorage.getItem('cms_token') || sessionStorage.getItem('cms_token');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.role || '';
-      } catch (error) {
-        console.warn('Failed to parse role from token:', error);
-      }
-    }
-    return '';
+    return localStorage.getItem('cms_role') || sessionStorage.getItem('cms_role') || '';
   });
 
   const [userName, setUserName] = useState(() => {
-    const token = localStorage.getItem('cms_token') || sessionStorage.getItem('cms_token');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.name || '';
-      } catch (error) {
-        console.warn('Failed to parse name from token:', error);
-      }
-    }
-    return '';
+    return localStorage.getItem('cms_name') || sessionStorage.getItem('cms_name') || '';
   });
 
   const [toastMsg, setToastMsg] = useState(null);
@@ -68,25 +41,55 @@ function App() {
   }, [toastMsg]);
 
   const handleLoginSuccess = (email, role, token, rememberMe) => {
-    if (rememberMe) {
-      localStorage.setItem('cms_token', token);
-    } else {
-      sessionStorage.setItem('cms_token', token);
-    }
-    setUserEmail(email);
-    setUserRole(role);
+    let name = '';
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      setUserName(payload.name || '');
-    } catch {
-      setUserName('');
+      name = payload.name || '';
+    } catch (e) {
+      console.warn('Failed to parse name from token:', e);
     }
+
+    if (rememberMe) {
+      localStorage.setItem('cms_token', token);
+      localStorage.setItem('cms_email', email);
+      localStorage.setItem('cms_role', role);
+      localStorage.setItem('cms_name', name);
+      
+      // Clear from session storage to avoid conflicts
+      sessionStorage.removeItem('cms_token');
+      sessionStorage.removeItem('cms_email');
+      sessionStorage.removeItem('cms_role');
+      sessionStorage.removeItem('cms_name');
+    } else {
+      sessionStorage.setItem('cms_token', token);
+      sessionStorage.setItem('cms_email', email);
+      sessionStorage.setItem('cms_role', role);
+      sessionStorage.setItem('cms_name', name);
+
+      // Clear from local storage to avoid conflicts
+      localStorage.removeItem('cms_token');
+      localStorage.removeItem('cms_email');
+      localStorage.removeItem('cms_role');
+      localStorage.removeItem('cms_name');
+    }
+
+    setUserEmail(email);
+    setUserRole(role);
+    setUserName(name);
     setToastMsg(`Signed in as ${role}`);
   };
 
   const handleSignOut = () => {
     localStorage.removeItem('cms_token');
+    localStorage.removeItem('cms_email');
+    localStorage.removeItem('cms_role');
+    localStorage.removeItem('cms_name');
+
     sessionStorage.removeItem('cms_token');
+    sessionStorage.removeItem('cms_email');
+    sessionStorage.removeItem('cms_role');
+    sessionStorage.removeItem('cms_name');
+
     setUserEmail('');
     setUserRole('');
     setUserName('');
