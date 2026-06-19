@@ -128,19 +128,20 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
         doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL', 40, doc.internal.pageSize.height - 20);
       },
       didParseCell: (data) => {
-        if (data.column.index === 7 && data.row.index > 0) {
+        if (data.column.index === 7 && data.row.section === 'body') {
           const val = data.cell.text[0];
-          if (val === 'Approved' || val === 'Accepted') {
-            data.cell.styles.textColor = [0, 128, 128]; // Teal text
+          const cleanVal = val ? val.trim().toLowerCase() : '';
+          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
+            data.cell.styles.textColor = [16, 124, 65]; // Green text
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Rejected') {
-            data.cell.styles.textColor = [219, 16, 119]; // Deep Pink text
+          } else if (cleanVal.includes('reject')) {
+            data.cell.styles.textColor = [220, 38, 38]; // Red text
             data.cell.styles.fontStyle = 'bold';
-          } else if (val && val.includes('Pending')) {
-            data.cell.styles.textColor = [217, 119, 6]; // Amber text
+          } else if (cleanVal.includes('pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Yellow text
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Closed') {
-            data.cell.styles.textColor = [79, 70, 229]; // Indigo/Violet text
+          } else if (cleanVal.includes('close')) {
+            data.cell.styles.textColor = [37, 99, 235]; // Blue text
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -421,14 +422,15 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
             data.cell.styles.fontStyle = 'bold';
           } else if (data.column.index === 1 && data.row.index > 0) {
             const val = data.cell.text[0];
-            if (val === 'Accepted' || val === 'Approved') {
-              data.cell.styles.textColor = [0, 128, 128]; // Teal text
+            const cleanVal = val ? val.trim().toLowerCase() : '';
+            if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
+              data.cell.styles.textColor = [16, 124, 65]; // Green text
               data.cell.styles.fontStyle = 'bold';
-            } else if (val === 'Rejected') {
-              data.cell.styles.textColor = [219, 16, 119]; // Deep Pink text
+            } else if (cleanVal.includes('reject')) {
+              data.cell.styles.textColor = [220, 38, 38]; // Red text
               data.cell.styles.fontStyle = 'bold';
-            } else if (val === 'Pending') {
-              data.cell.styles.textColor = [217, 119, 6]; // Amber/Orange text
+            } else if (cleanVal.includes('pending')) {
+              data.cell.styles.textColor = [217, 119, 6]; // Yellow text
               data.cell.styles.fontStyle = 'bold';
             }
           }
@@ -536,16 +538,17 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
         doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL L2 LOGS', 40, doc.internal.pageSize.height - 20);
       },
       didParseCell: (data) => {
-        if (data.column.index === 6 && data.row.index > 0) {
+        if (data.column.index === 6 && data.row.section === 'body') {
           const val = data.cell.text[0];
-          if (val === 'Accepted') {
-            data.cell.styles.textColor = [0, 128, 128]; // Teal
+          const cleanVal = val ? val.trim().toLowerCase() : '';
+          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Rejected') {
-            data.cell.styles.textColor = [219, 16, 119]; // Deep Pink
+          } else if (cleanVal.includes('reject')) {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Pending') {
-            data.cell.styles.textColor = [217, 119, 6]; // Amber
+          } else if (cleanVal.includes('pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Yellow
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -656,16 +659,17 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       },
       didParseCell: (data) => {
         // Highlight status cells
-        if (data.column.index >= 4 && data.column.index <= 13 && data.row.index > 0) {
+        if (data.column.index >= 4 && data.column.index <= 13 && data.row.section === 'body') {
           const val = data.cell.text[0];
-          if (val === 'Accepted' || val === 'Approved') {
-            data.cell.styles.textColor = [0, 128, 128]; // Teal
+          const cleanVal = val ? val.trim().toLowerCase() : '';
+          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Rejected') {
-            data.cell.styles.textColor = [219, 16, 119]; // Deep Pink
+          } else if (cleanVal.includes('reject')) {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Pending') {
-            data.cell.styles.textColor = [217, 119, 6]; // Amber
+          } else if (cleanVal.includes('pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Yellow
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -776,16 +780,17 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
         doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL APPROVAL LOGS', 40, doc.internal.pageSize.height - 20);
       },
       didParseCell: (data) => {
-        if (data.column.index === 5 && data.row.index > 0) {
+        if (data.column.index === 5 && data.row.section === 'body') {
           const val = data.cell.text[0];
-          if (val === 'Approved') {
-            data.cell.styles.textColor = [0, 128, 128]; // Teal
+          const cleanVal = val ? val.trim().toLowerCase() : '';
+          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Rejected') {
-            data.cell.styles.textColor = [219, 16, 119]; // Deep Pink
+          } else if (cleanVal.includes('reject')) {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Pending') {
-            data.cell.styles.textColor = [217, 119, 6]; // Amber
+          } else if (cleanVal.includes('pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Yellow
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -1021,19 +1026,20 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
         doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL DASHBOARD OVERVIEW LOGS', 40, doc.internal.pageSize.height - 20);
       },
       didParseCell: (data) => {
-        if (data.column.index === 5 && data.row.index > 0) {
+        if (data.column.index === 5 && data.row.section === 'body') {
           const val = data.cell.text[0];
-          if (val === 'Approved') {
-            data.cell.styles.textColor = [0, 128, 128]; // Teal
+          const cleanVal = val ? val.trim().toLowerCase() : '';
+          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
+            data.cell.styles.textColor = [16, 124, 65]; // Green
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Rejected') {
-            data.cell.styles.textColor = [219, 16, 119]; // Deep Pink
+          } else if (cleanVal.includes('reject')) {
+            data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
-          } else if (val && val.includes('Pending')) {
-            data.cell.styles.textColor = [217, 119, 6]; // Amber
+          } else if (cleanVal.includes('pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Yellow
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Closed') {
-            data.cell.styles.textColor = [79, 70, 229]; // Indigo/Violet
+          } else if (cleanVal.includes('close')) {
+            data.cell.styles.textColor = [37, 99, 235]; // Blue
             data.cell.styles.fontStyle = 'bold';
           }
         }
