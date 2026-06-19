@@ -546,6 +546,7 @@ export const AllRequests = ({
               value={value || ''}
               disabled={disabled}
               placeholder={placeholder}
+              maxLength={1000}
               onChange={(e) => setData({ ...data, [key]: e.target.value })}
             />
           ) : (
@@ -555,6 +556,7 @@ export const AllRequests = ({
               value={value || ''}
               disabled={disabled}
               placeholder={placeholder}
+              maxLength={type === 'text' ? 100 : undefined}
               onChange={(e) => setData({ ...data, [key]: e.target.value })}
             />
           )}
@@ -726,9 +728,15 @@ export const AllRequests = ({
                   type="text"
                   placeholder="e.g. Line 3 / Bay B"
                   value={data.process_line || ''}
+                  maxLength={100}
                   onChange={(e) => setData({ ...data, process_line: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
                 />
+                <div className="flex justify-end text-[9px] text-slate-400 mt-1">
+                  <span className={`${100 - (data.process_line || '').length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                    {100 - (data.process_line || '').length} characters remaining (max 100 chars)
+                  </span>
+                </div>
               </div>
 
               {/* MACHINE NO */}
@@ -759,13 +767,17 @@ export const AllRequests = ({
               </label>
               <textarea
                 value={data.title || ''}
+                maxLength={150}
                 onChange={(e) => setData({ ...data, title: e.target.value })}
-                placeholder="Brief description of WHY this change is needed (min 10 characters)..."
+                placeholder="Brief description of WHY this change is needed (min 10, max 150 characters)..."
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
               />
-              <span className="block text-[10px] text-slate-400">
-                {(data.title || '').length} / 10 min
-              </span>
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>{(data.title || '').length} / 10 min</span>
+                <span className={`${150 - (data.title || '').length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {150 - (data.title || '').length} characters remaining (max 150 chars)
+                </span>
+              </div>
             </div>
 
             {/* DETAILED CHANGE DESCRIPTION */}
@@ -775,13 +787,17 @@ export const AllRequests = ({
               </label>
               <textarea
                 value={data.description || ''}
+                maxLength={1000}
                 onChange={(e) => setData({ ...data, description: e.target.value })}
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[100px]"
               />
-              <span className="block text-[10px] text-slate-400">
-                {(data.description || '').length} / 20 min
-              </span>
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>{(data.description || '').length} / 20 min</span>
+                <span className={`${1000 - (data.description || '').length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {1000 - (data.description || '').length} characters remaining (max 1000 chars)
+                </span>
+              </div>
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -958,13 +974,17 @@ export const AllRequests = ({
                 </label>
                 <textarea
                   value={data.trace_from || ''}
+                  maxLength={1000}
                   onChange={(e) => setData({ ...data, trace_from: e.target.value })}
                   placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                   className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
                 />
-                <span className="block text-[10px] text-slate-400">
-                  {(data.trace_from || '').length} / 20 min
-                </span>
+                <div className="flex justify-between items-center text-[9px] text-slate-400">
+                  <span>{(data.trace_from || '').length} / 20 min</span>
+                  <span className={`${1000 - (data.trace_from || '').length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                    {1000 - (data.trace_from || '').length} characters remaining (max 1000 chars)
+                  </span>
+                </div>
               </div>
 
               {/* UPLOAD SUPPORTING FILES (for trace from) */}
@@ -991,13 +1011,17 @@ export const AllRequests = ({
                 </label>
                 <textarea
                   value={data.trace_to || ''}
+                  maxLength={1000}
                   onChange={(e) => setData({ ...data, trace_to: e.target.value })}
                   placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                   className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
                 />
-                <span className="block text-[10px] text-slate-400">
-                  {(data.trace_to || '').length} / 20 min
-                </span>
+                <div className="flex justify-between items-center text-[9px] text-slate-400">
+                  <span>{(data.trace_to || '').length} / 20 min</span>
+                  <span className={`${1000 - (data.trace_to || '').length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                    {1000 - (data.trace_to || '').length} characters remaining (max 1000 chars)
+                  </span>
+                </div>
               </div>
 
               {/* UPLOAD SUPPORTING FILES * (for trace to) */}
@@ -1021,10 +1045,16 @@ export const AllRequests = ({
               </label>
               <textarea
                 value={data.risk_analysis || ''}
+                maxLength={1000}
                 onChange={(e) => setData({ ...data, risk_analysis: e.target.value })}
                 placeholder="Describe potential risks, their likelihood, impact, and mitigation measures..."
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[100px]"
               />
+              <div className="flex justify-end text-[9px] text-slate-400 mt-1">
+                <span className={`${1000 - (data.risk_analysis || '').length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {1000 - (data.risk_analysis || '').length} characters remaining (max 1000 chars)
+                </span>
+              </div>
             </div>
 
             {/* UPLOAD SUPPORTING FILES * (file_risk) */}
@@ -1139,10 +1169,16 @@ export const AllRequests = ({
               </label>
               <textarea
                 value={data.sop_update || ''}
+                maxLength={1000}
                 onChange={(e) => setData({ ...data, sop_update: e.target.value })}
                 placeholder="Describe the updates required in SOP, Work Instructions, Control Plan, FMEA, etc..."
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[100px]"
               />
+              <div className="flex justify-end text-[9px] text-slate-400 mt-1">
+                <span className={`${1000 - (data.sop_update || '').length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {1000 - (data.sop_update || '').length} characters remaining (max 1000 chars)
+                </span>
+              </div>
             </div>
 
             {/* UPLOAD SUPPORTING FILES (SOP, WI, CONTROL PLAN, FMEA) * */}

@@ -782,6 +782,7 @@ export const L2Validation = ({
               placeholder="Enter Remarks..."
               rows={3}
               value={formRemarks}
+              maxLength={1000}
               disabled={!formChangeNo.trim() || !isQualityOrAdmin || isL2AlreadyValidated}
               onChange={(e) => {
                 setFormRemarks(e.target.value);
@@ -791,12 +792,19 @@ export const L2Validation = ({
                 fieldErrors.remarks ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
               }`}
             />
-            {fieldErrors.remarks && (
-              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
-                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
-                {fieldErrors.remarks}
-              </p>
-            )}
+            <div className="flex justify-between items-center text-[9px] text-slate-400">
+              {fieldErrors.remarks ? (
+                <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
+                  <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
+                  {fieldErrors.remarks}
+                </p>
+              ) : (
+                <span>Provide L2 validation remarks</span>
+              )}
+              <span className={`${1000 - formRemarks.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                {1000 - formRemarks.length} characters remaining (max 1000 chars)
+              </span>
+            </div>
           </div>
 
           {/* Submit */}

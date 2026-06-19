@@ -427,6 +427,8 @@ export const L1Request = ({
 
     if (!context || !context.trim()) {
       newErrors.context = 'Context of Change is required.';
+    } else if (context.length > 150) {
+      newErrors.context = 'Context of Change must be at most 150 characters.';
     }
     if (!description || !description.trim()) {
       newErrors.description = 'Detailed description is required.';
@@ -946,6 +948,7 @@ export const L1Request = ({
                 id="processLine"
                 placeholder="e.g. Line 3 / Bay B"
                 value={processLine}
+                maxLength={100}
                 onChange={(e) => {
                   setProcessLine(e.target.value);
                   if (errors.processLine) setErrors(prev => ({ ...prev, processLine: '' }));
@@ -956,7 +959,16 @@ export const L1Request = ({
                     : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
                 }`}
               />
-              {errors.processLine && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.processLine}</span>}
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                {errors.processLine ? (
+                  <span className="text-rose-500 font-bold">{errors.processLine}</span>
+                ) : (
+                  <span>Specify the process line or bay</span>
+                )}
+                <span className={`${100 - processLine.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {100 - processLine.length} characters remaining (max 100 chars)
+                </span>
+              </div>
             </div>
 
             {/* MACHINE NO */}
@@ -1010,8 +1022,9 @@ export const L1Request = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change <span className="text-rose-500">*</span></label>
               <textarea
                 id="context"
-                placeholder="Brief description of WHY this change is needed (min 10 characters)..."
+                placeholder="Brief description of WHY this change is needed (min 10, max 150 characters)..."
                 value={context}
+                maxLength={150}
                 onChange={(e) => {
                   setContext(e.target.value);
                   if (errors.context) setErrors(prev => ({ ...prev, context: '' }));
@@ -1024,7 +1037,14 @@ export const L1Request = ({
                 }`}
               />
               <div className="flex justify-between items-center text-[9px] text-slate-400">
-                {errors.context && <span className="text-rose-500 font-bold">{errors.context}</span>}
+                {errors.context ? (
+                  <span className="text-rose-500 font-bold">{errors.context}</span>
+                ) : (
+                  <span>Brief summary of the change context</span>
+                )}
+                <span className={`${150 - context.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {150 - context.length} characters remaining (max 150 chars / approx. 25 words)
+                </span>
               </div>
             </div>
 
@@ -1035,6 +1055,7 @@ export const L1Request = ({
                 id="description"
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={description}
+                maxLength={1000}
                 onChange={(e) => {
                   setDescription(e.target.value);
                   if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
@@ -1047,7 +1068,14 @@ export const L1Request = ({
                 }`}
               />
               <div className="flex justify-between items-center text-[9px] text-slate-400">
-                {errors.description && <span className="text-rose-500 font-bold">{errors.description}</span>}
+                {errors.description ? (
+                  <span className="text-rose-500 font-bold">{errors.description}</span>
+                ) : (
+                  <span>Detailed description of the change</span>
+                )}
+                <span className={`${1000 - description.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {1000 - description.length} characters remaining (max 1000 chars)
+                </span>
               </div>
             </div>
 
@@ -1169,6 +1197,7 @@ export const L1Request = ({
                 id="traceFrom"
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={traceFrom}
+                maxLength={1000}
                 onChange={(e) => {
                   setTraceFrom(e.target.value);
                   if (errors.traceFrom) setErrors(prev => ({ ...prev, traceFrom: '' }));
@@ -1181,7 +1210,14 @@ export const L1Request = ({
                 }`}
               />
               <div className="flex justify-between items-center text-[9px] text-slate-400">
-                {errors.traceFrom && <span className="text-rose-500 font-bold">{errors.traceFrom}</span>}
+                {errors.traceFrom ? (
+                  <span className="text-rose-500 font-bold">{errors.traceFrom}</span>
+                ) : (
+                  <span>Traceability detail for current setup</span>
+                )}
+                <span className={`${1000 - traceFrom.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {1000 - traceFrom.length} characters remaining (max 1000 chars)
+                </span>
               </div>
             </div>
 
@@ -1220,6 +1256,7 @@ export const L1Request = ({
                 id="traceTo"
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={traceTo}
+                maxLength={1000}
                 onChange={(e) => {
                   setTraceTo(e.target.value);
                   if (errors.traceTo) setErrors(prev => ({ ...prev, traceTo: '' }));
@@ -1232,7 +1269,14 @@ export const L1Request = ({
                 }`}
               />
               <div className="flex justify-between items-center text-[9px] text-slate-400">
-                {errors.traceTo && <span className="text-rose-500 font-bold">{errors.traceTo}</span>}
+                {errors.traceTo ? (
+                  <span className="text-rose-500 font-bold">{errors.traceTo}</span>
+                ) : (
+                  <span>Traceability detail for proposed setup</span>
+                )}
+                <span className={`${1000 - traceTo.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {1000 - traceTo.length} characters remaining (max 1000 chars)
+                </span>
               </div>
             </div>
 
@@ -1255,6 +1299,7 @@ export const L1Request = ({
                 id="riskAnalysis"
                 placeholder="Describe potential risks, their likelihood, impact, and mitigation measures..."
                 value={riskAnalysis}
+                maxLength={1000}
                 onChange={(e) => {
                   setRiskAnalysis(e.target.value);
                   if (errors.riskAnalysis) setErrors(prev => ({ ...prev, riskAnalysis: '' }));
@@ -1266,7 +1311,16 @@ export const L1Request = ({
                     : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
                 }`}
               />
-              {errors.riskAnalysis && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.riskAnalysis}</span>}
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                {errors.riskAnalysis ? (
+                  <span className="text-rose-500 font-bold">{errors.riskAnalysis}</span>
+                ) : (
+                  <span>Risk analysis details</span>
+                )}
+                <span className={`${1000 - riskAnalysis.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {1000 - riskAnalysis.length} characters remaining (max 1000 chars)
+                </span>
+              </div>
             </div>
 
             {/* UPLOAD SUPPORTING FILES */}
@@ -1281,6 +1335,7 @@ export const L1Request = ({
                 id="sopUpdate"
                 placeholder="Describe the updates required in SOP, Work Instructions, Control Plan, FMEA, etc..."
                 value={sopUpdate}
+                maxLength={1000}
                 onChange={(e) => {
                   setSopUpdate(e.target.value);
                   if (errors.sopUpdate) setErrors(prev => ({ ...prev, sopUpdate: '' }));
@@ -1292,7 +1347,16 @@ export const L1Request = ({
                     : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
                 }`}
               />
-              {errors.sopUpdate && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.sopUpdate}</span>}
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                {errors.sopUpdate ? (
+                  <span className="text-rose-500 font-bold">{errors.sopUpdate}</span>
+                ) : (
+                  <span>Updates required details</span>
+                )}
+                <span className={`${1000 - sopUpdate.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {1000 - sopUpdate.length} characters remaining (max 1000 chars)
+                </span>
+              </div>
             </div>
 
             {/* Click to upload updated documents */}
@@ -1407,6 +1471,7 @@ export const L1Request = ({
                     type="text"
                     placeholder="Enter new process name..."
                     value={tempProcessName}
+                    maxLength={100}
                     onChange={(e) => setTempProcessName(e.target.value)}
                     className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc]"
                   />
@@ -1467,6 +1532,7 @@ export const L1Request = ({
                     type="text"
                     placeholder="Enter new machine no..."
                     value={tempMachineNo}
+                    maxLength={100}
                     onChange={(e) => setTempMachineNo(e.target.value)}
                     className="flex-1 bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc]"
                   />

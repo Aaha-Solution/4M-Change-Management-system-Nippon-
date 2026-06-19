@@ -8,6 +8,15 @@ export const createL1Request = async (req, res) => {
     return res.status(400).json({ error: 'Required L1 change request data fields are missing.' });
   }
 
+  const changeIn = l1Data.changeIn || 'General';
+  const constructedTitle = `[L1 Request - ${changeIn}] ${l1Data.context}`;
+  if (constructedTitle.length > 255) {
+    const excess = constructedTitle.length - 255;
+    return res.status(400).json({ 
+      error: `The Context of Change is too long. Please shorten it by at least ${excess} characters to fit database limits.`
+    });
+  }
+
   try {
     const newChange = await l1Model.addL1Request(l1Data, attachments, userEmail);
     res.status(201).json({ message: 'L1 Change request created successfully', change: newChange });

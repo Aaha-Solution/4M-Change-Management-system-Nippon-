@@ -490,11 +490,18 @@ export const Effectiveness = ({
                 disabled={!effChangeNo || (isAlreadyValidated && !canUpdate)}
                 rows={3}
                 placeholder="Enter evaluation remarks/results..."
+                maxLength={1000}
                 className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && !canUpdate)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
                   }`}
                 value={effRemarks}
                 onChange={(e) => setEffRemarks(e.target.value)}
               />
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                <span>Enter observation remarks</span>
+                <span className={`${1000 - effRemarks.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {1000 - effRemarks.length} characters remaining (max 1000 chars)
+                </span>
+              </div>
             </div>
 
             {/* ATTACHMENTS */}

@@ -39,6 +39,13 @@ export const updateChangeDetails = async (req, res) => {
     return res.status(400).json({ error: 'Level and updateData are required.' });
   }
 
+  if (level === 'l1' && updateData.title && updateData.title.length > 255) {
+    const excess = updateData.title.length - 255;
+    return res.status(400).json({
+      error: `The change request title is too long. Please shorten it by at least ${excess} characters.`
+    });
+  }
+
   try {
     let isAllowed = req.user?.role === 'Admin';
 

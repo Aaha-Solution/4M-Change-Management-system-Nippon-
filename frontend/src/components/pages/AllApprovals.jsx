@@ -1233,10 +1233,16 @@ export const AllApprovals = ({
                             <textarea
                               rows={3}
                               value={remarks}
+                              maxLength={1000}
                               onChange={e => setRemarks(e.target.value)}
                               placeholder="Enter your remarks or reason for decision..."
                               className="w-full border border-slate-200 rounded-xl p-3 text-[12px] text-slate-700 outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all resize-none"
                             />
+                            <div className="flex justify-end text-[9px] text-slate-400 mt-1">
+                              <span className={`${1000 - remarks.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                                {1000 - remarks.length} characters remaining (max 1000 chars)
+                              </span>
+                            </div>
                           </div>
                         )}
                       </div>
