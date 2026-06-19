@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import {
   Search,
   CheckCheck,
-  Trash2,
   Mail,
   Check,
   FileText,
@@ -15,8 +14,6 @@ import {
 import {
   toggleNotificationRead,
   markAllNotificationsRead,
-  clearReadNotifications,
-  deleteNotification,
   getDepartments
 } from '../../api/apiRoutes';
 
@@ -59,19 +56,6 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
     }
   };
 
-  const handleClearRead = async () => {
-    try {
-      await clearReadNotifications();
-      await fetchNotifications();
-      setToastMsg('Read notifications cleared.');
-    } catch (error) {
-      console.error(error);
-      setToastMsg('Error clearing read notifications.');
-    }
-  };
-
-
-
   const toggleReadStatus = async (id) => {
     try {
       const response = await toggleNotificationRead(id);
@@ -80,17 +64,6 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
     } catch (error) {
       console.error(error);
       setToastMsg('Error updating notification status.');
-    }
-  };
-
-  const handleDeleteAlert = async (id) => {
-    try {
-      await deleteNotification(id);
-      setNotifications(prev => prev.filter(n => n.id !== id));
-      setToastMsg('Notification deleted.');
-    } catch (error) {
-      console.error(error);
-      setToastMsg('Error deleting notification.');
     }
   };
 
@@ -224,13 +197,6 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
             >
               <CheckCheck size={14} />
               <span>Mark All Read</span>
-            </button>
-            <button
-              onClick={handleClearRead}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-600 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 transition-all cursor-pointer"
-            >
-              <Trash2 size={14} />
-              <span>Clear Read</span>
             </button>
           </div>
         </div>
@@ -469,15 +435,6 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                             className="flex items-center gap-1 text-[9px] font-black text-slate-500 hover:text-slate-700 transition-colors uppercase tracking-wider cursor-pointer"
                           >
                             {alert.isRead ? <><Mail size={10} /> Mark Unread</> : <><Check size={10} /> Mark Read</>}
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteAlert(alert.id);
-                            }}
-                            className="flex items-center gap-1 text-[9px] font-black text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-wider cursor-pointer"
-                          >
-                            <Trash2 size={10} /> Delete
                           </button>
                         </div>
                       </div>
