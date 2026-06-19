@@ -179,7 +179,7 @@ CREATE TABLE l1_requests (
     process_name VARCHAR(100) NOT NULL,
     process_line VARCHAR(100) NOT NULL,
     machine_no VARCHAR(100) NOT NULL,
-    description TEXT NOT NULL,
+    description LONGTEXT NOT NULL,
     improvement_area VARCHAR(100) NOT NULL,
     change_type VARCHAR(100) NOT NULL,
     date_start DATE,

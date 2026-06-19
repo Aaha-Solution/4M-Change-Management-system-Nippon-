@@ -1055,7 +1055,6 @@ export const L1Request = ({
                 id="description"
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 value={description}
-                maxLength={1000}
                 onChange={(e) => {
                   setDescription(e.target.value);
                   if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
@@ -1073,8 +1072,8 @@ export const L1Request = ({
                 ) : (
                   <span>Detailed description of the change</span>
                 )}
-                <span className={`${1000 - description.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
-                  {1000 - description.length} characters remaining (max 1000 chars)
+                <span>
+                  {description.length} characters entered
                 </span>
               </div>
             </div>

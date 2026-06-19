@@ -2356,15 +2356,14 @@ export const DashboardOverview = ({
               </label>
               <textarea
                 value={data.description || ''}
-                maxLength={1000}
                 onChange={(e) => setData({ ...data, description: e.target.value })}
                 placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[100px]"
               />
               <div className="flex justify-between items-center text-[9px] text-slate-400">
                 <span>{(data.description || '').length} / 20 min</span>
-                <span className={`${1000 - (data.description || '').length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
-                  {1000 - (data.description || '').length} characters remaining (max 1000 chars)
+                <span>
+                  {(data.description || '').length} characters entered
                 </span>
               </div>
             </div>

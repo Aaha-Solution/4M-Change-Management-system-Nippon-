@@ -53,6 +53,14 @@ const pool = mysql.createPool({
       console.error('⚠️ Error adding improvement_table_data column:', err.message);
     }
 
+    // Ensure l1_requests description column is LONGTEXT
+    try {
+      await connection.query('ALTER TABLE l1_requests MODIFY COLUMN description LONGTEXT NOT NULL');
+      console.log('✅ Modified l1_requests description column to LONGTEXT.');
+    } catch (err) {
+      console.warn('⚠️ Could not modify l1_requests description column:', err.message);
+    }
+
     // Ensure notifications table id column is VARCHAR(255)
     try {
       await connection.query('ALTER TABLE notifications MODIFY COLUMN id VARCHAR(255) NOT NULL');

@@ -652,10 +652,10 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
           .replace(/\bError\b/g, 'Failed')
           .replace(/\berror\b/g, 'failed');
         return (
-          <div className={`fixed bottom-6 right-6 text-white rounded-xl px-4 py-3 flex items-center gap-2 shadow-xl z-50 animate-slide-in-right text-xs sm:text-sm font-medium ${isError ? 'bg-rose-700' : 'bg-slate-900'}`}>
+          <div className={`fixed bottom-6 right-6 text-white rounded-xl px-4 py-3 flex items-center gap-2 shadow-xl z-50 animate-slide-in-right text-xs sm:text-sm font-medium ${isError ? 'bg-rose-700' : 'bg-emerald-600'}`}>
             {isError
               ? <AlertTriangle size={16} className="text-rose-200" />
-              : <CheckCircle size={16} className="text-emerald-400" />
+              : <CheckCircle size={16} className="text-white" />
             }
             <span>{cleanedMsg}</span>
           </div>
