@@ -9,13 +9,27 @@ import { CustomDatePicker } from '../ui/CustomDatePicker';
 import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Approvals, updateChangeDetails } from '../../api/apiRoutes';
 import { exportRequestsListPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 
+const convertDDMMYYYYToYYYYMMDD = (val) => {
+  if (!val) return '';
+  const parts = val.split('/');
+  if (parts.length === 3) {
+    const d = parts[0].padStart(2, '0');
+    const m = parts[1].padStart(2, '0');
+    const y = parts[2];
+    return `${y}-${m}-${d}`;
+  }
+  return val;
+};
+
 export const AllRequests = ({
   changes,
   setToastMsg,
   usersList = [],
   autoOpenChangeNo = null,
   clearAutoOpen = () => {},
-  isAdmin = false
+  isAdmin = false,
+  userEmail = '',
+  userName = ''
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('All');
@@ -41,6 +55,16 @@ export const AllRequests = ({
   const [showCustomerApproval, setShowCustomerApproval] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editL1Data, setEditL1Data] = useState({});
+
+  const isRequester = (userEmail && (
+    (selectedLog?.requesterEmail && selectedLog.requesterEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()) ||
+    (selectedLog?.requester && selectedLog.requester.toLowerCase().trim() === userEmail.toLowerCase().trim()) ||
+    (selectedL1Details?.crRequester && selectedL1Details.crRequester.toLowerCase().trim() === userEmail.toLowerCase().trim())
+  )) || (userName && (
+    (selectedLog?.requester && selectedLog.requester.toLowerCase().trim() === userName.toLowerCase().trim()) ||
+    (selectedL1Details?.request_by && selectedL1Details.request_by.toLowerCase().trim() === userName.toLowerCase().trim())
+  ));
+  const canEdit = isAdmin || isRequester;
   const [editL2Data, setEditL2Data] = useState({});
   const [editL3Data, setEditL3Data] = useState({});
   const [isSaving, setIsSaving] = useState(false);
@@ -224,6 +248,7 @@ export const AllRequests = ({
     setSelectedLog({
       changeNo: request.id,
       requester: request.requester,
+      requesterEmail: request.requesterEmail,
       date: request.rawDate,
       status: request.status,
       hodStatus: request.hodStatus,
@@ -256,9 +281,10 @@ export const AllRequests = ({
       setEditL2Data(l2Res.data || {});
 
       const matchedL3 = l3Res.data?.find(log => log.changeNo === request.id);
-      const newLogData = matchedL3 ? { ...matchedL3, hodStatus: request.hodStatus } : {
+      const newLogData = matchedL3 ? { ...matchedL3, hodStatus: request.hodStatus, requesterEmail: request.requesterEmail } : {
         changeNo: request.id,
         requester: request.requester,
+        requesterEmail: request.requesterEmail,
         date: request.rawDate,
         hodStatus: request.hodStatus,
         ped: 'Pending',
@@ -531,116 +557,6 @@ export const AllRequests = ({
               placeholder={placeholder}
               onChange={(e) => setData({ ...data, [key]: e.target.value })}
             />
-          )}
-        </div>
-      );
-    };
-
-    const renderMockupFileInput = (label, key, isRequired = false) => {
-      const val = data[key] || '';
-      return (
-        <div key={key} className="space-y-[4px] min-w-0">
-          <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-            {label} {isRequired && <span className="text-rose-500">*</span>}
-          </label>
-          <div className="flex gap-[8px]">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                readOnly
-                placeholder="e.g. proof-log.pdf, image.png"
-                value={val}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 select-none font-medium text-slate-700"
-              />
-              {val && val !== '-' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (window.confirm('Are you sure you want to clear all attachments from this field?')) {
-                      setData({ ...data, [key]: '' });
-                      setUploadedFilesList(prev => prev.filter(f => f.fieldName !== key));
-                    }
-                  }}
-                  className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                  title="Clear attachments"
-                >
-                  <X size={12} />
-                </button>
-              )}
-            </div>
-            <label className="flex items-center justify-center gap-[6px] px-[16px] py-[8px] border border-[#0066cc] bg-white hover:bg-slate-50 text-[#0066cc] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none">
-              <Upload size={12} />
-              <span>Upload</span>
-              <input
-                type="file"
-                multiple
-                accept="image/*,application/pdf"
-                className="hidden"
-                onChange={async (e) => {
-                  const target = e.target;
-                  if (target.files && target.files.length > 0) {
-                    const files = Array.from(target.files);
-                    const names = files.map(f => f.name.replace(/,/g, '_'));
-                    target.value = '';
-
-                    const base64Files = await Promise.all(
-                      files.map(async (file) => {
-                        const name = file.name.replace(/,/g, '_');
-                        const localUrl = URL.createObjectURL(file);
-                        setFileUrls(prev => ({ ...prev, [name]: localUrl }));
-                        
-                        return {
-                          name,
-                          type: file.type || 'application/octet-stream',
-                          data: await fileToBase64(file),
-                          fieldName: key
-                        };
-                      })
-                    );
-
-                    setUploadedFilesList(prev => {
-                      const filtered = prev.filter(f => !(f.fieldName === key && names.includes(f.name)));
-                      return [...filtered, ...base64Files];
-                    });
-
-                    const existing = val && val !== '-' ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
-                    const updated = Array.from(new Set([...existing, ...names])).join(', ');
-                    setData({ ...data, [key]: updated });
-                  }
-                }}
-              />
-            </label>
-          </div>
-
-          {/* Selected File Pills */}
-          {val && val !== '-' && (
-            <div className="flex flex-wrap gap-[6px] pt-[4px]">
-              {val.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
-                <span key={i} className="inline-flex items-center gap-[6px] bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 px-[8px] py-[2px] rounded-full select-none">
-                  <span 
-                    className="truncate max-w-[150px] font-semibold text-[#0066cc] cursor-pointer hover:underline"
-                    onClick={() => handleViewAttachment(file, data.change_no || data.changeNo || selectedLog.changeNo, 'L1')}
-                    title="Click to preview file"
-                  >
-                    📎 {file}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm(`Are you sure you want to delete "${file}"?`)) {
-                        const existing = val.split(',').map(s => s.trim()).filter(Boolean);
-                        const updated = existing.filter(f => f !== file).join(', ');
-                        setData({ ...data, [key]: updated });
-                        setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === key && f.name === file)));
-                      }
-                    }}
-                    className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-[12px]"
-                  >
-                    &times;
-                  </button>
-                </span>
-              ))}
-            </div>
           )}
         </div>
       );
@@ -976,157 +892,412 @@ export const AllRequests = ({
           </div>
 
           {/* Implementation Timeline */}
-          <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px]">
-            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Implementation Timeline</h4>
-
-            {/* CHANGE IMPROVEMENT AREA */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                Change Improvement Area <span className="text-rose-500">*</span>
-              </label>
-              <select
-                value={data.improvement_area || ''}
-                onChange={(e) => setData({ ...data, improvement_area: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
-              >
-                <option value="">— Select Area —</option>
-                <option value="Cost">Cost</option>
-                <option value="Quality">Quality</option>
-                <option value="Productivity">Productivity</option>
-                <option value="Safety">Safety</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-
-            {/* UPLOAD SUPPORTING FILES (improvement_area) */}
-            {renderMockupFileInput('Upload Supporting Files', 'file_improvement', true)}
-
-            {/* PERMANENT / TEMPORARY CHANGE */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                Permanent / Temporary Change <span className="text-rose-500">*</span>
-              </label>
-              <select
-                value={data.change_type || ''}
-                onChange={(e) => setData({ ...data, change_type: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
-              >
-                <option value="">— Select —</option>
-                <option value="Permanent">Permanent</option>
-                <option value="Temporary">Temporary</option>
-              </select>
-            </div>
-
-            {/* IMPLEMENT / CHANGE DATE START */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                Implement / Change Date Start <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="date"
-                value={data.date_start ? data.date_start.slice(0, 10) : ''}
-                onChange={(e) => setData({ ...data, date_start: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
-              />
-            </div>
-
-            {/* PART TRACEABILITY DETAILS (FROM CHANGES) */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                Part Traceability Details (From Changes) <span className="text-rose-500">*</span>
-              </label>
-              <textarea
-                value={data.trace_from || ''}
-                onChange={(e) => setData({ ...data, trace_from: e.target.value })}
-                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
-              />
-              <span className="block text-[10px] text-slate-400">
-                {(data.trace_from || '').length} / 20 min
-              </span>
-            </div>
-
-            {/* UPLOAD SUPPORTING FILES (trace_from) */}
-            {renderMockupFileInput('Upload Supporting Files', 'file_trace_from', false)}
-
-            {/* CHANGE DATE CLOSE */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                Change Date Close <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="date"
-                value={data.date_close ? data.date_close.slice(0, 10) : ''}
-                onChange={(e) => setData({ ...data, date_close: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
-              />
-            </div>
-
-            {/* PART TRACEABILITY DETAILS (TO CHANGES) */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                Part Traceability Details (To Changes) <span className="text-rose-500">*</span>
-              </label>
-              <textarea
-                value={data.trace_to || ''}
-                onChange={(e) => setData({ ...data, trace_to: e.target.value })}
-                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
-              />
-              <span className="block text-[10px] text-slate-400">
-                {(data.trace_to || '').length} / 20 min
-              </span>
-            </div>
-
-            {/* UPLOAD SUPPORTING FILES (trace_to) */}
-            {renderMockupFileInput('Upload Supporting Files', 'file_trace_to', true)}
-          </div>
-
-          {/* Risk, SOP & Approvals */}
           <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
-            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
-              <Cpu size={14} className="text-[#0066cc]" />
-              <span>Risk, SOP & Approvals</span>
-            </h4>
+            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Implementation Timeline</h4>
+            
+            <div className="grid grid-cols-1 gap-[16px]">
+              {/* CHANGE IMPROVEMENT AREA * */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-650 uppercase tracking-wider">
+                  Change Improvement Area <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={data.improvement_area || ''}
+                  onChange={(e) => setData({ ...data, improvement_area: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+                >
+                  <option value="">— Select Area —</option>
+                  <option value="Cost">Cost</option>
+                  <option value="Productivity">Productivity</option>
+                  <option value="Quality">Quality</option>
+                </select>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-              {renderFieldInput('Risk Analysis & Mitigations', 'risk_analysis', { type: 'textarea' })}
-              {renderFieldInput('SOP / WI / Control Plan Update', 'sop_update', { type: 'textarea' })}
-            </div>
+              {/* UPLOAD SUPPORTING FILES * for improvement_area */}
+              {renderFieldInput('Upload Supporting Files *', 'file_improvement')}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mt-4">
-              {renderFieldInput('HOD Approval Status', 'hod_approval')}
-              {renderFieldInput('Customer Approval Required', 'customer_approval')}
-              {renderFieldInput('Effectiveness Monitoring', 'effectiveness_monitoring', { type: 'textarea' })}
-            </div>
+              {/* PERMANENT / TEMPORARY CHANGE * */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-655 uppercase tracking-wider">
+                  Permanent / Temporary Change <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={data.change_type || ''}
+                  onChange={(e) => setData({ ...data, change_type: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+                >
+                  <option value="">— Select —</option>
+                  <option value="Permanent">Permanent</option>
+                  <option value="Temporary">Temporary</option>
+                </select>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] border-t border-slate-100 pt-4">
-              {renderFieldInput('HOD Remarks / Comments', 'hodRemarks', { type: 'textarea' })}
-              {renderFieldInput('HOD Status', 'hodStatus', { disabled: true })}
-            </div>
+              {/* IMPLEMENT / CHANGE DATE START * */}
+              <div className="space-y-[4px] relative">
+                <label className="block text-[10px] font-bold text-slate-655 uppercase tracking-wider">
+                  Implement / Change Date Start <span className="text-rose-500">*</span>
+                </label>
+                <CustomDatePicker
+                  value={data.date_start ? formatDateToDDMMYYYY(data.date_start) : ''}
+                  placeholder="dd/mm/yyyy"
+                  onChange={(val) => setData({ ...data, date_start: convertDDMMYYYYToYYYYMMDD(val) })}
+                  inputClassName="w-full pl-[12px] pr-[32px] py-[8px] border border-slate-200 bg-slate-50 rounded-[6px] text-[12px] font-medium text-slate-700 outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                  buttonClassName="right-[12px] top-[10px]"
+                />
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+              {/* PART TRACEABILITY DETAILS (FROM CHANGES) * */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-655 uppercase tracking-wider">
+                  Part Traceability Details (From Changes) <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  value={data.trace_from || ''}
+                  onChange={(e) => setData({ ...data, trace_from: e.target.value })}
+                  placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
+                />
+                <span className="block text-[10px] text-slate-400">
+                  {(data.trace_from || '').length} / 20 min
+                </span>
+              </div>
+
+              {/* UPLOAD SUPPORTING FILES (for trace from) */}
+              {renderFieldInput('Upload Supporting Files', 'file_trace_from')}
+
+              {/* CHANGE DATE CLOSE * */}
+              <div className="space-y-[4px] relative">
+                <label className="block text-[10px] font-bold text-slate-655 uppercase tracking-wider">
+                  Change Date Close <span className="text-rose-500">*</span>
+                </label>
+                <CustomDatePicker
+                  value={data.date_close ? formatDateToDDMMYYYY(data.date_close) : ''}
+                  placeholder="dd/mm/yyyy"
+                  onChange={(val) => setData({ ...data, date_close: convertDDMMYYYYToYYYYMMDD(val) })}
+                  inputClassName="w-full pl-[12px] pr-[32px] py-[8px] border border-slate-200 bg-slate-50 rounded-[6px] text-[12px] font-medium text-slate-700 outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
+                  buttonClassName="right-[12px] top-[10px]"
+                />
+              </div>
+
+              {/* PART TRACEABILITY DETAILS (TO CHANGES) * */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-655 uppercase tracking-wider">
+                  Part Traceability Details (To Changes) <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  value={data.trace_to || ''}
+                  onChange={(e) => setData({ ...data, trace_to: e.target.value })}
+                  placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
+                />
+                <span className="block text-[10px] text-slate-400">
+                  {(data.trace_to || '').length} / 20 min
+                </span>
+              </div>
+
+              {/* UPLOAD SUPPORTING FILES * (for trace to) */}
+              {renderFieldInput('Upload Supporting Files *', 'file_trace_to')}
+
+              {/* Dynamic Improvement Table Data edit field at bottom of timeline */}
               {renderFieldInput('Improvement Table Data', 'improvement_table_data')}
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] border-t border-slate-100 pt-4">
-              {renderMockupFileInput('File Risk', 'file_risk')}
-              {renderMockupFileInput('File SOP', 'file_sop')}
-              {renderMockupFileInput('File Effectiveness', 'file_effectiveness')}
+          {/* Risk Analysis Card */}
+          <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
+            <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
+              <span>Risk Analysis</span>
+            </h4>
+
+            {/* RISK ANALYSIS * */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                RISK ANALYSIS <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                value={data.risk_analysis || ''}
+                onChange={(e) => setData({ ...data, risk_analysis: e.target.value })}
+                placeholder="Describe potential risks, their likelihood, impact, and mitigation measures..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[100px]"
+              />
+            </div>
+
+            {/* UPLOAD SUPPORTING FILES * (file_risk) */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                UPLOAD SUPPORTING FILES <span className="text-rose-500">*</span>
+              </label>
+              <div className="flex gap-[8px]">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    readOnly
+                    placeholder="e.g. proof-log.pdf, image.png"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none text-slate-700 select-none font-medium placeholder-slate-400"
+                    value={data.file_risk || ''}
+                  />
+                  {data.file_risk && data.file_risk !== '-' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to clear all attachments from this field?')) {
+                          setData({ ...data, file_risk: '' });
+                          setUploadedFilesList(prev => prev.filter(f => f.fieldName !== 'file_risk'));
+                        }
+                      }}
+                      className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                      title="Clear attachments"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+                <label className="flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 bg-white hover:bg-slate-50 text-[#0066cc] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none">
+                  <Upload size={12} />
+                  <span>Upload</span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const target = e.target;
+                      if (target.files && target.files.length > 0) {
+                        const files = Array.from(target.files);
+                        const names = files.map(f => f.name.replace(/,/g, '_'));
+                        target.value = '';
+
+                        const base64Files = await Promise.all(
+                          files.map(async (file) => {
+                            const name = file.name.replace(/,/g, '_');
+                            const localUrl = URL.createObjectURL(file);
+                            setFileUrls(prev => ({ ...prev, [name]: localUrl }));
+                            
+                            return {
+                              name,
+                              type: file.type || 'application/octet-stream',
+                              data: await fileToBase64(file),
+                              fieldName: 'file_risk'
+                            };
+                          })
+                        );
+
+                        setUploadedFilesList(prev => {
+                          const filtered = prev.filter(f => !(f.fieldName === 'file_risk' && names.includes(f.name)));
+                          return [...filtered, ...base64Files];
+                        });
+
+                        const existing = data.file_risk && data.file_risk !== '-' ? data.file_risk.split(',').map(s => s.trim()).filter(Boolean) : [];
+                        const updated = Array.from(new Set([...existing, ...names])).join(', ');
+                        setData({ ...data, file_risk: updated });
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+              {/* Selected File Pills */}
+              {data.file_risk && data.file_risk !== '-' && (
+                <div className="flex flex-wrap gap-[6px] pt-[4px]">
+                  {data.file_risk.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
+                    <span key={i} className="inline-flex items-center gap-[6px] bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 px-[8px] py-[2px] rounded-full select-none">
+                      <span 
+                        className="truncate max-w-[150px] font-semibold text-[#0066cc] cursor-pointer hover:underline"
+                        onClick={() => handleViewAttachment(file, data.change_no || data.changeNo || selectedLog.changeNo, 'L1')}
+                        title="Click to preview file"
+                      >
+                        📎 {file}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to delete "${file}"?`)) {
+                            const existing = data.file_risk.split(',').map(s => s.trim()).filter(Boolean);
+                            const updated = existing.filter(f => f !== file).join(', ');
+                            setData({ ...data, file_risk: updated });
+                            setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === 'file_risk' && f.name === file)));
+                          }
+                        }}
+                        className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-[12px]"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* UPDATE IN SOP / WI / CONTROL PLAN / FMEA * */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                UPDATE IN SOP / WI / CONTROL PLAN / FMEA <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                value={data.sop_update || ''}
+                onChange={(e) => setData({ ...data, sop_update: e.target.value })}
+                placeholder="Describe the updates required in SOP, Work Instructions, Control Plan, FMEA, etc..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[100px]"
+              />
+            </div>
+
+            {/* UPLOAD SUPPORTING FILES (SOP, WI, CONTROL PLAN, FMEA) * */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                UPLOAD SUPPORTING FILES (SOP, WI, CONTROL PLAN, FMEA) <span className="text-rose-500">*</span>
+              </label>
+              <div className="flex gap-[8px]">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    readOnly
+                    placeholder="e.g. proof-log.pdf, image.png"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none text-slate-700 select-none font-medium placeholder-slate-400"
+                    value={data.file_sop || ''}
+                  />
+                  {data.file_sop && data.file_sop !== '-' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to clear all attachments from this field?')) {
+                          setData({ ...data, file_sop: '' });
+                          setUploadedFilesList(prev => prev.filter(f => f.fieldName !== 'file_sop'));
+                        }
+                      }}
+                      className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                      title="Clear attachments"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+                <label className="flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 bg-white hover:bg-slate-50 text-[#0066cc] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none">
+                  <Upload size={12} />
+                  <span>Upload</span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const target = e.target;
+                      if (target.files && target.files.length > 0) {
+                        const files = Array.from(target.files);
+                        const names = files.map(f => f.name.replace(/,/g, '_'));
+                        target.value = '';
+
+                        const base64Files = await Promise.all(
+                          files.map(async (file) => {
+                            const name = file.name.replace(/,/g, '_');
+                            const localUrl = URL.createObjectURL(file);
+                            setFileUrls(prev => ({ ...prev, [name]: localUrl }));
+                            
+                            return {
+                              name,
+                              type: file.type || 'application/octet-stream',
+                              data: await fileToBase64(file),
+                              fieldName: 'file_sop'
+                            };
+                          })
+                        );
+
+                        setUploadedFilesList(prev => {
+                          const filtered = prev.filter(f => !(f.fieldName === 'file_sop' && names.includes(f.name)));
+                          return [...filtered, ...base64Files];
+                        });
+
+                        const existing = data.file_sop && data.file_sop !== '-' ? data.file_sop.split(',').map(s => s.trim()).filter(Boolean) : [];
+                        const updated = Array.from(new Set([...existing, ...names])).join(', ');
+                        setData({ ...data, file_sop: updated });
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+              {/* Selected File Pills */}
+              {data.file_sop && data.file_sop !== '-' && (
+                <div className="flex flex-wrap gap-[6px] pt-[4px]">
+                  {data.file_sop.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
+                    <span key={i} className="inline-flex items-center gap-[6px] bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 px-[8px] py-[2px] rounded-full select-none">
+                      <span 
+                        className="truncate max-w-[150px] font-semibold text-[#0066cc] cursor-pointer hover:underline"
+                        onClick={() => handleViewAttachment(file, data.change_no || data.changeNo || selectedLog.changeNo, 'L1')}
+                        title="Click to preview file"
+                      >
+                        📎 {file}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to delete "${file}"?`)) {
+                            const existing = data.file_sop.split(',').map(s => s.trim()).filter(Boolean);
+                            const updated = existing.filter(f => f !== file).join(', ');
+                            setData({ ...data, file_sop: updated });
+                            setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === 'file_sop' && f.name === file)));
+                          }
+                        }}
+                        className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-[12px]"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* USER DEPT HOD APPROVAL * */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                USER DEPT HOD APPROVAL <span className="text-rose-500">*</span>
+              </label>
+              <div className="flex flex-wrap gap-[8px] pt-[2px]">
+                {[
+                  'PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L',
+                  'MATERIALS', 'MARKETING', 'HR', 'SAFETY', 'GENERAL',
+                  'UNIT HEAD', 'QUALITY'
+                ].map((dept) => {
+                  const isSelected = data.hod_approval === dept;
+                  return (
+                    <button
+                      key={dept}
+                      type="button"
+                      onClick={() => setData({ ...data, hod_approval: dept })}
+                      className={`flex items-center gap-[6px] px-[10px] py-[6px] border rounded-[6px] text-[10px] font-bold transition-all duration-200 cursor-pointer select-none ${
+                        isSelected
+                          ? 'border-[#0066cc] bg-[#0066cc]/5 text-[#0066cc] shadow-sm'
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className={`w-[12px] h-[12px] rounded-full border flex items-center justify-center transition-all ${
+                        isSelected ? 'border-[#0066cc]' : 'border-slate-350'
+                      }`}>
+                        {isSelected && <span className="w-[6px] h-[6px] rounded-full bg-[#0066cc]" />}
+                      </span>
+                      <span>{dept}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* CUSTOMER APPROVAL REQUIRED * */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                CUSTOMER APPROVAL REQUIRED <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={data.customer_approval || ''}
+                onChange={(e) => setData({ ...data, customer_approval: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium cursor-pointer"
+              >
+                <option value="">— Select —</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
             </div>
           </div>
 
-          {otherFields.length > 0 && (
-            <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
-              <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
-                <FileText size={14} className="text-[#0066cc]" />
-                <span>Other Fields</span>
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-                {otherFields.map(k => renderFieldInput(k.replace(/_/g, ' '), k))}
-              </div>
-            </div>
-          )}
+
         </div>
       );
     }
@@ -1157,14 +1328,7 @@ export const AllRequests = ({
             {renderFieldInput('Validator Remarks / Comments', 'remarks', { type: 'textarea' })}
           </div>
 
-          {otherFields.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-slate-100 space-y-[16px]">
-              <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Other Fields</h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-                {otherFields.map(k => renderFieldInput(k.replace(/_/g, ' '), k))}
-              </div>
-            </div>
-          )}
+
         </div>
       );
     }
@@ -1200,14 +1364,7 @@ export const AllRequests = ({
             {renderFieldInput('Unit Head', 'unitHead')}
           </div>
 
-          {otherFields.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-slate-100 space-y-[16px]">
-              <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Other Fields</h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-                {otherFields.map(k => renderFieldInput(k.replace(/_/g, ' '), k))}
-              </div>
-            </div>
-          )}
+
         </div>
       );
     }
@@ -1531,7 +1688,7 @@ export const AllRequests = ({
                 <div>
                 <div className="flex items-center gap-2">
                   <h4 className="text-[15px] font-bold text-slate-900">Change Request Details (L1, L2, L3)</h4>
-                  {isAdmin && (
+                  {canEdit && (
                     <button
                       onClick={() => setIsEditMode(!isEditMode)}
                       className={`ml-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
@@ -1694,209 +1851,261 @@ export const AllRequests = ({
                     </div>
                   </div>
 
-                  {/* Details & Justification */}
+                  {/* Change Description */}
                   <div className="space-y-[12px] pt-4 border-t border-slate-100">
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                       <FileText size={14} />
-                      <span>Details & Justification</span>
+                      <span>Change Description</span>
                     </h5>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
                       <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Description</span>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words font-semibold">
+                          {selectedL1Details.title}
+                        </div>
+                      </div>
+                      <div className="space-y-[6px] min-w-0">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Detailed Change Description</span>
                         <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                           {selectedL1Details.description}
                         </div>
-                        {selectedL1Details.file_desc && renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
-                      </div>
-
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Area of Improvement / Benefit</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
-                          {selectedL1Details.improvement_area}
-                        </div>
-                        {selectedL1Details.file_improvement && renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no)}
-
-                        {/* TABLE VIEW FOR IMPROVEMENT DATA */}
-                        {(() => {
-                          if (!selectedL1Details.improvement_table_data) return null;
-                          let tableData;
-                          try {
-                            tableData = JSON.parse(selectedL1Details.improvement_table_data);
-                          } catch {
-                            return null;
-                          }
-                          if (!Array.isArray(tableData) || tableData.length === 0) return null;
-
-                          const area = (selectedL1Details.improvement_area || '').toLowerCase();
-                          const hasCost = area === 'cost';
-                          const hasProductivity = area === 'productivity';
-                          const hasQuality = area === 'quality';
-
-                          if (!hasCost && !hasProductivity && !hasQuality) return null;
-
-                          return (
-                            <div className="mt-3 border border-slate-200 rounded-[8px] overflow-hidden bg-white">
-                              <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 text-[10px] font-bold text-slate-650 uppercase tracking-wider">
-                                {hasCost ? 'Cost Saving Data' : hasProductivity ? 'Productivity Improvement Data' : 'Quality Improvement Data'}
-                              </div>
-                              <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse text-[11px]">
-                                  <thead>
-                                    <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
-                                      <th className="p-2">4M #</th>
-                                      <th className="p-2">Date</th>
-                                      {hasCost && (
-                                        <>
-                                          <th className="p-2">Save/Month</th>
-                                          <th className="p-2">Save/Annum</th>
-                                          <th className="p-2">ROI</th>
-                                        </>
-                                      )}
-                                      {hasProductivity && (
-                                        <>
-                                          <th className="p-2">Current</th>
-                                          <th className="p-2">Improved</th>
-                                        </>
-                                      )}
-                                      {hasQuality && (
-                                        <>
-                                          <th className="p-2">Current PPM</th>
-                                          <th className="p-2">Reduced PPM</th>
-                                        </>
-                                      )}
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-slate-100">
-                                    {tableData.map((row, idx) => (
-                                      <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
-                                        <td className="p-2 font-mono font-medium">{row.changeNo}</td>
-                                        <td className="p-2">{row.date || '-'}</td>
-                                        {hasCost && (
-                                          <>
-                                            <td className="p-2 font-semibold">Rs. {row.monthlySave || '0'}</td>
-                                            <td className="p-2 font-semibold">Rs. {row.annualSave || '0'}</td>
-                                            <td className="p-2">{row.roi || '-'}</td>
-                                          </>
-                                        )}
-                                        {hasProductivity && (
-                                          <>
-                                            <td className="p-2">{row.currentProd || '0'} nos</td>
-                                            <td className="p-2 font-semibold">{row.improvedProd || '0'} nos</td>
-                                          </>
-                                        )}
-                                        {hasQuality && (
-                                          <>
-                                            <td className="p-2">{row.currentPpm || '0'}</td>
-                                            <td className="p-2 font-semibold">{row.reducedPpm || '0'}</td>
-                                          </>
-                                        )}
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          );
-                        })()}
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Start</span>
-                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                          <Calendar size={13} className="text-slate-400" />
-                          {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
-                        </span>
+                    {selectedL1Details.file_desc && (
+                      <div className="space-y-[4px] mt-2">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files</span>
+                        {renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
                       </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Close</span>
-                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                          <Calendar size={13} className="text-slate-400" />
-                          {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
-                        </span>
-                      </div>
-                    </div>
+                    )}
                   </div>
 
-                  {/* Traceability, Risk & Approvals */}
+                  {/* Implementation Timeline */}
                   <div className="space-y-[12px] pt-4 border-t border-slate-100">
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                      <Cpu size={14} />
-                      <span>Traceability, Risk & Approvals</span>
+                      <Calendar size={14} />
+                      <span>Implementation Timeline</span>
+                    </h5>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                      {/* Column 1 */}
+                      <div className="space-y-[12px]">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Improvement Area</span>
+                          <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.improvement_area || '-'}</span>
+                        </div>
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Upload Supporting Files (Improvement)</span>
+                          {selectedL1Details.file_improvement ? renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no) : <span className="text-slate-500 font-medium text-xs">-</span>}
+                        </div>
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Permanent / Temporary Change</span>
+                          <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.change_type || '-'}</span>
+                        </div>
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start</span>
+                          <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                            <Calendar size={13} className="text-slate-400" />
+                            {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes)</span>
+                          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
+                            {selectedL1Details.trace_from || '-'}
+                          </div>
+                          {selectedL1Details.file_trace_from && renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
+                        </div>
+                      </div>
+
+                      {/* Column 2 */}
+                      <div className="space-y-[12px]">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close</span>
+                          <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                            <Calendar size={13} className="text-slate-400" />
+                            {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (To Changes)</span>
+                          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
+                            {selectedL1Details.trace_to || '-'}
+                          </div>
+                          {selectedL1Details.file_trace_to && renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* TABLE VIEW FOR IMPROVEMENT DATA */}
+                    {(() => {
+                      if (!selectedL1Details.improvement_table_data) return null;
+                      let tableData;
+                      try {
+                        tableData = JSON.parse(selectedL1Details.improvement_table_data);
+                      } catch {
+                        return null;
+                      }
+                      if (!Array.isArray(tableData) || tableData.length === 0) return null;
+
+                      const area = (selectedL1Details.improvement_area || '').toLowerCase();
+                      const hasCost = area === 'cost';
+                      const hasProductivity = area === 'productivity';
+                      const hasQuality = area === 'quality';
+
+                      if (!hasCost && !hasProductivity && !hasQuality) return null;
+
+                      return (
+                        <div className="mt-3 border border-slate-200 rounded-[8px] overflow-hidden bg-white max-w-md">
+                          <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 text-[10px] font-bold text-slate-650 uppercase tracking-wider">
+                            {hasCost ? 'Cost Saving Data' : hasProductivity ? 'Productivity Improvement Data' : 'Quality Improvement Data'}
+                          </div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse text-[11px]">
+                              <thead>
+                                <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
+                                  <th className="p-2">4M #</th>
+                                  <th className="p-2">Date</th>
+                                  {hasCost && (
+                                    <>
+                                      <th className="p-2">Save/Month</th>
+                                      <th className="p-2">Save/Annum</th>
+                                      <th className="p-2">ROI</th>
+                                    </>
+                                  )}
+                                  {hasProductivity && (
+                                    <>
+                                      <th className="p-2">Current</th>
+                                      <th className="p-2">Improved</th>
+                                    </>
+                                  )}
+                                  {hasQuality && (
+                                    <>
+                                      <th className="p-2">Current PPM</th>
+                                      <th className="p-2">Reduced PPM</th>
+                                    </>
+                                  )}
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                {tableData.map((row, idx) => (
+                                  <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
+                                    <td className="p-2 font-mono font-medium">{row.changeNo}</td>
+                                    <td className="p-2">{row.date || '-'}</td>
+                                    {hasCost && (
+                                      <>
+                                        <td className="p-2 font-semibold">Rs. {row.monthlySave || '0'}</td>
+                                        <td className="p-2 font-semibold">Rs. {row.annualSave || '0'}</td>
+                                        <td className="p-2">{row.roi || '-'}</td>
+                                      </>
+                                    )}
+                                    {hasProductivity && (
+                                      <>
+                                        <td className="p-2">{row.currentProd || '0'} nos</td>
+                                        <td className="p-2 font-semibold">{row.improvedProd || '0'} nos</td>
+                                      </>
+                                    )}
+                                    {hasQuality && (
+                                      <>
+                                        <td className="p-2">{row.currentPpm || '0'}</td>
+                                        <td className="p-2 font-semibold">{row.reducedPpm || '0'}</td>
+                                      </>
+                                    )}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Risk Analysis Card (Read-Only) */}
+                  <div className="space-y-[16px] pt-4 border-t border-slate-100">
+                    <h5 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                      <span>Risk Analysis</span>
                     </h5>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability FROM (Before Change)</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
-                          {selectedL1Details.trace_from}
-                        </div>
-                        {selectedL1Details.file_trace_from && renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
-                      </div>
-
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Traceability TO (After Change)</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
-                          {selectedL1Details.trace_to}
-                        </div>
-                        {selectedL1Details.file_trace_to && renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
+                    {/* RISK ANALYSIS */}
+                    <div className="space-y-[4px] min-w-0">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">RISK ANALYSIS</span>
+                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-[12px] font-medium">
+                        {selectedL1Details.risk_analysis || '-'}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis & Mitigations</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
-                          {selectedL1Details.risk_analysis}
-                        </div>
-                        {selectedL1Details.file_risk && renderL1FilePill(selectedL1Details.file_risk, selectedL1Details.change_no)}
-                      </div>
+                    {/* UPLOAD SUPPORTING FILES (file_risk) */}
+                    <div className="space-y-[4px] min-w-0">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">SUPPORTING FILES</span>
+                      {selectedL1Details.file_risk && selectedL1Details.file_risk !== '-' ? (
+                        renderL1FilePill(selectedL1Details.file_risk, selectedL1Details.change_no)
+                      ) : (
+                        <span className="text-[12px] text-slate-400 italic">No file attached</span>
+                      )}
+                    </div>
 
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">SOP / WI / Control Plan Update</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
-                          {selectedL1Details.sop_update}
-                        </div>
-                        {selectedL1Details.file_sop && renderL1FilePill(selectedL1Details.file_sop, selectedL1Details.change_no)}
+                    {/* UPDATE IN SOP / WI / CONTROL PLAN / FMEA */}
+                    <div className="space-y-[4px] min-w-0">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">UPDATE IN SOP / WI / CONTROL PLAN / FMEA</span>
+                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-[12px] font-medium">
+                        {selectedL1Details.sop_update || '-'}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mt-4">
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Approval</span>
-                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                          <CheckCircle2 size={14} className="text-emerald-500" />
-                          {selectedL1Details.hod_approval}
-                        </span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required</span>
-                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                          <Clock size={14} className="text-slate-400" />
-                          <span>{showCustomerApproval ? selectedL1Details.customer_approval : '••••'}</span>
-                          <button
-                            type="button"
-                            onClick={() => setShowCustomerApproval(!showCustomerApproval)}
-                            className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
-                            title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
-                          >
-                            {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
-                          </button>
-                        </span>
-                      </div>
-                      <div className="space-y-[6px] md:col-span-1 min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Monitoring</span>
-                        <div className="font-semibold text-slate-750 leading-relaxed break-words">
-                          {selectedL1Details.effectiveness_monitoring}
-                        </div>
-                        {selectedL1Details.file_effectiveness && renderL1FilePill(selectedL1Details.file_effectiveness, selectedL1Details.change_no)}
-                      </div>
+                    {/* UPLOAD SUPPORTING FILES (SOP, WI, CONTROL PLAN, FMEA) */}
+                    <div className="space-y-[4px] min-w-0">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">SUPPORTING FILES (SOP, WI, CONTROL PLAN, FMEA)</span>
+                      {selectedL1Details.file_sop && selectedL1Details.file_sop !== '-' ? (
+                        renderL1FilePill(selectedL1Details.file_sop, selectedL1Details.change_no)
+                      ) : (
+                        <span className="text-[12px] text-slate-400 italic">No file attached</span>
+                      )}
                     </div>
+
+                    {/* USER DEPT HOD APPROVAL */}
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">USER DEPT HOD APPROVAL</span>
+                      {selectedL1Details.hod_approval ? (
+                        <div className="pt-1">
+                          <span className="inline-flex items-center gap-[6px] px-[10px] py-[6px] border border-[#0066cc] bg-[#0066cc]/5 text-[#0066cc] rounded-[6px] text-[10px] font-bold shadow-sm select-none">
+                            <span className="w-[12px] h-[12px] rounded-full border border-[#0066cc] flex items-center justify-center">
+                              <span className="w-[6px] h-[6px] rounded-full bg-[#0066cc]" />
+                            </span>
+                            <span>{selectedL1Details.hod_approval}</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[12px] text-slate-400 italic">No department selected</span>
+                      )}
+                    </div>
+
+                    {/* CUSTOMER APPROVAL REQUIRED */}
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">CUSTOMER APPROVAL REQUIRED</span>
+                      <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5 text-[12px]">
+                        <Clock size={14} className="text-slate-400" />
+                        <span>{showCustomerApproval ? (selectedL1Details.customer_approval || '-') : '••••'}</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowCustomerApproval(!showCustomerApproval)}
+                          className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
+                          title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
+                        >
+                          {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
+                        </button>
+                      </span>
+                    </div>
+
+                    {/* HOD status and comments (if approved/rejected) */}
                     {selectedL1Details.hodStatus && (
                       <div className="space-y-[4px] mt-4 border-t border-slate-100 pt-4">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD {selectedL1Details.hodStatus} Remarks / Comments ({selectedL1Details.hodDept || 'HOD'})</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words text-[12px]">
                           {selectedL1Details.hodRemarks || 'No remarks provided.'}
                         </div>
                       </div>
