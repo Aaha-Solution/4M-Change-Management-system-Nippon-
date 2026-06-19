@@ -144,10 +144,17 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
  * @param {Object} selectedLog 
  * @param {Function} setToastMsg 
  */
-export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, selectedLog, setToastMsg) => {
+export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, selectedLog, activeTab = 'all', setToastMsg) => {
+  let targetTab = activeTab;
+  let toastFn = setToastMsg;
+  if (typeof targetTab === 'function') {
+    toastFn = targetTab;
+    targetTab = 'all';
+  }
+
   try {
     if (!selectedL1Details) {
-      setToastMsg?.('Level 1 request details are not loaded.');
+      toastFn?.('Level 1 request details are not loaded.');
       return;
     }
 
@@ -163,10 +170,23 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     const lightBg = [248, 250, 252];    // Slate-50
 
     // Title & Header Branding
+    let titleSuffix = '';
+    let docFilename = `CMS_Detail_Report_${selectedL1Details.change_no}`;
+    if (targetTab === 'l1') {
+      titleSuffix = ' - Level 1 Details';
+      docFilename = `CMS_L1_Details_${selectedL1Details.change_no}`;
+    } else if (targetTab === 'l2') {
+      titleSuffix = ' - Level 2 Validation';
+      docFilename = `CMS_L2_Validation_${selectedL1Details.change_no}`;
+    } else if (targetTab === 'l3') {
+      titleSuffix = ' - Level 3 Approvals';
+      docFilename = `CMS_L3_Approvals_${selectedL1Details.change_no}`;
+    }
+
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text('4M Change Request Detail Report', 40, 45);
+    doc.text(`4M Change Request Detail Report${titleSuffix}`, 40, 45);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
@@ -229,112 +249,116 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     });
 
     // Section 2: Details & Justification
-    const detailsData = [
-      [
-        { content: 'Change Description:', fontStyle: 'bold' },
-        selectedL1Details.description || '-'
-      ],
-      [
-        { content: 'Area of Improvement / Benefit:', fontStyle: 'bold' },
-        selectedL1Details.improvement_area || '-'
-      ],
-      [
-        { content: 'Traceability FROM (Before Change):', fontStyle: 'bold' },
-        selectedL1Details.trace_from || '-'
-      ],
-      [
-        { content: 'Traceability TO (After Change):', fontStyle: 'bold' },
-        selectedL1Details.trace_to || '-'
-      ],
-      [
-        { content: 'Risk Analysis & Mitigations:', fontStyle: 'bold' },
-        selectedL1Details.risk_analysis || '-'
-      ],
-      [
-        { content: 'SOP / WI / Control Plan Update:', fontStyle: 'bold' },
-        selectedL1Details.sop_update || '-'
-      ],
-      [
-        { content: 'Effectiveness Monitoring:', fontStyle: 'bold' },
-        selectedL1Details.effectiveness_monitoring || '-'
-      ],
-      [
-        { content: 'Approvals & Cust. Req:', fontStyle: 'bold' },
-        `HOD Approval: ${selectedL1Details.hod_approval || '-'}  |  Customer Approval Required: ${selectedL1Details.customer_approval || '-'}`
-      ]
-    ];
-
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 15,
-      head: [[{ content: '2. CHANGE DETAILS & JUSTIFICATION', colSpan: 2 }]],
-      body: detailsData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: primaryColor,
-        textColor: [255, 255, 255],
-        fontSize: 10,
-        fontStyle: 'bold'
-      },
-      bodyStyles: {
-        fontSize: 8.5,
-        textColor: textColor
-      },
-      columnStyles: {
-        0: { cellWidth: 140, fillColor: lightBg, fontStyle: 'bold' },
-        1: { cellWidth: 375 }
-      },
-      margin: { left: 40, right: 40 }
-    });
-
-    // Section 3: Level 2 Validation Details
-    const l2Data = [];
-    if (selectedL2Details) {
-      l2Data.push(
+    if (targetTab === 'l1' || targetTab === 'all') {
+      const detailsData = [
         [
-          { content: 'Validated By:', fontStyle: 'bold' }, selectedL2Details.requester || '-',
-          { content: 'Validation Date:', fontStyle: 'bold' }, selectedL2Details.date || '-'
+          { content: 'Change Description:', fontStyle: 'bold' },
+          selectedL1Details.description || '-'
         ],
         [
-          { content: 'Validation Status:', fontStyle: 'bold' }, `L2: ${selectedL2Details.status || 'Pending'}`,
-          { content: 'PED Test Setup:', fontStyle: 'bold' }, selectedL2Details.weldTest || '-'
+          { content: 'Area of Improvement / Benefit:', fontStyle: 'bold' },
+          selectedL1Details.improvement_area || '-'
         ],
         [
-          { content: 'QA setup attachment:', fontStyle: 'bold' }, selectedL2Details.qaTest || '-',
-          { content: 'Remarks:', fontStyle: 'bold' }, selectedL2Details.remarks || '-'
+          { content: 'Traceability FROM (Before Change):', fontStyle: 'bold' },
+          selectedL1Details.trace_from || '-'
+        ],
+        [
+          { content: 'Traceability TO (After Change):', fontStyle: 'bold' },
+          selectedL1Details.trace_to || '-'
+        ],
+        [
+          { content: 'Risk Analysis & Mitigations:', fontStyle: 'bold' },
+          selectedL1Details.risk_analysis || '-'
+        ],
+        [
+          { content: 'SOP / WI / Control Plan Update:', fontStyle: 'bold' },
+          selectedL1Details.sop_update || '-'
+        ],
+        [
+          { content: 'Effectiveness Monitoring:', fontStyle: 'bold' },
+          selectedL1Details.effectiveness_monitoring || '-'
+        ],
+        [
+          { content: 'Approvals & Cust. Req:', fontStyle: 'bold' },
+          `HOD Approval: ${selectedL1Details.hod_approval || '-'}  |  Customer Approval Required: ${selectedL1Details.customer_approval || '-'}`
         ]
-      );
-    } else {
-      l2Data.push([
-        { content: 'Status:', fontStyle: 'bold' }, { content: 'Level 2 Validation details are currently pending or not submitted.', colSpan: 3 }
-      ]);
+      ];
+
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 15,
+        head: [[{ content: '2. CHANGE DETAILS & JUSTIFICATION', colSpan: 2 }]],
+        body: detailsData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontSize: 10,
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          fontSize: 8.5,
+          textColor: textColor
+        },
+        columnStyles: {
+          0: { cellWidth: 140, fillColor: lightBg, fontStyle: 'bold' },
+          1: { cellWidth: 375 }
+        },
+        margin: { left: 40, right: 40 }
+      });
     }
 
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 15,
-      head: [[{ content: '3. LEVEL 2 VALIDATION DETAILS', colSpan: 4 }]],
-      body: l2Data,
-      theme: 'grid',
-      headStyles: {
-        fillColor: primaryColor,
-        textColor: [255, 255, 255],
-        fontSize: 10,
-        fontStyle: 'bold'
-      },
-      bodyStyles: {
-        fontSize: 8.5,
-        textColor: textColor
-      },
-      columnStyles: {
-        0: { cellWidth: 100, fillColor: lightBg, fontStyle: 'bold' },
-        1: { cellWidth: 155 },
-        2: { cellWidth: 105, fillColor: lightBg, fontStyle: 'bold' },
-        3: { cellWidth: 155 }
-      },
-      margin: { left: 40, right: 40 }
-    });
+    // Section 3: Level 2 Validation Details
+    if (targetTab === 'l2' || targetTab === 'all') {
+      const l2Data = [];
+      if (selectedL2Details) {
+        l2Data.push(
+          [
+            { content: 'Validated By:', fontStyle: 'bold' }, selectedL2Details.requester || '-',
+            { content: 'Validation Date:', fontStyle: 'bold' }, selectedL2Details.date || '-'
+          ],
+          [
+            { content: 'Validation Status:', fontStyle: 'bold' }, `L2: ${selectedL2Details.status || 'Pending'}`,
+            { content: 'PED Test Setup:', fontStyle: 'bold' }, selectedL2Details.weldTest || '-'
+          ],
+          [
+            { content: 'QA setup attachment:', fontStyle: 'bold' }, selectedL2Details.qaTest || '-',
+            { content: 'Remarks:', fontStyle: 'bold' }, selectedL2Details.remarks || '-'
+          ]
+        );
+      } else {
+        l2Data.push([
+          { content: 'Status:', fontStyle: 'bold' }, { content: 'Level 2 Validation details are currently pending or not submitted.', colSpan: 3 }
+        ]);
+      }
+
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 15,
+        head: [[{ content: '3. LEVEL 2 VALIDATION DETAILS', colSpan: 4 }]],
+        body: l2Data,
+        theme: 'grid',
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontSize: 10,
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          fontSize: 8.5,
+          textColor: textColor
+        },
+        columnStyles: {
+          0: { cellWidth: 100, fillColor: lightBg, fontStyle: 'bold' },
+          1: { cellWidth: 155 },
+          2: { cellWidth: 105, fillColor: lightBg, fontStyle: 'bold' },
+          3: { cellWidth: 155 }
+        },
+        margin: { left: 40, right: 40 }
+      });
+    }
 
     // Section 4: Level 3 Approval Matrix
-    if (selectedLog) {
+    if ((targetTab === 'l3' || targetTab === 'all') && selectedLog) {
       const l3Headers = [['DEPARTMENT', 'APPROVAL STATUS']];
       const l3Rows = [
         ['PED (Process Engineering)', selectedLog.ped || 'Pending'],
@@ -404,11 +428,11 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
       doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL CHANGE REQUEST REPORT', 40, doc.internal.pageSize.height - 20);
     }
 
-    doc.save(`CMS_Detail_Report_${selectedL1Details.change_no}.pdf`);
-    setToastMsg?.('Request details exported successfully!');
+    doc.save(`${docFilename}.pdf`);
+    toastFn?.('Request details exported successfully!');
   } catch (error) {
     console.error('Error generating detailed PDF:', error);
-    setToastMsg?.('Error generating detailed PDF export.');
+    toastFn?.('Error generating detailed PDF export.');
   }
 };
 

@@ -329,7 +329,7 @@ export const L2Validation = ({
   };
 
   const handleExportRequestDetailsPDF = () => {
-    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, setToastMsg);
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, 'all', setToastMsg);
   };
 
   const handleCloseModal = () => {

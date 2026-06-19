@@ -498,7 +498,7 @@ export const DashboardOverview = ({
   };
 
   const handleExportRequestDetailsPDF = () => {
-    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, setToastMsg);
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, activeTab, setToastMsg);
   };
 
   const handleClosePreview = () => {
