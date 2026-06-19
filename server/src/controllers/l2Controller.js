@@ -1,5 +1,6 @@
 import * as l2Model from '../models/l2Model.js';
 import pool from '../config/db.js';
+import { validateLimits } from '../utils/validation.js';
 
 export const getL2ValidationLogs = async (req, res) => {
   try {
@@ -12,6 +13,11 @@ export const getL2ValidationLogs = async (req, res) => {
 };
 
 export const createL2ValidationLog = async (req, res) => {
+  const lengthError = validateLimits(req.body);
+  if (lengthError) {
+    return res.status(400).json({ error: lengthError });
+  }
+
   const { logData, attachments } = req.body;
   const userEmail = req.user?.email;
 

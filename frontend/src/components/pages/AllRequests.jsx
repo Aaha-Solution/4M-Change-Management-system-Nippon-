@@ -405,7 +405,8 @@ export const AllRequests = ({
       setUploadedFilesList([]);
     } catch (err) {
       console.error(err);
-      setToastMsg('Failed to save updates.');
+      const errMsg = err.response?.data?.error || 'Failed to save updates.';
+      setToastMsg(errMsg);
     } finally {
       setIsSaving(false);
     }

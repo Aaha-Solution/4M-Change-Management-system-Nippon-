@@ -2,6 +2,7 @@ import pool from '../config/db.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { broadcast } from '../config/websocket.js';
+import { validateLimits } from '../utils/validation.js';
 
 dotenv.config();
 
@@ -95,6 +96,11 @@ export const forgotPassword = async (req, res) => {
 };
 
 export const signup = async (req, res) => {
+  const lengthError = validateLimits(req.body);
+  if (lengthError) {
+    return res.status(400).json({ error: lengthError });
+  }
+
   const { email, password, role, name, department } = req.body;
 
   if (!email || !password) {
@@ -161,6 +167,11 @@ export const deleteUser = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
+  const lengthError = validateLimits(req.body);
+  if (lengthError) {
+    return res.status(400).json({ error: lengthError });
+  }
+
   const { id } = req.params;
   const { name, email, password, role, department, status } = req.body;
 

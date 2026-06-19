@@ -225,7 +225,8 @@ export const Effectiveness = ({
         handleCancelEditing();
       } catch (err) {
         console.error("Error updating log:", err);
-        setToastMsg('Failed to update effectiveness log.');
+        const errMsg = err.response?.data?.error || 'Failed to update effectiveness log.';
+        setToastMsg(errMsg);
       }
     } else {
       // Create mode
@@ -250,7 +251,8 @@ export const Effectiveness = ({
         handleCancelEditing();
       } catch (err) {
         console.error("Error creating log:", err);
-        setToastMsg('Failed to create effectiveness log.');
+        const errMsg = err.response?.data?.error || 'Failed to create effectiveness log.';
+        setToastMsg(errMsg);
       }
     }
   };

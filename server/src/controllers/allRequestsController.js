@@ -1,7 +1,13 @@
 import * as allRequestsModel from '../models/allRequestsModel.js';
 import pool from '../config/db.js';
+import { validateLimits } from '../utils/validation.js';
 
 export const createChange = async (req, res) => {
+  const lengthError = validateLimits(req.body);
+  if (lengthError) {
+    return res.status(400).json({ error: lengthError });
+  }
+
   const { title, requester, priority } = req.body;
   if (!title || !requester) {
     return res.status(400).json({ error: 'Title and Requester are required fields.' });
@@ -34,6 +40,11 @@ export const updateChangeDetails = async (req, res) => {
   const { id } = req.params;
   const { level } = req.query; // 'l1', 'l2', 'l3'
   const { updateData, attachments } = req.body;
+
+  const lengthError = validateLimits(req.body);
+  if (lengthError) {
+    return res.status(400).json({ error: lengthError });
+  }
 
   if (!level || !updateData) {
     return res.status(400).json({ error: 'Level and updateData are required.' });

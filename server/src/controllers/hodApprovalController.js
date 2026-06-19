@@ -5,6 +5,7 @@ import {
   ensureHodApprovalsTable
 } from '../models/hodApprovalModel.js';
 import pool from '../config/db.js';
+import { validateLimits } from '../utils/validation.js';
 
 // Ensure table exists when module first loads
 ensureHodApprovalsTable().catch(err =>
@@ -47,6 +48,11 @@ export const getHodApprovalsByDeptHandler = async (req, res) => {
  * Body: { changeNo, hodDept, status, remarks }
  */
 export const submitHodApproval = async (req, res) => {
+  const lengthError = validateLimits(req.body);
+  if (lengthError) {
+    return res.status(400).json({ error: lengthError });
+  }
+
   const userEmail = req.user?.email;
   const { changeNo, hodDept, status, remarks } = req.body;
 

@@ -1,5 +1,6 @@
 import * as effectivenessModel from '../models/effectivenessModel.js';
 import pool from '../config/db.js';
+import { validateLimits } from '../utils/validation.js';
 
 const checkCanUpdate = async (email) => {
   if (!email) return false;
@@ -28,6 +29,11 @@ export const getLogs = async (req, res) => {
 };
 
 export const createLog = async (req, res) => {
+  const lengthError = validateLimits(req.body);
+  if (lengthError) {
+    return res.status(400).json({ error: lengthError });
+  }
+
   const { logData, attachments } = req.body;
 
   if (!logData || !logData.id || !logData.changeNo) {
@@ -60,6 +66,11 @@ export const createLog = async (req, res) => {
 };
 
 export const updateLog = async (req, res) => {
+  const lengthError = validateLimits(req.body);
+  if (lengthError) {
+    return res.status(400).json({ error: lengthError });
+  }
+
   const { id } = req.params;
   const { logData, attachments } = req.body;
 
