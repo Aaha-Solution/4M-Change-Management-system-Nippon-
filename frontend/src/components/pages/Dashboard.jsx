@@ -467,7 +467,9 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                         activeTab === 'l3' ? 'L3 Request Tracker & Final Approval' :
                           activeTab === 'all-requests' ? 'All Change Requests' :
                             activeTab === 'all-approvals' ? 'All Approvals' :
-                              activeTab.replace('-', ' ')}
+                              activeTab === 'effectiveness' ? 'Effectiveness' :
+                                activeTab === 'users' ? 'Users' :
+                                  activeTab.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
               </h2>
             </div>
           </div>
@@ -646,15 +648,20 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
 
       {/* Global Toast Notification */}
       {toastMsg && (() => {
-        const isError = /error|please|must be|should be|failed|invalid|required|at least/i.test(toastMsg);
+        const text = typeof toastMsg === 'object' ? toastMsg.text : toastMsg;
+        const isError = typeof toastMsg === 'object'
+          ? !!toastMsg.isError
+          : /error|please|must be|should be|failed|invalid|required|at least/i.test(text);
+        
         // Replace "Error" or "error" with more meaningful words like "Failed"
-        const cleanedMsg = toastMsg
-          .replace(/\bError\b/g, 'Failed')
-          .replace(/\berror\b/g, 'failed');
+        const cleanedMsg = typeof text === 'string'
+          ? text.replace(/\bError\b/g, 'Failed').replace(/\berror\b/g, 'failed')
+          : text;
+
         return (
           <div className={`fixed bottom-6 right-6 text-white rounded-xl px-4 py-3 flex items-center gap-2 shadow-xl z-50 animate-slide-in-right text-xs sm:text-sm font-medium ${isError ? 'bg-rose-700' : 'bg-emerald-600'}`}>
             {isError
-              ? <AlertTriangle size={16} className="text-rose-200" />
+              ? <span className="text-xs sm:text-sm select-none">❌</span>
               : <CheckCircle size={16} className="text-white" />
             }
             <span>{cleanedMsg}</span>
