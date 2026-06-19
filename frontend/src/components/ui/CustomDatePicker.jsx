@@ -173,14 +173,14 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
 
       {isOpen && createPortal(
         <>
-          <div className="fixed inset-0 z-45" onClick={() => setIsOpen(false)} />
+          <div className="fixed inset-0 z-[95]" onClick={() => setIsOpen(false)} />
           <div 
             style={{
               position: 'absolute',
               top: `${coords.top + 4}px`,
               left: `${coords.left}px`,
             }}
-            className="bg-white border border-slate-200 shadow-xl rounded-[6px] p-[10px] z-50 w-[210px] text-slate-800 font-sans select-none"
+            className="bg-white border border-slate-200 shadow-xl rounded-[6px] p-[10px] z-[100] w-[210px] text-slate-800 font-sans select-none"
           >
             <div className="flex justify-between items-center mb-[8px]">
               <button 

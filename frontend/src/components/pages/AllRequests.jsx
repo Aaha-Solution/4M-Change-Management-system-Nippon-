@@ -6,7 +6,7 @@ import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '.
 import { getRequestDisplayStatus } from '../../utils/statusUtils';
 // import { getSyncedDate } from '../../utils/timeSync';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
-import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Approvals, updateChangeDetails } from '../../api/apiRoutes';
+import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Approvals, updateChangeDetails, getProcesses, getMachines } from '../../api/apiRoutes';
 import { exportRequestsListPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 
 const convertDDMMYYYYToYYYYMMDD = (val) => {
@@ -69,6 +69,8 @@ export const AllRequests = ({
   const [editL3Data, setEditL3Data] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
+  const [dbProcesses, setDbProcesses] = useState([]);
+  const [dbMachines, setDbMachines] = useState([]);
 
   // Table editor modal states
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);
@@ -163,6 +165,20 @@ export const AllRequests = ({
     });
   };
 
+  const fetchOptions = async () => {
+    try {
+      const [pRes, mRes] = await Promise.all([getProcesses(), getMachines()]);
+      setDbProcesses(pRes.data);
+      setDbMachines(mRes.data);
+    } catch (e) {
+      console.error('Error fetching process/machine options:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchOptions();
+  }, []);
+
   useEffect(() => {
     if (!selectedLog) {
       setShowCustomerApproval(false);
@@ -178,6 +194,8 @@ export const AllRequests = ({
         status: selectedLog.status,
         hodStatus: selectedLog.hodStatus
       });
+    } else if (data.type === 'REFRESH_USERS') {
+      fetchOptions();
     }
   });
 
@@ -734,8 +752,16 @@ export const AllRequests = ({
       const allDefinedKeys = ['title', 'unit', 'change_in', 'dept', 'change_type', 'process_name', 'process_line', 'machine_no', 'request_by', 'crRequester', 'crDate', 'requested_time', 'crStatus', ...dKeys, ...tKeys, 'id', 'change_no', 'changeNo'];
       const otherFields = Object.keys(data).filter(k => !allDefinedKeys.includes(k));
 
-      const processOptions = [...new Set(combinedData.map(i => i.processName).filter(Boolean))];
-      const machineOptions = [...new Set(combinedData.map(i => i.machineNo).filter(Boolean))];
+      const processOptions = Array.from(new Set([
+        ...(dbProcesses.length > 0 ? dbProcesses : []),
+        ...(combinedData.map(i => i.processName).filter(Boolean)),
+        ...(data.process_name ? [data.process_name] : [])
+      ]));
+      const machineOptions = Array.from(new Set([
+        ...(dbMachines.length > 0 ? dbMachines : []),
+        ...(combinedData.map(i => i.machineNo).filter(Boolean)),
+        ...(data.machine_no ? [data.machine_no] : [])
+      ]));
 
       return (
         <div className="space-y-[24px] animate-fade-in-up text-slate-800">
@@ -1085,7 +1111,9 @@ export const AllRequests = ({
                     const newArea = e.target.value;
                     const changeNo = data.change_no || data.changeNo || selectedLog?.changeNo || '';
                     let newTableData = '';
-                    if (['cost', 'productivity', 'quality'].includes(newArea.toLowerCase())) {
+                    if (selectedL1Details && newArea === selectedL1Details.improvement_area) {
+                      newTableData = selectedL1Details.improvement_table_data || '';
+                    } else if (['cost', 'productivity', 'quality'].includes(newArea.toLowerCase())) {
                       let defaultRows = [];
                       if (newArea.toLowerCase() === 'cost') {
                         defaultRows = [{ changeNo, date: '', monthlySave: '', annualSave: '', roi: '' }];

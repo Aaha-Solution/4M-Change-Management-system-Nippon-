@@ -2305,12 +2305,16 @@ export const DashboardOverview = ({
       const allDefinedKeys = ['title', 'unit', 'change_in', 'dept', 'change_type', 'process_name', 'process_line', 'machine_no', 'request_by', 'crRequester', 'crDate', 'requested_time', 'crStatus', ...dKeys, ...tKeys, 'id', 'change_no', 'changeNo'];
       const otherFields = Object.keys(data).filter(k => !allDefinedKeys.includes(k));
 
-      const processOptions = dbProcesses.length > 0 
-        ? dbProcesses 
-        : [...new Set(changes.map(c => c.processName || c.process_name).filter(Boolean))];
-      const machineOptions = dbMachines.length > 0 
-        ? dbMachines 
-        : [...new Set(changes.map(c => c.machineNo || c.machine_no).filter(Boolean))];
+      const processOptions = Array.from(new Set([
+        ...(dbProcesses.length > 0 ? dbProcesses : []),
+        ...(changes.map(c => c.processName || c.process_name).filter(Boolean)),
+        ...(data.process_name ? [data.process_name] : [])
+      ]));
+      const machineOptions = Array.from(new Set([
+        ...(dbMachines.length > 0 ? dbMachines : []),
+        ...(changes.map(c => c.machineNo || c.machine_no).filter(Boolean)),
+        ...(data.machine_no ? [data.machine_no] : [])
+      ]));
 
       return (
         <div className="space-y-[24px] animate-fade-in-up text-slate-800">
@@ -2660,7 +2664,9 @@ export const DashboardOverview = ({
                     const newArea = e.target.value;
                     const changeNo = data.change_no || data.changeNo || selectedLog?.changeNo || '';
                     let newTableData = '';
-                    if (['cost', 'productivity', 'quality'].includes(newArea.toLowerCase())) {
+                    if (selectedL1Details && newArea === selectedL1Details.improvement_area) {
+                      newTableData = selectedL1Details.improvement_table_data || '';
+                    } else if (['cost', 'productivity', 'quality'].includes(newArea.toLowerCase())) {
                       let defaultRows = [];
                       if (newArea.toLowerCase() === 'cost') {
                         defaultRows = [{ changeNo, date: '', monthlySave: '', annualSave: '', roi: '' }];
