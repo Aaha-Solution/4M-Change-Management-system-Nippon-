@@ -475,7 +475,9 @@ export const L1Request = ({
     } else {
       const parsedRequestDate = parseDDMMYYYYToDate(requestedDate);
       const parsedDateStart = parseDDMMYYYYToDate(dateStart);
-      if (parsedDateStart && parsedRequestDate) {
+      if (!parsedDateStart) {
+        newErrors.dateStart = 'Please enter a valid date in dd/mm/yyyy format.';
+      } else if (parsedRequestDate) {
         const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
         const dRequest = new Date(parsedRequestDate.getFullYear(), parsedRequestDate.getMonth(), parsedRequestDate.getDate());
         if (dStart < dRequest) {
@@ -493,7 +495,9 @@ export const L1Request = ({
     } else {
       const parsedDateStart = parseDDMMYYYYToDate(dateStart);
       const parsedDateClose = parseDDMMYYYYToDate(dateClose);
-      if (parsedDateClose && parsedDateStart) {
+      if (!parsedDateClose) {
+        newErrors.dateClose = 'Please enter a valid date in dd/mm/yyyy format.';
+      } else if (parsedDateStart) {
         const dClose = new Date(parsedDateClose.getFullYear(), parsedDateClose.getMonth(), parsedDateClose.getDate());
         const dStart = new Date(parsedDateStart.getFullYear(), parsedDateStart.getMonth(), parsedDateStart.getDate());
         if (dClose < dStart) {

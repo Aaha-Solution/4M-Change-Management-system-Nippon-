@@ -101,20 +101,33 @@ export const parseDDMMYYYYToDate = (dateStr) => {
   // Format: YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(cleanStr)) {
     const parts = cleanStr.split('-');
-    return new Date(parts[0], parts[1] - 1, parts[2]);
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    if (year < 1900 || year > 2100) return null;
+    const d = new Date(year, month, day);
+    if (!isNaN(d.getTime())) {
+      if (d.getFullYear() === year && d.getMonth() === month && d.getDate() === day) {
+        return d;
+      }
+    }
+    return null;
   }
   
   // Format: DD/MM/YYYY or DD-MM-YYYY or DD/MM/YY or DD-MM-YY
   const parts = cleanStr.split(/[-/]/);
   if (parts.length === 3) {
     let day, month, year;
+    let yearStr;
     if (parts[0].length === 4) {
       // YYYY/MM/DD
+      yearStr = parts[0];
       year = parseInt(parts[0], 10);
       month = parseInt(parts[1], 10) - 1;
       day = parseInt(parts[2], 10);
     } else {
       // DD/MM/YYYY or DD/MM/YY
+      yearStr = parts[2];
       day = parseInt(parts[0], 10);
       month = parseInt(parts[1], 10) - 1;
       year = parseInt(parts[2], 10);
@@ -122,13 +135,35 @@ export const parseDDMMYYYYToDate = (dateStr) => {
         year += 2000;
       }
     }
+    
+    // Ensure the year component is exactly 2 or 4 digits
+    if (yearStr.length !== 2 && yearStr.length !== 4) {
+      return null;
+    }
+    
+    // Validate year range
+    if (year < 1900 || year > 2100) {
+      return null;
+    }
+    
     const d = new Date(year, month, day);
-    if (!isNaN(d.getTime())) return d;
+    if (!isNaN(d.getTime())) {
+      if (d.getFullYear() === year && d.getMonth() === month && d.getDate() === day) {
+        return d;
+      }
+    }
+    return null;
   }
   
   // Fallback parsing (e.g. Month names)
+  if (/^\d+$/.test(cleanStr)) {
+    return null;
+  }
   const d = new Date(cleanStr);
-  return isNaN(d.getTime()) ? null : d;
+  if (isNaN(d.getTime())) return null;
+  const year = d.getFullYear();
+  if (year < 1900 || year > 2100) return null;
+  return d;
 };
 
 /**
