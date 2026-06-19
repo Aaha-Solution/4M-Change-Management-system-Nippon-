@@ -35,9 +35,6 @@ export const getRequestDisplayStatus = (c) => {
   if (c.status === 'Completed') {
     return 'Closed';
   }
-  if (c.l3Status === 'Approved') {
-    return 'Approved';
-  }
 
   // 5. Pending L3 (L3 is in progress, waiting for all departments)
   if (c.status === 'Approved' || (c.hodStatus === 'Approved' && c.l2Status === 'Accepted')) {
