@@ -21,7 +21,9 @@ import {
   CheckCircle2,
   FileText,
   AlertTriangle,
-  Upload
+  Upload,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '../../utils/dateUtils';
@@ -93,6 +95,86 @@ export const DashboardOverview = ({
   const [editL3Data, setEditL3Data] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
+
+  // Table editor modal states
+  const [isTableModalOpen, setIsTableModalOpen] = useState(false);
+  const [tableModalError, setTableModalError] = useState('');
+  const [tempTableData, setTempTableData] = useState([]);
+
+  const handleUpdateEditTableCell = (rowIndex, field, value) => {
+    const updatedList = tempTableData.map((row, idx) => {
+      if (idx !== rowIndex) return row;
+      const updated = { ...row, [field]: value };
+      if (field === 'monthlySave') {
+        const val = parseFloat(value);
+        if (!isNaN(val)) {
+          updated.annualSave = String(val * 12);
+        } else {
+          updated.annualSave = '';
+        }
+      }
+      return updated;
+    });
+    setTempTableData(updatedList);
+
+    if (checkEditTableCompleteness(updatedList)) {
+      setTableModalError('');
+    }
+  };
+
+  const handleAddEditTableRow = () => {
+    const changeNo = editL1Data.change_no || editL1Data.changeNo || selectedLog?.changeNo || '';
+    const area = (editL1Data.improvement_area || '').toLowerCase();
+    let newRow = {};
+    if (area === 'cost') {
+      newRow = { changeNo: changeNo, date: '', monthlySave: '', annualSave: '', roi: '' };
+    } else if (area === 'productivity') {
+      newRow = { changeNo: changeNo, date: '', currentProd: '', improvedProd: '' };
+    } else if (area === 'quality') {
+      newRow = { changeNo: changeNo, date: '', currentPpm: '', reducedPpm: '' };
+    }
+    setTempTableData([...tempTableData, newRow]);
+  };
+
+  const handleDeleteEditTableRow = (rowIndex) => {
+    const updatedList = tempTableData.filter((_, idx) => idx !== rowIndex);
+    setTempTableData(updatedList);
+    if (checkEditTableCompleteness(updatedList)) {
+      setTableModalError('');
+    }
+  };
+
+  const checkEditTableCompleteness = (tableData) => {
+    const area = (editL1Data.improvement_area || '').toLowerCase();
+    if (!tableData || tableData.length === 0) return false;
+    for (const row of tableData) {
+      if (area === 'cost') {
+        if (!row.date || !row.monthlySave || !row.annualSave || !row.roi) return false;
+      } else if (area === 'productivity') {
+        if (!row.date || !row.currentProd || !row.improvedProd) return false;
+      } else if (area === 'quality') {
+        if (!row.date || !row.currentPpm || !row.reducedPpm) return false;
+      }
+    }
+    return true;
+  };
+
+  const handleEditTableDone = () => {
+    if (tempTableData.length === 0) {
+      setTableModalError('Please add at least one row of data.');
+      return;
+    }
+    if (!checkEditTableCompleteness(tempTableData)) {
+      setTableModalError('Please fill all fields in the table.');
+      return;
+    }
+    setTableModalError('');
+    setEditL1Data(prev => ({
+      ...prev,
+      improvement_table_data: JSON.stringify(tempTableData)
+    }));
+    setIsTableModalOpen(false);
+  };
 
   const isRequester = (userEmail && (
     (selectedLog?.requesterEmail && selectedLog.requesterEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()) ||
@@ -1989,6 +2071,88 @@ export const DashboardOverview = ({
       const placeholder = options.placeholder || '';
       const type = options.type || 'text';
       const disabled = options.disabled || false;
+
+      if (key === 'improvement_table_data') {
+        const area = (data.improvement_area || '').toLowerCase();
+        if (!['cost', 'productivity', 'quality'].includes(area)) {
+          return null;
+        }
+
+        const tableDataStr = value || '';
+        let parsedRows = [];
+        try {
+          if (tableDataStr) {
+            parsedRows = JSON.parse(tableDataStr);
+          }
+        } catch (e) {
+          console.error("Failed to parse improvement_table_data JSON:", e);
+        }
+        const rowCount = parsedRows.length;
+        const areaLabel = data.improvement_area || 'Cost';
+
+        return (
+          <div key={key} className="space-y-[4px] min-w-0">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</label>
+            <div className="flex gap-[8px]">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  readOnly
+                  placeholder={`No ${areaLabel.toLowerCase()} table data entered`}
+                  className="w-full bg-slate-50 disabled:bg-slate-100 disabled:text-slate-500 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none text-slate-550 select-none font-medium text-slate-700"
+                  value={rowCount > 0 ? `${rowCount} row${rowCount > 1 ? 's' : ''} entered (${areaLabel} Saving Data)` : ''}
+                />
+                {rowCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to clear all table rows?')) {
+                        setData({ ...data, [key]: '' });
+                      }
+                    }}
+                    className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                    title="Clear table data"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const changeNo = data.change_no || data.changeNo || selectedLog?.changeNo || '';
+                  let defaultRows = [];
+                  try {
+                    if (tableDataStr) {
+                      defaultRows = JSON.parse(tableDataStr);
+                    }
+                  } catch (e) {}
+
+                  if (!defaultRows || defaultRows.length === 0) {
+                    if (area === 'cost') {
+                      defaultRows = [{ changeNo, date: '', monthlySave: '', annualSave: '', roi: '' }];
+                    } else if (area === 'productivity') {
+                      defaultRows = [{ changeNo, date: '', currentProd: '', improvedProd: '' }];
+                    } else if (area === 'quality') {
+                      defaultRows = [{ changeNo, date: '', currentPpm: '', reducedPpm: '' }];
+                    }
+                  } else {
+                    defaultRows = defaultRows.map(r => ({ ...r, changeNo: r.changeNo || changeNo }));
+                  }
+
+                  setTempTableData(defaultRows);
+                  setTableModalError('');
+                  setIsTableModalOpen(true);
+                }}
+                className="flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 bg-white hover:bg-slate-50 text-[#0066cc] rounded-[6px] text-[11px] font-bold shadow-sm transition-all cursor-pointer select-none shrink-0"
+              >
+                <FileText size={12} />
+                <span>Edit Table</span>
+              </button>
+            </div>
+          </div>
+        );
+      }
       
       const fileKeys = [
         'file_desc', 'file_improvement', 'file_trace_from', 'file_trace_to', 
@@ -2492,7 +2656,23 @@ export const DashboardOverview = ({
                 </label>
                 <select
                   value={data.improvement_area || ''}
-                  onChange={(e) => setData({ ...data, improvement_area: e.target.value })}
+                  onChange={(e) => {
+                    const newArea = e.target.value;
+                    const changeNo = data.change_no || data.changeNo || selectedLog?.changeNo || '';
+                    let newTableData = '';
+                    if (['cost', 'productivity', 'quality'].includes(newArea.toLowerCase())) {
+                      let defaultRows = [];
+                      if (newArea.toLowerCase() === 'cost') {
+                        defaultRows = [{ changeNo, date: '', monthlySave: '', annualSave: '', roi: '' }];
+                      } else if (newArea.toLowerCase() === 'productivity') {
+                        defaultRows = [{ changeNo, date: '', currentProd: '', improvedProd: '' }];
+                      } else if (newArea.toLowerCase() === 'quality') {
+                        defaultRows = [{ changeNo, date: '', currentPpm: '', reducedPpm: '' }];
+                      }
+                      newTableData = JSON.stringify(defaultRows);
+                    }
+                    setData({ ...data, improvement_area: newArea, improvement_table_data: newTableData });
+                  }}
                   className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
                 >
                   <option value="">— Select Area —</option>
@@ -4054,6 +4234,211 @@ export const DashboardOverview = ({
                 className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-655 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
               >
                 Close Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Improvement Table Edit Modal */}
+      {isTableModalOpen && ['cost', 'productivity', 'quality'].includes((editL1Data.improvement_area || '').toLowerCase()) && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-[16px]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsTableModalOpen(false)} />
+          <div className="relative bg-white w-full max-w-[850px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 max-h-[85vh] overflow-hidden animate-fade-in-up">
+            <div className="bg-slate-50 px-[24px] py-[16px] border-b border-slate-100 flex items-center justify-between rounded-t-[16px]">
+              <h4 className="text-[14px] font-bold text-slate-800 uppercase tracking-wider">
+                {(editL1Data.improvement_area || '').toLowerCase() === 'cost' ? 'Cost Saving Data Table' : 
+                 (editL1Data.improvement_area || '').toLowerCase() === 'productivity' ? 'Productivity Improvement Data Table' : 
+                 'Quality Improvement Data Table'}
+              </h4>
+              <button onClick={() => setIsTableModalOpen(false)} className="p-[4px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-655 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-[24px] overflow-y-auto space-y-[16px]">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left border-collapse min-w-[650px] text-[12px]">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
+                      <th className="p-[10px] w-[150px]">4M #</th>
+                      <th className="p-[10px] w-[160px]">Implementation Date</th>
+                      {(editL1Data.improvement_area || '').toLowerCase() === 'cost' && (
+                        <>
+                          <th className="p-[10px]">Total Cost Saved / month (Rs)</th>
+                          <th className="p-[10px]">Total Cost Saved / Annum (Rs)</th>
+                          <th className="p-[10px]">ROI (Rs)</th>
+                        </>
+                      )}
+                      {(editL1Data.improvement_area || '').toLowerCase() === 'productivity' && (
+                        <>
+                          <th className="p-[10px]">Current Productivity (nos)</th>
+                          <th className="p-[10px]">Productivity Improved (nos)</th>
+                        </>
+                      )}
+                      {(editL1Data.improvement_area || '').toLowerCase() === 'quality' && (
+                        <>
+                          <th className="p-[10px]">Current PPM</th>
+                          <th className="p-[10px]">Reduced PPM</th>
+                        </>
+                      )}
+                      <th className="p-[10px] w-[50px] text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {tempTableData.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50/50">
+                        <td className="p-[8px]">
+                          <input
+                            type="text"
+                            value={row.changeNo || ''}
+                            onChange={(e) => handleUpdateEditTableCell(idx, 'changeNo', e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc]"
+                          />
+                        </td>
+                        <td className="p-[8px]">
+                          <CustomDatePicker
+                            value={row.date || ''}
+                            onChange={(val) => handleUpdateEditTableCell(idx, 'date', val)}
+                            readOnly={true}
+                            minDate={editL1Data.crDate ? formatDateToDDMMYYYY(editL1Data.crDate) : ''}
+                            placeholder="dd/mm/yyyy"
+                            inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[6px] pl-[10px] pr-[24px] text-[11px] outline-none focus:border-[#0066cc] ${
+                              tableModalError && !row.date ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                            }`}
+                            buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
+                          />
+                        </td>
+                        {(editL1Data.improvement_area || '').toLowerCase() === 'cost' && (
+                          <>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.monthlySave || ''}
+                                onChange={(e) => handleUpdateEditTableCell(idx, 'monthlySave', e.target.value)}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  tableModalError && !row.monthlySave ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
+                              />
+                            </td>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.annualSave || ''}
+                                onChange={(e) => handleUpdateEditTableCell(idx, 'annualSave', e.target.value)}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  tableModalError && !row.annualSave ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
+                              />
+                            </td>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.roi || ''}
+                                onChange={(e) => handleUpdateEditTableCell(idx, 'roi', e.target.value)}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  tableModalError && !row.roi ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
+                              />
+                            </td>
+                          </>
+                        )}
+                        {(editL1Data.improvement_area || '').toLowerCase() === 'productivity' && (
+                          <>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.currentProd || ''}
+                                onChange={(e) => handleUpdateEditTableCell(idx, 'currentProd', e.target.value)}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  tableModalError && !row.currentProd ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
+                              />
+                            </td>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.improvedProd || ''}
+                                onChange={(e) => handleUpdateEditTableCell(idx, 'improvedProd', e.target.value)}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  tableModalError && !row.improvedProd ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
+                              />
+                            </td>
+                          </>
+                        )}
+                        {(editL1Data.improvement_area || '').toLowerCase() === 'quality' && (
+                          <>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.currentPpm || ''}
+                                onChange={(e) => handleUpdateEditTableCell(idx, 'currentPpm', e.target.value)}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  tableModalError && !row.currentPpm ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
+                              />
+                            </td>
+                            <td className="p-[8px]">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={row.reducedPpm || ''}
+                                onChange={(e) => handleUpdateEditTableCell(idx, 'reducedPpm', e.target.value)}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
+                                  tableModalError && !row.reducedPpm ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                }`}
+                              />
+                            </td>
+                          </>
+                        )}
+                        <td className="p-[8px] text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEditTableRow(idx)}
+                            className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-rose-600 transition-colors"
+                            title="Delete Row"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleAddEditTableRow}
+                className="flex items-center gap-[6px] px-[12px] py-[6px] border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-[6px] text-[11px] font-bold shadow-sm transition-colors cursor-pointer select-none w-fit"
+              >
+                <Plus size={12} />
+                <span>Add Row</span>
+              </button>
+            </div>
+
+            <div className="bg-slate-50 px-[24px] py-[14px] border-t border-slate-100 flex items-center justify-between gap-[12px]">
+              <div className="text-rose-600 text-[11.5px] font-bold">
+                {tableModalError && (
+                  <span className="flex items-center gap-[6px]">
+                    <AlertTriangle size={14} className="text-rose-500 shrink-0" />
+                    {tableModalError}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleEditTableDone}
+                className="bg-[#0066cc] hover:bg-[#0052a3] text-white px-[20px] py-[8px] rounded-[6px] text-[12px] font-bold shadow-sm transition-colors cursor-pointer"
+              >
+                Done
               </button>
             </div>
           </div>
