@@ -1149,6 +1149,8 @@ export const L1Request = ({
                   setDateStart(val);
                   if (errors.dateStart) setErrors(prev => ({ ...prev, dateStart: '' }));
                 }}
+                readOnly={true}
+                minDate={requestedDate}
                 containerClassName=""
                 inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
                   errors.dateStart 
@@ -1198,6 +1200,8 @@ export const L1Request = ({
                   setDateClose(val);
                   if (errors.dateClose) setErrors(prev => ({ ...prev, dateClose: '' }));
                 }}
+                readOnly={true}
+                minDate={dateStart || requestedDate}
                 containerClassName=""
                 inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[8px] pl-[12px] pr-[28px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${
                   errors.dateClose 
@@ -1643,6 +1647,8 @@ export const L1Request = ({
                           <CustomDatePicker
                             value={row.date}
                             onChange={(val) => handleUpdateCell(idx, 'date', val)}
+                            readOnly={true}
+                            minDate={requestedDate}
                             placeholder="dd/mm/yyyy"
                             inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[6px] pl-[10px] pr-[24px] text-[11px] outline-none focus:border-[#0066cc] ${
                               modalError && !row.date ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'

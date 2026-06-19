@@ -3,10 +3,15 @@ import { createPortal } from 'react-dom';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseDDMMYYYYToDate } from '../../utils/dateUtils';
 
-export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", inputClassName = "", buttonClassName = "", containerClassName = "", id, disabled }) => {
+export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", inputClassName = "", buttonClassName = "", containerClassName = "", id, disabled, readOnly, minDate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  const parsedMinDate = minDate ? (minDate instanceof Date ? minDate : parseDDMMYYYYToDate(minDate)) : null;
+  if (parsedMinDate) {
+    parsedMinDate.setHours(0, 0, 0, 0);
+  }
 
   const updateCoords = () => {
     if (containerRef.current) {
@@ -34,6 +39,15 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
       const parsed = parseDDMMYYYYToDate(value);
       if (parsed && !isNaN(parsed.getTime())) {
         return parsed;
+      }
+    }
+    const today = new Date();
+    const initMinDate = minDate ? (minDate instanceof Date ? minDate : parseDDMMYYYYToDate(minDate)) : null;
+    if (initMinDate) {
+      initMinDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      if (today < initMinDate) {
+        return initMinDate;
       }
     }
     return new Date();
@@ -113,6 +127,14 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
     "July", "August", "September", "October", "November", "December"
   ];
 
+  const isPrevMonthDisabled = () => {
+    if (!parsedMinDate) return false;
+    return (
+      viewDate.getFullYear() < parsedMinDate.getFullYear() ||
+      (viewDate.getFullYear() === parsedMinDate.getFullYear() && viewDate.getMonth() <= parsedMinDate.getMonth())
+    );
+  };
+
   return (
     <div ref={containerRef} className={`relative w-full ${containerClassName}`}>
       <input 
@@ -120,10 +142,17 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
         type="text" 
         placeholder={placeholder}
         maxLength={10}
+        readOnly={readOnly}
         onChange={handleInputChange}
         onClick={() => { if (!disabled) setIsOpen(!isOpen); }}
         disabled={disabled}
         onKeyDown={(e) => {
+          if (readOnly) {
+            if (e.key !== 'Tab' && e.key !== 'Escape' && e.key !== 'Enter') {
+              e.preventDefault();
+            }
+            return;
+          }
           if (e.key !== 'Tab' && e.key !== 'Escape' && e.key !== 'Enter' && e.key !== 'Backspace' && e.key !== 'Delete' && !e.key.startsWith('Arrow')) {
             if (!/[0-9/]/.test(e.key) && e.key.length === 1) {
               e.preventDefault();
@@ -154,7 +183,16 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
             className="bg-white border border-slate-200 shadow-xl rounded-[6px] p-[10px] z-50 w-[210px] text-slate-800 font-sans select-none"
           >
             <div className="flex justify-between items-center mb-[8px]">
-              <button type="button" onClick={prevMonth} className="p-[2px] hover:bg-slate-100 rounded text-slate-550 cursor-pointer">
+              <button 
+                type="button" 
+                onClick={prevMonth} 
+                disabled={isPrevMonthDisabled() || disabled} 
+                className={`p-[2px] rounded text-slate-550 ${
+                  isPrevMonthDisabled() 
+                    ? 'opacity-30 cursor-not-allowed pointer-events-none' 
+                    : 'hover:bg-slate-100 cursor-pointer'
+                }`}
+              >
                 <ChevronLeft size={12} />
               </button>
               <span className="font-bold text-[10px] text-slate-700">
@@ -174,17 +212,24 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
                 const isCurrentMonth = day.getMonth() === month;
                 const isSelected = value && parseDDMMYYYYToDate(value)?.toDateString() === day.toDateString();
                 
+                const dayCopy = new Date(day);
+                dayCopy.setHours(0, 0, 0, 0);
+                const isDisabled = parsedMinDate && dayCopy < parsedMinDate;
+
                 return (
                   <button
                     key={idx}
                     type="button"
+                    disabled={isDisabled || disabled}
                     onClick={() => handleDayClick(day)}
-                    className={`py-[3px] rounded transition-all cursor-pointer ${
-                      isSelected 
+                    className={`py-[3px] rounded transition-all ${
+                      isDisabled 
+                        ? "text-slate-200 cursor-not-allowed pointer-events-none" 
+                        : isSelected 
                         ? "bg-[#0066cc] text-white font-bold" 
                         : isCurrentMonth
-                        ? "text-slate-700 hover:bg-slate-100 font-medium"
-                        : "text-slate-300 hover:bg-slate-50"
+                        ? "text-slate-700 hover:bg-slate-100 font-medium cursor-pointer"
+                        : "text-slate-300 hover:bg-slate-50 cursor-pointer"
                     }`}
                   >
                     {day.getDate()}
