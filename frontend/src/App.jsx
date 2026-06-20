@@ -126,7 +126,7 @@ function App() {
         const text = typeof toastMsg === 'object' ? toastMsg.text : toastMsg;
         const isError = typeof toastMsg === 'object' 
           ? !!toastMsg.isError 
-          : /fail|error|denied|invalid|required|must|limit|locked/i.test(text);
+          : /fail|error|denied|invalid|required|must|limit|locked|please|cannot|no\s+data|no\s+record|skipped|skip|not\s+allowed|only|wrong|warning|incorrect|unable|at\s+least/i.test(text);
         return (
           <div className={`fixed bottom-8 right-8 ${isError ? 'bg-rose-600 border border-rose-700' : 'bg-emerald-600 border border-emerald-700'} rounded-xl px-5 py-4 flex items-center gap-3 shadow-xl z-50 animate-slide-in-right`}>
             {isError 
