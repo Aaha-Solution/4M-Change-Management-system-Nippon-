@@ -435,7 +435,9 @@ export const L2Validation = ({
   const hasPedUploaded = matchedL2 && matchedL2.weldTest && matchedL2.weldTest !== '-';
   const canUploadPed = !hasPedUploaded || matchedL2.status === 'Rejected';
 
-  const isSaveDisabled = isSubmitting || !formChangeNo.trim() || (!isAdmin && (!canEdit || (
+  const isChangeClosed = !!(matchedChange && matchedChange.qaApproval === 'Approved');
+
+  const isSaveDisabled = isSubmitting || !formChangeNo.trim() || isChangeClosed || (!isAdmin && (!canEdit || (
     // If Accepted, completely locked
     (matchedL2 && matchedL2.status === 'Accepted') ||
     // If Rejected, locked for Quality/Admin, and locked for requester unless they selected a new file to reset
@@ -475,67 +477,78 @@ export const L2Validation = ({
             <h4 className="text-[13px] font-bold text-slate-900">Add L2 Validation Log</h4>
           </div>
 
-        {formChangeNo && isRaisedByUser && !isQualityOrAdmin && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-            <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Notice:</span> You raised this change request. You are authorized to upload the <span className="font-semibold">Requester Validation Attachment</span>. QAD department will review and complete the validation.
-            </div>
-          </div>
-        )}
-
-        {formChangeNo && !isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-            <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Notice:</span> You are logged in as {isAdmin ? 'Admin' : 'QAD'}. You are authorized to complete the L2 validation status, remarks, and upload the <span className="font-semibold">QA Setup Verification Attachment</span>.
-            </div>
-          </div>
-        )}
-
-        {formChangeNo && isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-            <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Notice:</span> You are the creator of this change request and {isAdmin ? 'an Admin' : 'a QAD'} member. You have full permissions to update all L2 validation fields.
-            </div>
-          </div>
-        )}
-
-        {formChangeNo && isL2AlreadyValidated && isQualityOrAdmin && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-            <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Validation Locked:</span> L2 validation has already been completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). QAD members and Admins cannot update these fields again.
-            </div>
-          </div>
-        )}
-
-        {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Accepted' && (
+        {formChangeNo && isChangeClosed ? (
           <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-            <AlertTriangle size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+            <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Validation Completed:</span> This request has already been validated and Approved by QAD. No further actions are required.
+              <span className="font-bold">Validation Closed:</span> This change request has been Approved and Closed at the Effectiveness Monitoring stage. No further L2 modifications are allowed.
             </div>
           </div>
-        )}
+        ) : (
+          <>
+            {formChangeNo && isRaisedByUser && !isQualityOrAdmin && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Notice:</span> You raised this change request. You are authorized to upload the <span className="font-semibold">Requester Validation Attachment</span>. QAD department will review and complete the validation.
+                </div>
+              </div>
+            )}
 
-        {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Rejected' && (
-          <div className="bg-rose-50 border border-rose-250 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-            <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Validation Rejected:</span> L2 validation has been rejected by QAD. Please upload a new <span className="font-semibold">Requester Validation Attachment</span> to reset the status to Pending and notify QAD for re-evaluation.
-            </div>
-          </div>
-        )}
+            {formChangeNo && !isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Notice:</span> You are logged in as {isAdmin ? 'Admin' : 'QAD'}. You are authorized to complete the L2 validation status, remarks, and upload the <span className="font-semibold">QA Setup Verification Attachment</span>.
+                </div>
+              </div>
+            )}
 
-        {formChangeNo && !isRaisedByUser && !isQualityOrAdmin && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-            <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request or QAD department members / Admins.
-            </div>
-          </div>
+            {formChangeNo && isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Notice:</span> You are the creator of this change request and {isAdmin ? 'an Admin' : 'a QAD'} member. You have full permissions to update all L2 validation fields.
+                </div>
+              </div>
+            )}
+
+            {formChangeNo && isL2AlreadyValidated && isQualityOrAdmin && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Validation Locked:</span> L2 validation has already been completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). QAD members and Admins cannot update these fields again.
+                </div>
+              </div>
+            )}
+
+            {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Accepted' && (
+              <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                <AlertTriangle size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Validation Completed:</span> This request has already been validated and Approved by QAD. No further actions are required.
+                </div>
+              </div>
+            )}
+
+            {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Rejected' && (
+              <div className="bg-rose-50 border border-rose-250 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                <AlertTriangle size={14} className="text-rose-505 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Validation Rejected:</span> L2 validation has been rejected by QAD. Please upload a new <span className="font-semibold">Requester Validation Attachment</span> to reset the status to Pending and notify QAD for re-evaluation.
+                </div>
+              </div>
+            )}
+
+            {formChangeNo && !isRaisedByUser && !isQualityOrAdmin && (
+              <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request or QAD department members / Admins.
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         <form onSubmit={handleSaveLog} className="space-y-[14px]">
@@ -583,7 +596,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || (!isAdmin && (!isRaisedByUserOrAdmin || !canUploadPed))}
+              disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isRaisedByUserOrAdmin || !canUploadPed))}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -674,7 +687,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
+              disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -762,7 +775,7 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
             <select
               value={formStatus}
-              disabled={!formChangeNo.trim() || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
+              disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
               onChange={(e) => {
                 setFormStatus(e.target.value);
                 setFieldErrors(prev => ({ ...prev, status: '' }));
@@ -791,7 +804,7 @@ export const L2Validation = ({
               rows={3}
               value={formRemarks}
               maxLength={1000}
-              disabled={!formChangeNo.trim() || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
+              disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
               onChange={(e) => {
                 setFormRemarks(e.target.value);
                 setFieldErrors(prev => ({ ...prev, remarks: '' }));
@@ -828,6 +841,8 @@ export const L2Validation = ({
               </>
             ) : !formChangeNo.trim() ? (
               <span>Select a Request to Validate</span>
+            ) : isChangeClosed ? (
+              <span>Validation is Closed</span>
             ) : !canEdit ? (
               <span>Access Restricted</span>
             ) : (matchedL2 && matchedL2.status === 'Accepted') ? (

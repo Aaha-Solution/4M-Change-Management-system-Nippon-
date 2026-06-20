@@ -384,6 +384,8 @@ export const L3RequestTracker = ({
 
   // Filter logic
   const filteredLogs = approvalLogs.filter(log => {
+    if (log.qaApproval === 'Approved') return false;
+
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch = !q || 
       log.changeNo.toLowerCase().includes(q) ||
@@ -406,6 +408,7 @@ export const L3RequestTracker = ({
   };
 
   const currentChangeLog = selectedChangeId ? approvalLogs.find(log => log.changeNo === selectedChangeId) : null;
+  const isChangeClosed = !!(currentChangeLog && currentChangeLog.qaApproval === 'Approved');
   const isL2Accepted = !selectedChangeId || currentChangeLog?.l2Decision === 'Accepted';
   let isAlreadyValidated = false;
   if (currentChangeLog) {
@@ -471,22 +474,33 @@ export const L3RequestTracker = ({
 
         <form onSubmit={handleSaveApproval} className="space-y-[14px]">
 
-          {selectedChangeId && !isL2Accepted && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
-              <AlertTriangle size={14} className="shrink-0 mt-0.5 text-rose-600" />
+          {selectedChangeId && isChangeClosed ? (
+            <div className="bg-emerald-50 border border-emerald-250 text-emerald-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+              <CheckCircle2 size={14} className="shrink-0 mt-0.5 text-emerald-600" />
               <div>
-                <span className="font-bold">L3 Sign-off Blocked:</span> This request has not passed L2 validation (Current L2 Status: <span className="font-bold uppercase">{currentChangeLog?.l2Decision || 'Pending'}</span>). L3 approvals can only be submitted for accepted L2 requests.
+                <span className="font-bold">Approvals Closed:</span> This request has been Approved and Closed at the Effectiveness Monitoring stage. No further L3 approvals can be submitted.
               </div>
             </div>
-          )}
+          ) : (
+            <>
+              {selectedChangeId && !isL2Accepted && (
+                <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                  <AlertTriangle size={14} className="shrink-0 mt-0.5 text-rose-600" />
+                  <div>
+                    <span className="font-bold">L3 Sign-off Blocked:</span> This request has not passed L2 validation (Current L2 Status: <span className="font-bold uppercase">{currentChangeLog?.l2Decision || 'Pending'}</span>). L3 approvals can only be submitted for accepted L2 requests.
+                  </div>
+                </div>
+              )}
 
-          {selectedChangeId && isL2Accepted && !canEdit && (
-            <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
-              <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
-              <div>
-                <span className="font-bold">Not Authorized:</span> Only department HODs or an Administrator can sign off at Level 3. (Your Role: <span className="font-bold uppercase">{userRole || 'User'}</span>)
-              </div>
-            </div>
+              {selectedChangeId && isL2Accepted && !canEdit && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                  <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
+                  <div>
+                    <span className="font-bold">Not Authorized:</span> Only department HODs or an Administrator can sign off at Level 3. (Your Role: <span className="font-bold uppercase">{userRole || 'User'}</span>)
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Acting Department (Admin) Select dropdown */}
@@ -495,7 +509,7 @@ export const L3RequestTracker = ({
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Acting Department (Admin) <span className="text-rose-500">*</span></label>
               <select
                 value={actingDept}
-                disabled={!selectedChangeId}
+                disabled={!selectedChangeId || isChangeClosed}
                 onChange={(e) => setActingDept(e.target.value)}
                 className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
               >
@@ -554,7 +568,7 @@ export const L3RequestTracker = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approval Status <span className="text-rose-500">*</span></label>
             <select 
               value={formStatus} 
-              disabled={!selectedChangeId || showAsValidated || !isL2Accepted || !canEdit}
+              disabled={!selectedChangeId || showAsValidated || !isL2Accepted || !canEdit || isChangeClosed}
               onChange={(e) => setFormStatus(e.target.value)}
               className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
             >
@@ -568,7 +582,7 @@ export const L3RequestTracker = ({
           <div className="space-y-[8px] pt-[4px]">
             <button 
               type="submit" 
-              disabled={isSubmitting || !selectedChangeId || showAsValidated || !isL2Accepted || !canEdit}
+              disabled={isSubmitting || !selectedChangeId || showAsValidated || !isL2Accepted || !canEdit || isChangeClosed}
               className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
             >
               {isSubmitting ? (
@@ -576,6 +590,8 @@ export const L3RequestTracker = ({
                   <Loader2 className="animate-spin" size={14} />
                   <span>Saving Log...</span>
                 </>
+              ) : isChangeClosed ? (
+                <span>Approvals Closed</span>
               ) : showAsValidated ? (
                 <span>Log Already Saved</span>
               ) : !selectedChangeId ? (

@@ -24,12 +24,14 @@ export const getHodApprovals = async () => {
        ha.remarks     AS hodRemarks,
        ha.decided_at  AS decidedAt,
        uh.name        AS hodName,
-       (SELECT COUNT(*) FROM hod_approvals WHERE change_no = cr.id AND status = 'Rejected') AS rejectCount
+       (SELECT COUNT(*) FROM hod_approvals WHERE change_no = cr.id AND status = 'Rejected') AS rejectCount,
+       e.qa_approval  AS qaApproval
      FROM change_requests cr
      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
      LEFT JOIN users u ON cr.requester = u.email
      LEFT JOIN hod_approvals ha ON cr.id = ha.change_no
      LEFT JOIN users uh ON ha.hod_email = uh.email
+     LEFT JOIN effectiveness_logs e ON cr.id = e.change_no
      ORDER BY cr.created_at DESC`
   );
   return rows;
@@ -56,12 +58,14 @@ export const getHodApprovalsByDept = async (dept) => {
        ha.remarks     AS hodRemarks,
        ha.decided_at  AS decidedAt,
        uh.name        AS hodName,
-       (SELECT COUNT(*) FROM hod_approvals WHERE change_no = cr.id AND status = 'Rejected') AS rejectCount
+       (SELECT COUNT(*) FROM hod_approvals WHERE change_no = cr.id AND status = 'Rejected') AS rejectCount,
+       e.qa_approval  AS qaApproval
      FROM change_requests cr
      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
      LEFT JOIN users u ON cr.requester = u.email
      LEFT JOIN hod_approvals ha ON cr.id = ha.change_no AND ha.hod_dept = ?
      LEFT JOIN users uh ON ha.hod_email = uh.email
+     LEFT JOIN effectiveness_logs e ON cr.id = e.change_no
      WHERE l1.change_no IS NOT NULL
      ORDER BY cr.created_at DESC`,
     [dept]

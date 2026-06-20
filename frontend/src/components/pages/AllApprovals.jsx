@@ -437,6 +437,8 @@ export const AllApprovals = ({
     selectedReq.hodStatus &&
     selectedReq.hodStatus !== 'Pending';
 
+  const isChangeClosed = !!(selectedReq && selectedReq.qaApproval === 'Approved');
+
   const selectedStage = selectedReq ? workflowStageConfig(selectedReq.crStatus) : null;
 
   return (
@@ -860,16 +862,25 @@ export const AllApprovals = ({
             </div>
 
             {/* Approval type info bar */}
-            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 flex items-center gap-2 shrink-0">
-              <ShieldCheck size={13} className="text-amber-600 shrink-0" />
-              <p className="text-[11px] text-amber-800 font-semibold">
-                <strong>L1 HOD Approval</strong> — You are reviewing this change request as <span className="text-[#0066cc] font-black">{actingDept}</span> HOD.
-                {alreadyDecided
-                  ? <span className="ml-1 text-slate-500 font-normal">A decision has already been recorded.</span>
-                  : <span className="ml-1 text-amber-700 font-normal">Your decision will advance or halt this change request.</span>
-                }
-              </p>
-            </div>
+            {isChangeClosed ? (
+              <div className="bg-emerald-50 border-b border-emerald-200 px-6 py-2.5 flex items-center gap-2 shrink-0">
+                <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                <p className="text-[11px] text-emerald-800 font-semibold">
+                  <strong>Approvals Closed:</strong> This change request has been Approved and Closed at the Effectiveness Monitoring stage. No further approvals or remarks can be submitted.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 flex items-center gap-2 shrink-0">
+                <ShieldCheck size={13} className="text-amber-600 shrink-0" />
+                <p className="text-[11px] text-amber-800 font-semibold">
+                  <strong>L1 HOD Approval</strong> — You are reviewing this change request as <span className="text-[#0066cc] font-black">{actingDept}</span> HOD.
+                  {alreadyDecided
+                    ? <span className="ml-1 text-slate-500 font-normal">A decision has already been recorded.</span>
+                    : <span className="ml-1 text-amber-700 font-normal">Your decision will advance or halt this change request.</span>
+                  }
+                </p>
+              </div>
+            )}
 
             {/* Tabs Header */}
             <div className="flex h-11 border-b border-slate-200 bg-slate-50/50 overflow-x-auto scrollbar-none -webkit-overflow-scrolling-touch shrink-0">
@@ -1240,7 +1251,7 @@ export const AllApprovals = ({
                         )}
 
                         {/* Remarks input */}
-                        {!alreadyDecided && selectedReq.rejectCount === 0 && (isAdmin || (isHOD && isDeptInRequired(selectedReq.hodApprovalNote, selectedReq.dept, actingDept))) && (
+                        {!alreadyDecided && !isChangeClosed && selectedReq.rejectCount === 0 && (isAdmin || (isHOD && isDeptInRequired(selectedReq.hodApprovalNote, selectedReq.dept, actingDept))) && (
                           <div className="space-y-2 pt-2 border-t border-slate-100">
                             <label className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
                               <MessageSquare size={12} /> Remarks <span className="text-slate-400 font-normal normal-case">(optional)</span>
@@ -1471,6 +1482,10 @@ export const AllApprovals = ({
                           return `Already ${selectedReq.hodStatus} by ${displayName}${displayDept}`;
                         }
                       })()}
+                    </span>
+                  ) : isChangeClosed ? (
+                    <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-emerald-700 bg-emerald-50 border-emerald-200">
+                      <CheckCircle2 size={14} className="text-emerald-600" /> L1 Approvals Closed
                     </span>
                   ) : selectedReq.rejectCount > 0 ? (
                     <span className="inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border text-rose-700 bg-rose-50 border-rose-200">
