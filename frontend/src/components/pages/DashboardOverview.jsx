@@ -41,7 +41,8 @@ import {
   getL3Approvals,
   updateChangeDetails,
   getEffectivenessLogs,
-  getEffectivenessAttachment
+  getEffectivenessAttachment,
+  getDepartments
 } from '../../api/apiRoutes';
 import {
   exportDashboardRequestsPDF,
@@ -352,14 +353,16 @@ export const DashboardOverview = ({
 
   const [dbProcesses, setDbProcesses] = useState([]);
   const [dbMachines, setDbMachines] = useState([]);
+  const [dbDepartments, setDbDepartments] = useState([]);
 
   const fetchOptions = async () => {
     try {
-      const [pRes, mRes] = await Promise.all([getProcesses(), getMachines()]);
+      const [pRes, mRes, deptRes] = await Promise.all([getProcesses(), getMachines(), getDepartments()]);
       setDbProcesses(pRes.data);
       setDbMachines(mRes.data);
+      setDbDepartments(deptRes.data);
     } catch (e) {
-      console.error('Error fetching process/machine options:', e);
+      console.error('Error fetching process/machine/department options:', e);
     }
   };
 
@@ -733,7 +736,7 @@ export const DashboardOverview = ({
         process: deptFilterProcess,
         machine: deptFilterMachine,
         status: 'All'
-      }, setToastMsg);
+      }, setToastMsg, dbDepartments);
     } else if (tabName === 'Process') {
       const procFiltered = getFilteredData(procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine);
       exportProcessAnalyticsPDF(procFiltered, {
@@ -1160,34 +1163,48 @@ export const DashboardOverview = ({
 
   // Reusable Chart Renderers
   const renderDepartmentChart = (dataList, height = 'h-[160px]') => {
-    const counts = {
-      'PED': 0,
-      'QAD': 0,
-      'PRODUCTION': 0,
-      'MAINTENANCE': 0,
-      'PC & L': 0,
-      'MATERIALS': 0,
-      'MARKETING': 0,
-      'HR': 0,
-      'SAFETY': 0
-    };
+    const departmentNames = dbDepartments && dbDepartments.length > 0
+      ? dbDepartments
+      : ['PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY'];
+
+    const counts = {};
+    departmentNames.forEach(d => {
+      counts[d] = 0;
+    });
 
     dataList.forEach(c => {
       const rawDept = (c.dept || c.department || '').trim().toUpperCase();
-      let mapped;
-      if (rawDept.includes('PED')) mapped = 'PED';
-      else if (rawDept.includes('QA') || rawDept.includes('QUALITY')) mapped = 'QAD';
-      else if (rawDept.includes('PROD')) mapped = 'PRODUCTION';
-      else if (rawDept.includes('MAINT')) mapped = 'MAINTENANCE';
-      else if (rawDept.includes('PC')) mapped = 'PC & L';
-      else if (rawDept.includes('MATER')) mapped = 'MATERIALS';
-      else if (rawDept.includes('MARKET')) mapped = 'MARKETING';
-      else if (rawDept.includes('HR')) mapped = 'HR';
-      else if (rawDept.includes('SAFE')) mapped = 'SAFETY';
-      else mapped = 'PRODUCTION'; // fallback
+      if (!rawDept) return;
 
-      if (counts[mapped] !== undefined) {
-        counts[mapped]++;
+      const matchedDept = departmentNames.find(d => d.toUpperCase() === rawDept);
+      if (matchedDept) {
+        counts[matchedDept]++;
+      } else {
+        let mapped = null;
+        if (rawDept.includes('PED')) mapped = 'PED';
+        else if (rawDept.includes('QA') || rawDept.includes('QUALITY')) mapped = 'QAD';
+        else if (rawDept.includes('PROD')) mapped = 'PRODUCTION';
+        else if (rawDept.includes('MAINT')) mapped = 'MAINTENANCE';
+        else if (rawDept.includes('PC')) mapped = 'PC & L';
+        else if (rawDept.includes('MATER')) mapped = 'MATERIALS';
+        else if (rawDept.includes('MARKET')) mapped = 'MARKETING';
+        else if (rawDept.includes('HR')) mapped = 'HR';
+        else if (rawDept.includes('SAFE')) mapped = 'SAFETY';
+
+        if (mapped) {
+          const dbMapped = departmentNames.find(d => d.toUpperCase().includes(mapped.toUpperCase()) || mapped.toUpperCase().includes(d.toUpperCase()));
+          if (dbMapped) {
+            counts[dbMapped]++;
+            return;
+          }
+        }
+
+        const substringMatch = departmentNames.find(d =>
+          rawDept.includes(d.toUpperCase()) || d.toUpperCase().includes(rawDept)
+        );
+        if (substringMatch) {
+          counts[substringMatch]++;
+        }
       }
     });
 
@@ -1199,11 +1216,12 @@ export const DashboardOverview = ({
     const maxVal = Math.max(...data.map(item => item.value), 5);
 
     return (
-      <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px]`}>
+      <div className={`flex justify-around items-end ${height} px-[10px] mt-[10px]`}>
         {data.map((item, idx) => {
           const barHeight = (item.value / maxVal) * 100;
+          const labelUpper = item.label.toUpperCase();
           return (
-            <div key={idx} className="flex flex-col items-center w-[9%] h-full justify-end group">
+            <div key={idx} className="flex flex-col items-center min-w-[35px] max-w-[65px] w-full h-full justify-end group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
               <div className="w-full h-[65%] flex items-end justify-center">
                 <div
@@ -1211,31 +1229,31 @@ export const DashboardOverview = ({
                   style={{ height: `${barHeight}%`, minHeight: '4px' }}
                 />
               </div>
-              <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
-                {item.label === 'PRODUCTION' ? (
+              <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center font-sans">
+                {labelUpper === 'PRODUCTION' ? (
                   <>
-                     <span className="hidden sm:inline">PRODUCTION</span>
-                     <span className="inline sm:hidden">PROD</span>
+                    <span className="hidden sm:inline">PRODUCTION</span>
+                    <span className="inline sm:hidden">PROD</span>
                   </>
-                ) : item.label === 'MAINTENANCE' ? (
+                ) : labelUpper === 'MAINTENANCE' ? (
                   <>
-                     <span className="hidden sm:inline">MAINTENANCE</span>
-                     <span className="inline sm:hidden">MAINT</span>
+                    <span className="hidden sm:inline">MAINTENANCE</span>
+                    <span className="inline sm:hidden">MAINT</span>
                   </>
-                ) : item.label === 'MATERIALS' ? (
+                ) : labelUpper === 'MATERIALS' ? (
                   <>
-                     <span className="hidden sm:inline">MATERIALS</span>
-                     <span className="inline sm:hidden">MAT</span>
+                    <span className="hidden sm:inline">MATERIALS</span>
+                    <span className="inline sm:hidden">MAT</span>
                   </>
-                ) : item.label === 'MARKETING' ? (
+                ) : labelUpper === 'MARKETING' ? (
                   <>
-                     <span className="hidden sm:inline">MARKETING</span>
-                     <span className="inline sm:hidden">MKTG</span>
+                    <span className="hidden sm:inline">MARKETING</span>
+                    <span className="inline sm:hidden">MKTG</span>
                   </>
-                ) : item.label === 'SAFETY' ? (
+                ) : labelUpper === 'SAFETY' ? (
                   <>
-                     <span className="hidden sm:inline">SAFETY</span>
-                     <span className="inline sm:hidden">SAFE</span>
+                    <span className="hidden sm:inline">SAFETY</span>
+                    <span className="inline sm:hidden">SAFE</span>
                   </>
                 ) : (
                   item.label
