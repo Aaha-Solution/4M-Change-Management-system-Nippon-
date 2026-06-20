@@ -73,11 +73,21 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
     );
 
     if (attachments && attachments.length > 0) {
+      const fieldMapping = {
+        fileDesc: 'file_desc',
+        fileImprovement: 'file_improvement',
+        fileTraceFrom: 'file_trace_from',
+        fileTraceTo: 'file_trace_to',
+        fileRisk: 'file_risk',
+        fileSop: 'file_sop',
+        fileEffectiveness: 'file_effectiveness'
+      };
       for (const file of attachments) {
+        const dbFieldName = fieldMapping[file.fieldName] || file.fieldName;
         await connection.query(
           `INSERT INTO l1_attachments (change_no, field_name, file_name, file_data, file_type) 
            VALUES (?, ?, ?, ?, ?)`,
-          [changeNo, file.fieldName, file.name, file.data, file.type]
+          [changeNo, dbFieldName, file.name, file.data, file.type]
         );
       }
     }

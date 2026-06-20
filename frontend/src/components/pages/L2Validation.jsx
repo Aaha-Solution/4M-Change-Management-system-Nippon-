@@ -577,7 +577,7 @@ export const L2Validation = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requester Validation Attachment <span className="text-rose-500">*</span></label>
             <input
-              key={`ped-${formChangeNo}`}
+              key={`ped-${formChangeNo}-${pedFiles.map(f => f.name).join(',')}`}
               type="file"
               multiple
               accept="image/*,application/pdf"
@@ -668,7 +668,7 @@ export const L2Validation = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Set Up Verification(QA) Attachment <span className="text-rose-500">*</span></label>
             <input
-              key={`qa-${formChangeNo}`}
+              key={`qa-${formChangeNo}-${qaFiles.map(f => f.name).join(',')}`}
               type="file"
               multiple
               accept="image/*,application/pdf"

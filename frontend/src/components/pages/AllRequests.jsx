@@ -632,6 +632,7 @@ export const AllRequests = ({
                 <Upload size={12} />
                 <span>Upload</span>
                 <input
+                  key={value || ''}
                   type="file"
                   multiple
                   accept="image/*,application/pdf"
@@ -1009,6 +1010,7 @@ export const AllRequests = ({
                   <Upload size={12} />
                   <span>Upload</span>
                   <input
+                    key={data.file_desc || ''}
                     type="file"
                     multiple
                     accept="image/*,application/pdf"
@@ -1286,6 +1288,7 @@ export const AllRequests = ({
                   <Upload size={12} />
                   <span>Upload</span>
                   <input
+                    key={data.file_risk || ''}
                     type="file"
                     multiple
                     accept="image/*,application/pdf"
@@ -1410,6 +1413,7 @@ export const AllRequests = ({
                   <Upload size={12} />
                   <span>Upload</span>
                   <input
+                    key={data.file_sop || ''}
                     type="file"
                     multiple
                     accept="image/*,application/pdf"

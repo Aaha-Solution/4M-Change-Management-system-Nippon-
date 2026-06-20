@@ -12,8 +12,8 @@ export const updateChangeStatus = (id, status) => {
   });
 };
 
-export const updateChangeDetails = (id, level, updateData) => {
-  return axiosInstance.put(`/changes/${id}/details?level=${level}`, { updateData }, {
+export const updateChangeDetails = (id, level, updateData, attachments) => {
+  return axiosInstance.put(`/changes/${id}/details?level=${level}`, { updateData, attachments }, {
     headers: {
       'Content-Type': 'application/json',
     },

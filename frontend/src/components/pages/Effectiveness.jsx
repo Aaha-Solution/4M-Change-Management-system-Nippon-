@@ -546,6 +546,7 @@ export const Effectiveness = ({
                           message: 'Are you sure you want to clear all attachments from this field?',
                           onConfirm: () => {
                             setEffAttachment('');
+                            setUploadedFilesList([]);
                           }
                         });
                       }}
@@ -561,6 +562,7 @@ export const Effectiveness = ({
                   <Paperclip size={14} />
                   <span>Upload</span>
                   <input
+                    key={effAttachment || ''}
                     type="file"
                     multiple
                     accept="image/*,application/pdf"
@@ -590,7 +592,7 @@ export const Effectiveness = ({
                           return;
                         }
 
-                        const names = allowedFiles.map(f => f.name);
+                        const names = allowedFiles.map(f => f.name.replace(/,/g, '_'));
 
                         // Reset input value synchronously immediately to allow uploading the same file again
                         target.value = '';
@@ -649,6 +651,7 @@ export const Effectiveness = ({
                                 const existing = effAttachment.split(',').map(s => s.trim()).filter(Boolean);
                                 const updated = existing.filter(f => f !== file).join(', ');
                                 setEffAttachment(updated);
+                                setUploadedFilesList(prev => prev.filter(f => f.name !== file));
                               }
                             });
                           }}
