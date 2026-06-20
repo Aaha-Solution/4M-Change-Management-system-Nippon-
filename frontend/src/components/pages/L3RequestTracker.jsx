@@ -924,7 +924,7 @@ export const L3RequestTracker = ({
                   2. L2 Validation Details
                 </button>
               )}
-              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status !== 'Rejected' && (
+              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (
                 <button
                   onClick={() => setActiveTab('l3')}
                   className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${

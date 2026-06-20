@@ -909,7 +909,7 @@ export const AllApprovals = ({
                   2. L2 Validation Details
                 </button>
               )}
-              {l1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status !== 'Rejected' && (
+              {l1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (
                 <button
                   type="button"
                   onClick={() => setActiveTab('l3')}
