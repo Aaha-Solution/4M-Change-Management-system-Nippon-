@@ -1248,10 +1248,10 @@ const getFilterSummaryText = (filtersInfo) => {
 /**
  * Export Department Analytics
  */
-export const exportDepartmentAnalyticsPDF = (filteredChanges, filtersInfo = {}, setToastMsg) => {
+export const exportDepartmentAnalyticsPDF = (filteredChanges, filtersInfo = {}, setToastMsg, dbDepartments = []) => {
   try {
     if (!filteredChanges || filteredChanges.length === 0) {
-      setToastMsg?.('No data available to export.');
+      setToastMsg?.({ text: 'No data available to export.', isError: true });
       return;
     }
 
@@ -1262,27 +1262,50 @@ export const exportDepartmentAnalyticsPDF = (filteredChanges, filtersInfo = {}, 
     });
     addLogoToDoc(doc);
 
-    // Calculate counts
-    const counts = {
-      'PED': 0, 'QAD': 0, 'PRODUCTION': 0, 'MAINTENANCE': 0, 'PC & L': 0,
-      'MATERIALS': 0, 'MARKETING': 0, 'HR': 0, 'SAFETY': 0
-    };
+    // Calculate counts dynamically from DB departments
+    const departmentNames = dbDepartments && dbDepartments.length > 0
+      ? dbDepartments
+      : ['PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY'];
+
+    const counts = {};
+    departmentNames.forEach(d => {
+      counts[d] = 0;
+    });
 
     filteredChanges.forEach(c => {
       const rawDept = (c.dept || c.department || '').trim().toUpperCase();
-      let mapped;
-      if (rawDept.includes('PED')) mapped = 'PED';
-      else if (rawDept.includes('QA') || rawDept.includes('QUALITY')) mapped = 'QAD';
-      else if (rawDept.includes('PROD')) mapped = 'PRODUCTION';
-      else if (rawDept.includes('MAINT')) mapped = 'MAINTENANCE';
-      else if (rawDept.includes('PC')) mapped = 'PC & L';
-      else if (rawDept.includes('MATER')) mapped = 'MATERIALS';
-      else if (rawDept.includes('MARKET')) mapped = 'MARKETING';
-      else if (rawDept.includes('HR')) mapped = 'HR';
-      else if (rawDept.includes('SAFE')) mapped = 'SAFETY';
-      else mapped = 'PRODUCTION';
+      if (!rawDept) return;
 
-      if (counts[mapped] !== undefined) counts[mapped]++;
+      const matchedDept = departmentNames.find(d => d.toUpperCase() === rawDept);
+      if (matchedDept) {
+        counts[matchedDept]++;
+      } else {
+        let mapped = null;
+        if (rawDept.includes('PED')) mapped = 'PED';
+        else if (rawDept.includes('QA') || rawDept.includes('QUALITY')) mapped = 'QAD';
+        else if (rawDept.includes('PROD')) mapped = 'PRODUCTION';
+        else if (rawDept.includes('MAINT')) mapped = 'MAINTENANCE';
+        else if (rawDept.includes('PC')) mapped = 'PC & L';
+        else if (rawDept.includes('MATER')) mapped = 'MATERIALS';
+        else if (rawDept.includes('MARKET')) mapped = 'MARKETING';
+        else if (rawDept.includes('HR')) mapped = 'HR';
+        else if (rawDept.includes('SAFE')) mapped = 'SAFETY';
+
+        if (mapped) {
+          const dbMapped = departmentNames.find(d => d.toUpperCase().includes(mapped.toUpperCase()) || mapped.toUpperCase().includes(d.toUpperCase()));
+          if (dbMapped) {
+            counts[dbMapped]++;
+            return;
+          }
+        }
+
+        const substringMatch = departmentNames.find(d =>
+          rawDept.includes(d.toUpperCase()) || d.toUpperCase().includes(rawDept)
+        );
+        if (substringMatch) {
+          counts[substringMatch]++;
+        }
+      }
     });
 
     const total = Object.values(counts).reduce((a, b) => a + b, 0);

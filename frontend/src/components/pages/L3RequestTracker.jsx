@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, Eye, EyeOff, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download, XCircle } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
-import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getUsers } from '../../api/apiRoutes';
+import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getUsers, getEffectivenessLogs, getEffectivenessAttachment } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { exportL3ApprovalsPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 import { useWebSocket } from '../../hooks/useWebSocket';
@@ -23,6 +23,7 @@ export const L3RequestTracker = ({
   // L3 Details Modal state hooks
   const [selectedL1Details, setSelectedL1Details] = useState(null);
   const [selectedL2Details, setSelectedL2Details] = useState(null);
+  const [selectedEffDetails, setSelectedEffDetails] = useState(null);
   const [isFetchingDetails, setIsFetchingDetails] = useState(false);
   const [activeTab, setActiveTab] = useState('l1');
   const [previewFile, setPreviewFile] = useState(null);
@@ -233,16 +234,22 @@ export const L3RequestTracker = ({
     setSelectedLog(log);
     setSelectedL1Details(null);
     setSelectedL2Details(null);
+    setSelectedEffDetails(null);
     setIsFetchingDetails(true);
     setActiveTab('l1');
 
     try {
-      const [l1Res, l2Res] = await Promise.all([
+      const [l1Res, l2Res, effRes] = await Promise.all([
         getL1Details(log.changeNo),
-        getL2Details(log.changeNo).catch(() => ({ data: null }))
+        getL2Details(log.changeNo).catch(() => ({ data: null })),
+        getEffectivenessLogs().catch(() => ({ data: [] }))
       ]);
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
+      const matchedEff = effRes.data?.find(
+        l => l.changeNo?.toLowerCase().trim() === log.changeNo?.toLowerCase().trim()
+      );
+      setSelectedEffDetails(matchedEff || null);
       setSelectedLog(log);
     } catch (err) {
       console.error(err);
@@ -319,6 +326,8 @@ export const L3RequestTracker = ({
         let response;
         if (type === 'L2') {
           response = await getL2Attachment(changeNo, filename);
+        } else if (type === 'Effectiveness') {
+          response = await getEffectivenessAttachment(changeNo, filename);
         } else {
           response = await getL1Attachment(changeNo, filename);
         }
@@ -936,6 +945,18 @@ export const L3RequestTracker = ({
                   3. L3 Approval Matrix
                 </button>
               )}
+              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (selectedLog?.status || '').toLowerCase() === 'completed' && (
+                <button
+                  onClick={() => setActiveTab('effectiveness')}
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'effectiveness' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  4. Effectiveness
+                </button>
+              )}
             </div>
 
             {/* Content */}
@@ -1327,6 +1348,103 @@ export const L3RequestTracker = ({
                     })}
                   </div>
                 </div>
+              )}
+
+              {activeTab === 'effectiveness' && (
+                (() => {
+                  const currentEffLog = selectedEffDetails;
+                  if (!currentEffLog) {
+                    return (
+                      <div className="text-center py-[64px] bg-slate-50 rounded-xl border border-dashed border-slate-200 w-full animate-fade-in-up">
+                        <AlertTriangle className="mx-auto mb-[12px] text-slate-350" size={32} />
+                        <span className="text-slate-400 font-medium">Effectiveness monitoring log is pending creation/validation for this request.</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-[20px] animate-fade-in-up font-sans">
+                      <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5 font-sans">
+                        <CheckCircle2 size={14} />
+                        <span>Effectiveness Monitoring Log Details</span>
+                      </h5>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                          <span className="font-mono font-bold text-slate-800">{currentEffLog.changeNo}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                          <span className="font-medium text-slate-700">{currentEffLog.reqDate ? formatDateToDDMMYYYY(currentEffLog.reqDate) : '-'}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start</span>
+                          <span className="font-medium text-slate-700">{currentEffLog.startDate ? formatDateToDDMMYYYY(currentEffLog.startDate) : '-'}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise</span>
+                          <span className="font-medium text-slate-700">{currentEffLog.monthWise || '-'}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Status</span>
+                          <div>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                              currentEffLog.status === 'Effectiveness Ok'
+                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                : 'bg-rose-50 border-rose-255 text-rose-700'
+                            }`}>
+                              {currentEffLog.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Approval</span>
+                          <div>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                              currentEffLog.qaApproval === 'Approved'
+                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                : 'bg-rose-50 border-rose-200 text-rose-700'
+                            }`}>
+                              {currentEffLog.qaApproval}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-[6px] mt-4">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Attachments</span>
+                        {currentEffLog.attachment ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {currentEffLog.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                              <span
+                                key={idx}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewAttachment(file, currentEffLog.id, 'Effectiveness');
+                                }}
+                                className="inline-flex items-center gap-1 bg-slate-50 border border-slate-150 text-[11px] font-medium text-slate-700 px-2.5 py-1 rounded-full hover:bg-slate-100 hover:border-[#0066cc] hover:text-[#0066cc] cursor-pointer"
+                                title="Click to view file"
+                              >
+                                📎 {file}
+                              </span>
+                            ))}
+                          </div>
+                        ) : '-'}
+                      </div>
+
+                      <div className="space-y-[4px] mt-4">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Remarks / Comments</span>
+                        <div className="bg-slate-50 border border-slate-150 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
+                          {currentEffLog.remarks}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()
               )}
             </>
           )}

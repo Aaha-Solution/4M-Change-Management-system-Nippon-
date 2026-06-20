@@ -41,7 +41,8 @@ import {
   getL3Approvals,
   updateChangeDetails,
   getEffectivenessLogs,
-  getEffectivenessAttachment
+  getEffectivenessAttachment,
+  getDepartments
 } from '../../api/apiRoutes';
 import {
   exportDashboardRequestsPDF,
@@ -81,6 +82,7 @@ export const DashboardOverview = ({
   const [selectedLog, setSelectedLog] = useState(null);
   const [selectedL1Details, setSelectedL1Details] = useState(null);
   const [selectedL2Details, setSelectedL2Details] = useState(null);
+  const [selectedEffDetails, setSelectedEffDetails] = useState(null);
   const [isFetchingDetails, setIsFetchingDetails] = useState(false);
   const [activeTab, setActiveTab] = useState('l1');
   const [previewFile, setPreviewFile] = useState(null);
@@ -351,14 +353,16 @@ export const DashboardOverview = ({
 
   const [dbProcesses, setDbProcesses] = useState([]);
   const [dbMachines, setDbMachines] = useState([]);
+  const [dbDepartments, setDbDepartments] = useState([]);
 
   const fetchOptions = async () => {
     try {
-      const [pRes, mRes] = await Promise.all([getProcesses(), getMachines()]);
+      const [pRes, mRes, deptRes] = await Promise.all([getProcesses(), getMachines(), getDepartments()]);
       setDbProcesses(pRes.data);
       setDbMachines(mRes.data);
+      setDbDepartments(deptRes.data);
     } catch (e) {
-      console.error('Error fetching process/machine options:', e);
+      console.error('Error fetching process/machine/department options:', e);
     }
   };
 
@@ -597,18 +601,24 @@ export const DashboardOverview = ({
     });
     setSelectedL1Details(null);
     setSelectedL2Details(null);
+    setSelectedEffDetails(null);
     setIsFetchingDetails(true);
     setActiveTab('l1');
 
     try {
-      const [l1Res, l2Res, l3Res] = await Promise.all([
+      const [l1Res, l2Res, l3Res, effRes] = await Promise.all([
         getL1Details(request.id),
         getL2Details(request.id).catch(() => ({ data: null })),
-        getL3Approvals().catch(() => ({ data: [] }))
+        getL3Approvals().catch(() => ({ data: [] })),
+        getEffectivenessLogs().catch(() => ({ data: [] }))
       ]);
 
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
+      const matchedEff = effRes.data?.find(
+        l => l.changeNo?.toLowerCase().trim() === request.id?.toLowerCase().trim()
+      );
+      setSelectedEffDetails(matchedEff || null);
       setEditL1Data(l1Res.data || {});
       setEditL2Data(l2Res.data || {});
 
@@ -648,6 +658,8 @@ export const DashboardOverview = ({
         let response;
         if (type === 'L2') {
           response = await getL2Attachment(changeNo, filename);
+        } else if (type === 'Effectiveness') {
+          response = await getEffectivenessAttachment(changeNo, filename);
         } else {
           response = await getL1Attachment(changeNo, filename);
         }
@@ -724,7 +736,7 @@ export const DashboardOverview = ({
         process: deptFilterProcess,
         machine: deptFilterMachine,
         status: 'All'
-      }, setToastMsg);
+      }, setToastMsg, dbDepartments);
     } else if (tabName === 'Process') {
       const procFiltered = getFilteredData(procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine);
       exportProcessAnalyticsPDF(procFiltered, {
@@ -1151,34 +1163,48 @@ export const DashboardOverview = ({
 
   // Reusable Chart Renderers
   const renderDepartmentChart = (dataList, height = 'h-[160px]') => {
-    const counts = {
-      'PED': 0,
-      'QAD': 0,
-      'PRODUCTION': 0,
-      'MAINTENANCE': 0,
-      'PC & L': 0,
-      'MATERIALS': 0,
-      'MARKETING': 0,
-      'HR': 0,
-      'SAFETY': 0
-    };
+    const departmentNames = dbDepartments && dbDepartments.length > 0
+      ? dbDepartments
+      : ['PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY'];
+
+    const counts = {};
+    departmentNames.forEach(d => {
+      counts[d] = 0;
+    });
 
     dataList.forEach(c => {
       const rawDept = (c.dept || c.department || '').trim().toUpperCase();
-      let mapped;
-      if (rawDept.includes('PED')) mapped = 'PED';
-      else if (rawDept.includes('QA') || rawDept.includes('QUALITY')) mapped = 'QAD';
-      else if (rawDept.includes('PROD')) mapped = 'PRODUCTION';
-      else if (rawDept.includes('MAINT')) mapped = 'MAINTENANCE';
-      else if (rawDept.includes('PC')) mapped = 'PC & L';
-      else if (rawDept.includes('MATER')) mapped = 'MATERIALS';
-      else if (rawDept.includes('MARKET')) mapped = 'MARKETING';
-      else if (rawDept.includes('HR')) mapped = 'HR';
-      else if (rawDept.includes('SAFE')) mapped = 'SAFETY';
-      else mapped = 'PRODUCTION'; // fallback
+      if (!rawDept) return;
 
-      if (counts[mapped] !== undefined) {
-        counts[mapped]++;
+      const matchedDept = departmentNames.find(d => d.toUpperCase() === rawDept);
+      if (matchedDept) {
+        counts[matchedDept]++;
+      } else {
+        let mapped = null;
+        if (rawDept.includes('PED')) mapped = 'PED';
+        else if (rawDept.includes('QA') || rawDept.includes('QUALITY')) mapped = 'QAD';
+        else if (rawDept.includes('PROD')) mapped = 'PRODUCTION';
+        else if (rawDept.includes('MAINT')) mapped = 'MAINTENANCE';
+        else if (rawDept.includes('PC')) mapped = 'PC & L';
+        else if (rawDept.includes('MATER')) mapped = 'MATERIALS';
+        else if (rawDept.includes('MARKET')) mapped = 'MARKETING';
+        else if (rawDept.includes('HR')) mapped = 'HR';
+        else if (rawDept.includes('SAFE')) mapped = 'SAFETY';
+
+        if (mapped) {
+          const dbMapped = departmentNames.find(d => d.toUpperCase().includes(mapped.toUpperCase()) || mapped.toUpperCase().includes(d.toUpperCase()));
+          if (dbMapped) {
+            counts[dbMapped]++;
+            return;
+          }
+        }
+
+        const substringMatch = departmentNames.find(d =>
+          rawDept.includes(d.toUpperCase()) || d.toUpperCase().includes(rawDept)
+        );
+        if (substringMatch) {
+          counts[substringMatch]++;
+        }
       }
     });
 
@@ -1190,11 +1216,12 @@ export const DashboardOverview = ({
     const maxVal = Math.max(...data.map(item => item.value), 5);
 
     return (
-      <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px]`}>
+      <div className={`flex justify-around items-end ${height} px-[10px] mt-[10px]`}>
         {data.map((item, idx) => {
           const barHeight = (item.value / maxVal) * 100;
+          const labelUpper = item.label.toUpperCase();
           return (
-            <div key={idx} className="flex flex-col items-center w-[9%] h-full justify-end group">
+            <div key={idx} className="flex flex-col items-center min-w-[35px] max-w-[65px] w-full h-full justify-end group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
               <div className="w-full h-[65%] flex items-end justify-center">
                 <div
@@ -1202,31 +1229,31 @@ export const DashboardOverview = ({
                   style={{ height: `${barHeight}%`, minHeight: '4px' }}
                 />
               </div>
-              <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
-                {item.label === 'PRODUCTION' ? (
+              <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center font-sans">
+                {labelUpper === 'PRODUCTION' ? (
                   <>
-                     <span className="hidden sm:inline">PRODUCTION</span>
-                     <span className="inline sm:hidden">PROD</span>
+                    <span className="hidden sm:inline">PRODUCTION</span>
+                    <span className="inline sm:hidden">PROD</span>
                   </>
-                ) : item.label === 'MAINTENANCE' ? (
+                ) : labelUpper === 'MAINTENANCE' ? (
                   <>
-                     <span className="hidden sm:inline">MAINTENANCE</span>
-                     <span className="inline sm:hidden">MAINT</span>
+                    <span className="hidden sm:inline">MAINTENANCE</span>
+                    <span className="inline sm:hidden">MAINT</span>
                   </>
-                ) : item.label === 'MATERIALS' ? (
+                ) : labelUpper === 'MATERIALS' ? (
                   <>
-                     <span className="hidden sm:inline">MATERIALS</span>
-                     <span className="inline sm:hidden">MAT</span>
+                    <span className="hidden sm:inline">MATERIALS</span>
+                    <span className="inline sm:hidden">MAT</span>
                   </>
-                ) : item.label === 'MARKETING' ? (
+                ) : labelUpper === 'MARKETING' ? (
                   <>
-                     <span className="hidden sm:inline">MARKETING</span>
-                     <span className="inline sm:hidden">MKTG</span>
+                    <span className="hidden sm:inline">MARKETING</span>
+                    <span className="inline sm:hidden">MKTG</span>
                   </>
-                ) : item.label === 'SAFETY' ? (
+                ) : labelUpper === 'SAFETY' ? (
                   <>
-                     <span className="hidden sm:inline">SAFETY</span>
-                     <span className="inline sm:hidden">SAFE</span>
+                    <span className="hidden sm:inline">SAFETY</span>
+                    <span className="inline sm:hidden">SAFE</span>
                   </>
                 ) : (
                   item.label
@@ -4131,6 +4158,18 @@ export const DashboardOverview = ({
                   3. L3 Approval Details
                 </button>
               )}
+              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (selectedLog?.status || '').toLowerCase() === 'completed' && (
+                <button
+                  onClick={() => { setActiveTab('effectiveness'); setIsEditMode(false); }}
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'effectiveness' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  4. Effectiveness
+                </button>
+              )}
             </div>
 
             {/* Content */}
@@ -4668,6 +4707,103 @@ export const DashboardOverview = ({
                     })}
                   </div>
                 </div>
+              )}
+
+              {activeTab === 'effectiveness' && (
+                (() => {
+                  const currentEffLog = selectedEffDetails;
+                  if (!currentEffLog) {
+                    return (
+                      <div className="text-center py-[64px] bg-slate-50 rounded-xl border border-dashed border-slate-200 w-full animate-fade-in-up">
+                        <AlertTriangle className="mx-auto mb-[12px] text-slate-350" size={32} />
+                        <span className="text-slate-400 font-medium">Effectiveness monitoring log is pending creation/validation for this request.</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-[20px] animate-fade-in-up">
+                      <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5 font-sans">
+                        <CheckCircle2 size={14} />
+                        <span>Effectiveness Monitoring Log Details</span>
+                      </h5>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                          <span className="font-mono font-bold text-slate-800">{currentEffLog.changeNo}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                          <span className="font-medium text-slate-700">{currentEffLog.reqDate ? formatDateToDDMMYYYY(currentEffLog.reqDate) : '-'}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start</span>
+                          <span className="font-medium text-slate-700">{currentEffLog.startDate ? formatDateToDDMMYYYY(currentEffLog.startDate) : '-'}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise</span>
+                          <span className="font-medium text-slate-700">{currentEffLog.monthWise || '-'}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Status</span>
+                          <div>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                              currentEffLog.status === 'Effectiveness Ok'
+                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                : 'bg-rose-50 border-rose-255 text-rose-700'
+                            }`}>
+                              {currentEffLog.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Approval</span>
+                          <div>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                              currentEffLog.qaApproval === 'Approved'
+                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                : 'bg-rose-50 border-rose-200 text-rose-700'
+                            }`}>
+                              {currentEffLog.qaApproval}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-[6px] mt-4">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Attachments</span>
+                        {currentEffLog.attachment ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {currentEffLog.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                              <span
+                                key={idx}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewAttachment(file, currentEffLog.id, 'Effectiveness');
+                                }}
+                                className="inline-flex items-center gap-1 bg-slate-50 border border-slate-150 text-[11px] font-medium text-slate-700 px-2.5 py-1 rounded-full hover:bg-slate-100 hover:border-[#0066cc] hover:text-[#0066cc] cursor-pointer"
+                                title="Click to view file"
+                              >
+                                📎 {file}
+                              </span>
+                            ))}
+                          </div>
+                        ) : '-'}
+                      </div>
+
+                      <div className="space-y-[4px] mt-4">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Remarks / Comments</span>
+                        <div className="bg-slate-50 border border-slate-150 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
+                          {currentEffLog.remarks}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()
               )}
               </>
             )}

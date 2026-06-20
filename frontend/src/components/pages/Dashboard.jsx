@@ -655,7 +655,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
         const text = typeof toastMsg === 'object' ? toastMsg.text : toastMsg;
         const isError = typeof toastMsg === 'object'
           ? !!toastMsg.isError
-          : /fail|error|denied|invalid|required|must|limit|locked|please|cannot|no\s+data|no\s+record|skipped|skip|not\s+allowed|only|wrong|warning|incorrect|unable|at\s+least/i.test(text);
+          : /error|please|must be|should be|failed|invalid|required|at least/i.test(text);
         
         // Replace "Error" or "error" with more meaningful words like "Failed"
         const cleanedMsg = typeof text === 'string'

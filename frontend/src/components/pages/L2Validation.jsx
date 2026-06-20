@@ -189,12 +189,14 @@ export const L2Validation = ({
       if (qaFiles.length === 0 && existingQaFiles.length === 0) {
         errors.qaFile = 'QA attachment is required.';
       }
-      if (pedFiles.length === 0 && existingPedFiles.length === 0) {
-        errors.pedFile = 'PED attachment is required.';
+      const hasPedInDb = existingLog && existingLog.weldTest && existingLog.weldTest !== '-';
+      if (pedFiles.length === 0 && !hasPedInDb) {
+        errors.pedFile = ' attachment is required.';
       }
     } else if (isRaisedByUserOrAdmin) {
-      if (pedFiles.length === 0 && existingPedFiles.length === 0) {
-        errors.pedFile = 'PED attachment is required.';
+      const hasPedInDb = existingLog && existingLog.weldTest && existingLog.weldTest !== '-';
+      if (pedFiles.length === 0 && !hasPedInDb) {
+        errors.pedFile = ' attachment is required.';
       }
     }
 
