@@ -60,6 +60,10 @@ export const AllRequests = ({
   const [editL3Data, setEditL3Data] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
+
+  useEffect(() => {
+    setIsEditMode(false);
+  }, [activeTab]);
   const [dbProcesses, setDbProcesses] = useState([]);
   const [dbMachines, setDbMachines] = useState([]);
 
@@ -1966,7 +1970,7 @@ export const AllRequests = ({
                 <div>
                 <div className="flex items-center gap-2">
                   <h4 className="text-[15px] font-bold text-slate-900">Change Request Details (L1, L2, L3)</h4>
-                  {canEdit && (
+                  {canEdit && activeTab === 'l1' && (
                     <button
                       onClick={() => setIsEditMode(!isEditMode)}
                       className={`ml-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
@@ -2405,8 +2409,6 @@ export const AllRequests = ({
                   </div>
                 ) : (
                   <div className="space-y-[20px]">
-                    {isEditMode ? renderDynamicEditForm(editL2Data, setEditL2Data, 'l2') : (
-                      <>
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                       <CheckCircle2 size={14} />
                       <span>L2 Validation Details</span>
@@ -2462,7 +2464,7 @@ export const AllRequests = ({
                       <div className="space-y-[6px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Setup Verification Attachment</span>
                         <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
-                          <span className="font-medium text-slate-650 truncate max-w-[200px]" title={selectedL2Details.qaTest || '-'}>
+                          <span className="font-medium text-slate-655 truncate max-w-[200px]" title={selectedL2Details.qaTest || '-'}>
                             {selectedL2Details.qaTest || '-'}
                           </span>
                           {selectedL2Details.qaTest && selectedL2Details.qaTest !== '-' && (
@@ -2483,16 +2485,12 @@ export const AllRequests = ({
                         {selectedL2Details.remarks || 'No remarks provided.'}
                       </div>
                     </div>
-                    </>
-                    )}
                   </div>
                 )
               )}
 
               {activeTab === 'l3' && selectedLog && (
                 <div className="space-y-[24px]">
-                  {isEditMode ? renderDynamicEditForm(editL3Data, setEditL3Data, 'l3') : (
-                    <>
                   <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                     <Cpu size={14} />
                     <span>L3 Approval Status Matrix</span>
@@ -2563,8 +2561,6 @@ export const AllRequests = ({
                       );
                     })}
                   </div>
-                    </>
-                  )}
                 </div>
               )}
               </>

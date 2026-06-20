@@ -96,6 +96,10 @@ export const DashboardOverview = ({
   const [isSaving, setIsSaving] = useState(false);
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
 
+  useEffect(() => {
+    setIsEditMode(false);
+  }, [activeTab]);
+
   // Table editor modal states
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);
   const [tableModalError, setTableModalError] = useState('');
@@ -3897,7 +3901,7 @@ export const DashboardOverview = ({
                 <div>
                 <div className="flex items-center gap-2">
                   <h4 className="text-[15px] font-bold text-slate-900">Change Request Details (L1, L2, L3)</h4>
-                  {canEdit && (
+                  {canEdit && activeTab === 'l1' && (
                     <button
                       onClick={() => setIsEditMode(!isEditMode)}
                       className={`ml-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
@@ -4336,8 +4340,6 @@ export const DashboardOverview = ({
                   </div>
                 ) : (
                   <div className="space-y-[20px]">
-                    {isEditMode ? renderDynamicEditForm(editL2Data, setEditL2Data, 'l2') : (
-                      <>
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                       <CheckCircle2 size={14} />
                       <span>L2 Validation Details</span>
@@ -4414,16 +4416,12 @@ export const DashboardOverview = ({
                         {selectedL2Details.remarks || 'No remarks provided.'}
                       </div>
                     </div>
-                      </>
-                    )}
                   </div>
                 )
               )}
 
               {activeTab === 'l3' && selectedLog && (
                 <div className="space-y-[20px]">
-                  {isEditMode ? renderDynamicEditForm(editL3Data, setEditL3Data, 'l3') : (
-                    <>
                   <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                     <Cpu size={14} />
                     <span>L3 Approval Status Matrix</span>
@@ -4494,8 +4492,6 @@ export const DashboardOverview = ({
                       );
                     })}
                   </div>
-                    </>
-                  )}
                 </div>
               )}
               </>
