@@ -3,6 +3,8 @@
 -- MySQL
 -- -------------------------------------------------------------
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- Drop tables if they already exist (for clean initialization)
 DROP TABLE IF EXISTS hod_approvals;
 DROP TABLE IF EXISTS notifications;
@@ -262,3 +264,5 @@ CREATE TABLE hod_approvals (
     UNIQUE KEY uk_change_dept (change_no, hod_dept),
     FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
+
+SET FOREIGN_KEY_CHECKS = 1;
