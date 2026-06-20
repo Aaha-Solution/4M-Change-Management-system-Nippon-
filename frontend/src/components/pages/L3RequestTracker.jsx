@@ -215,7 +215,6 @@ export const L3RequestTracker = ({
       if (fetchChanges) {
         await fetchChanges();
       }
-      handleCancelEdit();
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Error saving L3 approval log to database.';

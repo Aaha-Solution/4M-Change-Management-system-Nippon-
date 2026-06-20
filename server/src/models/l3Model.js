@@ -90,53 +90,31 @@ export const addL3ApprovalLog = async (logData) => {
         dbL3.unitHead && dbL3.unitHead !== 'Pending';
     }
 
-    let updatedDeptField = null;
-    let newDecision = null;
+
+
+    let finalPed = ped;
+    let finalQad = qad;
+    let finalProduction = production;
+    let finalMaintenance = maintenance;
+    let finalPcl = pcl;
+    let finalMaterials = materials;
+    let finalMarketing = marketing;
+    let finalHr = hr;
+    let finalSafety = safety;
+    let finalUnitHead = unitHead;
 
     if (existingL3Rows.length > 0) {
       const dbL3 = existingL3Rows[0];
-      const fields = [
-        { key: 'ped', db: dbL3.ped, label: 'PED' },
-        { key: 'qad', db: dbL3.qad, label: 'QAD' },
-        { key: 'production', db: dbL3.production, label: 'Production' },
-        { key: 'maintenance', db: dbL3.maintenance, label: 'Maintenance' },
-        { key: 'pcl', db: dbL3.pcl, label: 'PC & L' },
-        { key: 'materials', db: dbL3.materials, label: 'Materials' },
-        { key: 'marketing', db: dbL3.marketing, label: 'Marketing' },
-        { key: 'hr', db: dbL3.hr, label: 'HR' },
-        { key: 'safety', db: dbL3.safety, label: 'Safety' },
-        { key: 'unitHead', db: dbL3.unitHead, label: 'Unit Head' }
-      ];
-
-      for (const field of fields) {
-        const incomingVal = logData[field.key];
-        if (incomingVal && incomingVal !== 'Pending' && incomingVal !== field.db) {
-          updatedDeptField = field.label;
-          newDecision = incomingVal;
-          break;
-        }
-      }
-    } else {
-      const fields = [
-        { key: 'ped', val: ped, label: 'PED' },
-        { key: 'qad', val: qad, label: 'QAD' },
-        { key: 'production', val: production, label: 'Production' },
-        { key: 'maintenance', val: maintenance, label: 'Maintenance' },
-        { key: 'pcl', val: pcl, label: 'PC & L' },
-        { key: 'materials', val: materials, label: 'Materials' },
-        { key: 'marketing', val: marketing, label: 'Marketing' },
-        { key: 'hr', val: hr, label: 'HR' },
-        { key: 'safety', val: safety, label: 'Safety' },
-        { key: 'unitHead', val: unitHead, label: 'Unit Head' }
-      ];
-
-      for (const field of fields) {
-        if (field.val && field.val !== 'Pending') {
-          updatedDeptField = field.label;
-          newDecision = field.val;
-          break;
-        }
-      }
+      if ((ped === 'Pending' || !ped) && dbL3.ped && dbL3.ped !== 'Pending') finalPed = dbL3.ped;
+      if ((qad === 'Pending' || !qad) && dbL3.qad && dbL3.qad !== 'Pending') finalQad = dbL3.qad;
+      if ((production === 'Pending' || !production) && dbL3.production && dbL3.production !== 'Pending') finalProduction = dbL3.production;
+      if ((maintenance === 'Pending' || !maintenance) && dbL3.maintenance && dbL3.maintenance !== 'Pending') finalMaintenance = dbL3.maintenance;
+      if ((pcl === 'Pending' || !pcl) && dbL3.pcl && dbL3.pcl !== 'Pending') finalPcl = dbL3.pcl;
+      if ((materials === 'Pending' || !materials) && dbL3.materials && dbL3.materials !== 'Pending') finalMaterials = dbL3.materials;
+      if ((marketing === 'Pending' || !marketing) && dbL3.marketing && dbL3.marketing !== 'Pending') finalMarketing = dbL3.marketing;
+      if ((hr === 'Pending' || !hr) && dbL3.hr && dbL3.hr !== 'Pending') finalHr = dbL3.hr;
+      if ((safety === 'Pending' || !safety) && dbL3.safety && dbL3.safety !== 'Pending') finalSafety = dbL3.safety;
+      if ((unitHead === 'Pending' || !unitHead) && dbL3.unitHead && dbL3.unitHead !== 'Pending') finalUnitHead = dbL3.unitHead;
     }
 
     await connection.query(
@@ -159,9 +137,9 @@ export const addL3ApprovalLog = async (logData) => {
         unit_head = VALUES(unit_head)`,
       [
         changeNo, date, requester,
-        ped || 'Pending', qad || 'Pending', production || 'Pending',
-        maintenance || 'Pending', pcl || 'Pending', materials || 'Pending',
-        marketing || 'Pending', hr || 'Pending', safety || 'Pending', unitHead || 'Pending'
+        finalPed || 'Pending', finalQad || 'Pending', finalProduction || 'Pending',
+        finalMaintenance || 'Pending', finalPcl || 'Pending', finalMaterials || 'Pending',
+        finalMarketing || 'Pending', finalHr || 'Pending', finalSafety || 'Pending', finalUnitHead || 'Pending'
       ]
     );
 
@@ -180,16 +158,16 @@ export const addL3ApprovalLog = async (logData) => {
 
 
     const isAllL3Decided = 
-      ped !== 'Pending' &&
-      qad !== 'Pending' &&
-      production !== 'Pending' &&
-      maintenance !== 'Pending' &&
-      pcl !== 'Pending' &&
-      materials !== 'Pending' &&
-      marketing !== 'Pending' &&
-      hr !== 'Pending' &&
-      safety !== 'Pending' &&
-      unitHead !== 'Pending';
+      finalPed !== 'Pending' &&
+      finalQad !== 'Pending' &&
+      finalProduction !== 'Pending' &&
+      finalMaintenance !== 'Pending' &&
+      finalPcl !== 'Pending' &&
+      finalMaterials !== 'Pending' &&
+      finalMarketing !== 'Pending' &&
+      finalHr !== 'Pending' &&
+      finalSafety !== 'Pending' &&
+      finalUnitHead !== 'Pending';
 
     // Calculate if any of the decisions is 'Rejected'
     const rejectedDepts = [];
@@ -205,16 +183,16 @@ export const addL3ApprovalLog = async (logData) => {
       safety: 'Safety',
       unitHead: 'Unit Head'
     };
-    if (ped === 'Rejected') rejectedDepts.push(labelMap.ped);
-    if (qad === 'Rejected') rejectedDepts.push(labelMap.qad);
-    if (production === 'Rejected') rejectedDepts.push(labelMap.production);
-    if (maintenance === 'Rejected') rejectedDepts.push(labelMap.maintenance);
-    if (pcl === 'Rejected') rejectedDepts.push(labelMap.pcl);
-    if (materials === 'Rejected') rejectedDepts.push(labelMap.materials);
-    if (marketing === 'Rejected') rejectedDepts.push(labelMap.marketing);
-    if (hr === 'Rejected') rejectedDepts.push(labelMap.hr);
-    if (safety === 'Rejected') rejectedDepts.push(labelMap.safety);
-    if (unitHead === 'Rejected') rejectedDepts.push(labelMap.unitHead);
+    if (finalPed === 'Rejected') rejectedDepts.push(labelMap.ped);
+    if (finalQad === 'Rejected') rejectedDepts.push(labelMap.qad);
+    if (finalProduction === 'Rejected') rejectedDepts.push(labelMap.production);
+    if (finalMaintenance === 'Rejected') rejectedDepts.push(labelMap.maintenance);
+    if (finalPcl === 'Rejected') rejectedDepts.push(labelMap.pcl);
+    if (finalMaterials === 'Rejected') rejectedDepts.push(labelMap.materials);
+    if (finalMarketing === 'Rejected') rejectedDepts.push(labelMap.marketing);
+    if (finalHr === 'Rejected') rejectedDepts.push(labelMap.hr);
+    if (finalSafety === 'Rejected') rejectedDepts.push(labelMap.safety);
+    if (finalUnitHead === 'Rejected') rejectedDepts.push(labelMap.unitHead);
 
     const hasRejection = rejectedDepts.length > 0;
 
