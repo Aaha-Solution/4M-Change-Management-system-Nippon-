@@ -108,7 +108,8 @@ const WorkflowStrip = ({ crStatus }) => {
     { key: 'L3', label: 'L3 HOD Decisions' },
     { key: 'Done', label: 'Completed' },
   ];
-  const activeIdx = crStatus === 'Pending' ? 0 : crStatus === 'Evaluating' ? 1 : crStatus === 'Approved' ? 2 : crStatus === 'Completed' ? 3 : 0;
+  const statusLower = (crStatus || '').toLowerCase();
+  const activeIdx = statusLower === 'pending' ? 0 : statusLower === 'evaluating' ? 1 : statusLower === 'approved' ? 2 : statusLower === 'completed' ? 4 : 0;
 
   return (
     <div className="flex items-center gap-0 px-[4px] mt-[8px] overflow-x-auto justify-center">
