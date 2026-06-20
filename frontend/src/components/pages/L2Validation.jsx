@@ -184,12 +184,12 @@ export const L2Validation = ({
       }
       const hasPedInDb = existingLog && existingLog.weldTest && existingLog.weldTest !== '-';
       if (pedFiles.length === 0 && !hasPedInDb) {
-        errors.pedFile = 'PED attachment is required.';
+        errors.pedFile = ' attachment is required.';
       }
     } else if (isRaisedByUserOrAdmin) {
       const hasPedInDb = existingLog && existingLog.weldTest && existingLog.weldTest !== '-';
       if (pedFiles.length === 0 && !hasPedInDb) {
-        errors.pedFile = 'PED attachment is required.';
+        errors.pedFile = ' attachment is required.';
       }
     }
 
