@@ -104,7 +104,7 @@ export const Users = ({
       if (error.response?.status === 401 || error.response?.status === 403) {
         onLocalSignOut();
       } else {
-        setToastMsg('Error loading users from backend.');
+        setToastMsg({ text: 'Error loading users from backend.', isError: true });
       }
     } finally {
       setIsFetchingUsers(false);
@@ -180,7 +180,7 @@ export const Users = ({
       fetchUsers();
     } catch (err) {
       console.error(err);
-      setToastMsg(err.response?.data?.error || 'Error creating user account.');
+      setToastMsg({ text: err.response?.data?.error || 'Error creating user account.', isError: true });
     } finally {
       setIsCreatingUser(false);
     }
@@ -201,7 +201,7 @@ export const Users = ({
       fetchUsers();
     } catch (err) {
       console.error(err);
-      setToastMsg('Error deleting user.');
+      setToastMsg({ text: 'Error deleting user.', isError: true });
     }
   };
 
@@ -255,7 +255,7 @@ export const Users = ({
       fetchUsers();
     } catch (err) {
       console.error(err);
-      setToastMsg(err.response?.data?.error || 'Error updating user.');
+      setToastMsg({ text: err.response?.data?.error || 'Error updating user.', isError: true });
     }
   };
 

@@ -230,7 +230,7 @@ export const AllApprovals = ({
       setRequests(res.data || []);
     } catch (err) {
       console.error(err);
-      if (setToastMsg) setToastMsg('Error loading HOD approval requests.');
+      if (setToastMsg) setToastMsg({ text: 'Error loading HOD approval requests.', isError: true });
     } finally {
       setIsFetching(false);
     }

@@ -52,7 +52,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
       setToastMsg('All notifications marked as read.');
     } catch (error) {
       console.error(error);
-      setToastMsg('Error marking notifications as read.');
+      setToastMsg({ text: 'Error marking notifications as read.', isError: true });
     }
   };
 
@@ -63,7 +63,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
       setNotifications(prev => prev.map(n => n.id === id ? response.data : n));
     } catch (error) {
       console.error(error);
-      setToastMsg('Error updating notification status.');
+      setToastMsg({ text: 'Error updating notification status.', isError: true });
     }
   };
 

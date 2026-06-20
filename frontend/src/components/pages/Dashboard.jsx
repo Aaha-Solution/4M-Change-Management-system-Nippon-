@@ -128,7 +128,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
       if (error.response?.status === 401 || error.response?.status === 403) {
         handleLocalSignOut();
       } else {
-        setToastMsg('Failed to load changes from backend.');
+        setToastMsg({ text: 'Failed to load changes from backend.', isError: true });
       }
     } finally {
       setIsFetchingChanges(false);
@@ -143,7 +143,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
       setEffectivenessLogs(response.data);
     } catch (error) {
       console.error(error);
-      setToastMsg('Failed to load effectiveness logs from server.');
+      setToastMsg({ text: 'Failed to load effectiveness logs from server.', isError: true });
     }
   };
 
@@ -154,7 +154,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
       setNotifications(response.data);
     } catch (error) {
       console.error(error);
-      setToastMsg('Failed to load notifications from server.');
+      setToastMsg({ text: 'Failed to load notifications from server.', isError: true });
     }
   };
 
