@@ -2568,7 +2568,7 @@ export const AllRequests = ({
             </div>
 
             {/* Footer */}
-            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px]">
+            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px] shrink-0">
               <button 
                 onClick={handleExportRequestDetailsPDF}
                 disabled={isFetchingDetails}

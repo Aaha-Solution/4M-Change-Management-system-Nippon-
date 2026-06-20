@@ -3893,7 +3893,7 @@ export const DashboardOverview = ({
           {/* Modal Container */}
           <div className="relative bg-white w-full max-w-[800px] max-h-[90vh] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-[10px]">
                 <span className="p-2 bg-[#e6f0fa] text-[#0066cc] rounded-lg">
                   <Eye size={18} />
@@ -3941,9 +3941,9 @@ export const DashboardOverview = ({
             </div>
 
             {/* Tabs Header */}
-            <div className="flex h-11 border-b border-slate-200 bg-slate-50/50">
+            <div className="flex h-11 border-b border-slate-200 bg-slate-50/50 shrink-0">
               <button
-                onClick={() => setActiveTab('l1')}
+                onClick={() => { setActiveTab('l1'); setIsEditMode(false); }}
                 className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
                   activeTab === 'l1' 
                     ? 'border-[#0066cc] text-[#0066cc]' 
@@ -3953,7 +3953,7 @@ export const DashboardOverview = ({
                 1. L1 Request Details
               </button>
               <button
-                onClick={() => setActiveTab('l2')}
+                onClick={() => { setActiveTab('l2'); setIsEditMode(false); }}
                 className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
                   activeTab === 'l2' 
                     ? 'border-[#0066cc] text-[#0066cc]' 
@@ -3963,7 +3963,7 @@ export const DashboardOverview = ({
                 2. L2 Validation Details
               </button>
               <button
-                onClick={() => setActiveTab('l3')}
+                onClick={() => { setActiveTab('l3'); setIsEditMode(false); }}
                 className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
                   activeTab === 'l3' 
                     ? 'border-[#0066cc] text-[#0066cc]' 
@@ -4499,7 +4499,7 @@ export const DashboardOverview = ({
             </div>
 
             {/* Footer */}
-            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px]">
+            <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px] shrink-0">
               <button 
                 onClick={handleExportRequestDetailsPDF}
                 disabled={isFetchingDetails}
