@@ -685,6 +685,18 @@ export const L1Request = ({
                 const target = e.target;
                 if (target.files && target.files.length > 0) {
                   const files = Array.from(target.files);
+                  const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+                  const tooLargeFiles = files.filter(f => f.size > MAX_SIZE);
+
+                  if (tooLargeFiles.length > 0) {
+                    setErrors(prev => ({
+                      ...prev,
+                      [fieldName]: `Upload not allowed: File(s) exceed 100MB limit: ${tooLargeFiles.map(f => f.name).join(', ')}`
+                    }));
+                    target.value = '';
+                    return;
+                  }
+
                   const names = files.map(f => f.name.replace(/,/g, '_'));
 
                   // Reset input value synchronously immediately to allow uploading the same file again

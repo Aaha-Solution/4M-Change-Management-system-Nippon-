@@ -599,9 +599,22 @@ export const L2Validation = ({
               disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isRaisedByUserOrAdmin || !canUploadPed))}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
+                  const files = Array.from(e.target.files);
+                  const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+                  const tooLargeFiles = files.filter(f => f.size > MAX_SIZE);
+
+                  if (tooLargeFiles.length > 0) {
+                    setFieldErrors(prev => ({
+                      ...prev,
+                      pedFile: `Upload not allowed: File(s) exceed 100MB limit: ${tooLargeFiles.map(f => f.name).join(', ')}`
+                    }));
+                    e.target.value = '';
+                    return;
+                  }
+
                   const validFiles = [];
                   let hasInvalid = false;
-                  Array.from(e.target.files).forEach(file => {
+                  files.forEach(file => {
                     const isImage = file.type.startsWith('image/');
                     const isPdf = file.type === 'application/pdf';
                     const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
@@ -690,9 +703,22 @@ export const L2Validation = ({
               disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
+                  const files = Array.from(e.target.files);
+                  const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+                  const tooLargeFiles = files.filter(f => f.size > MAX_SIZE);
+
+                  if (tooLargeFiles.length > 0) {
+                    setFieldErrors(prev => ({
+                      ...prev,
+                      qaFile: `Upload not allowed: File(s) exceed 100MB limit: ${tooLargeFiles.map(f => f.name).join(', ')}`
+                    }));
+                    e.target.value = '';
+                    return;
+                  }
+
                   const validFiles = [];
                   let hasInvalid = false;
-                  Array.from(e.target.files).forEach(file => {
+                  files.forEach(file => {
                     const isImage = file.type.startsWith('image/');
                     const isPdf = file.type === 'application/pdf';
                     const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);

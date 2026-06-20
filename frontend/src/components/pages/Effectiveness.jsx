@@ -699,6 +699,16 @@ export const Effectiveness = ({
                       const target = e.target;
                       if (target.files && target.files.length > 0) {
                         const files = Array.from(target.files);
+                        const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+                        const tooLargeFiles = files.filter(f => f.size > MAX_SIZE);
+
+                        if (tooLargeFiles.length > 0) {
+                          if (setToastMsg) {
+                            setToastMsg(`Upload not allowed: File(s) exceed 100MB limit: ${tooLargeFiles.map(f => f.name).join(', ')}`);
+                          }
+                          target.value = '';
+                          return;
+                        }
                         
                         // Validate file type
                         const allowedFiles = files.filter(file => {

@@ -104,6 +104,15 @@ const COLUMN_LIMITS = {
 export const validateLimits = (data) => {
   if (!data || typeof data !== 'object') return null;
 
+  // Check if this object represents an uploaded base64 file attachment
+  if (typeof data.name === 'string' && typeof data.type === 'string' && typeof data.data === 'string') {
+    const MAX_SIZE = 100 * 1024 * 1024; // 100 MB
+    const binarySize = Math.round((data.data.length * 3) / 4);
+    if (binarySize > MAX_SIZE) {
+      return `File "${data.name}" exceeds the maximum allowed size of 100MB.`;
+    }
+  }
+
   for (const [key, value] of Object.entries(data)) {
     if (typeof value === 'string') {
       const limit = COLUMN_LIMITS[key];

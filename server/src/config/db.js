@@ -22,8 +22,8 @@ const pool = mysql.createPool({
     
     // Ensure max_allowed_packet is high enough for base64 file uploads (prevent ECONNRESET)
     try {
-      await connection.query('SET GLOBAL max_allowed_packet = 67108864');
-      console.log('✅ Set GLOBAL max_allowed_packet to 64MB.');
+      await connection.query('SET GLOBAL max_allowed_packet = 167772160');
+      console.log('✅ Set GLOBAL max_allowed_packet to 160MB.');
     } catch (err) {
       console.warn('⚠️ Could not set global max_allowed_packet:', err.message);
     }
