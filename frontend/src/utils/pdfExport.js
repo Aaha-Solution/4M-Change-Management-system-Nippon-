@@ -1076,7 +1076,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
     });
     addLogoToDoc(doc);
 
-    const headers = [['SL. NO.', 'CHANGE NO.', 'REQ. DATE', 'CONTEXT', 'START DATE', 'MONTH', 'EFFECTIVENESS STATUS', 'QA DECISION', 'REMARKS']];
+    const headers = [['SL. NO.', '4M CHANGE NO', 'REQUESTED DATE', 'CONTEXT OF CHANGE', 'CHANGE DATE START', 'MONTH WISE', 'EFFECTIVENESS STATUS', 'QA APPROVAL', 'REMARKS']];
 
     const tableData = filteredLogs.map((item, idx) => {
       // Month-Wise mapping function
@@ -1166,13 +1166,13 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       },
       columnStyles: {
         0: { cellWidth: 40 },  // SL. NO.
-        1: { cellWidth: 80, fontStyle: 'bold' },  // CHANGE NO.
-        2: { cellWidth: 70 },  // REQ. DATE
-        3: { cellWidth: 120 }, // CONTEXT
-        4: { cellWidth: 70 },  // START DATE
-        5: { cellWidth: 70 },  // MONTH
+        1: { cellWidth: 80, fontStyle: 'bold' },  // 4M CHANGE NO.
+        2: { cellWidth: 70 },  // REQUESTED DATE
+        3: { cellWidth: 120 }, // CONTEXT OF CHANGE
+        4: { cellWidth: 70 },  // CHANGE DATE START
+        5: { cellWidth: 70 },  // MONTH WISE
         6: { cellWidth: 120 }, // EFFECTIVENESS STATUS
-        7: { cellWidth: 80 },  // QA DECISION
+        7: { cellWidth: 80 },  // QA APPROVAL
         8: { cellWidth: 110 }  // REMARKS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
@@ -1185,7 +1185,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       },
       didParseCell: (data) => {
         // Highlight Status
-        if (data.column.index === 6 && data.row.index > 0) {
+        if (data.column.index === 6 && data.row.section === 'body') {
           const val = data.cell.text[0];
           if (val === 'Effectiveness Ok') {
             data.cell.styles.textColor = [16, 124, 65]; // Green
@@ -1196,7 +1196,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
           }
         }
         // Highlight QA Approval Decision
-        if (data.column.index === 7 && data.row.index > 0) {
+        if (data.column.index === 7 && data.row.section === 'body') {
           const val = data.cell.text[0];
           if (val === 'Approved') {
             data.cell.styles.textColor = [16, 124, 65]; // Green
