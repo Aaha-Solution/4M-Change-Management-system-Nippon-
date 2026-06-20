@@ -75,7 +75,7 @@ const COLUMN_LIMITS = {
 
   // l3_approvals
   ped: 50,
-  quality: 50,
+  qad: 50,
   production: 50,
   maintenance: 50,
   pcl: 50,

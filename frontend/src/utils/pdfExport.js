@@ -381,7 +381,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
       const l3Headers = [['DEPARTMENT', 'APPROVAL STATUS']];
       const l3Rows = [
         ['PED (Process Engineering)', selectedLog.ped || 'Pending'],
-        ['Quality Assurance', selectedLog.quality || 'Pending'],
+        ['QAD', selectedLog.qad || 'Pending'],
         ['Production', selectedLog.production || 'Pending'],
         ['Maintenance', selectedLog.maintenance || 'Pending'],
         ['PC & L (Prod. Control & Logistics)', selectedLog.pcl || 'Pending'],
@@ -586,7 +586,7 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
     addLogoToDoc(doc);
 
     // 14 columns to fit A4 landscape (842pt width)
-    const headers = [['SL. NO.', '4M CHANGE NO', 'REQUESTED DATE', 'CHANGE REQUEST BY', 'PED', 'QUALITY', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY', 'UNIT HEAD']];
+    const headers = [['SL. NO.', '4M CHANGE NO', 'REQUESTED DATE', 'CHANGE REQUEST BY', 'PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY', 'UNIT HEAD']];
 
     const tableData = filteredLogs.map((item, idx) => [
       idx + 1,
@@ -594,7 +594,7 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       item.date ? formatDateToDDMMYYYY(item.date) : '-',
       item.requester ? item.requester.split('@')[0] : '-',
       item.ped || 'Pending',
-      item.quality || 'Pending',
+      item.qad || 'Pending',
       item.production || 'Pending',
       item.maintenance || 'Pending',
       item.pcl || 'Pending',
@@ -639,7 +639,7 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
         2: { cellWidth: 60 },
         3: { cellWidth: 85 },
         4: { cellWidth: 52 }, // PED
-        5: { cellWidth: 52 }, // QUALITY
+        5: { cellWidth: 52 }, // QAD
         6: { cellWidth: 52 }, // PRODUCTION
         7: { cellWidth: 52 }, // MAINTENANCE
         8: { cellWidth: 52 }, // PC & L

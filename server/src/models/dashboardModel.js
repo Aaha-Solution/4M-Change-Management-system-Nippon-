@@ -12,7 +12,7 @@ export const getDashboardChanges = async () => {
       WHERE cr.status = 'Completed'
         AND (
           l3.ped = 'Pending' OR
-          l3.quality = 'Pending' OR
+          l3.qad = 'Pending' OR
           l3.production = 'Pending' OR
           l3.maintenance = 'Pending' OR
           l3.pcl = 'Pending' OR
@@ -31,7 +31,7 @@ export const getDashboardChanges = async () => {
       SET cr.status = 'Completed'
       WHERE cr.status != 'Completed'
         AND l3.ped != 'Pending'
-        AND l3.quality != 'Pending'
+        AND l3.qad != 'Pending'
         AND l3.production != 'Pending'
         AND l3.maintenance != 'Pending'
         AND l3.pcl != 'Pending'
@@ -58,7 +58,7 @@ export const getDashboardChanges = async () => {
             ha.status as hodStatus,
             COALESCE(
               CASE 
-                WHEN LOWER(COALESCE(l1.dept, u.department)) IN ('quality', 'qad', 'qa') THEN l3.quality
+                WHEN LOWER(COALESCE(l1.dept, u.department)) IN ('quality', 'qad', 'qa') THEN l3.qad
                 WHEN LOWER(COALESCE(l1.dept, u.department)) = 'ped' THEN l3.ped
                 WHEN LOWER(COALESCE(l1.dept, u.department)) = 'production' THEN l3.production
                 WHEN LOWER(COALESCE(l1.dept, u.department)) = 'maintenance' THEN l3.maintenance
@@ -76,7 +76,7 @@ export const getDashboardChanges = async () => {
             DATE_FORMAT(l1.date_close, '%Y-%m-%d') as dateClose,
             CASE WHEN (
                       l3.ped = 'Approved' AND
-                      l3.quality = 'Approved' AND
+                      l3.qad = 'Approved' AND
                       l3.production = 'Approved' AND
                       l3.maintenance = 'Approved' AND
                       l3.pcl = 'Approved' AND
@@ -88,7 +88,7 @@ export const getDashboardChanges = async () => {
                     ) THEN 1 ELSE 0 END as isL3Approved,
             CASE WHEN (
                       l3.ped = 'Rejected' OR
-                      l3.quality = 'Rejected' OR
+                      l3.qad = 'Rejected' OR
                       l3.production = 'Rejected' OR
                       l3.maintenance = 'Rejected' OR
                       l3.pcl = 'Rejected' OR
@@ -101,7 +101,7 @@ export const getDashboardChanges = async () => {
             CASE WHEN l3.change_no IS NULL THEN 0
                  WHEN (
                       l3.ped = 'Pending' OR
-                      l3.quality = 'Pending' OR
+                      l3.qad = 'Pending' OR
                       l3.production = 'Pending' OR
                       l3.maintenance = 'Pending' OR
                       l3.pcl = 'Pending' OR

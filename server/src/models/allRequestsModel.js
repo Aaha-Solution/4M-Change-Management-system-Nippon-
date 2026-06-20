@@ -204,7 +204,7 @@ export const updateChangeDetails = async (changeNo, level, updateData, attachmen
     // Keep change_requests status in sync if level === 'l3'
     if (level === 'l3') {
       const [l3Row] = await connection.query(
-        `SELECT ped, quality, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead
+        `SELECT ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead
          FROM l3_approvals WHERE change_no = ?`,
         [changeNo]
       );
@@ -212,7 +212,7 @@ export const updateChangeDetails = async (changeNo, level, updateData, attachmen
         const dbL3 = l3Row[0];
         const isAllL3Decided = 
           dbL3.ped && dbL3.ped !== 'Pending' &&
-          dbL3.quality && dbL3.quality !== 'Pending' &&
+          dbL3.qad && dbL3.qad !== 'Pending' &&
           dbL3.production && dbL3.production !== 'Pending' &&
           dbL3.maintenance && dbL3.maintenance !== 'Pending' &&
           dbL3.pcl && dbL3.pcl !== 'Pending' &&

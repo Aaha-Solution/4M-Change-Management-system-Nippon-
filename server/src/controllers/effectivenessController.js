@@ -43,7 +43,7 @@ export const createLog = async (req, res) => {
   try {
     const canUpdate = await checkCanUpdate(req.user?.email);
     if (!canUpdate) {
-      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department and Administrators are allowed to create effectiveness logs.' });
+      return res.status(403).json({ error: 'Access Denied: Only authorized users in the QAD (QA) department and Administrators are allowed to create effectiveness logs.' });
     }
 
     const [existing] = await pool.query('SELECT id FROM effectiveness_logs WHERE change_no = ?', [logData.changeNo]);
@@ -90,7 +90,7 @@ export const updateLog = async (req, res) => {
     const isQADept = dept === 'quality' || dept === 'qad' || dept === 'qa';
 
     if (!isAdmin && !isQADept) {
-      return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department and Administrators are allowed to update effectiveness logs.' });
+      return res.status(403).json({ error: 'Access Denied: Only authorized users in the QAD (QA) department and Administrators are allowed to update effectiveness logs.' });
     }
 
     if (!isAdmin && isQADept) {

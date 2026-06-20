@@ -315,7 +315,7 @@ export const L2Validation = ({
         weldTest: '-',
         qaTest: '-',
         ped: 'Pending',
-        qa: 'Pending',
+        qad: 'Pending',
         production: 'Pending',
         maintenance: 'Pending',
         pcl: 'Pending',
@@ -415,7 +415,6 @@ export const L2Validation = ({
   );
 
   const isQuality = userDept && (
-    userDept.toLowerCase() === 'quality' || 
     userDept.toLowerCase() === 'qad' || 
     userDept.toLowerCase() === 'qa'
   );
@@ -477,7 +476,7 @@ export const L2Validation = ({
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Notice:</span> You raised this change request. You are authorized to upload the <span className="font-semibold">Requester Validation Attachment</span>. Quality department will review and complete the validation.
+              <span className="font-bold">Notice:</span> You raised this change request. You are authorized to upload the <span className="font-semibold">Requester Validation Attachment</span>. QAD department will review and complete the validation.
             </div>
           </div>
         )}
@@ -486,7 +485,7 @@ export const L2Validation = ({
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Notice:</span> You are logged in as {isAdmin ? 'Admin' : 'Quality'}. You are authorized to complete the L2 validation status, remarks, and upload the <span className="font-semibold">QA Setup Verification Attachment</span>.
+              <span className="font-bold">Notice:</span> You are logged in as {isAdmin ? 'Admin' : 'QAD'}. You are authorized to complete the L2 validation status, remarks, and upload the <span className="font-semibold">QA Setup Verification Attachment</span>.
             </div>
           </div>
         )}
@@ -495,7 +494,7 @@ export const L2Validation = ({
           <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Notice:</span> You are the creator of this change request and {isAdmin ? 'an Admin' : 'a Quality'} member. You have full permissions to update all L2 validation fields.
+              <span className="font-bold">Notice:</span> You are the creator of this change request and {isAdmin ? 'an Admin' : 'a QAD'} member. You have full permissions to update all L2 validation fields.
             </div>
           </div>
         )}

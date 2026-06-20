@@ -76,7 +76,7 @@ export const triggerEffectivenessQAAlert = async (changeNo, qaApproval, remarks)
          <div style="padding: 24px;">
            <h2 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 600;">Hello Team,</h2>
            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-             The Quality (QA) department has recorded the effectiveness monitoring evaluation decision for Change Request <strong>${changeNo}</strong>.
+             The QAD department has recorded the effectiveness monitoring evaluation decision for Change Request <strong>${changeNo}</strong>.
            </p>
           
           <div style="background-color: ${remarksBg}; border-left: 4px solid ${borderLeftColor}; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
