@@ -622,7 +622,7 @@ export const L1Request = ({
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Failed to save L1 request to server.';
-      setToastMsg(errMsg);
+      setToastMsg({ text: errMsg, isError: true });
     } finally {
       setIsSubmitting(false);
     }

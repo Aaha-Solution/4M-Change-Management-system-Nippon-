@@ -432,14 +432,14 @@ export const L2Validation = ({
   const hasPedUploaded = matchedL2 && matchedL2.weldTest && matchedL2.weldTest !== '-';
   const canUploadPed = !hasPedUploaded || matchedL2.status === 'Rejected';
 
-  const isSaveDisabled = isSubmitting || !formChangeNo.trim() || !canEdit || (
+  const isSaveDisabled = isSubmitting || !formChangeNo.trim() || (!isAdmin && (!canEdit || (
     // If Accepted, completely locked
     (matchedL2 && matchedL2.status === 'Accepted') ||
     // If Rejected, locked for Quality/Admin, and locked for requester unless they selected a new file to reset
     (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0)) ||
     // If Pending, locked for standard requester since they already uploaded the PED file
     (matchedL2 && matchedL2.status === 'Pending' && isRaisedByUser && !isQualityOrAdmin)
-  );
+  )));
 
   // Filter logic
   const filteredLogs = tableLogs.filter(log => {
@@ -580,7 +580,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || !isRaisedByUserOrAdmin || !canUploadPed}
+              disabled={!formChangeNo.trim() || (!isAdmin && (!isRaisedByUserOrAdmin || !canUploadPed))}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -671,7 +671,7 @@ export const L2Validation = ({
               type="file"
               multiple
               accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || !isQualityOrAdmin || isL2AlreadyValidated}
+              disabled={!formChangeNo.trim() || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
               onChange={(e) => {
                 if (e.target.files && e.target.files.length > 0) {
                   const validFiles = [];
@@ -759,7 +759,7 @@ export const L2Validation = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
             <select
               value={formStatus}
-              disabled={!formChangeNo.trim() || !isQualityOrAdmin || isL2AlreadyValidated}
+              disabled={!formChangeNo.trim() || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
               onChange={(e) => {
                 setFormStatus(e.target.value);
                 setFieldErrors(prev => ({ ...prev, status: '' }));
@@ -788,7 +788,7 @@ export const L2Validation = ({
               rows={3}
               value={formRemarks}
               maxLength={1000}
-              disabled={!formChangeNo.trim() || !isQualityOrAdmin || isL2AlreadyValidated}
+              disabled={!formChangeNo.trim() || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
               onChange={(e) => {
                 setFormRemarks(e.target.value);
                 setFieldErrors(prev => ({ ...prev, remarks: '' }));

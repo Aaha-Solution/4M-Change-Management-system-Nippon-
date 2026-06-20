@@ -228,7 +228,7 @@ export const Effectiveness = ({
       } catch (err) {
         console.error("Error updating log:", err);
         const errMsg = err.response?.data?.error || 'Failed to update effectiveness log.';
-        setToastMsg(errMsg);
+        setToastMsg({ text: errMsg, isError: true });
       }
     } else {
       // Create mode
@@ -255,7 +255,7 @@ export const Effectiveness = ({
       } catch (err) {
         console.error("Error creating log:", err);
         const errMsg = err.response?.data?.error || 'Failed to create effectiveness log.';
-        setToastMsg(errMsg);
+        setToastMsg({ text: errMsg, isError: true });
       }
     }
   };

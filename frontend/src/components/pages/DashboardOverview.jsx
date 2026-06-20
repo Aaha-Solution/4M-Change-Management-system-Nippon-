@@ -2266,7 +2266,7 @@ export const DashboardOverview = ({
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Failed to save updates.';
-      setToastMsg(errMsg);
+      setToastMsg({ text: errMsg, isError: true });
     } finally {
       setIsSaving(false);
     }

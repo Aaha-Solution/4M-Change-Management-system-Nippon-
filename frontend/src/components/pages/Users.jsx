@@ -104,7 +104,7 @@ export const Users = ({
       if (error.response?.status === 401 || error.response?.status === 403) {
         onLocalSignOut();
       } else {
-        setToastMsg('Error loading users from backend.');
+        setToastMsg({ text: 'Error loading users from backend.', isError: true });
       }
     } finally {
       setIsFetchingUsers(false);
@@ -180,7 +180,7 @@ export const Users = ({
       fetchUsers();
     } catch (err) {
       console.error(err);
-      setToastMsg(err.response?.data?.error || 'Error creating user account.');
+      setToastMsg({ text: err.response?.data?.error || 'Error creating user account.', isError: true });
     } finally {
       setIsCreatingUser(false);
     }
@@ -201,7 +201,7 @@ export const Users = ({
       fetchUsers();
     } catch (err) {
       console.error(err);
-      setToastMsg('Error deleting user.');
+      setToastMsg({ text: 'Error deleting user.', isError: true });
     }
   };
 
@@ -255,7 +255,7 @@ export const Users = ({
       fetchUsers();
     } catch (err) {
       console.error(err);
-      setToastMsg(err.response?.data?.error || 'Error updating user.');
+      setToastMsg({ text: err.response?.data?.error || 'Error updating user.', isError: true });
     }
   };
 
@@ -407,6 +407,8 @@ export const Users = ({
                   if (newRole.toLowerCase().includes('admin')) {
                     setCreateUserDept('General');
                     if (createErrors.dept) setCreateErrors(p => ({...p, dept: ''}));
+                  } else if ((newRole.toLowerCase() === 'user' || newRole.toLowerCase() === 'hod') && createUserDept === 'General') {
+                    setCreateUserDept('');
                   }
                   if (createErrors.role) setCreateErrors(p => ({...p, role: ''}));
                 }}
@@ -436,9 +438,11 @@ export const Users = ({
                 disabled={isCreatingUser || (createUserRole && createUserRole.toLowerCase().includes('admin'))}
               >
                 <option value="">Select Department</option>
-                {customDepts.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
+                {customDepts
+                  .filter(dept => !(createUserRole && (createUserRole.toLowerCase() === 'user' || createUserRole.toLowerCase() === 'hod') && dept === 'General'))
+                  .map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
               </select>
               {createErrors.dept && <p className="text-[10px] text-red-500 font-medium mt-0.5">{createErrors.dept}</p>}
             </div>
@@ -729,6 +733,8 @@ export const Users = ({
                     if (newRole.toLowerCase().includes('admin')) {
                       setEditUserDept('General');
                       if (editErrors.dept) setEditErrors(p => ({...p, dept: ''}));
+                    } else if ((newRole.toLowerCase() === 'user' || newRole.toLowerCase() === 'hod') && editUserDept === 'General') {
+                      setEditUserDept('');
                     }
                     if (editErrors.role) setEditErrors(p => ({...p, role: ''}));
                   }}
@@ -757,9 +763,11 @@ export const Users = ({
                   disabled={editUserRole && editUserRole.toLowerCase().includes('admin')}
                 >
                   <option value="">Select Department</option>
-                  {customDepts.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
+                  {customDepts
+                    .filter(dept => !(editUserRole && (editUserRole.toLowerCase() === 'user' || editUserRole.toLowerCase() === 'hod') && dept === 'General'))
+                    .map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
                 </select>
                 {editErrors.dept && <p className="text-[10px] text-red-500 font-medium mt-0.5">{editErrors.dept}</p>}
               </div>
