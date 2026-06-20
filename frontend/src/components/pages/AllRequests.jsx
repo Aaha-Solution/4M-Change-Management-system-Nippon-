@@ -486,6 +486,23 @@ export const AllRequests = ({
     setIsSaving(true);
     try {
       if (activeTab === 'l1') {
+        const area = (editL1Data.improvement_area || '').toLowerCase();
+        if (['cost', 'productivity', 'quality'].includes(area)) {
+          let parsedRows = [];
+          try {
+            if (editL1Data.improvement_table_data) {
+              parsedRows = JSON.parse(editL1Data.improvement_table_data);
+            }
+          } catch (e) {
+            console.error("Failed to parse improvement_table_data JSON:", e);
+          }
+          
+          if (!checkEditTableCompleteness(parsedRows)) {
+            setToastMsg({ text: `Please fill in all details in the ${editL1Data.improvement_area} Saving/Improvement Data Table.`, isError: true });
+            setIsSaving(false);
+            return;
+          }
+        }
         await updateChangeDetails(selectedLog.changeNo, 'l1', editL1Data, uploadedFilesList);
         setSelectedL1Details(editL1Data);
       } else if (activeTab === 'l2') {
@@ -1110,7 +1127,7 @@ export const AllRequests = ({
                     const newArea = e.target.value;
                     const changeNo = data.change_no || data.changeNo || selectedLog?.changeNo || '';
                     let newTableData = '';
-                    if (selectedL1Details && newArea === selectedL1Details.improvement_area) {
+                    if (selectedL1Details && newArea.toLowerCase() === (selectedL1Details.improvement_area || '').toLowerCase()) {
                       newTableData = selectedL1Details.improvement_table_data || '';
                     } else if (['cost', 'productivity', 'quality'].includes(newArea.toLowerCase())) {
                       let defaultRows = [];

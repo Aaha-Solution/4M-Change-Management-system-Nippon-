@@ -468,6 +468,9 @@ export const DashboardOverview = ({
           matchesFromDate = itemD && itemD >= fD;
           matchesToDate = itemD && itemD <= tD;
         }
+      } else if (fromDateVal || toDateVal) {
+        matchesFromDate = false;
+        matchesToDate = false;
       }
 
       const matchesPerson = personVal === 'All' || 
@@ -1865,6 +1868,16 @@ export const DashboardOverview = ({
     }
   };
 
+  const isDateRangeIncomplete = (fromDate, toDate) => {
+    return (fromDate && !toDate) || (!fromDate && toDate);
+  };
+
+  const renderDateRangePlaceholder = () => (
+    <div className="text-center py-12 text-slate-400 font-medium text-[12px] bg-slate-50/50 border border-dashed border-slate-200 rounded-xl w-full">
+      Please select both From Date and To Date to view date range analytics.
+    </div>
+  );
+
   const renderImprovementBenefits = () => {
     // 1. Apply separate filters
     const filteredCost = costSavingRows.filter(row => {
@@ -2300,6 +2313,23 @@ export const DashboardOverview = ({
     setIsSaving(true);
     try {
       if (activeTab === 'l1') {
+        const area = (editL1Data.improvement_area || '').toLowerCase();
+        if (['cost', 'productivity', 'quality'].includes(area)) {
+          let parsedRows = [];
+          try {
+            if (editL1Data.improvement_table_data) {
+              parsedRows = JSON.parse(editL1Data.improvement_table_data);
+            }
+          } catch (e) {
+            console.error("Failed to parse improvement_table_data JSON:", e);
+          }
+          
+          if (!checkEditTableCompleteness(parsedRows)) {
+            setToastMsg({ text: `Please fill in all details in the ${editL1Data.improvement_area} Saving/Improvement Data Table.`, isError: true });
+            setIsSaving(false);
+            return;
+          }
+        }
         await updateChangeDetails(selectedLog.changeNo, 'l1', editL1Data, uploadedFilesList);
         setSelectedL1Details(editL1Data);
       } else if (activeTab === 'l2') {
@@ -2921,7 +2951,7 @@ export const DashboardOverview = ({
                     const newArea = e.target.value;
                     const changeNo = data.change_no || data.changeNo || selectedLog?.changeNo || '';
                     let newTableData = '';
-                    if (selectedL1Details && newArea === selectedL1Details.improvement_area) {
+                    if (selectedL1Details && newArea.toLowerCase() === (selectedL1Details.improvement_area || '').toLowerCase()) {
                       newTableData = selectedL1Details.improvement_table_data || '';
                     } else if (['cost', 'productivity', 'quality'].includes(newArea.toLowerCase())) {
                       let defaultRows = [];
@@ -3603,11 +3633,31 @@ export const DashboardOverview = ({
             {renderFiltersForTab(activeAnalyticsTab)}
 
             {/* Render selected chart */}
-            {activeAnalyticsTab === 'Department' && renderDepartmentChart(getFilteredData(deptFilterMonth, deptFilterFromDate, deptFilterToDate, deptFilterPerson, deptFilterProcess, deptFilterMachine))}
-            {activeAnalyticsTab === 'Process' && renderProcessChart(getFilteredData(procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine))}
-            {activeAnalyticsTab === '6M Category' && renderCategoryChart(getFilteredData(catFilterMonth, catFilterFromDate, catFilterToDate, catFilterPerson, catFilterProcess, catFilterMachine))}
-            {activeAnalyticsTab === 'Monthly' && renderMonthlyChart(getFilteredData(monthFilterMonth, monthFilterFromDate, monthFilterToDate, monthFilterPerson, monthFilterProcess, monthFilterMachine))}
-            {activeAnalyticsTab === 'Approval Status' && renderApprovalStatusChart(getFilteredData(apprFilterMonth, apprFilterFromDate, apprFilterToDate, 'All', 'All', 'All', apprFilterStatus))}
+            {activeAnalyticsTab === 'Department' && (
+              isDateRangeIncomplete(deptFilterFromDate, deptFilterToDate)
+                ? renderDateRangePlaceholder()
+                : renderDepartmentChart(getFilteredData(deptFilterMonth, deptFilterFromDate, deptFilterToDate, deptFilterPerson, deptFilterProcess, deptFilterMachine))
+            )}
+            {activeAnalyticsTab === 'Process' && (
+              isDateRangeIncomplete(procFilterFromDate, procFilterToDate)
+                ? renderDateRangePlaceholder()
+                : renderProcessChart(getFilteredData(procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine))
+            )}
+            {activeAnalyticsTab === '6M Category' && (
+              isDateRangeIncomplete(catFilterFromDate, catFilterToDate)
+                ? renderDateRangePlaceholder()
+                : renderCategoryChart(getFilteredData(catFilterMonth, catFilterFromDate, catFilterToDate, catFilterPerson, catFilterProcess, catFilterMachine))
+            )}
+            {activeAnalyticsTab === 'Monthly' && (
+              isDateRangeIncomplete(monthFilterFromDate, monthFilterToDate)
+                ? renderDateRangePlaceholder()
+                : renderMonthlyChart(getFilteredData(monthFilterMonth, monthFilterFromDate, monthFilterToDate, monthFilterPerson, monthFilterProcess, monthFilterMachine))
+            )}
+            {activeAnalyticsTab === 'Approval Status' && (
+              isDateRangeIncomplete(apprFilterFromDate, apprFilterToDate)
+                ? renderDateRangePlaceholder()
+                : renderApprovalStatusChart(getFilteredData(apprFilterMonth, apprFilterFromDate, apprFilterToDate, 'All', 'All', 'All', apprFilterStatus))
+            )}
             {activeAnalyticsTab === 'Improvement Benefits' && renderImprovementBenefits()}
           </div>
         ) : (
@@ -3640,7 +3690,9 @@ export const DashboardOverview = ({
                   </div>
                 </div>
                 {renderFiltersForTab('Department')}
-                {renderDepartmentChart(getFilteredData(deptFilterMonth, deptFilterFromDate, deptFilterToDate, deptFilterPerson, deptFilterProcess, deptFilterMachine), 'h-[140px]')}
+                {isDateRangeIncomplete(deptFilterFromDate, deptFilterToDate)
+                  ? renderDateRangePlaceholder()
+                  : renderDepartmentChart(getFilteredData(deptFilterMonth, deptFilterFromDate, deptFilterToDate, deptFilterPerson, deptFilterProcess, deptFilterMachine), 'h-[140px]')}
               </div>
 
               {/* 2. Process Wise Change */}
@@ -3668,7 +3720,9 @@ export const DashboardOverview = ({
                   </div>
                 </div>
                 {renderFiltersForTab('Process')}
-                {renderProcessChart(getFilteredData(procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine), 'h-[140px]')}
+                {isDateRangeIncomplete(procFilterFromDate, procFilterToDate)
+                  ? renderDateRangePlaceholder()
+                  : renderProcessChart(getFilteredData(procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine), 'h-[140px]')}
               </div>
 
               {/* 3. 6M Category Change */}
@@ -3696,7 +3750,9 @@ export const DashboardOverview = ({
                   </div>
                 </div>
                 {renderFiltersForTab('6M Category')}
-                {renderCategoryChart(getFilteredData(catFilterMonth, catFilterFromDate, catFilterToDate, catFilterPerson, catFilterProcess, catFilterMachine), 'h-[140px]')}
+                {isDateRangeIncomplete(catFilterFromDate, catFilterToDate)
+                  ? renderDateRangePlaceholder()
+                  : renderCategoryChart(getFilteredData(catFilterMonth, catFilterFromDate, catFilterToDate, catFilterPerson, catFilterProcess, catFilterMachine), 'h-[140px]')}
               </div>
 
               {/* 4. Monthly Change */}
@@ -3724,7 +3780,9 @@ export const DashboardOverview = ({
                   </div>
                 </div>
                 {renderFiltersForTab('Monthly')}
-                {renderMonthlyChart(getFilteredData(monthFilterMonth, monthFilterFromDate, monthFilterToDate, monthFilterPerson, monthFilterProcess, monthFilterMachine), 'h-[140px]')}
+                {isDateRangeIncomplete(monthFilterFromDate, monthFilterToDate)
+                  ? renderDateRangePlaceholder()
+                  : renderMonthlyChart(getFilteredData(monthFilterMonth, monthFilterFromDate, monthFilterToDate, monthFilterPerson, monthFilterProcess, monthFilterMachine), 'h-[140px]')}
               </div>
             </div>
 
@@ -3774,7 +3832,9 @@ export const DashboardOverview = ({
                 </div>
               </div>
               {renderFiltersForTab('Approval Status')}
-              {renderApprovalStatusChart(getFilteredData(apprFilterMonth, apprFilterFromDate, apprFilterToDate, 'All', 'All', 'All', apprFilterStatus), 'h-[180px]')}
+              {isDateRangeIncomplete(apprFilterFromDate, apprFilterToDate)
+                ? renderDateRangePlaceholder()
+                : renderApprovalStatusChart(getFilteredData(apprFilterMonth, apprFilterFromDate, apprFilterToDate, 'All', 'All', 'All', apprFilterStatus), 'h-[180px]')}
             </div>
 
             {/* 6. Improvement Benefits (Full-width Card at bottom of Grid Mode) */}
@@ -3856,6 +3916,10 @@ export const DashboardOverview = ({
             <div className="flex flex-col items-center justify-center py-[64px] gap-[8px] text-slate-400">
               <Loader2 className="animate-spin text-[#0066cc]" size={28} />
               <span className="text-[14px]">Fetching changes...</span>
+            </div>
+          ) : isDateRangeIncomplete(tableFilterFromDate, tableFilterToDate) ? (
+            <div className="p-6">
+              {renderDateRangePlaceholder()}
             </div>
           ) : (
             <table className="w-full text-left border-collapse">
