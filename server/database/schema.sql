@@ -131,6 +131,7 @@ CREATE TABLE effectiveness_logs (
     attachment VARCHAR(255) NOT NULL DEFAULT '',
     status VARCHAR(50) NOT NULL DEFAULT '',
     qa_approval VARCHAR(50) NOT NULL DEFAULT '',
+    qa_update_count INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
