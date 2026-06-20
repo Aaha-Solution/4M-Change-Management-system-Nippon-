@@ -865,7 +865,7 @@ export const L3RequestTracker = ({
           {/* Modal Container */}
           <div className="relative bg-white w-full sm:w-[720px] max-w-full h-full sm:h-auto sm:max-h-[92vh] sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-[24px] py-[18px] border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-[10px]">
                 <span className="p-2 bg-[#e6f0fa] text-[#0066cc] rounded-lg">
                   <Eye size={18} />
@@ -884,7 +884,7 @@ export const L3RequestTracker = ({
             </div>
 
             {/* Tabs Header */}
-            <div className="flex h-11 border-b border-slate-200 bg-slate-50/50 overflow-x-auto whitespace-nowrap scrollbar-none">
+            <div className="flex h-11 border-b border-slate-200 bg-slate-50/50 overflow-x-auto whitespace-nowrap scrollbar-none shrink-0">
               <button
                 onClick={() => setActiveTab('l1')}
                 className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
@@ -1312,7 +1312,7 @@ export const L3RequestTracker = ({
         </div>
 
         {/* Footer */}
-        <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
           <div>
             {activeTab === 'l1' ? (
               selectedL1Details ? (
