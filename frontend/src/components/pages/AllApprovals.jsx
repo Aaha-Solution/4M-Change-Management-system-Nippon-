@@ -372,12 +372,12 @@ export const AllApprovals = ({
       if (setToastMsg) {
         if (status === 'Approved') {
           setToastMsg({
-            text: `✅ ${actingDept} HOD approval saved as "${status}" for ${selectedReq.changeNo}`,
+            text: ` ${actingDept} HOD approval saved as "${status}" for ${selectedReq.changeNo}`,
             isError: false
           });
         } else {
           setToastMsg({
-            text: `❌ ${actingDept} HOD approval saved as "${status}" for ${selectedReq.changeNo}`,
+            text: ` ${actingDept} HOD approval saved as "${status}" for ${selectedReq.changeNo}`,
             isError: true
           });
         }

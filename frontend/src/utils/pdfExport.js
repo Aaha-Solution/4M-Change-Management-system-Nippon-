@@ -126,6 +126,25 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
         doc.setTextColor(148, 163, 184); // Slate-400
         doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
         doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL', 40, doc.internal.pageSize.height - 20);
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 7 && data.row.section === 'body') {
+          const val = data.cell.text[0];
+          const cleanVal = val ? val.trim().toLowerCase() : '';
+          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
+            data.cell.styles.textColor = [16, 124, 65]; // Green text
+            data.cell.styles.fontStyle = 'bold';
+          } else if (cleanVal.includes('reject')) {
+            data.cell.styles.textColor = [220, 38, 38]; // Red text
+            data.cell.styles.fontStyle = 'bold';
+          } else if (cleanVal.includes('pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Yellow text
+            data.cell.styles.fontStyle = 'bold';
+          } else if (cleanVal.includes('close')) {
+            data.cell.styles.textColor = [37, 99, 235]; // Blue text
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
       }
     });
 
@@ -318,7 +337,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
             { content: 'Validation Date:', fontStyle: 'bold' }, selectedL2Details.date || '-'
           ],
           [
-            { content: 'Validation Status:', fontStyle: 'bold' }, `L2: ${selectedL2Details.status || 'Pending'}`,
+            { content: 'Validation Status:', fontStyle: 'bold' }, `L2: ${selectedL2Details.status === 'Accepted' ? 'Approved' : (selectedL2Details.status || 'Pending')}`,
             { content: 'PED Test Setup:', fontStyle: 'bold' }, selectedL2Details.weldTest || '-'
           ],
           [
@@ -403,14 +422,15 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
             data.cell.styles.fontStyle = 'bold';
           } else if (data.column.index === 1 && data.row.index > 0) {
             const val = data.cell.text[0];
-            if (val === 'Accepted' || val === 'Approved') {
+            const cleanVal = val ? val.trim().toLowerCase() : '';
+            if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
               data.cell.styles.textColor = [16, 124, 65]; // Green text
               data.cell.styles.fontStyle = 'bold';
-            } else if (val === 'Rejected') {
+            } else if (cleanVal.includes('reject')) {
               data.cell.styles.textColor = [220, 38, 38]; // Red text
               data.cell.styles.fontStyle = 'bold';
-            } else if (val === 'Pending') {
-              data.cell.styles.textColor = [217, 119, 6]; // Amber text
+            } else if (cleanVal.includes('pending')) {
+              data.cell.styles.textColor = [217, 119, 6]; // Yellow text
               data.cell.styles.fontStyle = 'bold';
             }
           }
@@ -458,7 +478,7 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
     });
     addLogoToDoc(doc);
 
-    const headers = [['SL. NO.', 'CHANGE NO.', 'REQUEST DATE', 'REQUESTER', 'PED ATTACH.', 'QA ATTACH.', 'STATUS', 'REMARKS']];
+    const headers = [['SL. NO.', '4M CHANGE NO', 'REQUESTED DATE', 'CHANGE REQUEST BY', 'REQUESTER VALIDATION', 'APPROVER SET UP VERIFICATION(QA)', 'APPROVER VALIDATION STATUS', 'REMARKS']];
 
     const tableData = filteredLogs.map((item, idx) => [
       idx + 1,
@@ -467,7 +487,7 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
       item.requester,
       item.weldTest || '-',
       item.qaTest || '-',
-      item.status,
+      item.status === 'Accepted' ? 'Approved' : item.status,
       item.remarks || '-'
     ]);
 
@@ -505,9 +525,9 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
         2: { cellWidth: 80 },
         3: { cellWidth: 100 },
         4: { cellWidth: 110 },
-        5: { cellWidth: 110 },
-        6: { cellWidth: 80 },
-        7: { cellWidth: 150 }
+        5: { cellWidth: 130 },
+        6: { cellWidth: 90 },
+        7: { cellWidth: 122 }
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
@@ -518,16 +538,17 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
         doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL L2 LOGS', 40, doc.internal.pageSize.height - 20);
       },
       didParseCell: (data) => {
-        if (data.column.index === 6 && data.row.index > 0) {
+        if (data.column.index === 6 && data.row.section === 'body') {
           const val = data.cell.text[0];
-          if (val === 'Accepted') {
+          const cleanVal = val ? val.trim().toLowerCase() : '';
+          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
             data.cell.styles.textColor = [16, 124, 65]; // Green
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Rejected') {
+          } else if (cleanVal.includes('reject')) {
             data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Pending') {
-            data.cell.styles.textColor = [217, 119, 6]; // Amber
+          } else if (cleanVal.includes('pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Yellow
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -565,7 +586,7 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
     addLogoToDoc(doc);
 
     // 14 columns to fit A4 landscape (842pt width)
-    const headers = [['SL.', 'CHANGE NO.', 'DATE', 'REQUESTER', 'PED', 'QA', 'PROD', 'MAINT', 'PC&L', 'MAT', 'MKTG', 'HR', 'SAFE', 'UH']];
+    const headers = [['SL. NO.', '4M CHANGE NO', 'REQUESTED DATE', 'CHANGE REQUEST BY', 'PED', 'QUALITY', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY', 'UNIT HEAD']];
 
     const tableData = filteredLogs.map((item, idx) => [
       idx + 1,
@@ -604,29 +625,29 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       headStyles: {
         fillColor: [0, 102, 204],
         textColor: [255, 255, 255],
-        fontSize: 8,
+        fontSize: 7.2,
         fontStyle: 'bold',
         halign: 'left'
       },
       bodyStyles: {
-        fontSize: 7.5,
+        fontSize: 7,
         textColor: [51, 65, 85]
       },
       columnStyles: {
-        0: { cellWidth: 35 },
+        0: { cellWidth: 30 },
         1: { cellWidth: 65, fontStyle: 'bold' },
         2: { cellWidth: 60 },
-        3: { cellWidth: 80 },
+        3: { cellWidth: 85 },
         4: { cellWidth: 52 }, // PED
-        5: { cellWidth: 52 }, // QA
-        6: { cellWidth: 52 }, // PROD
-        7: { cellWidth: 52 }, // MAINT
-        8: { cellWidth: 52 }, // PC&L
-        9: { cellWidth: 52 }, // MAT
-        10: { cellWidth: 52 }, // MKTG
+        5: { cellWidth: 52 }, // QUALITY
+        6: { cellWidth: 52 }, // PRODUCTION
+        7: { cellWidth: 52 }, // MAINTENANCE
+        8: { cellWidth: 52 }, // PC & L
+        9: { cellWidth: 52 }, // MATERIALS
+        10: { cellWidth: 52 }, // MARKETING
         11: { cellWidth: 52 }, // HR
-        12: { cellWidth: 52 }, // SAFE
-        13: { cellWidth: 52 }  // UH
+        12: { cellWidth: 52 }, // SAFETY
+        13: { cellWidth: 52 }  // UNIT HEAD
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
@@ -638,16 +659,17 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       },
       didParseCell: (data) => {
         // Highlight status cells
-        if (data.column.index >= 4 && data.column.index <= 13 && data.row.index > 0) {
+        if (data.column.index >= 4 && data.column.index <= 13 && data.row.section === 'body') {
           const val = data.cell.text[0];
-          if (val === 'Accepted' || val === 'Approved') {
+          const cleanVal = val ? val.trim().toLowerCase() : '';
+          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
             data.cell.styles.textColor = [16, 124, 65]; // Green
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Rejected') {
+          } else if (cleanVal.includes('reject')) {
             data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Pending') {
-            data.cell.styles.textColor = [217, 119, 6]; // Amber
+          } else if (cleanVal.includes('pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Yellow
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -758,16 +780,17 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
         doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL APPROVAL LOGS', 40, doc.internal.pageSize.height - 20);
       },
       didParseCell: (data) => {
-        if (data.column.index === 5 && data.row.index > 0) {
+        if (data.column.index === 5 && data.row.section === 'body') {
           const val = data.cell.text[0];
-          if (val === 'Approved') {
+          const cleanVal = val ? val.trim().toLowerCase() : '';
+          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
             data.cell.styles.textColor = [16, 124, 65]; // Green
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Rejected') {
+          } else if (cleanVal.includes('reject')) {
             data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Pending') {
-            data.cell.styles.textColor = [217, 119, 6]; // Amber
+          } else if (cleanVal.includes('pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Yellow
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -1003,19 +1026,20 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
         doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL DASHBOARD OVERVIEW LOGS', 40, doc.internal.pageSize.height - 20);
       },
       didParseCell: (data) => {
-        if (data.column.index === 5 && data.row.index > 0) {
+        if (data.column.index === 5 && data.row.section === 'body') {
           const val = data.cell.text[0];
-          if (val === 'Approved') {
+          const cleanVal = val ? val.trim().toLowerCase() : '';
+          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
             data.cell.styles.textColor = [16, 124, 65]; // Green
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Rejected') {
+          } else if (cleanVal.includes('reject')) {
             data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
-          } else if (val && val.includes('Pending')) {
-            data.cell.styles.textColor = [217, 119, 6]; // Amber
+          } else if (cleanVal.includes('pending')) {
+            data.cell.styles.textColor = [217, 119, 6]; // Yellow
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Closed') {
-            data.cell.styles.textColor = [100, 116, 139]; // Slate-500
+          } else if (cleanVal.includes('close')) {
+            data.cell.styles.textColor = [37, 99, 235]; // Blue
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -1052,7 +1076,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
     });
     addLogoToDoc(doc);
 
-    const headers = [['SL. NO.', 'CHANGE NO.', 'REQ. DATE', 'CONTEXT', 'START DATE', 'MONTH', 'EFFECTIVENESS STATUS', 'QA DECISION', 'REMARKS']];
+    const headers = [['SL. NO.', '4M CHANGE NO', 'REQUESTED DATE', 'CONTEXT OF CHANGE', 'CHANGE DATE START', 'MONTH WISE', 'EFFECTIVENESS STATUS', 'QA APPROVAL', 'REMARKS']];
 
     const tableData = filteredLogs.map((item, idx) => {
       // Month-Wise mapping function
@@ -1142,13 +1166,13 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       },
       columnStyles: {
         0: { cellWidth: 40 },  // SL. NO.
-        1: { cellWidth: 80, fontStyle: 'bold' },  // CHANGE NO.
-        2: { cellWidth: 70 },  // REQ. DATE
-        3: { cellWidth: 120 }, // CONTEXT
-        4: { cellWidth: 70 },  // START DATE
-        5: { cellWidth: 70 },  // MONTH
+        1: { cellWidth: 80, fontStyle: 'bold' },  // 4M CHANGE NO.
+        2: { cellWidth: 70 },  // REQUESTED DATE
+        3: { cellWidth: 120 }, // CONTEXT OF CHANGE
+        4: { cellWidth: 70 },  // CHANGE DATE START
+        5: { cellWidth: 70 },  // MONTH WISE
         6: { cellWidth: 120 }, // EFFECTIVENESS STATUS
-        7: { cellWidth: 80 },  // QA DECISION
+        7: { cellWidth: 80 },  // QA APPROVAL
         8: { cellWidth: 110 }  // REMARKS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
@@ -1161,7 +1185,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       },
       didParseCell: (data) => {
         // Highlight Status
-        if (data.column.index === 6 && data.row.index > 0) {
+        if (data.column.index === 6 && data.row.section === 'body') {
           const val = data.cell.text[0];
           if (val === 'Effectiveness Ok') {
             data.cell.styles.textColor = [16, 124, 65]; // Green
@@ -1172,7 +1196,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
           }
         }
         // Highlight QA Approval Decision
-        if (data.column.index === 7 && data.row.index > 0) {
+        if (data.column.index === 7 && data.row.section === 'body') {
           const val = data.cell.text[0];
           if (val === 'Approved') {
             data.cell.styles.textColor = [16, 124, 65]; // Green

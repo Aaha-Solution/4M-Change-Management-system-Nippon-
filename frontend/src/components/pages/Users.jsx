@@ -5,11 +5,7 @@ import {
   deleteUser,
   signup,
   getRoles,
-  addRole,
-  deleteRole,
   getDepartments,
-  addDepartment,
-  deleteDepartment,
   updateUser
 } from '../../api/apiRoutes';
 import {
@@ -69,10 +65,6 @@ export const Users = ({
   const [isCreatingUser, setIsCreatingUser] = useState(false);
 
   // Modals
-  const [showAddRoleModal, setShowAddRoleModal] = useState(false);
-  const [newCustomRoleInput, setNewCustomRoleInput] = useState('');
-  const [showAddDeptModal, setShowAddDeptModal] = useState(false);
-  const [newCustomDeptInput, setNewCustomDeptInput] = useState('');
   const [userToDelete, setUserToDelete] = useState(null);
 
   // Edit User
@@ -275,75 +267,7 @@ export const Users = ({
     }));
   };
 
-  const handleAddCustomRole = () => {
-    setShowAddRoleModal(true);
-    setNewCustomRoleInput('');
-  };
 
-  const executeAddCustomRole = async (e) => {
-    e.preventDefault();
-    if (newCustomRoleInput && newCustomRoleInput.trim()) {
-      const trimmed = newCustomRoleInput.trim();
-      try {
-        await addRole(trimmed);
-        setCreateUserRole(trimmed);
-        fetchRoles();
-      } catch (err) {
-        console.error(err);
-        setToastMsg(err.response?.data?.error || 'Error saving custom role.');
-      }
-    }
-    setShowAddRoleModal(false);
-    setNewCustomRoleInput('');
-  };
-
-  const handleAddCustomDept = () => {
-    setShowAddDeptModal(true);
-    setNewCustomDeptInput('');
-  };
-
-  const executeAddCustomDept = async (e) => {
-    e.preventDefault();
-    if (newCustomDeptInput && newCustomDeptInput.trim()) {
-      const trimmed = newCustomDeptInput.trim();
-      try {
-        await addDepartment(trimmed);
-        setCreateUserDept(trimmed);
-        fetchDepartments();
-      } catch (err) {
-        console.error(err);
-        setToastMsg(err.response?.data?.error || 'Error saving custom department.');
-      }
-    }
-    setShowAddDeptModal(false);
-    setNewCustomDeptInput('');
-  };
-
-  const handleDeleteCustomRole = async (roleToDelete) => {
-    try {
-      await deleteRole(roleToDelete);
-      if (createUserRole === roleToDelete) {
-        setCreateUserRole('');
-      }
-      fetchRoles();
-    } catch (err) {
-      console.error(err);
-      setToastMsg('Error deleting role option.');
-    }
-  };
-
-  const handleDeleteCustomDept = async (deptToDelete) => {
-    try {
-      await deleteDepartment(deptToDelete);
-      if (createUserDept === deptToDelete) {
-        setCreateUserDept('');
-      }
-      fetchDepartments();
-    } catch (err) {
-      console.error(err);
-      setToastMsg('Error deleting department option.');
-    }
-  };
 
   // Initials for Avatar — same colour for all roles
   const getAvatarStyles = () => 'bg-[#0066cc] text-white';
@@ -471,32 +395,29 @@ export const Users = ({
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 Role <span className="text-red-500">*</span>
               </label>
-              <div className="flex gap-2">
-                <select
-                  className={`flex-1 px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
-                    createErrors.role
-                      ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
-                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
-                  }`}
-                  value={createUserRole}
-                  onChange={(e) => { setCreateUserRole(e.target.value); if (createErrors.role) setCreateErrors(p => ({...p, role: ''})); }}
-                  disabled={isCreatingUser}
-                >
-                  <option value="">Select Role</option>
-                  {customRoles.map(role => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
-                </select>
-                {userRole && userRole.toLowerCase().includes('admin') && (
-                  <button
-                    type="button"
-                    onClick={handleAddCustomRole}
-                    className="px-3 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-sm font-bold cursor-pointer"
-                  >
-                    +
-                  </button>
-                )}
-              </div>
+              <select
+                className={`w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
+                  createErrors.role
+                    ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
+                value={createUserRole}
+                onChange={(e) => {
+                  const newRole = e.target.value;
+                  setCreateUserRole(newRole);
+                  if (newRole.toLowerCase().includes('admin')) {
+                    setCreateUserDept('General');
+                    if (createErrors.dept) setCreateErrors(p => ({...p, dept: ''}));
+                  }
+                  if (createErrors.role) setCreateErrors(p => ({...p, role: ''}));
+                }}
+                disabled={isCreatingUser}
+              >
+                <option value="">Select Role</option>
+                {customRoles.map(role => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
               {createErrors.role && <p className="text-[10px] text-red-500 font-medium mt-0.5">{createErrors.role}</p>}
             </div>
 
@@ -505,32 +426,21 @@ export const Users = ({
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 Department <span className="text-red-500">*</span>
               </label>
-              <div className="flex gap-2">
-                <select
-                  className={`flex-1 px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
-                    createErrors.dept
-                      ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
-                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
-                  }`}
-                  value={createUserDept}
-                  onChange={(e) => { setCreateUserDept(e.target.value); if (createErrors.dept) setCreateErrors(p => ({...p, dept: ''})); }}
-                  disabled={isCreatingUser}
-                >
-                  <option value="">Select Department</option>
-                  {customDepts.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-                {userRole && userRole.toLowerCase().includes('admin') && (
-                  <button
-                    type="button"
-                    onClick={handleAddCustomDept}
-                    className="px-3 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-sm font-bold cursor-pointer"
-                  >
-                    +
-                  </button>
-                )}
-              </div>
+              <select
+                className={`w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
+                  createErrors.dept
+                    ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                }`}
+                value={createUserDept}
+                onChange={(e) => { setCreateUserDept(e.target.value); if (createErrors.dept) setCreateErrors(p => ({...p, dept: ''})); }}
+                disabled={isCreatingUser || (createUserRole && createUserRole.toLowerCase().includes('admin'))}
+              >
+                <option value="">Select Department</option>
+                {customDepts.map(dept => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+              </select>
               {createErrors.dept && <p className="text-[10px] text-red-500 font-medium mt-0.5">{createErrors.dept}</p>}
             </div>
 
@@ -728,143 +638,7 @@ export const Users = ({
 
       </div>
 
-      {/* Custom Role Modal */}
-      {showAddRoleModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-sm w-full mx-auto animate-scale-in relative">
-            <button
-              onClick={() => setShowAddRoleModal(false)}
-              className="absolute right-4 top-4 text-slate-400 hover:text-slate-655 cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-            <h4 className="font-heading text-lg font-bold text-slate-900 mb-2">Create Custom Role</h4>
-            <p className="text-slate-500 text-xs mb-4">Enter a name for the new custom role to register in the system.</p>
-            <form onSubmit={executeAddCustomRole} className="space-y-4">
-              <div>
-                <input
-                  type="text"
-                  required
-                  autoFocus
-                  placeholder="e.g. Lead Engineer"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
-                  value={newCustomRoleInput}
-                  onChange={(e) => setNewCustomRoleInput(e.target.value)}
-                />
-              </div>
-              <div className="flex justify-end gap-2.5 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setShowAddRoleModal(false)}
-                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-bold transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
-                >
-                  Add Role
-                </button>
-              </div>
-            </form>
 
-            {/* List of current roles */}
-            <div className="mt-4 border-t border-slate-100 pt-3">
-              <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Existing Roles (Selectable)</h5>
-              <div className="max-h-[140px] overflow-y-auto space-y-1 pr-1 scrollbar-thin">
-                {customRoles.map(role => {
-                  const isDefault = ['Admin', 'User'].includes(role);
-                  return (
-                    <div key={role} className="flex items-center justify-between bg-slate-50 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100">
-                      <span>{role}</span>
-                      {!isDefault && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteCustomRole(role)}
-                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
-                          title="Remove role option"
-                        >
-                          <Trash2 size={11} />
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Custom Department Modal */}
-      {showAddDeptModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-sm w-full mx-auto animate-scale-in relative">
-            <button
-              onClick={() => setShowAddDeptModal(false)}
-              className="absolute right-4 top-4 text-slate-400 hover:text-slate-655 cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-            <h4 className="font-heading text-lg font-bold text-slate-900 mb-2">Create Custom Department</h4>
-            <p className="text-slate-500 text-xs mb-4">Enter a name for the new department to register in the system.</p>
-            <form onSubmit={executeAddCustomDept} className="space-y-4">
-              <div>
-                <input
-                  type="text"
-                  required
-                  autoFocus
-                  placeholder="e.g. DevOps Team"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
-                  value={newCustomDeptInput}
-                  onChange={(e) => setNewCustomDeptInput(e.target.value)}
-                />
-              </div>
-              <div className="flex justify-end gap-2.5 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setShowAddDeptModal(false)}
-                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-bold transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
-                >
-                  Add Department
-                </button>
-              </div>
-            </form>
-
-            {/* List of current departments */}
-            <div className="mt-4 border-t border-slate-100 pt-3">
-              <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Existing Departments (Selectable)</h5>
-              <div className="max-h-[140px] overflow-y-auto space-y-1 pr-1 scrollbar-thin">
-                {customDepts.map(dept => {
-                  const isDefault = ['General'].includes(dept);
-                  return (
-                    <div key={dept} className="flex items-center justify-between bg-slate-50 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100">
-                      <span>{dept}</span>
-                      {!isDefault && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteCustomDept(dept)}
-                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
-                          title="Remove department option"
-                        >
-                          <Trash2 size={11} />
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Edit User Account Modal */}
       {userToEdit && (
@@ -943,31 +717,28 @@ export const Users = ({
                 <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                   Role <span className="text-red-500">*</span>
                 </label>
-                <div className="flex gap-2">
-                  <select
-                    className={`flex-1 px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
-                      editErrors.role
-                        ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
-                        : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
-                    }`}
-                    value={editUserRole}
-                    onChange={(e) => { setEditUserRole(e.target.value); if (editErrors.role) setEditErrors(p => ({...p, role: ''})); }}
-                  >
-                    <option value="">Select Role</option>
-                    {customRoles.map(role => (
-                      <option key={role} value={role}>{role}</option>
-                    ))}
-                  </select>
-                  {userRole && userRole.toLowerCase().includes('admin') && (
-                    <button
-                      type="button"
-                      onClick={handleAddCustomRole}
-                      className="px-3 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-sm font-bold cursor-pointer"
-                    >
-                      +
-                    </button>
-                  )}
-                </div>
+                <select
+                  className={`w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
+                    editErrors.role
+                      ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                  }`}
+                  value={editUserRole}
+                  onChange={(e) => {
+                    const newRole = e.target.value;
+                    setEditUserRole(newRole);
+                    if (newRole.toLowerCase().includes('admin')) {
+                      setEditUserDept('General');
+                      if (editErrors.dept) setEditErrors(p => ({...p, dept: ''}));
+                    }
+                    if (editErrors.role) setEditErrors(p => ({...p, role: ''}));
+                  }}
+                >
+                  <option value="">Select Role</option>
+                  {customRoles.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
                 {editErrors.role && <p className="text-[10px] text-red-500 font-medium mt-0.5">{editErrors.role}</p>}
               </div>
 
@@ -976,31 +747,21 @@ export const Users = ({
                 <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                   Department <span className="text-red-500">*</span>
                 </label>
-                <div className="flex gap-2">
-                  <select
-                    className={`flex-1 px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
-                      editErrors.dept
-                        ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
-                        : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
-                    }`}
-                    value={editUserDept}
-                    onChange={(e) => { setEditUserDept(e.target.value); if (editErrors.dept) setEditErrors(p => ({...p, dept: ''})); }}
-                  >
-                    <option value="">Select Department</option>
-                    {customDepts.map(dept => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                  </select>
-                  {userRole && userRole.toLowerCase().includes('admin') && (
-                    <button
-                      type="button"
-                      onClick={handleAddCustomDept}
-                      className="px-3 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-sm font-bold cursor-pointer"
-                    >
-                      +
-                    </button>
-                  )}
-                </div>
+                <select
+                  className={`w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-4 transition-all duration-200 ${
+                    editErrors.dept
+                      ? 'border-red-400 focus:border-red-400 focus:ring-red-400/10 bg-red-50/30'
+                      : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                  }`}
+                  value={editUserDept}
+                  onChange={(e) => { setEditUserDept(e.target.value); if (editErrors.dept) setEditErrors(p => ({...p, dept: ''})); }}
+                  disabled={editUserRole && editUserRole.toLowerCase().includes('admin')}
+                >
+                  <option value="">Select Department</option>
+                  {customDepts.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
                 {editErrors.dept && <p className="text-[10px] text-red-500 font-medium mt-0.5">{editErrors.dept}</p>}
               </div>
 
