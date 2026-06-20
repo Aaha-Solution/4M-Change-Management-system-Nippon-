@@ -107,6 +107,10 @@ export const signup = async (req, res) => {
     return res.status(400).json({ error: 'Email and password are required.' });
   }
 
+  if (role && (role.toLowerCase() === 'user' || role.toLowerCase() === 'hod') && department && department.toLowerCase() === 'general') {
+    return res.status(400).json({ error: 'General department is reserved for Admins only.' });
+  }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ error: 'Please enter a valid email address.' });
@@ -177,6 +181,10 @@ export const updateUser = async (req, res) => {
 
   if (!email || !role) {
     return res.status(400).json({ error: 'Email and role are required.' });
+  }
+
+  if (role && (role.toLowerCase() === 'user' || role.toLowerCase() === 'hod') && department && department.toLowerCase() === 'general') {
+    return res.status(400).json({ error: 'General department is reserved for Admins only.' });
   }
 
   const normalizedEmail = email.trim().toLowerCase();
