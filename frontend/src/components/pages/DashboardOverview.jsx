@@ -39,7 +39,9 @@ import {
   getL2Details,
   getL2Attachment,
   getL3Approvals,
-  updateChangeDetails
+  updateChangeDetails,
+  getEffectivenessLogs,
+  getEffectivenessAttachment
 } from '../../api/apiRoutes';
 import {
   exportDashboardRequestsPDF,
