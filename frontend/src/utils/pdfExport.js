@@ -1386,7 +1386,7 @@ export const exportDepartmentAnalyticsPDF = (filteredChanges, filtersInfo = {}, 
 /**
  * Export Process Analytics
  */
-export const exportProcessAnalyticsPDF = (filteredChanges, filtersInfo = {}, setToastMsg) => {
+export const exportProcessAnalyticsPDF = (filteredChanges, filtersInfo = {}, setToastMsg, dbProcesses = []) => {
   try {
     if (!filteredChanges || filteredChanges.length === 0) {
       setToastMsg?.('No data available to export.');
@@ -1401,19 +1401,27 @@ export const exportProcessAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
     addLogoToDoc(doc);
 
     // Calculate process counts
-    const counts = { 'Wind': 0, 'Gold': 0, 'EOL': 0, 'Pott': 0, 'Load': 0 };
+    const processNames = dbProcesses && dbProcesses.length > 0
+      ? dbProcesses
+      : ['Wind', 'Gold', 'EOL', 'Pott', 'Load'];
+
+    const counts = {};
+    processNames.forEach(p => {
+      counts[p] = 0;
+    });
 
     filteredChanges.forEach(c => {
-      const p = (c.processName || '').trim().toLowerCase();
-      let mapped;
-      if (p.includes('wind') || p.includes('weld')) mapped = 'Wind';
-      else if (p.includes('gold') || p.includes('calib')) mapped = 'Gold';
-      else if (p.includes('eol') || p.includes('mold') || p.includes('mould') || p.includes('inject')) mapped = 'EOL';
-      else if (p.includes('pott') || p.includes('train')) mapped = 'Pott';
-      else if (p.includes('load') || p.includes('gauge')) mapped = 'Load';
-      else mapped = 'Wind';
-
-      counts[mapped]++;
+      if (!c.processName) return;
+      const pNameNormalized = c.processName.trim().toLowerCase();
+      const matchedProcess = processNames.find(p => p.toLowerCase() === pNameNormalized);
+      if (matchedProcess) {
+        counts[matchedProcess]++;
+      } else {
+        const substringMatch = processNames.find(p => pNameNormalized.includes(p.toLowerCase()) || p.toLowerCase().includes(pNameNormalized));
+        if (substringMatch) {
+          counts[substringMatch]++;
+        }
+      }
     });
 
     const total = Object.values(counts).reduce((a, b) => a + b, 0);

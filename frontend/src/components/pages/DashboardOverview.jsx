@@ -730,7 +730,7 @@ export const DashboardOverview = ({
         process: procFilterProcess,
         machine: procFilterMachine,
         status: 'All'
-      }, setToastMsg);
+      }, setToastMsg, dbProcesses);
     } else if (tabName === '6M Category') {
       const catFiltered = getFilteredData(catFilterMonth, catFilterFromDate, catFilterToDate, catFilterPerson, catFilterProcess, catFilterMachine);
       exportCategoryAnalyticsPDF(catFiltered, {
@@ -1235,25 +1235,27 @@ export const DashboardOverview = ({
   };
 
   const renderProcessChart = (dataList, height = 'h-[160px]') => {
-    const counts = {
-      'Wind': 0,
-      'Gold': 0,
-      'EOL': 0,
-      'Pott': 0,
-      'Load': 0
-    };
+    const processNames = dbProcesses && dbProcesses.length > 0
+      ? dbProcesses
+      : ['Wind', 'Gold', 'EOL', 'Pott', 'Load'];
+
+    const counts = {};
+    processNames.forEach(p => {
+      counts[p] = 0;
+    });
 
     dataList.forEach(c => {
-      const p = (c.processName || '').trim().toLowerCase();
-      let mapped;
-      if (p.includes('wind') || p.includes('weld')) mapped = 'Wind';
-      else if (p.includes('gold') || p.includes('calib')) mapped = 'Gold';
-      else if (p.includes('eol') || p.includes('mold') || p.includes('mould') || p.includes('inject')) mapped = 'EOL';
-      else if (p.includes('pott') || p.includes('train')) mapped = 'Pott';
-      else if (p.includes('load') || p.includes('gauge')) mapped = 'Load';
-      else mapped = 'Wind'; // fallback
-
-      counts[mapped]++;
+      if (!c.processName) return;
+      const pNameNormalized = c.processName.trim().toLowerCase();
+      const matchedProcess = processNames.find(p => p.toLowerCase() === pNameNormalized);
+      if (matchedProcess) {
+        counts[matchedProcess]++;
+      } else {
+        const substringMatch = processNames.find(p => pNameNormalized.includes(p.toLowerCase()) || p.toLowerCase().includes(pNameNormalized));
+        if (substringMatch) {
+          counts[substringMatch]++;
+        }
+      }
     });
 
     const data = Object.keys(counts).map(key => ({
@@ -1268,7 +1270,7 @@ export const DashboardOverview = ({
         {data.map((item, idx) => {
           const barHeight = (item.value / maxVal) * 100;
           return (
-            <div key={idx} className="flex flex-col items-center w-[12%] h-full justify-end group">
+            <div key={idx} className="flex flex-col items-center min-w-[50px] max-w-[80px] w-full h-full justify-end group">
               <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
               <div className="w-full h-[65%] flex items-end justify-center">
                 <div
