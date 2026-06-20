@@ -52,6 +52,7 @@ export const Effectiveness = ({
   const [editingEffLogId, setEditingEffLogId] = useState(null);
   const [viewingLog, setViewingLog] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
+  const [fileTypes, setFileTypes] = useState({});
   const [previewFile, setPreviewFile] = useState(null);
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -114,6 +115,8 @@ export const Effectiveness = ({
       try {
         const response = await getEffectivenessAttachment(log.id, filename);
         const blobUrl = URL.createObjectURL(response.data);
+        const mimeType = response.data.type;
+        setFileTypes(prev => ({ ...prev, [filename]: mimeType }));
         setFileUrls(prev => ({ ...prev, [filename]: blobUrl }));
       } catch (err) {
         console.error("Error loading attachment from server:", err);
@@ -601,11 +604,15 @@ export const Effectiveness = ({
                         target.value = '';
 
                         // Store object URLs for preview
-                        const newUrls = {};
-                        allowedFiles.forEach(file => {
-                          newUrls[file.name] = URL.createObjectURL(file);
-                        });
-                        setFileUrls(prev => ({ ...prev, ...newUrls }));
+                         const newUrls = {};
+                         const newTypes = {};
+                         allowedFiles.forEach(file => {
+                           const name = file.name.replace(/,/g, '_');
+                           newUrls[name] = URL.createObjectURL(file);
+                           newTypes[name] = file.type || 'application/octet-stream';
+                         });
+                         setFileUrls(prev => ({ ...prev, ...newUrls }));
+                         setFileTypes(prev => ({ ...prev, ...newTypes }));
 
                         // Convert files to base64 for server upload
                         const base64Files = await Promise.all(
@@ -1061,20 +1068,20 @@ export const Effectiveness = ({
 
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
-                previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
-                  <img
+                (previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) || (fileTypes[previewFile] && fileTypes[previewFile].startsWith('image/'))) ? (
+                  <img 
                     src={fileUrls[previewFile]}
                     alt={previewFile}
                     className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200"
                   />
-                ) : previewFile.toLowerCase().endsWith('.pdf') ? (
-                  <iframe
+                ) : (previewFile.toLowerCase().endsWith('.pdf') || (fileTypes[previewFile] && fileTypes[previewFile] === 'application/pdf')) ? (
+                  <iframe 
                     src={`${fileUrls[previewFile]}#navpanes=0`}
                     title={previewFile}
                     className="w-full h-[60vh] rounded border border-slate-200 bg-white"
                   />
                 ) : (
-                  <iframe
+                  <iframe 
                     src={fileUrls[previewFile]}
                     title={previewFile}
                     className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700"

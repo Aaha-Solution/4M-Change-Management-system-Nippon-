@@ -51,6 +51,7 @@ export const AllRequests = ({
   const [activeTab, setActiveTab] = useState('l1');
   const [previewFile, setPreviewFile] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
+  const [fileTypes, setFileTypes] = useState({});
   const [showCustomerApproval, setShowCustomerApproval] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editL1Data, setEditL1Data] = useState({});
@@ -420,6 +421,8 @@ export const AllRequests = ({
           response = await getL1Attachment(changeNo, filename);
         }
         const blobUrl = URL.createObjectURL(response.data);
+        const mimeType = response.data.type;
+        setFileTypes(prev => ({ ...prev, [filename]: mimeType }));
         setFileUrls(prev => ({ ...prev, [filename]: blobUrl }));
       } catch (err) {
         console.error(`Error loading ${type} attachment from server:`, err);
@@ -447,6 +450,11 @@ export const AllRequests = ({
     if (previewFile && fileUrls[previewFile]) {
       URL.revokeObjectURL(fileUrls[previewFile]);
       setFileUrls(prev => {
+        const copy = { ...prev };
+        delete copy[previewFile];
+        return copy;
+      });
+      setFileTypes(prev => {
         const copy = { ...prev };
         delete copy[previewFile];
         return copy;
@@ -650,6 +658,7 @@ export const AllRequests = ({
                           // Create local blob URL for immediate preview before save
                           const localUrl = URL.createObjectURL(file);
                           setFileUrls(prev => ({ ...prev, [name]: localUrl }));
+                          setFileTypes(prev => ({ ...prev, [name]: file.type || 'application/octet-stream' }));
                           
                           return {
                             name,
@@ -1027,6 +1036,7 @@ export const AllRequests = ({
                             const name = file.name.replace(/,/g, '_');
                             const localUrl = URL.createObjectURL(file);
                             setFileUrls(prev => ({ ...prev, [name]: localUrl }));
+                            setFileTypes(prev => ({ ...prev, [name]: file.type || 'application/octet-stream' }));
                             
                             return {
                               name,
@@ -1305,6 +1315,7 @@ export const AllRequests = ({
                             const name = file.name.replace(/,/g, '_');
                             const localUrl = URL.createObjectURL(file);
                             setFileUrls(prev => ({ ...prev, [name]: localUrl }));
+                            setFileTypes(prev => ({ ...prev, [name]: file.type || 'application/octet-stream' }));
                             
                             return {
                               name,
@@ -1430,6 +1441,7 @@ export const AllRequests = ({
                             const name = file.name.replace(/,/g, '_');
                             const localUrl = URL.createObjectURL(file);
                             setFileUrls(prev => ({ ...prev, [name]: localUrl }));
+                            setFileTypes(prev => ({ ...prev, [name]: file.type || 'application/octet-stream' }));
                             
                             return {
                               name,
@@ -2817,13 +2829,13 @@ export const AllRequests = ({
             
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
-                previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
+                (previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) || (fileTypes[previewFile] && fileTypes[previewFile].startsWith('image/'))) ? (
                   <img 
                     src={fileUrls[previewFile]} 
                     alt={previewFile} 
                     className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200" 
                   />
-                ) : previewFile.toLowerCase().endsWith('.pdf') ? (
+                ) : (previewFile.toLowerCase().endsWith('.pdf') || (fileTypes[previewFile] && fileTypes[previewFile] === 'application/pdf')) ? (
                   <iframe 
                     src={`${fileUrls[previewFile]}#navpanes=0`} 
                     title={previewFile} 

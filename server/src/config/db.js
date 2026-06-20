@@ -80,6 +80,23 @@ const pool = mysql.createPool({
       console.warn('⚠️ Could not add recipient_email column to notifications table:', err.message);
     }
 
+    // Ensure file columns are TEXT to handle multiple uploads
+    try {
+      await connection.query('ALTER TABLE l2_validation_logs MODIFY COLUMN weld_test TEXT NOT NULL');
+      await connection.query('ALTER TABLE l2_validation_logs MODIFY COLUMN qa_test TEXT NOT NULL');
+      await connection.query('ALTER TABLE l1_requests MODIFY COLUMN file_desc TEXT NOT NULL');
+      await connection.query('ALTER TABLE l1_requests MODIFY COLUMN file_improvement TEXT NOT NULL');
+      await connection.query('ALTER TABLE l1_requests MODIFY COLUMN file_trace_from TEXT NOT NULL');
+      await connection.query('ALTER TABLE l1_requests MODIFY COLUMN file_trace_to TEXT NOT NULL');
+      await connection.query('ALTER TABLE l1_requests MODIFY COLUMN file_risk TEXT NOT NULL');
+      await connection.query('ALTER TABLE l1_requests MODIFY COLUMN file_sop TEXT NOT NULL');
+      await connection.query('ALTER TABLE l1_requests MODIFY COLUMN file_effectiveness TEXT NOT NULL');
+      await connection.query('ALTER TABLE effectiveness_logs MODIFY COLUMN attachment TEXT NOT NULL');
+      console.log('✅ Modified file columns to TEXT for multiple uploads.');
+    } catch (err) {
+      console.warn('⚠️ Could not modify file columns to TEXT:', err.message);
+    }
+
     // Ensure standard departments exist in departments table
     try {
       const depts = [

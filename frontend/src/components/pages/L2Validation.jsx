@@ -28,6 +28,7 @@ export const L2Validation = ({
   const [isFetchingL1, setIsFetchingL1] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
+  const [fileTypes, setFileTypes] = useState({});
   const [showCustomerApproval, setShowCustomerApproval] = useState(false);
 
   // DB Logs states
@@ -230,8 +231,8 @@ export const L2Validation = ({
         changeNo: formChangeNo.trim(),
         date: formDate.trim(),
         requester: formRequester.trim(),
-        weldTest: pedFiles.map(f => f.name).join(', '),
-        qaTest: qaFiles.map(f => f.name).join(', '),
+        weldTest: pedFiles.map(f => f.name.replace(/,/g, '_')).join(', '),
+        qaTest: qaFiles.map(f => f.name.replace(/,/g, '_')).join(', '),
         status: formStatus,
         remarks: formRemarks.trim()
       };
@@ -357,6 +358,8 @@ export const L2Validation = ({
           response = await getL1Attachment(changeNo, filename);
         }
         const blobUrl = URL.createObjectURL(response.data);
+        const mimeType = response.data.type;
+        setFileTypes(prev => ({ ...prev, [filename]: mimeType }));
         setFileUrls(prev => ({ ...prev, [filename]: blobUrl }));
       } catch (err) {
         console.error(`Error loading ${type} attachment from server:`, err);
@@ -1522,13 +1525,13 @@ export const L2Validation = ({
             
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
-                previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
+                (previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heic|heif|avif)$/) || (fileTypes[previewFile] && fileTypes[previewFile].startsWith('image/'))) ? (
                   <img 
                     src={fileUrls[previewFile]} 
                     alt={previewFile} 
                     className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200" 
                   />
-                ) : previewFile.toLowerCase().endsWith('.pdf') ? (
+                ) : (previewFile.toLowerCase().endsWith('.pdf') || (fileTypes[previewFile] && fileTypes[previewFile] === 'application/pdf')) ? (
                   <iframe 
                     src={`${fileUrls[previewFile]}#navpanes=0`} 
                     title={previewFile} 

@@ -159,6 +159,7 @@ export const AllApprovals = ({
   const [isFetchingDetails, setIsFetchingDetails] = useState(false);
   const [remarks, setRemarks] = useState('');
   const [fileUrls, setFileUrls] = useState({});
+  const [fileTypes, setFileTypes] = useState({});
   const [previewFile, setPreviewFile] = useState(null);
   const [showCustomerApproval, setShowCustomerApproval] = useState(false);
 
@@ -338,6 +339,8 @@ export const AllApprovals = ({
           res = await getL1Attachment(changeNo, filename);
         }
         const url = URL.createObjectURL(res.data);
+        const mimeType = res.data.type;
+        setFileTypes(prev => ({ ...prev, [filename]: mimeType }));
         setFileUrls(prev => ({ ...prev, [filename]: url }));
       } catch (err) {
         console.error(`Error loading ${type} attachment:`, err);
@@ -1565,7 +1568,7 @@ export const AllApprovals = ({
             </div>
             <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-slate-100/60">
               {fileUrls[previewFile] ? (
-                previewFile.match(/\.(png|jpg|jpeg|gif|webp)$/i)
+                (previewFile.match(/\.(png|jpg|jpeg|gif|webp)$/i) || (fileTypes[previewFile] && fileTypes[previewFile].startsWith('image/')))
                   ? <img src={fileUrls[previewFile]} alt={previewFile} className="max-w-full max-h-[70vh] rounded-xl shadow-lg object-contain" />
                   : <iframe src={fileUrls[previewFile]} title={previewFile} className="w-full h-[70vh] rounded-xl border border-slate-200 shadow" />
               ) : (
