@@ -4373,34 +4373,50 @@ export const DashboardOverview = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
                       <div className="space-y-[6px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">PED Validation Attachment</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
-                          <span className="font-medium text-slate-655 truncate max-w-[200px]" title={selectedL2Details.weldTest || '-'}>
-                            {selectedL2Details.weldTest || '-'}
-                          </span>
-                          {selectedL2Details.weldTest && selectedL2Details.weldTest !== '-' && (
-                            <span 
-                              className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
-                              onClick={() => handleViewAttachment(selectedL2Details.weldTest, selectedL2Details.changeNo, 'L2')}
-                            >
-                              Preview
-                            </span>
+                        <div className="space-y-2">
+                          {!selectedL2Details.weldTest || selectedL2Details.weldTest === '-' ? (
+                            <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-550 text-[12px] font-medium">
+                              -
+                            </div>
+                          ) : (
+                            selectedL2Details.weldTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                              <div key={idx} className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
+                                <span className="font-medium text-slate-655 truncate max-w-[200px]" title={file}>
+                                  {file}
+                                </span>
+                                <span 
+                                  className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer select-none"
+                                  onClick={() => handleViewAttachment(file, selectedL2Details.changeNo, 'L2')}
+                                >
+                                  Preview
+                                </span>
+                              </div>
+                            ))
                           )}
                         </div>
                       </div>
 
                       <div className="space-y-[6px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Setup Verification Attachment</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
-                          <span className="font-medium text-slate-655 truncate max-w-[200px]" title={selectedL2Details.qaTest || '-'}>
-                            {selectedL2Details.qaTest || '-'}
-                          </span>
-                          {selectedL2Details.qaTest && selectedL2Details.qaTest !== '-' && (
-                            <span 
-                              className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer"
-                              onClick={() => handleViewAttachment(selectedL2Details.qaTest, selectedL2Details.changeNo, 'L2')}
-                            >
-                              Preview
-                            </span>
+                        <div className="space-y-2">
+                          {!selectedL2Details.qaTest || selectedL2Details.qaTest === '-' ? (
+                            <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-550 text-[12px] font-medium">
+                              -
+                            </div>
+                          ) : (
+                            selectedL2Details.qaTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                              <div key={idx} className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
+                                <span className="font-medium text-slate-655 truncate max-w-[200px]" title={file}>
+                                  {file}
+                                </span>
+                                <span 
+                                  className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer select-none"
+                                  onClick={() => handleViewAttachment(file, selectedL2Details.changeNo, 'L2')}
+                                >
+                                  Preview
+                                </span>
+                              </div>
+                            ))
                           )}
                         </div>
                       </div>
