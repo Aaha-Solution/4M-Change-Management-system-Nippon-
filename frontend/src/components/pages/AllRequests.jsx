@@ -2012,7 +2012,7 @@ export const AllRequests = ({
             {/* Tabs Header */}
             <div className="flex h-11 border-b border-slate-200 bg-slate-50/50 shrink-0">
               <button
-                onClick={() => setActiveTab('l1')}
+                onClick={() => { setActiveTab('l1'); setIsEditMode(false); }}
                 className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
                   activeTab === 'l1' 
                     ? 'border-[#0066cc] text-[#0066cc]' 
@@ -2022,7 +2022,7 @@ export const AllRequests = ({
                 1. L1 Request Details
               </button>
               <button
-                onClick={() => setActiveTab('l2')}
+                onClick={() => { setActiveTab('l2'); setIsEditMode(false); }}
                 className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
                   activeTab === 'l2' 
                     ? 'border-[#0066cc] text-[#0066cc]' 
@@ -2032,7 +2032,7 @@ export const AllRequests = ({
                 2. L2 Validation Details
               </button>
               <button
-                onClick={() => setActiveTab('l3')}
+                onClick={() => { setActiveTab('l3'); setIsEditMode(false); }}
                 className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
                   activeTab === 'l3' 
                     ? 'border-[#0066cc] text-[#0066cc]' 
