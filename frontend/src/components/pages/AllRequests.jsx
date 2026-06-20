@@ -2043,26 +2043,30 @@ export const AllRequests = ({
               >
                 1. L1 Request Details
               </button>
-              <button
-                onClick={() => { setActiveTab('l2'); setIsEditMode(false); }}
-                className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                  activeTab === 'l2' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
-              >
-                2. L2 Validation Details
-              </button>
-              <button
-                onClick={() => { setActiveTab('l3'); setIsEditMode(false); }}
-                className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                  activeTab === 'l3' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
-              >
-                3. L3 Approval Details
-              </button>
+              {selectedL1Details?.hodStatus !== 'Rejected' && (
+                <button
+                  onClick={() => { setActiveTab('l2'); setIsEditMode(false); }}
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'l2' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  2. L2 Validation Details
+                </button>
+              )}
+              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status !== 'Rejected' && (
+                <button
+                  onClick={() => { setActiveTab('l3'); setIsEditMode(false); }}
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'l3' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  3. L3 Approval Details
+                </button>
+              )}
             </div>
 
             {/* Content */}
