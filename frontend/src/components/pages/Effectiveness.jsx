@@ -47,6 +47,7 @@ export const Effectiveness = ({
     userDept.toLowerCase() === 'qa'
   );
   const canUpdate = isAdmin || isQADept;
+  const [activeMainTab, setActiveMainTab] = useState('ongoing'); // 'ongoing' | 'closed'
   // Effectiveness Monitoring Form States
   const [effChangeNo, setEffChangeNo] = useState('');
   const [effMonthWise, setEffMonthWise] = useState(() => getDefaultDateString());
@@ -371,6 +372,11 @@ export const Effectiveness = ({
     setUploadedFilesList([]);
   };
 
+  const handleMainTabChange = (tab) => {
+    setActiveMainTab(tab);
+    handleCancelEditing();
+  };
+
   const handleSelectChangeNo = (val) => {
     setEffChangeNo(val);
     const savedLog = effectivenessLogs.find(
@@ -462,10 +468,18 @@ export const Effectiveness = ({
     return matchesSearch && matchesStatus && matchesMonth;
   });
 
-  const paginatedLogs = filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const displayLogs = filteredLogs.filter(log => {
+    if (activeMainTab === 'closed') {
+      return log.qaApproval === 'Approved';
+    } else {
+      return log.qaApproval !== 'Approved';
+    }
+  });
+
+  const paginatedLogs = displayLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleExportPDF = () => {
-    const logsToExport = filteredLogs.map(l => ({
+    const logsToExport = displayLogs.map(l => ({
       ...l,
       reqDate: l.reqDate,
       startDate: l.startDate,
@@ -844,6 +858,38 @@ export const Effectiveness = ({
 
         {/* RIGHT COLUMN: Table Column */}
         <div className={`${canUpdate ? 'lg:col-span-8' : 'lg:col-span-12'} space-y-[16px]`}>
+          {/* Tabs for Active/Closed Monitoring */}
+          <div className="flex border-b border-slate-200 bg-white p-1 rounded-t-xl gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => handleMainTabChange('ongoing')}
+              className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${
+                activeMainTab === 'ongoing'
+                  ? 'bg-blue-50 text-[#0066cc] font-extrabold border border-blue-100 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+              }`}
+            >
+              <span>Ongoing Monitoring</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeMainTab === 'ongoing' ? 'bg-[#0066cc] text-white' : 'bg-slate-100 text-slate-500'}`}>
+                {tableLogs.filter(log => log.qaApproval !== 'Approved').length}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleMainTabChange('closed')}
+              className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${
+                activeMainTab === 'closed'
+                  ? 'bg-blue-50 text-[#0066cc] font-extrabold border border-blue-100 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+              }`}
+            >
+              <span>Closed Requests</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeMainTab === 'closed' ? 'bg-[#0066cc] text-white' : 'bg-slate-100 text-slate-500'}`}>
+                {tableLogs.filter(log => log.qaApproval === 'Approved').length}
+              </span>
+            </button>
+          </div>
+
           {/* Search and Filters */}
           <div className="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-wrap gap-3 items-center w-full">
             <div className="flex-grow min-w-[200px] relative">
@@ -912,7 +958,7 @@ export const Effectiveness = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-[11px]">
-                  {filteredLogs.length === 0 ? (
+                  {displayLogs.length === 0 ? (
                     <tr>
                       <td colSpan={10} className="text-center py-10 text-slate-400">
                         No observations logs recorded.
@@ -993,7 +1039,7 @@ export const Effectiveness = ({
             <TablePagination
               rowsPerPageOptions={[5, 10, 25, 50]}
               component="div"
-              count={filteredLogs.length}
+              count={displayLogs.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={(event, newPage) => setPage(newPage)}
