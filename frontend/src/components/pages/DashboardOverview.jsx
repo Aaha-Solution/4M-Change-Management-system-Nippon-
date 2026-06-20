@@ -73,8 +73,7 @@ export const DashboardOverview = ({
   usersList = [],
   isAdmin = false,
   userEmail = '',
-  userName = '',
-  fetchChanges
+  userName = ''
 }) => {
   const [isGridView, setIsGridView] = useState(false);
 
@@ -2260,7 +2259,6 @@ export const DashboardOverview = ({
       setToastMsg(`${activeTab.toUpperCase()} details updated successfully!`);
       setIsEditMode(false);
       setUploadedFilesList([]);
-      if (fetchChanges) fetchChanges();
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Failed to save updates.';
@@ -2402,7 +2400,6 @@ export const DashboardOverview = ({
                 <Upload size={12} />
                 <span>Upload</span>
                 <input
-                  key={value || ''}
                   type="file"
                   multiple
                   accept="image/*,application/pdf"
@@ -2780,7 +2777,6 @@ export const DashboardOverview = ({
                   <Upload size={12} />
                   <span>Upload</span>
                   <input
-                    key={data.file_desc || ''}
                     type="file"
                     multiple
                     accept="image/*,application/pdf"
@@ -3058,7 +3054,6 @@ export const DashboardOverview = ({
                   <Upload size={12} />
                   <span>Upload</span>
                   <input
-                    key={data.file_risk || ''}
                     type="file"
                     multiple
                     accept="image/*,application/pdf"
@@ -3183,7 +3178,6 @@ export const DashboardOverview = ({
                   <Upload size={12} />
                   <span>Upload</span>
                   <input
-                    key={data.file_sop || ''}
                     type="file"
                     multiple
                     accept="image/*,application/pdf"
@@ -3539,7 +3533,7 @@ export const DashboardOverview = ({
                 )}
                 <button
                   onClick={handleExportActiveTab}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#059669] hover:bg-[#047857] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
                   title={`Export ${activeAnalyticsTab} Analytics to PDF`}
                 >
                   <Download size={12} />
@@ -3580,7 +3574,7 @@ export const DashboardOverview = ({
                     )}
                     <button
                       onClick={() => handleExportSpecificTab('Department')}
-                      className="text-slate-400 hover:text-[#059669] p-1 transition-colors cursor-pointer"
+                      className="text-[#0066cc] hover:text-[#0052a3] p-1 transition-colors cursor-pointer"
                       title="Export Department Analytics to PDF"
                     >
                       <Download size={14} />
@@ -3608,7 +3602,7 @@ export const DashboardOverview = ({
                     )}
                     <button
                       onClick={() => handleExportSpecificTab('Process')}
-                      className="text-slate-400 hover:text-[#059669] p-1 transition-colors cursor-pointer"
+                      className="text-[#0066cc] hover:text-[#0052a3] p-1 transition-colors cursor-pointer"
                       title="Export Process Analytics to PDF"
                     >
                       <Download size={14} />
@@ -3636,7 +3630,7 @@ export const DashboardOverview = ({
                     )}
                     <button
                       onClick={() => handleExportSpecificTab('6M Category')}
-                      className="text-slate-400 hover:text-[#059669] p-1 transition-colors cursor-pointer"
+                      className="text-[#0066cc] hover:text-[#0052a3] p-1 transition-colors cursor-pointer"
                       title="Export 6M Category Analytics to PDF"
                     >
                       <Download size={14} />
@@ -3664,7 +3658,7 @@ export const DashboardOverview = ({
                     )}
                     <button
                       onClick={() => handleExportSpecificTab('Monthly')}
-                      className="text-slate-400 hover:text-[#059669] p-1 transition-colors cursor-pointer"
+                      className="text-[#0066cc] hover:text-[#0052a3] p-1 transition-colors cursor-pointer"
                       title="Export Monthly Analytics to PDF"
                     >
                       <Download size={14} />
@@ -3715,7 +3709,7 @@ export const DashboardOverview = ({
                   )}
                   <button
                     onClick={() => handleExportSpecificTab('Approval Status')}
-                    className="text-slate-400 hover:text-[#059669] p-1 transition-colors cursor-pointer"
+                    className="text-[#0066cc] hover:text-[#0052a3] p-1 transition-colors cursor-pointer"
                     title="Export Approval Status Analytics to PDF"
                   >
                     <Download size={14} />
@@ -3745,7 +3739,7 @@ export const DashboardOverview = ({
                   )}
                   <button
                     onClick={() => handleExportSpecificTab('Improvement Benefits')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#059669] hover:bg-[#047857] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
                     title="Export Improvement Benefits Report to PDF"
                   >
                     <Download size={12} />
@@ -3781,7 +3775,7 @@ export const DashboardOverview = ({
             </span>
             <button
               onClick={handleExportPDF}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#059669] hover:bg-[#047857] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer font-sans"
               title="Export filtered dashboard requests to PDF"
             >
               <Download size={12} />
@@ -4513,7 +4507,7 @@ export const DashboardOverview = ({
               <button 
                 onClick={handleExportRequestDetailsPDF}
                 disabled={isFetchingDetails}
-                className="px-[16px] py-[8px] bg-[#059669] hover:bg-[#047857] text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px]"
+                className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px]"
                 title="Export this request's full details (L1, L2, L3) as PDF"
               >
                 <Download size={14} />
