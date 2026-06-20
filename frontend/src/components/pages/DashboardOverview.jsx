@@ -71,9 +71,7 @@ export const DashboardOverview = ({
   // onTabChange,
   setToastMsg,
   usersList = [],
-  isAdmin = false,
-  userEmail = '',
-  userName = ''
+  isAdmin = false
 }) => {
   const [isGridView, setIsGridView] = useState(false);
 
@@ -180,15 +178,7 @@ export const DashboardOverview = ({
     setIsTableModalOpen(false);
   };
 
-  const isRequester = (userEmail && (
-    (selectedLog?.requesterEmail && selectedLog.requesterEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()) ||
-    (selectedLog?.requester && selectedLog.requester.toLowerCase().trim() === userEmail.toLowerCase().trim()) ||
-    (selectedL1Details?.crRequester && selectedL1Details.crRequester.toLowerCase().trim() === userEmail.toLowerCase().trim())
-  )) || (userName && (
-    (selectedLog?.requester && selectedLog.requester.toLowerCase().trim() === userName.toLowerCase().trim()) ||
-    (selectedL1Details?.request_by && selectedL1Details.request_by.toLowerCase().trim() === userName.toLowerCase().trim())
-  ));
-  const canEdit = isAdmin || isRequester;
+  const canEdit = isAdmin;
 
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -466,21 +456,15 @@ export const DashboardOverview = ({
       }
 
       let matchesFromDate = true;
-      if (fromDateVal) {
-        const fD = parseDDMMYYYYToDate(fromDateVal);
-        if (fD) {
-          fD.setHours(0, 0, 0, 0);
-          const itemD = parseDDMMYYYYToDate(c.rawDate || c.date);
-          matchesFromDate = itemD && itemD >= fD;
-        }
-      }
-
       let matchesToDate = true;
-      if (toDateVal) {
+      if (fromDateVal && toDateVal) {
+        const fD = parseDDMMYYYYToDate(fromDateVal);
         const tD = parseDDMMYYYYToDate(toDateVal);
-        if (tD) {
+        if (fD && tD) {
+          fD.setHours(0, 0, 0, 0);
           tD.setHours(23, 59, 59, 999);
           const itemD = parseDDMMYYYYToDate(c.rawDate || c.date);
+          matchesFromDate = itemD && itemD >= fD;
           matchesToDate = itemD && itemD <= tD;
         }
       }

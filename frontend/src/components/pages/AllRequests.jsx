@@ -311,21 +311,15 @@ export const AllRequests = ({
     }
 
     let matchesFromDate = true;
-    if (fromDate) {
+    let matchesToDate = true;
+    if (fromDate && toDate) {
       const fD = parseDDMMYYYYToDate(fromDate);
-      if (fD) {
-        fD.setHours(0,0,0,0);
+      const tD = parseDDMMYYYYToDate(toDate);
+      if (fD && tD) {
+        fD.setHours(0, 0, 0, 0);
+        tD.setHours(23, 59, 59, 999);
         const itemD = parseDDMMYYYYToDate(item.rawDate);
         matchesFromDate = itemD && itemD >= fD;
-      }
-    }
-
-    let matchesToDate = true;
-    if (toDate) {
-      const tD = parseDDMMYYYYToDate(toDate);
-      if (tD) {
-        tD.setHours(23,59,59,999);
-        const itemD = parseDDMMYYYYToDate(item.rawDate);
         matchesToDate = itemD && itemD <= tD;
       }
     }
@@ -341,7 +335,7 @@ export const AllRequests = ({
     setSelectedLog({
       changeNo: request.id,
       requester: request.requester,
-      requesterEmail: request.requesterEmail,
+      requesterEmail: request.requesterEmail, 
       date: request.rawDate,
       status: request.status,
       hodStatus: request.hodStatus,
