@@ -208,6 +208,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
       fetchNotifications();
     } else if (data.type === 'REFRESH_EFFECTIVENESS') {
       fetchEffectiveness();
+      fetchChanges();
     } else if (data.type === 'REFRESH_USERS') {
       fetchUserDept();
     }
@@ -529,6 +530,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 isAdmin={isAdmin}
                 userEmail={userEmail}
                 userName={userName}
+                fetchChanges={fetchChanges}
               />
             )}
 
@@ -544,6 +546,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 isAdmin={isAdmin}
                 userEmail={userEmail}
                 userName={userName}
+                fetchChanges={fetchChanges}
               />
             )}
 
@@ -573,6 +576,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 logAction={logAction}
                 setToastMsg={setToastMsg}
                 onLocalSignOut={handleLocalSignOut}
+                fetchChanges={fetchChanges}
               />
             )}
 
@@ -614,6 +618,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 setToastMsg={setToastMsg}
                 userRole={userRole}
                 userDept={userDept}
+                fetchChanges={fetchChanges}
               />
             )}
 

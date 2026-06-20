@@ -19,7 +19,8 @@ export const L1Request = ({
   changes,
   setChanges,
   logAction,
-  setToastMsg
+  setToastMsg,
+  fetchChanges
 }) => {
   const isAdmin = userRole && userRole.toLowerCase().includes('admin');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -608,7 +609,11 @@ export const L1Request = ({
       const response = await createL1Request(l1Data, uploadedFilesList);
       const newChange = response.data.change;
 
-      setChanges([newChange, ...changes]);
+      if (fetchChanges) {
+        await fetchChanges();
+      } else {
+        setChanges([newChange, ...changes]);
+      }
       setToastMsg(`Successfully submitted L1 Change Request: ${changeNo}`);
       logAction('L1 Request Created', `Successfully submitted L1 Change Request ${changeNo} for department ${dept}`);
 

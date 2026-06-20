@@ -107,6 +107,7 @@ export const createLog = async (logData, attachments) => {
     
     await connection.commit();
     broadcast({ type: 'REFRESH_EFFECTIVENESS' });
+    broadcast({ type: 'REFRESH_CHANGES' });
 
     if (qaApproval === 'Approved' || qaApproval === 'Rejected') {
       triggerEffectivenessQAAlert(changeNo, qaApproval, remarks).catch(err =>
@@ -183,6 +184,7 @@ export const updateLog = async (id, logData, attachments, isQaUser = false) => {
 
     await connection.commit();
     broadcast({ type: 'REFRESH_EFFECTIVENESS' });
+    broadcast({ type: 'REFRESH_CHANGES' });
 
     if ((qaApproval === 'Approved' || qaApproval === 'Rejected') && changeNo) {
       triggerEffectivenessQAAlert(changeNo, qaApproval, remarks).catch(err =>
@@ -215,6 +217,7 @@ export const updateLog = async (id, logData, attachments, isQaUser = false) => {
 export const deleteLog = async (id) => {
   await pool.query('DELETE FROM effectiveness_logs WHERE id = ?', [id]);
   broadcast({ type: 'REFRESH_EFFECTIVENESS' });
+  broadcast({ type: 'REFRESH_CHANGES' });
   return { id };
 };
 

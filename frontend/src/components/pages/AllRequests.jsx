@@ -27,7 +27,8 @@ export const AllRequests = ({
   usersList = [],
   autoOpenChangeNo = null,
   clearAutoOpen = () => {},
-  isAdmin = false
+  isAdmin = false,
+  fetchChanges
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('All');
@@ -491,6 +492,7 @@ export const AllRequests = ({
       setToastMsg(`${activeTab.toUpperCase()} details updated successfully!`);
       setIsEditMode(false);
       setUploadedFilesList([]);
+      if (fetchChanges) fetchChanges();
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Failed to save updates.';

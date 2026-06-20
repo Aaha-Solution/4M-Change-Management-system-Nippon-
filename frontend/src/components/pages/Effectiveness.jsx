@@ -29,7 +29,8 @@ export const Effectiveness = ({
   logAction,
   setToastMsg,
   userRole,
-  userDept
+  userDept,
+  fetchChanges
 }) => {
   const isAdmin = userRole && (
     userRole.toLowerCase() === 'admin' ||
@@ -222,6 +223,7 @@ export const Effectiveness = ({
         setEffectivenessLogs(prev => prev.map(log => log.id === savedLog.id ? response.data.log : log));
         logAction('Effectiveness Log Updated', `Updated monitoring observations for change ${effChangeNo}.`);
         setToastMsg(`Log entry updated for ${effChangeNo}`);
+        if (fetchChanges) fetchChanges();
         handleCancelEditing();
       } catch (err) {
         console.error("Error updating log:", err);
@@ -248,6 +250,7 @@ export const Effectiveness = ({
         setEffectivenessLogs(prev => [response.data.log, ...prev]);
         logAction('Effectiveness Log Created', `Created monitoring observations for change ${effChangeNo}.`);
         setToastMsg(`Log entry added for ${effChangeNo}`);
+        if (fetchChanges) fetchChanges();
         handleCancelEditing();
       } catch (err) {
         console.error("Error creating log:", err);

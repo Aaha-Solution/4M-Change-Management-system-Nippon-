@@ -73,7 +73,8 @@ export const DashboardOverview = ({
   usersList = [],
   isAdmin = false,
   userEmail = '',
-  userName = ''
+  userName = '',
+  fetchChanges
 }) => {
   const [isGridView, setIsGridView] = useState(false);
 
@@ -2259,6 +2260,7 @@ export const DashboardOverview = ({
       setToastMsg(`${activeTab.toUpperCase()} details updated successfully!`);
       setIsEditMode(false);
       setUploadedFilesList([]);
+      if (fetchChanges) fetchChanges();
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Failed to save updates.';
