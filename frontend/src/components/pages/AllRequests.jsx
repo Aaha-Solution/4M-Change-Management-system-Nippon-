@@ -1496,7 +1496,7 @@ export const AllRequests = ({
                 {[
                   'PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L',
                   'MATERIALS', 'MARKETING', 'HR', 'SAFETY', 'GENERAL',
-                  'UNIT HEAD', 'QUALITY'
+                  'UNIT HEAD'
                 ].map((dept) => {
                   const isSelected = data.hod_approval === dept;
                   return (

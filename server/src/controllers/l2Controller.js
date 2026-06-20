@@ -52,7 +52,7 @@ export const createL2ValidationLog = async (req, res) => {
 
       if (!isQualityOrAdmin && !isRequester) {
         return res.status(403).json({
-          error: 'Access Denied: L2 validation can only be submitted by the person who raised the change request or Quality department members.'
+          error: 'Access Denied: L2 validation can only be submitted by the person who raised the change request or QAD department members.'
         });
       }
     }
@@ -123,7 +123,7 @@ export const createL2ValidationLog = async (req, res) => {
         if ((logData.status && logData.status !== allowedStatus) || 
             (logData.remarks && logData.remarks !== current.remarks) || 
             (attachments && attachments.some(a => a.fieldName === 'qa_test'))) {
-          return res.status(403).json({ error: 'Access Denied: Only Quality department members or Admins are allowed to update L2 validation status, remarks, or QA attachments.' });
+          return res.status(403).json({ error: 'Access Denied: Only QAD department members or Admins are allowed to update L2 validation status, remarks, or QA attachments.' });
         }
       }
       
@@ -139,7 +139,7 @@ export const createL2ValidationLog = async (req, res) => {
         logData.status = 'Pending';
         logData.remarks = '';
         if (attachments && attachments.some(a => a.fieldName === 'qa_test')) {
-          return res.status(403).json({ error: 'Access Denied: Only Quality department members or Admins are allowed to upload QA attachments.' });
+          return res.status(403).json({ error: 'Access Denied: Only QAD department members or Admins are allowed to upload QA attachments.' });
         }
       }
     }

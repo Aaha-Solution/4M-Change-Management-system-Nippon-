@@ -18,7 +18,7 @@ export const getL3Approvals = async () => {
             v.status as l2Decision,
             v.remarks as l2Remarks,
             COALESCE(l.ped, 'Pending') as ped,
-            COALESCE(l.quality, 'Pending') as quality,
+            COALESCE(l.qad, 'Pending') as qad,
             COALESCE(l.production, 'Pending') as production,
             COALESCE(l.maintenance, 'Pending') as maintenance,
             COALESCE(l.pcl, 'Pending') as pcl,
@@ -40,7 +40,7 @@ export const getL3Approvals = async () => {
 export const addL3ApprovalLog = async (logData) => {
   const {
     changeNo, date, requester,
-    ped, quality, production, maintenance, pcl, materials, marketing, hr, safety, unitHead
+    ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unitHead
   } = logData;
 
   const connection = await pool.getConnection();
@@ -67,7 +67,7 @@ export const addL3ApprovalLog = async (logData) => {
 
     // Fetch existing L3 approval before update to detect HOD decision changes
     const [existingL3Rows] = await connection.query(
-      `SELECT ped, quality, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead
+      `SELECT ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead
        FROM l3_approvals WHERE change_no = ?`,
       [changeNo]
     );
@@ -77,7 +77,7 @@ export const addL3ApprovalLog = async (logData) => {
       const dbL3 = existingL3Rows[0];
       wasAlreadyAllL3Decided = 
         dbL3.ped && dbL3.ped !== 'Pending' &&
-        dbL3.quality && dbL3.quality !== 'Pending' &&
+        dbL3.qad && dbL3.qad !== 'Pending' &&
         dbL3.production && dbL3.production !== 'Pending' &&
         dbL3.maintenance && dbL3.maintenance !== 'Pending' &&
         dbL3.pcl && dbL3.pcl !== 'Pending' &&
@@ -95,7 +95,7 @@ export const addL3ApprovalLog = async (logData) => {
       const dbL3 = existingL3Rows[0];
       const fields = [
         { key: 'ped', db: dbL3.ped, label: 'PED' },
-        { key: 'quality', db: dbL3.quality, label: 'Quality' },
+        { key: 'qad', db: dbL3.qad, label: 'QAD' },
         { key: 'production', db: dbL3.production, label: 'Production' },
         { key: 'maintenance', db: dbL3.maintenance, label: 'Maintenance' },
         { key: 'pcl', db: dbL3.pcl, label: 'PC & L' },
@@ -117,7 +117,7 @@ export const addL3ApprovalLog = async (logData) => {
     } else {
       const fields = [
         { key: 'ped', val: ped, label: 'PED' },
-        { key: 'quality', val: quality, label: 'Quality' },
+        { key: 'qad', val: qad, label: 'QAD' },
         { key: 'production', val: production, label: 'Production' },
         { key: 'maintenance', val: maintenance, label: 'Maintenance' },
         { key: 'pcl', val: pcl, label: 'PC & L' },
@@ -139,14 +139,14 @@ export const addL3ApprovalLog = async (logData) => {
 
     await connection.query(
       `INSERT INTO l3_approvals (
-        change_no, date, requester, ped, quality, production, 
+        change_no, date, requester, ped, qad, production, 
         maintenance, pcl, materials, marketing, hr, safety, unit_head
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         date = VALUES(date),
         requester = VALUES(requester),
         ped = VALUES(ped),
-        quality = VALUES(quality),
+        qad = VALUES(qad),
         production = VALUES(production),
         maintenance = VALUES(maintenance),
         pcl = VALUES(pcl),
@@ -157,7 +157,7 @@ export const addL3ApprovalLog = async (logData) => {
         unit_head = VALUES(unit_head)`,
       [
         changeNo, date, requester,
-        ped || 'Pending', quality || 'Pending', production || 'Pending',
+        ped || 'Pending', qad || 'Pending', production || 'Pending',
         maintenance || 'Pending', pcl || 'Pending', materials || 'Pending',
         marketing || 'Pending', hr || 'Pending', safety || 'Pending', unitHead || 'Pending'
       ]
@@ -176,9 +176,9 @@ export const addL3ApprovalLog = async (logData) => {
     const requesterEmail = crRows.length > 0 ? crRows[0].requesterEmail : '';
 
     const mapDbDeptToL3Dept = (dbDept) => {
-      if (!dbDept) return 'Quality';
+      if (!dbDept) return 'QAD';
       const dept = dbDept.trim().toLowerCase();
-      if (dept === 'qad' || dept === 'quality') return 'Quality';
+      if (dept === 'qad' || dept === 'quality') return 'QAD';
       if (dept === 'ped') return 'PED';
       if (dept === 'production') return 'Production';
       if (dept === 'maintenance') return 'Maintenance';
@@ -188,14 +188,14 @@ export const addL3ApprovalLog = async (logData) => {
       if (dept === 'hr') return 'HR';
       if (dept === 'safety') return 'Safety';
       if (dept === 'unit head' || dept === 'unit_head') return 'Unit Head';
-      return 'Quality';
+      return 'QAD';
     };
 
     const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
 
     const isAllL3Decided = 
       ped !== 'Pending' &&
-      quality !== 'Pending' &&
+      qad !== 'Pending' &&
       production !== 'Pending' &&
       maintenance !== 'Pending' &&
       pcl !== 'Pending' &&
@@ -209,7 +209,7 @@ export const addL3ApprovalLog = async (logData) => {
     const rejectedDepts = [];
     const labelMap = {
       ped: 'PED',
-      quality: 'Quality',
+      qad: 'QAD',
       production: 'Production',
       maintenance: 'Maintenance',
       pcl: 'PC & L',
@@ -220,7 +220,7 @@ export const addL3ApprovalLog = async (logData) => {
       unitHead: 'Unit Head'
     };
     if (ped === 'Rejected') rejectedDepts.push(labelMap.ped);
-    if (quality === 'Rejected') rejectedDepts.push(labelMap.quality);
+    if (qad === 'Rejected') rejectedDepts.push(labelMap.qad);
     if (production === 'Rejected') rejectedDepts.push(labelMap.production);
     if (maintenance === 'Rejected') rejectedDepts.push(labelMap.maintenance);
     if (pcl === 'Rejected') rejectedDepts.push(labelMap.pcl);

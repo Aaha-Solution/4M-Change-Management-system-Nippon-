@@ -89,7 +89,7 @@ INSERT INTO roles (name) VALUES
 INSERT INTO departments (name) VALUES
 ('General'),
 ('PED'),
-('Quality'),
+('QAD'),
 ('Production'),
 ('Maintenance'),
 ('PC & L'),
@@ -98,17 +98,6 @@ INSERT INTO departments (name) VALUES
 ('HR'),
 ('Safety'),
 ('Unit Head');
-
--- Seed Processes
-INSERT INTO processes (name) VALUES
-('Wind'),
-('Gold'),
-('EOL'),
-('Pott'),
-('Load');
-
-
-
 
 
 -- Seed users (quick-login roles matching mockup)
@@ -247,7 +236,7 @@ CREATE TABLE l3_approvals (
     date VARCHAR(50) NOT NULL,
     requester VARCHAR(255) NOT NULL,
     ped VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    quality VARCHAR(50) NOT NULL DEFAULT 'Pending',
+    qad VARCHAR(50) NOT NULL DEFAULT 'Pending',
     production VARCHAR(50) NOT NULL DEFAULT 'Pending',
     maintenance VARCHAR(50) NOT NULL DEFAULT 'Pending',
     pcl VARCHAR(50) NOT NULL DEFAULT 'Pending',

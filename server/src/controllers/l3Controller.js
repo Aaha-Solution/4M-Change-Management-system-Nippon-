@@ -5,7 +5,7 @@ import { validateLimits } from '../utils/validation.js';
 // Department fields mapping
 const deptFields = {
   'PED': 'ped',
-  'Quality': 'quality',
+  'QAD': 'qad',
   'Production': 'production',
   'Maintenance': 'maintenance',
   'PC & L': 'pcl',
@@ -17,9 +17,9 @@ const deptFields = {
 };
 
 const mapDbDeptToL3Dept = (dbDept) => {
-  if (!dbDept) return 'Quality';
+  if (!dbDept) return 'QAD';
   const dept = dbDept.trim().toLowerCase();
-  if (dept === 'qad' || dept === 'quality') return 'Quality';
+  if (dept === 'qad' || dept === 'quality') return 'QAD';
   if (dept === 'ped') return 'PED';
   if (dept === 'production') return 'Production';
   if (dept === 'maintenance') return 'Maintenance';
@@ -29,7 +29,7 @@ const mapDbDeptToL3Dept = (dbDept) => {
   if (dept === 'hr') return 'HR';
   if (dept === 'safety') return 'Safety';
   if (dept === 'unit head' || dept === 'unit_head') return 'Unit Head';
-  return 'Quality'; // Fallback
+  return 'QAD'; // Fallback
 };
 
 export const getL3Approvals = async (req, res) => {
@@ -85,14 +85,14 @@ export const createL3Approval = async (req, res) => {
 
       // Fetch existing L3 approval
       const [existingL3] = await pool.query(
-        `SELECT ped, quality, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead
+        `SELECT ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead
          FROM l3_approvals WHERE change_no = ?`,
         [logData.changeNo]
       );
 
       const dbValues = existingL3.length > 0 ? existingL3[0] : {
         ped: 'Pending',
-        quality: 'Pending',
+        qad: 'Pending',
         production: 'Pending',
         maintenance: 'Pending',
         pcl: 'Pending',
@@ -104,7 +104,7 @@ export const createL3Approval = async (req, res) => {
       };
 
       // Check all fields to see if any unauthorized field was modified
-      const fieldsToCheck = ['ped', 'quality', 'production', 'maintenance', 'pcl', 'materials', 'marketing', 'hr', 'safety', 'unitHead'];
+      const fieldsToCheck = ['ped', 'qad', 'production', 'maintenance', 'pcl', 'materials', 'marketing', 'hr', 'safety', 'unitHead'];
       for (const field of fieldsToCheck) {
         const incomingVal = logData[field] || 'Pending';
         const dbVal = dbValues[field] || 'Pending';

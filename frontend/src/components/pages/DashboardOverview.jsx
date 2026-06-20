@@ -3264,7 +3264,7 @@ export const DashboardOverview = ({
                 {[
                   'PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L',
                   'MATERIALS', 'MARKETING', 'HR', 'SAFETY', 'GENERAL',
-                  'UNIT HEAD', 'QUALITY'
+                  'UNIT HEAD'
                 ].map((dept) => {
                   const isSelected = data.hod_approval === dept;
                   return (
@@ -3359,7 +3359,7 @@ export const DashboardOverview = ({
           {/* Matrix Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
             {renderFieldInput('PED', 'ped')}
-            {renderFieldInput('Quality', 'quality')}
+            {renderFieldInput('QAD', 'qad')}
             {renderFieldInput('Production', 'production')}
             {renderFieldInput('Maintenance', 'maintenance')}
             {renderFieldInput('PC & L', 'pcl')}
@@ -4455,7 +4455,7 @@ export const DashboardOverview = ({
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
                     {[
                       { label: 'PED', value: selectedLog.ped },
-                      { label: 'Quality', value: selectedLog.quality },
+                      { label: 'QAD', value: selectedLog.qad },
                       { label: 'Production', value: selectedLog.production },
                       { label: 'Maintenance', value: selectedLog.maintenance },
                       { label: 'PC & L', value: selectedLog.pcl },
@@ -4468,7 +4468,7 @@ export const DashboardOverview = ({
                       // Map label to the corresponding property in selectedLog safely
                       const propMap = {
                         'PED': selectedLog.ped,
-                        'Quality': selectedLog.quality,
+                        'QAD': selectedLog.qad,
                         'Production': selectedLog.production,
                         'Maintenance': selectedLog.maintenance,
                         'PC & L': selectedLog.pcl || selectedLog.ped,

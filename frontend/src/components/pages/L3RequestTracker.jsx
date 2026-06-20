@@ -48,7 +48,7 @@ export const L3RequestTracker = ({
   const [formStatus, setFormStatus] = useState('');
 
   // Acting Department mapping
-  const [actingDept, setActingDept] = useState('Quality');
+  const [actingDept, setActingDept] = useState('QAD');
 
   // Search & Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,9 +60,9 @@ export const L3RequestTracker = ({
 
   // Map database department to L3 acting department
   const mapDbDeptToL3Dept = (dbDept) => {
-    if (!dbDept) return 'Quality';
+    if (!dbDept) return 'QAD';
     const dept = dbDept.trim().toLowerCase();
-    if (dept === 'qad' || dept === 'quality') return 'Quality';
+    if (dept === 'qad' || dept === 'quality') return 'QAD';
     if (dept === 'ped') return 'PED';
     if (dept === 'production') return 'Production';
     if (dept === 'maintenance') return 'Maintenance';
@@ -72,7 +72,7 @@ export const L3RequestTracker = ({
     if (dept === 'hr') return 'HR';
     if (dept === 'safety') return 'Safety';
     if (dept === 'unit head' || dept === 'unit_head') return 'Unit Head';
-    return 'Quality'; // Fallback
+    return 'QAD'; // Fallback
   };
 
   // Map logged-in user email/role to initial acting department
@@ -90,7 +90,7 @@ export const L3RequestTracker = ({
           // Fallback to legacy hardcoded check if user not found in DB
           const email = userEmail.toLowerCase();
           if (email.includes('ravi.qa')) {
-            setActingDept('Quality');
+            setActingDept('QAD');
           } else if (email.includes('kumar.s')) {
             setActingDept('Production');
           } else if (email.includes('ped')) {
@@ -98,7 +98,7 @@ export const L3RequestTracker = ({
           } else if (email.includes('manager')) {
             setActingDept('Production');
           } else {
-            setActingDept('Quality');
+            setActingDept('QAD');
           }
         }
       } catch (err) {
@@ -116,7 +116,7 @@ export const L3RequestTracker = ({
       if (currentLog) {
         let currentStatus = 'Pending';
         if (actingDept === 'PED') currentStatus = currentLog.ped;
-        else if (actingDept === 'Quality') currentStatus = currentLog.quality;
+        else if (actingDept === 'QAD') currentStatus = currentLog.qad;
         else if (actingDept === 'Production') currentStatus = currentLog.production;
         else if (actingDept === 'Maintenance') currentStatus = currentLog.maintenance;
         else if (actingDept === 'PC & L') currentStatus = currentLog.pcl;
@@ -189,7 +189,7 @@ export const L3RequestTracker = ({
       date: currentLog.date,
       requester: currentLog.requester,
       ped: actingDept === 'PED' ? formStatus : currentLog.ped,
-      quality: actingDept === 'Quality' ? formStatus : currentLog.quality,
+      qad: actingDept === 'QAD' ? formStatus : currentLog.qad,
       production: actingDept === 'Production' ? formStatus : currentLog.production,
       maintenance: actingDept === 'Maintenance' ? formStatus : currentLog.maintenance,
       pcl: actingDept === 'PC & L' ? formStatus : currentLog.pcl,
@@ -353,7 +353,7 @@ export const L3RequestTracker = ({
   const getOverallL3Status = (logItem) => {
     const statuses = [
       logItem.ped,
-      logItem.quality,
+      logItem.qad,
       logItem.production,
       logItem.maintenance,
       logItem.pcl,
@@ -408,7 +408,7 @@ export const L3RequestTracker = ({
   if (currentChangeLog) {
     let deptStatus = 'Pending';
     if (actingDept === 'PED') deptStatus = currentChangeLog.ped;
-    else if (actingDept === 'Quality') deptStatus = currentChangeLog.quality;
+    else if (actingDept === 'QAD') deptStatus = currentChangeLog.qad;
     else if (actingDept === 'Production') deptStatus = currentChangeLog.production;
     else if (actingDept === 'Maintenance') deptStatus = currentChangeLog.maintenance;
     else if (actingDept === 'PC & L') deptStatus = currentChangeLog.pcl;
@@ -441,7 +441,7 @@ export const L3RequestTracker = ({
     if (!selectedLog) return '';
     let status = 'Pending';
     if (actingDept === 'PED') status = selectedLog.ped;
-    else if (actingDept === 'Quality') status = selectedLog.quality;
+    else if (actingDept === 'QAD') status = selectedLog.qad;
     else if (actingDept === 'Production') status = selectedLog.production;
     else if (actingDept === 'Maintenance') status = selectedLog.maintenance;
     else if (actingDept === 'PC & L') status = selectedLog.pcl;
@@ -495,7 +495,7 @@ export const L3RequestTracker = ({
                 className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
               >
                 <option value="PED">PED</option>
-                <option value="Quality">Quality</option>
+                <option value="QAD">QAD</option>
                 <option value="Production">Production</option>
                 <option value="Maintenance">Maintenance</option>
                 <option value="PC & L">PC & L</option>
@@ -656,7 +656,7 @@ export const L3RequestTracker = ({
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[90px]">Requested Date</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Change Request By</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">PED</th>
-                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">Quality</th>
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">QAD</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Production</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[80px]">Maintenance</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">PC & L</th>
@@ -702,7 +702,7 @@ export const L3RequestTracker = ({
                           {/* Department Badges */}
                           {[
                             { val: log.ped, type: 'ped' },
-                            { val: log.quality, type: 'quality' },
+                            { val: log.qad, type: 'qad' },
                             { val: log.production, type: 'production' },
                             { val: log.maintenance, type: 'maintenance' },
                             { val: log.pcl, type: 'pcl' },
@@ -786,7 +786,7 @@ export const L3RequestTracker = ({
                       <div className="grid grid-cols-2 gap-2 mt-1">
                         {[
                           { label: 'PED', val: log.ped },
-                          { label: 'Quality', val: log.quality },
+                          { label: 'QAD', val: log.qad },
                           { label: 'Production', val: log.production },
                           { label: 'Maintenance', val: log.maintenance },
                           { label: 'PC & L', val: log.pcl },
@@ -1254,7 +1254,7 @@ export const L3RequestTracker = ({
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-[12px]">
                     {[
                       { label: 'PED', value: selectedLog.ped },
-                      { label: 'Quality', value: selectedLog.quality },
+                      { label: 'QAD', value: selectedLog.qad },
                       { label: 'Production', value: selectedLog.production },
                       { label: 'Maintenance', value: selectedLog.maintenance },
                       { label: 'PC & L', value: selectedLog.pcl },
