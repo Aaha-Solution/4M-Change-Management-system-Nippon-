@@ -884,28 +884,32 @@ export const AllApprovals = ({
               >
                 1. L1 Request Details
               </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('l2')}
-                className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === 'l2' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
-              >
-                2. L2 Validation Details
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('l3')}
-                className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === 'l3' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
-              >
-                3. L3 Approval Details
-              </button>
+              {l1Details?.hodStatus !== 'Rejected' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('l2')}
+                  className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
+                    activeTab === 'l2' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  2. L2 Validation Details
+                </button>
+              )}
+              {l1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status !== 'Rejected' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('l3')}
+                  className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
+                    activeTab === 'l3' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  3. L3 Approval Details
+                </button>
+              )}
             </div>
 
             {/* Content */}

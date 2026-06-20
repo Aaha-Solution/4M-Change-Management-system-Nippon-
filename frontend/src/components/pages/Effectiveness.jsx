@@ -1095,36 +1095,42 @@ export const Effectiveness = ({
               >
                 1. L1 Request
               </button>
-              <button
-                onClick={() => setActiveTab('l2')}
-                className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                  activeTab === 'l2' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
-              >
-                2. L2 Validation
-              </button>
-              <button
-                onClick={() => setActiveTab('l3')}
-                className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                  activeTab === 'l3' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
-              >
-                3. L3 Approval
-              </button>
-              <button
-                onClick={() => setActiveTab('effectiveness')}
-                className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                  activeTab === 'effectiveness' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
-              >
-                4. Effectiveness
-              </button>
+              {selectedL1Details?.hodStatus !== 'Rejected' && (
+                <button
+                  onClick={() => setActiveTab('l2')}
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'l2' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  2. L2 Validation
+                </button>
+              )}
+              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status !== 'Rejected' && (
+                <button
+                  onClick={() => setActiveTab('l3')}
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'l3' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  3. L3 Approval
+                </button>
+              )}
+              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status !== 'Rejected' && (
+                <button
+                  onClick={() => setActiveTab('effectiveness')}
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                    activeTab === 'effectiveness' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  4. Effectiveness
+                </button>
+              )}
             </div>
 
             {/* Content */}
