@@ -341,7 +341,7 @@ export const AllRequests = ({
       status: request.status,
       hodStatus: request.hodStatus,
       ped: 'Pending',
-      quality: 'Pending',
+      qad: 'Pending',
       production: 'Pending',
       maintenance: 'Pending',
       pcl: 'Pending',
@@ -376,7 +376,7 @@ export const AllRequests = ({
         date: request.rawDate,
         hodStatus: request.hodStatus,
         ped: 'Pending',
-        quality: 'Pending',
+        qad: 'Pending',
         production: 'Pending',
         maintenance: 'Pending',
         pcl: 'Pending',
@@ -1601,7 +1601,7 @@ export const AllRequests = ({
           {/* Matrix Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
             {renderFieldInput('PED', 'ped')}
-            {renderFieldInput('Quality', 'quality')}
+            {renderFieldInput('QAD', 'qad')}
             {renderFieldInput('Production', 'production')}
             {renderFieldInput('Maintenance', 'maintenance')}
             {renderFieldInput('PC & L', 'pcl')}
@@ -2537,7 +2537,7 @@ export const AllRequests = ({
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
                     {[
                       { label: 'PED', value: selectedLog.ped },
-                      { label: 'Quality', value: selectedLog.quality },
+                      { label: 'QAD', value: selectedLog.qad },
                       { label: 'Production', value: selectedLog.production },
                       { label: 'Maintenance', value: selectedLog.maintenance },
                       { label: 'PC & L', value: selectedLog.pcl },
@@ -2550,7 +2550,7 @@ export const AllRequests = ({
                       // Map label to the corresponding property in selectedLog safely
                       const propMap = {
                         'PED': selectedLog.ped,
-                        'Quality': selectedLog.quality,
+                        'QAD': selectedLog.qad,
                         'Production': selectedLog.production,
                         'Maintenance': selectedLog.maintenance,
                         'PC & L': selectedLog.pcl || selectedLog.ped,

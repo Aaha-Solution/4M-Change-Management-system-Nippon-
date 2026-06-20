@@ -173,7 +173,7 @@ export const Effectiveness = ({
     setSelectedLog({
       changeNo: changeNo,
       ped: 'Pending',
-      quality: 'Pending',
+      qad: 'Pending',
       production: 'Pending',
       maintenance: 'Pending',
       pcl: 'Pending',
@@ -202,7 +202,7 @@ export const Effectiveness = ({
       const newLogData = matchedL3 ? matchedL3 : {
         changeNo: changeNo,
         ped: 'Pending',
-        quality: 'Pending',
+        qad: 'Pending',
         production: 'Pending',
         maintenance: 'Pending',
         pcl: 'Pending',
@@ -1549,7 +1549,7 @@ export const Effectiveness = ({
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
                         {[
                           { label: 'PED', prop: 'ped' },
-                          { label: 'Quality', prop: 'quality' },
+                          { label: 'QAD', prop: 'qad' },
                           { label: 'Production', prop: 'production' },
                           { label: 'Maintenance', prop: 'maintenance' },
                           { label: 'PC & L', prop: 'pcl' },

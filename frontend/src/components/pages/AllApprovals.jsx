@@ -45,7 +45,7 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 const mapDept = (raw) => {
   if (!raw) return '';
   const d = raw.trim().toLowerCase();
-  if (d === 'qad' || d === 'quality') return 'Quality';
+  if (d === 'qad' || d === 'quality') return 'QAD';
   if (d === 'ped') return 'PED';
   if (d === 'production') return 'Production';
   if (d === 'maintenance') return 'Maintenance';
@@ -260,7 +260,7 @@ export const AllApprovals = ({
       status: req.crStatus,
       hodStatus: req.hodStatus,
       ped: 'Pending',
-      quality: 'Pending',
+      qad: 'Pending',
       production: 'Pending',
       maintenance: 'Pending',
       pcl: 'Pending',
@@ -288,7 +288,7 @@ export const AllApprovals = ({
         date: req.date,
         hodStatus: req.hodStatus,
         ped: 'Pending',
-        quality: 'Pending',
+        qad: 'Pending',
         production: 'Pending',
         maintenance: 'Pending',
         pcl: 'Pending',
@@ -494,7 +494,7 @@ export const AllApprovals = ({
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             {[
               { level: 'L1', name: 'HOD Review', desc: 'Department HOD approves/rejects the initial change request', color: 'from-amber-500 to-orange-500', badge: 'bg-amber-50 border-amber-200 text-amber-700', status: 'CR Status: Pending' },
-              { level: 'L2', name: 'QA Validation', desc: 'Quality dept verifies the setup & compliance documentation', color: 'from-blue-500 to-cyan-500', badge: 'bg-blue-50 border-blue-200 text-blue-700', status: 'CR Status: Evaluating' },
+              { level: 'L2', name: 'QA Validation', desc: 'QAD department verifies the setup & compliance documentation', color: 'from-blue-500 to-cyan-500', badge: 'bg-blue-50 border-blue-200 text-blue-700', status: 'CR Status: Evaluating' },
               { level: 'L3', name: 'Multi-Dept HOD', desc: 'All department HODs review and give their final decision', color: 'from-indigo-500 to-purple-500', badge: 'bg-indigo-50 border-indigo-200 text-indigo-700', status: 'CR Status: Approved' },
               { level: '✓', name: 'Completed', desc: 'All levels signed off — change is fully approved', color: 'from-emerald-500 to-teal-500', badge: 'bg-emerald-50 border-emerald-200 text-emerald-700', status: 'CR Status: Completed' },
             ].map((s, i, arr) => (
@@ -1400,7 +1400,7 @@ export const AllApprovals = ({
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-[12px]">
                         {[
                           { label: 'PED', value: selectedLog.ped },
-                          { label: 'Quality', value: selectedLog.quality },
+                          { label: 'QAD', value: selectedLog.qad },
                           { label: 'Production', value: selectedLog.production },
                           { label: 'Maintenance', value: selectedLog.maintenance },
                           { label: 'PC & L', value: selectedLog.pcl },
@@ -1412,7 +1412,7 @@ export const AllApprovals = ({
                         ].map((dept, index) => {
                           const propMap = {
                             'PED': selectedLog.ped,
-                            'Quality': selectedLog.quality,
+                            'QAD': selectedLog.qad,
                             'Production': selectedLog.production,
                             'Maintenance': selectedLog.maintenance,
                             'PC & L': selectedLog.pcl || selectedLog.ped,

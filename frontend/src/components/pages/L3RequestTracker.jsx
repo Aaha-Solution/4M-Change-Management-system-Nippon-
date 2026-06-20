@@ -429,6 +429,8 @@ export const L3RequestTracker = ({
     userRole.toLowerCase() === 'administrator'
   );
 
+  const showAsValidated = isAlreadyValidated && !isAdmin;
+
   const isHOD = userRole && (
     userRole.toLowerCase().includes('hod') || 
     userRole.toLowerCase().includes('unit head') || 
@@ -552,7 +554,7 @@ export const L3RequestTracker = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approval Status <span className="text-rose-500">*</span></label>
             <select 
               value={formStatus} 
-              disabled={!selectedChangeId || isAlreadyValidated || !isL2Accepted || !canEdit}
+              disabled={!selectedChangeId || showAsValidated || !isL2Accepted || !canEdit}
               onChange={(e) => setFormStatus(e.target.value)}
               className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
             >
@@ -566,7 +568,7 @@ export const L3RequestTracker = ({
           <div className="space-y-[8px] pt-[4px]">
             <button 
               type="submit" 
-              disabled={isSubmitting || !selectedChangeId || isAlreadyValidated || !isL2Accepted || !canEdit}
+              disabled={isSubmitting || !selectedChangeId || showAsValidated || !isL2Accepted || !canEdit}
               className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
             >
               {isSubmitting ? (
@@ -574,7 +576,7 @@ export const L3RequestTracker = ({
                   <Loader2 className="animate-spin" size={14} />
                   <span>Saving Log...</span>
                 </>
-              ) : isAlreadyValidated ? (
+              ) : showAsValidated ? (
                 <span>Log Already Saved</span>
               ) : !selectedChangeId ? (
                 <span>Select a Request to Approve</span>
@@ -585,7 +587,7 @@ export const L3RequestTracker = ({
               ) : (
                 <>
                   <Save size={14} />
-                  <span>Save Approval Log</span>
+                  <span>{isAlreadyValidated ? 'Update Approval Log' : 'Save Approval Log'}</span>
                 </>
               )}
             </button>

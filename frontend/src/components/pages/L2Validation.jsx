@@ -506,7 +506,7 @@ export const L2Validation = ({
           <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Validation Locked:</span> L2 validation has already been completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). Quality members and Admins cannot update these fields again.
+              <span className="font-bold">Validation Locked:</span> L2 validation has already been completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). QAD members and Admins cannot update these fields again.
             </div>
           </div>
         )}
@@ -515,7 +515,7 @@ export const L2Validation = ({
           <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-emerald-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Validation Completed:</span> This request has already been validated and Approved by Quality. No further actions are required.
+              <span className="font-bold">Validation Completed:</span> This request has already been validated and Approved by QAD. No further actions are required.
             </div>
           </div>
         )}
@@ -524,7 +524,7 @@ export const L2Validation = ({
           <div className="bg-rose-50 border border-rose-250 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Validation Rejected:</span> L2 validation has been rejected by Quality. Please upload a new <span className="font-semibold">Requester Validation Attachment</span> to reset the status to Pending and notify Quality for re-evaluation.
+              <span className="font-bold">Validation Rejected:</span> L2 validation has been rejected by QAD. Please upload a new <span className="font-semibold">Requester Validation Attachment</span> to reset the status to Pending and notify QAD for re-evaluation.
             </div>
           </div>
         )}
@@ -533,7 +533,7 @@ export const L2Validation = ({
           <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
             <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request or Quality department members / Admins.
+              <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request or QAD department members / Admins.
             </div>
           </div>
         )}
