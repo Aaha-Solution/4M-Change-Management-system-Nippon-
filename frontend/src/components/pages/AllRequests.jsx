@@ -349,7 +349,7 @@ export const AllRequests = ({
       marketing: 'Pending',
       hr: 'Pending',
       safety: 'Pending',
-      unitHead: 'Pending'
+      unitHead: 'Pending'                                                                                                                                          
     });
     setSelectedL1Details(null);
     setSelectedL2Details(null);

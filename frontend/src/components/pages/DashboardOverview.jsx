@@ -1915,6 +1915,8 @@ export const DashboardOverview = ({
 
     // Max values for chart scaling
     const maxCostVal = Math.max(...filteredCost.map(r => parseFloat(r.monthlySave) || 0), 1000);
+    const maxAnnualVal = Math.max(...filteredCost.map(r => parseFloat(r.annualSave) || 0), 12000);
+    const maxRoiVal = Math.max(...filteredCost.map(r => parseFloat(r.roi) || 0), 1000);
     const maxProdVal = Math.max(...filteredProductivity.flatMap(r => [parseFloat(r.currentProd) || 0, parseFloat(r.improvedProd) || 0]), 10);
     const maxQualityVal = Math.max(...filteredQuality.flatMap(r => [parseFloat(r.currentPpm) || 0, parseFloat(r.reducedPpm) || 0]), 100);
 
@@ -1975,29 +1977,82 @@ export const DashboardOverview = ({
               <h5 className="text-[13px] font-bold text-[#1e60aa] uppercase tracking-wider">Cost Saving</h5>
             </div>
 
-            {/* Cost Saving Chart */}
+            {/* Cost Saving Charts Grid */}
             {filteredCost.length > 0 ? (
-              <div className="bg-slate-50/50 border border-slate-200/50 rounded-xl p-4">
-                <h6 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Cost Saved / Month (Rs) per Change Request</h6>
-                <div className="flex justify-start items-end h-[160px] gap-6 overflow-x-auto pb-4 px-2 min-w-full">
-                  {filteredCost.map((row, idx) => {
-                    const val = parseFloat(row.monthlySave) || 0;
-                    const pct = (val / maxCostVal) * 100;
-                    return (
-                      <div key={idx} className="flex flex-col items-center min-w-[70px] max-w-[100px] h-full justify-end group">
-                        <span className="text-[9px] font-bold text-slate-600 mb-1">Rs. {val}</span>
-                        <div className="w-full h-[65%] flex items-end justify-center">
-                          <div
-                            className="w-8 bg-gradient-to-t from-[#154a85] to-[#1e60aa] hover:from-[#1a5292] hover:to-[#226ec2] transition-all rounded-t-[3px] shadow-sm cursor-pointer"
-                            style={{ height: `${Math.max(pct, 4)}%` }}
-                          />
+              <div className="grid grid-cols-1 gap-6">
+                {/* Monthly Save Chart */}
+                <div className="bg-slate-50/50 border border-slate-200/50 rounded-xl p-4 shadow-sm">
+                  <h6 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Cost Saved / Month (Rs) per Change Request</h6>
+                  <div className="flex justify-start items-end h-[160px] gap-6 overflow-x-auto pb-4 px-2 min-w-full">
+                    {filteredCost.map((row, idx) => {
+                      const val = parseFloat(row.monthlySave) || 0;
+                      const pct = (val / maxCostVal) * 100;
+                      return (
+                        <div key={idx} className="flex flex-col items-center min-w-[70px] max-w-[100px] h-full justify-end group">
+                          <span className="text-[9px] font-bold text-slate-600 mb-1">Rs. {val}</span>
+                          <div className="w-full h-[65%] flex items-end justify-center">
+                            <div
+                              className="w-8 bg-gradient-to-t from-[#154a85] to-[#1e60aa] hover:from-[#1a5292] hover:to-[#226ec2] transition-all rounded-t-[3px] shadow-sm cursor-pointer"
+                              style={{ height: `${Math.max(pct, 4)}%` }}
+                            />
+                          </div>
+                          <span className="text-[9px] font-bold text-slate-500 mt-2 truncate max-w-full" title={row.changeNo}>
+                            {row.changeNo}
+                          </span>
                         </div>
-                        <span className="text-[9px] font-bold text-slate-500 mt-2 truncate max-w-full" title={row.changeNo}>
-                          {row.changeNo}
-                        </span>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Annual Save Chart */}
+                <div className="bg-slate-50/50 border border-slate-200/50 rounded-xl p-4 shadow-sm">
+                  <h6 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Total Cost Saved / Annum (Rs) per Change Request</h6>
+                  <div className="flex justify-start items-end h-[160px] gap-6 overflow-x-auto pb-4 px-2 min-w-full">
+                    {filteredCost.map((row, idx) => {
+                      const val = parseFloat(row.annualSave) || 0;
+                      const pct = (val / maxAnnualVal) * 100;
+                      return (
+                        <div key={idx} className="flex flex-col items-center min-w-[70px] max-w-[100px] h-full justify-end group">
+                          <span className="text-[9px] font-bold text-slate-600 mb-1">Rs. {val}</span>
+                          <div className="w-full h-[65%] flex items-end justify-center">
+                            <div
+                              className="w-8 bg-gradient-to-t from-[#0284c7] to-[#0ea5e9] hover:from-[#0369a1] hover:to-[#0284c7] transition-all rounded-t-[3px] shadow-sm cursor-pointer"
+                              style={{ height: `${Math.max(pct, 4)}%` }}
+                            />
+                          </div>
+                          <span className="text-[9px] font-bold text-slate-500 mt-2 truncate max-w-full" title={row.changeNo}>
+                            {row.changeNo}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* ROI Chart */}
+                <div className="bg-slate-50/50 border border-slate-200/50 rounded-xl p-4 shadow-sm">
+                  <h6 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">ROI (Rs) per Change Request</h6>
+                  <div className="flex justify-start items-end h-[160px] gap-6 overflow-x-auto pb-4 px-2 min-w-full">
+                    {filteredCost.map((row, idx) => {
+                      const val = parseFloat(row.roi) || 0;
+                      const pct = (val / maxRoiVal) * 100;
+                      return (
+                        <div key={idx} className="flex flex-col items-center min-w-[70px] max-w-[100px] h-full justify-end group">
+                          <span className="text-[9px] font-bold text-slate-600 mb-1">Rs. {val}</span>
+                          <div className="w-full h-[65%] flex items-end justify-center">
+                            <div
+                              className="w-8 bg-gradient-to-t from-[#0f766e] to-[#14b8a6] hover:from-[#0d9488] hover:to-[#0f766e] transition-all rounded-t-[3px] shadow-sm cursor-pointer"
+                              style={{ height: `${Math.max(pct, 4)}%` }}
+                            />
+                          </div>
+                          <span className="text-[9px] font-bold text-slate-500 mt-2 truncate max-w-full" title={row.changeNo}>
+                            {row.changeNo}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             ) : (
