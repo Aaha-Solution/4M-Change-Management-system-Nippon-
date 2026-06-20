@@ -1075,7 +1075,7 @@ export const DashboardOverview = ({
           className={`w-full px-[6px] py-[4px] border rounded-[4px] outline-none transition-all duration-200 ${
             statusVal === 'Approved' ? 'text-emerald-600 border-emerald-350 bg-emerald-50/10 font-bold' :
             statusVal === 'Rejected' ? 'text-rose-600 border-rose-350 bg-rose-50/10 font-bold' :
-            statusVal === 'Closed' ? 'text-slate-600 border-slate-355 bg-slate-50/10 font-bold' :
+            statusVal === 'Closed' ? 'text-blue-600 border-blue-350 bg-blue-50/10 font-bold' :
             statusVal === 'Pending' ? 'text-amber-600 border-amber-350 bg-amber-50/10 font-bold' :
             'text-slate-500 border-slate-200 bg-white font-medium'
           }`}
@@ -1085,7 +1085,7 @@ export const DashboardOverview = ({
           <option value="All" className="text-slate-500 bg-white font-medium" style={{ color: '#64748b' }}>All Statuses</option>
           <option value="Approved" className="text-emerald-600 bg-white font-bold" style={{ color: '#059669', fontWeight: 'bold' }}>Approved</option>
           <option value="Rejected" className="text-rose-600 bg-white font-bold" style={{ color: '#e11d48', fontWeight: 'bold' }}>Rejected</option>
-          <option value="Closed" className="text-slate-600 bg-white font-bold" style={{ color: '#475569', fontWeight: 'bold' }}>Closed</option>
+          <option value="Closed" className="text-blue-600 bg-white font-bold" style={{ color: '#2563eb', fontWeight: 'bold' }}>Closed</option>
           <option value="Pending" className="text-amber-600 bg-white font-bold" style={{ color: '#d97706', fontWeight: 'bold' }}>Pending</option>
         </select>
       </div>
@@ -3829,13 +3829,13 @@ export const DashboardOverview = ({
                       <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.department}</td>
                       <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
                       <td className="p-[16px]">
-                        <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${r.status === 'Pending L3' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' :
-                            r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                            r.status === 'Pending L1 HOD' ? 'bg-blue-50 border-blue-200 text-blue-700' :
-                            r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
-                              r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
-                                'bg-teal-50 border-teal-200 text-teal-700'
-                          }`}>
+                        <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
+                          r.status?.startsWith('Pending') ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                          r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
+                          r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
+                          r.status === 'Closed' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                          'bg-teal-50 border-teal-200 text-teal-700'
+                        }`}>
                           {r.status}
                         </span>
                       </td>

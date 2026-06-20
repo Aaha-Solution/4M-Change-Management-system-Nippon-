@@ -1792,7 +1792,7 @@ export const AllRequests = ({
             className={`w-full px-[8px] py-[6px] border rounded-[4px] bg-white outline-none text-[11px] transition-all duration-200 ${
               selectedStatus === 'Approved' ? 'text-emerald-600 border-emerald-300 bg-emerald-50/10 font-bold' :
               selectedStatus === 'Rejected' ? 'text-rose-600 border-rose-300 bg-rose-50/10 font-bold' :
-              selectedStatus === 'Closed' ? 'text-slate-600 border-slate-300 bg-slate-50/10 font-bold' :
+              selectedStatus === 'Closed' ? 'text-blue-600 border-blue-300 bg-blue-50/10 font-bold' :
               selectedStatus.startsWith('Pending') ? 'text-amber-600 border-amber-300 bg-amber-50/10 font-bold' :
               'text-slate-500 border-slate-200 bg-white font-medium'
             }`}
@@ -1814,8 +1814,8 @@ export const AllRequests = ({
                 color = '#e11d48';
                 cls = 'text-rose-600 bg-white font-bold';
               } else if (isClosed) {
-                color = '#475569';
-                cls = 'text-slate-600 bg-white font-bold';
+                color = '#2563eb';
+                cls = 'text-blue-600 bg-white font-bold';
               } else if (isPend) {
                 color = '#d97706';
                 cls = 'text-amber-600 bg-white font-bold';
@@ -1909,11 +1909,10 @@ export const AllRequests = ({
                     <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
                     <td className="p-[16px]">
                       <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
-                        r.status === 'Pending L3' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' :
-                        r.status === 'Pending L2' ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                        r.status === 'Pending L1 HOD' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                        r.status?.startsWith('Pending') ? 'bg-amber-50 border-amber-200 text-amber-700' :
                         r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
                         r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
+                        r.status === 'Closed' ? 'bg-blue-50 border-blue-200 text-blue-700' :
                         'bg-teal-50 border-teal-200 text-teal-700'
                       }`}>
                         {r.status}
