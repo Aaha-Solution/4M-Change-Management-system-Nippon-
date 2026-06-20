@@ -25,7 +25,6 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 import { exportUsersListPDF } from '../../utils/pdfExport';
 
 export const Users = ({
-  userRole,
   userEmail,
   logAction,
   setToastMsg,
