@@ -307,6 +307,7 @@ export const L3RequestTracker = ({
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoOpenChangeNo, approvalLogs]);
 
   const handleViewAttachment = async (filename, changeNo, type = 'L1') => {

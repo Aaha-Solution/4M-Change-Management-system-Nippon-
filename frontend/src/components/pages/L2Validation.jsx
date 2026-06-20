@@ -261,7 +261,7 @@ export const L2Validation = ({
 
 
 
-  const handleViewL1Details = async (changeNo) => {
+  async function handleViewL1Details(changeNo) {
     // Open modal immediately with skeleton data to avoid blinking/flicker
     setSelectedL1Details({
       change_no: changeNo,
@@ -298,18 +298,24 @@ export const L2Validation = ({
       setSelectedL2Details(l2Res.data);
       
       const matchedChange = changes?.find(c => c.id === changeNo);
-      const hodStatus = matchedChange ? matchedChange.hodStatus : 'Pending';
-      const requester = matchedChange ? matchedChange.requester : '';
-      const date = matchedChange ? matchedChange.date : '';
       
-      const matchedL3 = l3Res.data?.find(log => log.changeNo === changeNo);
-      const newLogData = matchedL3 ? { ...matchedL3, hodStatus } : {
+      if (l2Res.data) {
+        setSelectedLog(l2Res.data);
+        return;
+      }
+
+      const activeL3 = l3Res.data?.find(a => a.changeNo === changeNo);
+      
+      const newLogData = {
         changeNo: changeNo,
-        requester: requester,
-        date: date,
-        hodStatus: hodStatus,
+        date: matchedChange ? formatDateToDDMMYYYY(matchedChange.date) : '-',
+        requester: matchedChange ? (matchedChange.requestBy || matchedChange.requester || '-') : '-',
+        status: activeL3 ? activeL3.status : 'Pending',
+        remarks: activeL3 ? activeL3.remarks : '-',
+        weldTest: '-',
+        qaTest: '-',
         ped: 'Pending',
-        quality: 'Pending',
+        qa: 'Pending',
         production: 'Pending',
         maintenance: 'Pending',
         pcl: 'Pending',
@@ -326,7 +332,7 @@ export const L2Validation = ({
     } finally {
       setIsFetchingL1(false);
     }
-  };
+  }
 
   const handleExportRequestDetailsPDF = () => {
     exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, 'all', setToastMsg);

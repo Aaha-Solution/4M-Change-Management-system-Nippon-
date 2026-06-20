@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { formatDateToDDMMYYYY } from './dateUtils';
+import { formatDateToDDMMYYYY, parseDDMMYYYYToDate } from './dateUtils';
 import { getRequestDisplayStatus } from './statusUtils';
 import { getSyncedDate } from './timeSync';
 import nipponLogoUrl from '../assets/Nippon Logo.png';
@@ -1644,10 +1644,11 @@ export const exportMonthlyAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
     const counts = Array(12).fill(0);
 
     filteredChanges.forEach(c => {
-      if (!c.date) return;
+      const dVal = c.rawDate || c.date;
+      if (!dVal) return;
       try {
-        const d = new Date(c.date);
-        if (!isNaN(d.getTime())) {
+        const d = parseDDMMYYYYToDate(dVal);
+        if (d && !isNaN(d.getTime())) {
           counts[d.getMonth()]++;
         }
       } catch {
@@ -1774,10 +1775,11 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
     const dataMap = months.map(m => ({ label: m, appr: 0, closed: 0, rej: 0, pend: 0 }));
 
     filteredChanges.forEach(c => {
-      if (!c.date) return;
+      const dVal = c.rawDate || c.date;
+      if (!dVal) return;
       try {
-        const d = new Date(c.date);
-        if (!isNaN(d.getTime())) {
+        const d = parseDDMMYYYYToDate(dVal);
+        if (d && !isNaN(d.getTime())) {
           const monthIdx = d.getMonth();
           const dispStatus = getRequestDisplayStatus(c);
           if (dispStatus === 'Approved') {

@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDashboardChanges, getEffectivenessLogs, getNotifications, getUsers } from '../../api/apiRoutes';
 import { getSyncedDate } from '../../utils/timeSync';
@@ -18,8 +18,7 @@ import {
   Bell,
   ChevronDown,
   ChevronUp,
-  Loader2,
-  AlertTriangle
+  Loader2
 } from 'lucide-react';
 
 const DashboardOverview = lazy(() => import('./DashboardOverview').then(m => ({ default: m.DashboardOverview })));
@@ -172,7 +171,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
-  const fetchUserDept = async () => {
+  const fetchUserDept = useCallback(async () => {
     try {
       const response = await getUsers();
       const list = response.data || [];
@@ -186,11 +185,11 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
     } catch (err) {
       console.error('Error fetching user department and users list:', err);
     }
-  };
+  }, [userEmail, setUsersList, setUserDept]);
 
   useEffect(() => {
     fetchUserDept();
-  }, [userEmail]);
+  }, [fetchUserDept]);
 
   // Clear toast notifications
   useEffect(() => {

@@ -449,8 +449,8 @@ export const DashboardOverview = ({
       let matchesMonth = true;
       if (monthVal !== 'All') {
         try {
-          const d = new Date(c.date);
-          if (!isNaN(d.getTime())) {
+          const d = parseDDMMYYYYToDate(c.rawDate || c.date);
+          if (d && !isNaN(d.getTime())) {
             const itemMonthName = d.toLocaleDateString('en-US', { month: 'short' });
             matchesMonth = (itemMonthName === monthVal);
           } else {
@@ -466,7 +466,7 @@ export const DashboardOverview = ({
         const fD = parseDDMMYYYYToDate(fromDateVal);
         if (fD) {
           fD.setHours(0, 0, 0, 0);
-          const itemD = parseDDMMYYYYToDate(c.date);
+          const itemD = parseDDMMYYYYToDate(c.rawDate || c.date);
           matchesFromDate = itemD && itemD >= fD;
         }
       }
@@ -476,7 +476,7 @@ export const DashboardOverview = ({
         const tD = parseDDMMYYYYToDate(toDateVal);
         if (tD) {
           tD.setHours(23, 59, 59, 999);
-          const itemD = parseDDMMYYYYToDate(c.date);
+          const itemD = parseDDMMYYYYToDate(c.rawDate || c.date);
           matchesToDate = itemD && itemD <= tD;
         }
       }
@@ -539,7 +539,7 @@ export const DashboardOverview = ({
   const filteredChangesForTable = getFilteredData(tableFilterMonth, tableFilterFromDate, tableFilterToDate, tableFilterPerson, tableFilterProcess, tableFilterMachine);
 
   const formattedDbChanges = filteredChangesForTable.map((c, idx) => {
-    const displayDate = formatDateToDDMMYY(c.date);
+    const displayDate = formatDateToDDMMYY(c.rawDate || c.date);
     const displayStatus = getRequestDisplayStatus(c);
 
     return {
@@ -553,7 +553,7 @@ export const DashboardOverview = ({
       // preserve all needed properties for modal view
       requester: c.requester,
       title: c.title,
-      rawDate: c.date,
+      rawDate: c.rawDate || c.date,
       requesterEmail: c.requesterEmail,
       hodStatus: c.hodStatus,
       l2Status: c.l2Status,
@@ -581,7 +581,7 @@ export const DashboardOverview = ({
   const paginatedTableRows = allTableRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   // Load details handler
-  const handleViewDetails = async (request) => {
+  async function handleViewDetails(request) {
     // Open modal immediately with skeleton data to avoid blinking/flicker
     setSelectedLog({
       changeNo: request.id,
@@ -643,7 +643,7 @@ export const DashboardOverview = ({
     } finally {
       setIsFetchingDetails(false);
     }
-  };
+  }
 
   const handleViewAttachment = async (filename, changeNo, type = 'L1') => {
     if (!filename || filename === '-') return;
@@ -1373,7 +1373,7 @@ export const DashboardOverview = ({
       // Fallback: if one date is empty, find min/max from actual data
       if (dataList.length > 0) {
         const parsedDates = dataList
-          .map(c => parseDDMMYYYYToDate(c.date))
+          .map(c => parseDDMMYYYYToDate(c.rawDate || c.date))
           .filter(Boolean);
         if (parsedDates.length > 0) {
           if (!startDate) {
@@ -1403,17 +1403,26 @@ export const DashboardOverview = ({
             datesToShow.push({ label, dateStr: formatDateToDDMMYY(nextDate) });
           }
         } else {
-          // Range is wider than 31 days. Show only dates that have requests
-          const uniqueDateStrings = [...new Set(dataList.map(c => formatDateToDDMMYY(c.date)).filter(s => s && s !== '-'))];
-          const sortedDates = uniqueDateStrings
-            .map(str => ({ str, dateObj: parseDDMMYYYYToDate(str) }))
-            .filter(x => x.dateObj)
-            .sort((a, b) => a.dateObj - b.dateObj);
+          // Range is wider than 31 days. Group by Month!
+          const startYear = sD.getFullYear();
+          const startMonth = sD.getMonth();
+          const endYear = eD.getFullYear();
+          const endMonth = eD.getMonth();
 
-          datesToShow = sortedDates.map(x => {
-            const label = x.dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
-            return { label, dateStr: x.str };
-          });
+          let curYear = startYear;
+          let curMonth = startMonth;
+
+          while (curYear < endYear || (curYear === endYear && curMonth <= endMonth)) {
+            const dateObj = new Date(curYear, curMonth, 1);
+            const label = dateObj.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+            datesToShow.push({ label, year: curYear, month: curMonth });
+
+            curMonth++;
+            if (curMonth > 11) {
+              curMonth = 0;
+              curYear++;
+            }
+          }
         }
       }
     } else if (hasMonthFilter) {
@@ -1436,10 +1445,11 @@ export const DashboardOverview = ({
       const counts = Array(12).fill(0);
 
       dataList.forEach(c => {
-        if (!c.date) return;
+        const dVal = c.rawDate || c.date;
+        if (!dVal) return;
         try {
-          const d = new Date(c.date);
-          if (!isNaN(d.getTime())) {
+          const d = parseDDMMYYYYToDate(dVal);
+          if (d && !isNaN(d.getTime())) {
             const monthIdx = d.getMonth();
             counts[monthIdx]++;
           }
@@ -1484,9 +1494,19 @@ export const DashboardOverview = ({
       }));
 
       dataList.forEach(c => {
-        if (!c.date) return;
-        const cDateStr = formatDateToDDMMYY(c.date);
-        const idx = datesToShow.findIndex(dInfo => dInfo.dateStr === cDateStr);
+        const dVal = c.rawDate || c.date;
+        if (!dVal) return;
+        const d = parseDDMMYYYYToDate(dVal);
+        if (!d) return;
+
+        const idx = datesToShow.findIndex(dInfo => {
+          if (dInfo.dateStr) {
+            return dInfo.dateStr === formatDateToDDMMYY(dVal);
+          } else {
+            return d.getFullYear() === dInfo.year && d.getMonth() === dInfo.month;
+          }
+        });
+
         if (idx !== -1) {
           dataMap[idx].value++;
         }
@@ -1501,7 +1521,7 @@ export const DashboardOverview = ({
         : 'w-[2.5%]';
 
       return (
-        <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px] overflow-x-auto gap-2`}>
+        <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px] overflow-x-auto overflow-y-hidden gap-2`}>
           {dataMap.map((item, idx) => {
             const barHeight = (item.value / maxVal) * 100;
             return (
@@ -1547,7 +1567,7 @@ export const DashboardOverview = ({
       // Fallback: if one date is empty, find min/max from actual data
       if (dataList.length > 0) {
         const parsedDates = dataList
-          .map(c => parseDDMMYYYYToDate(c.date))
+          .map(c => parseDDMMYYYYToDate(c.rawDate || c.date))
           .filter(Boolean);
         if (parsedDates.length > 0) {
           if (!startDate) {
@@ -1578,17 +1598,26 @@ export const DashboardOverview = ({
             datesToShow.push({ label, dateStr: formatDateToDDMMYY(nextDate) });
           }
         } else {
-          // Range is wider than 31 days. Show only dates that have requests to keep layout neat.
-          const uniqueDateStrings = [...new Set(dataList.map(c => formatDateToDDMMYY(c.date)).filter(s => s && s !== '-'))];
-          const sortedDates = uniqueDateStrings
-            .map(str => ({ str, dateObj: parseDDMMYYYYToDate(str) }))
-            .filter(x => x.dateObj)
-            .sort((a, b) => a.dateObj - b.dateObj);
+          // Range is wider than 31 days. Group by Month!
+          const startYear = sD.getFullYear();
+          const startMonth = sD.getMonth();
+          const endYear = eD.getFullYear();
+          const endMonth = eD.getMonth();
 
-          datesToShow = sortedDates.map(x => {
-            const label = x.dateObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
-            return { label, dateStr: x.str };
-          });
+          let curYear = startYear;
+          let curMonth = startMonth;
+
+          while (curYear < endYear || (curYear === endYear && curMonth <= endMonth)) {
+            const dateObj = new Date(curYear, curMonth, 1);
+            const label = dateObj.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+            datesToShow.push({ label, year: curYear, month: curMonth });
+
+            curMonth++;
+            if (curMonth > 11) {
+              curMonth = 0;
+              curYear++;
+            }
+          }
         }
       }
     } else if (hasMonthFilter) {
@@ -1611,10 +1640,11 @@ export const DashboardOverview = ({
       const dataMap = months.map(m => ({ label: m, appr: 0, closed: 0, rej: 0, pend: 0 }));
 
       dataList.forEach(c => {
-        if (!c.date) return;
+        const dVal = c.rawDate || c.date;
+        if (!dVal) return;
         try {
-          const d = new Date(c.date);
-          if (!isNaN(d.getTime())) {
+          const d = parseDDMMYYYYToDate(dVal);
+          if (d && !isNaN(d.getTime())) {
             const monthIdx = d.getMonth();
             const dispStatus = getRequestDisplayStatus(c);
             if (dispStatus === 'Approved') {
@@ -1720,9 +1750,19 @@ export const DashboardOverview = ({
       }));
 
       dataList.forEach(c => {
-        if (!c.date) return;
-        const cDateStr = formatDateToDDMMYY(c.date);
-        const idx = datesToShow.findIndex(dInfo => dInfo.dateStr === cDateStr);
+        const dVal = c.rawDate || c.date;
+        if (!dVal) return;
+        const d = parseDDMMYYYYToDate(dVal);
+        if (!d) return;
+
+        const idx = datesToShow.findIndex(dInfo => {
+          if (dInfo.dateStr) {
+            return dInfo.dateStr === formatDateToDDMMYY(dVal);
+          } else {
+            return d.getFullYear() === dInfo.year && d.getMonth() === dInfo.month;
+          }
+        });
+
         if (idx !== -1) {
           const dispStatus = getRequestDisplayStatus(c);
           if (dispStatus === 'Approved') {
@@ -1750,7 +1790,7 @@ export const DashboardOverview = ({
         : 'w-[2.5%]';
 
       return (
-        <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px] overflow-x-auto gap-2`}>
+        <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px] overflow-x-auto overflow-y-hidden gap-2`}>
           {dataMap.map((item, idx) => {
             const hAppr = (item.appr / maxVal) * 100;
             const hClosed = (item.closed / maxVal) * 100;
@@ -2291,7 +2331,9 @@ export const DashboardOverview = ({
                     if (tableDataStr) {
                       defaultRows = JSON.parse(tableDataStr);
                     }
-                  } catch (e) {}
+                  } catch (err) {
+                    console.error('Failed to parse table data:', err);
+                  }
 
                   if (!defaultRows || defaultRows.length === 0) {
                     if (area === 'cost') {
@@ -2464,11 +2506,6 @@ export const DashboardOverview = ({
     };
 
     if (tab === 'l1') {
-      const dKeys = ['description', 'improvement_area', 'date_start', 'date_close', 'file_desc', 'file_improvement', 'improvement_table_data'];
-      const tKeys = ['trace_from', 'trace_to', 'risk_analysis', 'sop_update', 'customer_approval', 'effectiveness_monitoring', 'hod_approval', 'hodStatus', 'hodRemarks', 'file_trace_from', 'file_trace_to', 'file_risk', 'file_sop', 'file_effectiveness'];
-      
-      const allDefinedKeys = ['title', 'unit', 'change_in', 'dept', 'change_type', 'process_name', 'process_line', 'machine_no', 'request_by', 'crRequester', 'crDate', 'requested_time', 'crStatus', ...dKeys, ...tKeys, 'id', 'change_no', 'changeNo'];
-      const otherFields = Object.keys(data).filter(k => !allDefinedKeys.includes(k));
 
       const processOptions = Array.from(new Set([
         ...(dbProcesses.length > 0 ? dbProcesses : []),
@@ -3270,8 +3307,6 @@ export const DashboardOverview = ({
     }
 
     if (tab === 'l2') {
-      const l2Keys = ['date', 'requester', 'status', 'changeNo', 'weldTest', 'qaTest', 'remarks'];
-      const otherFields = Object.keys(data).filter(k => !l2Keys.includes(k) && !['id', 'change_no', 'changeNo'].includes(k));
       return (
         <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px] animate-fade-in-up">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
@@ -3301,8 +3336,6 @@ export const DashboardOverview = ({
     }
 
     if (tab === 'l3') {
-      const l3Keys = ['changeNo', 'requester', 'date', 'ped', 'quality', 'production', 'maintenance', 'pcl', 'materials', 'marketing', 'hr', 'safety', 'unitHead'];
-      const otherFields = Object.keys(data).filter(k => !l3Keys.includes(k) && !['id', 'change_no', 'changeNo'].includes(k));
       return (
         <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px] animate-fade-in-up">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
@@ -3342,7 +3375,7 @@ export const DashboardOverview = ({
           <FileText size={14} className="text-[#0066cc]" /> {tab === 'l2' ? 'Validation Details' : 'Approval Details'}
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-          {Object.entries(data).map(([key, value]) => {
+          {Object.keys(data).map((key) => {
             if (['id', 'change_no', 'changeNo'].includes(key)) return null;
             return renderFieldInput(key.replace(/_/g, ' '), key);
           })}

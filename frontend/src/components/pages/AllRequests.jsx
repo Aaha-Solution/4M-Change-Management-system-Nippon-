@@ -27,9 +27,7 @@ export const AllRequests = ({
   usersList = [],
   autoOpenChangeNo = null,
   clearAutoOpen = () => {},
-  isAdmin = false,
-  userEmail = '',
-  userName = ''
+  isAdmin = false
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('All');
@@ -56,14 +54,6 @@ export const AllRequests = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [editL1Data, setEditL1Data] = useState({});
 
-  const isRequester = (userEmail && (
-    (selectedLog?.requesterEmail && selectedLog.requesterEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()) ||
-    (selectedLog?.requester && selectedLog.requester.toLowerCase().trim() === userEmail.toLowerCase().trim()) ||
-    (selectedL1Details?.crRequester && selectedL1Details.crRequester.toLowerCase().trim() === userEmail.toLowerCase().trim())
-  )) || (userName && (
-    (selectedLog?.requester && selectedLog.requester.toLowerCase().trim() === userName.toLowerCase().trim()) ||
-    (selectedL1Details?.request_by && selectedL1Details.request_by.toLowerCase().trim() === userName.toLowerCase().trim())
-  ));
   const canEdit = isAdmin;
   const [editL2Data, setEditL2Data] = useState({});
   const [editL3Data, setEditL3Data] = useState({});
@@ -341,7 +331,7 @@ export const AllRequests = ({
   const paginatedData = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   // Load details handler
-  const handleViewDetails = async (request) => {
+  async function handleViewDetails(request) {
     // Open modal immediately with skeleton data to avoid blinking/flicker
     setSelectedLog({
       changeNo: request.id,
@@ -403,7 +393,7 @@ export const AllRequests = ({
     } finally {
       setIsFetchingDetails(false);
     }
-  };
+  }
 
   // Auto-open request details modal when navigated from dashboard overview Eye icon
   useEffect(() => {
@@ -573,7 +563,9 @@ export const AllRequests = ({
                     if (tableDataStr) {
                       defaultRows = JSON.parse(tableDataStr);
                     }
-                  } catch (e) {}
+                  } catch (err) {
+                    console.error('Failed to parse table data:', err);
+                  }
 
                   if (!defaultRows || defaultRows.length === 0) {
                     if (area === 'cost') {
@@ -746,11 +738,6 @@ export const AllRequests = ({
     };
 
     if (tab === 'l1') {
-      const dKeys = ['description', 'improvement_area', 'date_start', 'date_close', 'file_desc', 'file_improvement', 'improvement_table_data'];
-      const tKeys = ['trace_from', 'trace_to', 'risk_analysis', 'sop_update', 'customer_approval', 'effectiveness_monitoring', 'hod_approval', 'hodStatus', 'hodRemarks', 'file_trace_from', 'file_trace_to', 'file_risk', 'file_sop', 'file_effectiveness'];
-      
-      const allDefinedKeys = ['title', 'unit', 'change_in', 'dept', 'change_type', 'process_name', 'process_line', 'machine_no', 'request_by', 'crRequester', 'crDate', 'requested_time', 'crStatus', ...dKeys, ...tKeys, 'id', 'change_no', 'changeNo'];
-      const otherFields = Object.keys(data).filter(k => !allDefinedKeys.includes(k));
 
       const processOptions = Array.from(new Set([
         ...(dbProcesses.length > 0 ? dbProcesses : []),
@@ -1552,8 +1539,6 @@ export const AllRequests = ({
     }
 
     if (tab === 'l2') {
-      const l2Keys = ['date', 'requester', 'status', 'changeNo', 'weldTest', 'qaTest', 'remarks'];
-      const otherFields = Object.keys(data).filter(k => !l2Keys.includes(k) && !['id', 'change_no', 'changeNo'].includes(k));
       return (
         <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px] animate-fade-in-up">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
@@ -1583,8 +1568,6 @@ export const AllRequests = ({
     }
 
     if (tab === 'l3') {
-      const l3Keys = ['changeNo', 'requester', 'date', 'ped', 'quality', 'production', 'maintenance', 'pcl', 'materials', 'marketing', 'hr', 'safety', 'unitHead'];
-      const otherFields = Object.keys(data).filter(k => !l3Keys.includes(k) && !['id', 'change_no', 'changeNo'].includes(k));
       return (
         <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px] animate-fade-in-up">
           <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px] flex items-center gap-1.5">
@@ -1624,7 +1607,7 @@ export const AllRequests = ({
           <FileText size={14} className="text-[#0066cc]" /> {tab === 'l2' ? 'Validation Details' : 'Approval Details'}
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-          {Object.entries(data).map(([key, value]) => {
+          {Object.keys(data).map((key) => {
             if (['id', 'change_no', 'changeNo'].includes(key)) return null;
             return renderFieldInput(key.replace(/_/g, ' '), key);
           })}
