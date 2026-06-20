@@ -23,7 +23,8 @@ import {
   Info,
   Layers,
   ArrowRight,
-  Cpu
+  Cpu,
+  Save
 } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
 import {
@@ -35,7 +36,9 @@ import {
   getL2Details,
   getL2Attachment,
   getL3Approvals,
-  getUsers
+  getUsers,
+  getEffectivenessLogs,
+  getEffectivenessAttachment
 } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { exportApprovalsListPDF } from '../../utils/pdfExport';
@@ -76,7 +79,7 @@ const workflowStageConfig = (crStatus) => {
     case 'approved':
       return { label: 'L3 – HOD Decisions', color: 'bg-indigo-50 border-indigo-200 text-indigo-700', dot: 'bg-indigo-500', level: 'L3' };
     case 'completed':
-      return { label: 'Completed', color: 'bg-emerald-50 border-emerald-200 text-emerald-700', dot: 'bg-emerald-500', level: '✓' };
+      return { label: 'Closed', color: 'bg-emerald-50 border-emerald-200 text-emerald-700', dot: 'bg-emerald-500', level: '✓' };
     default:
       return { label: crStatus || 'Unknown', color: 'bg-slate-50 border-slate-200 text-slate-600', dot: 'bg-slate-400', level: '?' };
   }
@@ -101,15 +104,31 @@ const StatusBadge = ({ status }) => {
 };
 
 // Workflow steps strip shown in modal header
-const WorkflowStrip = ({ crStatus }) => {
+const WorkflowStrip = ({ crStatus, qaApproval }) => {
   const steps = [
     { key: 'L1', label: 'L1 HOD Review' },
     { key: 'L2', label: 'L2 QA Validation' },
     { key: 'L3', label: 'L3 HOD Decisions' },
-    { key: 'Done', label: 'Completed' },
+    { key: 'Eff', label: 'Effectiveness' },
+    { key: 'Done', label: 'Closed' },
   ];
   const statusLower = (crStatus || '').toLowerCase();
-  const activeIdx = statusLower === 'pending' ? 0 : statusLower === 'evaluating' ? 1 : statusLower === 'approved' ? 2 : statusLower === 'completed' ? 4 : 0;
+  const qaAppLower = (qaApproval || '').toLowerCase();
+
+  let activeIdx = 0;
+  if (statusLower === 'pending') {
+    activeIdx = 0;
+  } else if (statusLower === 'evaluating') {
+    activeIdx = 1;
+  } else if (statusLower === 'approved') {
+    activeIdx = 2;
+  } else if (statusLower === 'completed') {
+    if (qaAppLower === 'approved') {
+      activeIdx = 5;
+    } else {
+      activeIdx = 3;
+    }
+  }
 
   return (
     <div className="flex items-center gap-0 px-[4px] mt-[8px] overflow-x-auto justify-center">
@@ -121,7 +140,7 @@ const WorkflowStrip = ({ crStatus }) => {
               i === activeIdx ? 'bg-white border-white text-[#0066cc] shadow' :
               'bg-white/20 border-white/30 text-white/50'
             }`}>
-              {i < activeIdx ? '✓' : s.key.replace('Done', '✓')}
+              {i < activeIdx ? '✓' : (s.key === 'Done' ? '✓' : s.key)}
             </div>
             <span className={`text-[8px] sm:text-[9px] font-bold mt-[2px] whitespace-nowrap ${i === activeIdx ? 'text-white' : i < activeIdx ? 'text-emerald-200' : 'text-white/40'}`}>
               {s.label}
@@ -155,6 +174,7 @@ export const AllApprovals = ({
   const [selectedReq, setSelectedReq] = useState(null);
   const [l1Details, setL1Details] = useState(null);
   const [selectedL2Details, setSelectedL2Details] = useState(null);
+  const [selectedEffDetails, setSelectedEffDetails] = useState(null);
   const [selectedLog, setSelectedLog] = useState(null);
   const [activeTab, setActiveTab] = useState('l1');
   const [isFetchingDetails, setIsFetchingDetails] = useState(false);
@@ -254,6 +274,7 @@ export const AllApprovals = ({
     setRemarks(req.hodRemarks || '');
     setL1Details(null);
     setSelectedL2Details(null);
+    setSelectedEffDetails(null);
     setSelectedLog({
       changeNo: req.changeNo,
       requester: req.requestBy || req.requesterEmail,
@@ -274,13 +295,18 @@ export const AllApprovals = ({
     setIsFetchingDetails(true);
     setActiveTab('l1');
     try {
-      const [l1Res, l2Res, l3Res] = await Promise.all([
+      const [l1Res, l2Res, l3Res, effRes] = await Promise.all([
         getL1Details(req.changeNo),
         getL2Details(req.changeNo).catch(() => ({ data: null })),
-        getL3Approvals().catch(() => ({ data: [] }))
+        getL3Approvals().catch(() => ({ data: [] })),
+        getEffectivenessLogs().catch(() => ({ data: [] }))
       ]);
       setL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
+      const matchedEff = effRes.data?.find(
+        l => l.changeNo?.toLowerCase().trim() === req.changeNo?.toLowerCase().trim()
+      );
+      setSelectedEffDetails(matchedEff || null);
 
       const matchedL3 = l3Res.data?.find(log => log.changeNo === req.changeNo);
       const newLogData = matchedL3 ? { ...matchedL3, hodStatus: req.hodStatus } : {
@@ -301,7 +327,7 @@ export const AllApprovals = ({
       };
       setSelectedLog(newLogData);
     } catch (err) {
-      console.error('Error fetching L1/L2/L3 details:', err);
+      console.error('Error fetching L1/L2/L3/Eff details:', err);
     } finally {
       setIsFetchingDetails(false);
     }
@@ -323,6 +349,7 @@ export const AllApprovals = ({
     setSelectedReq(null);
     setL1Details(null);
     setSelectedL2Details(null);
+    setSelectedEffDetails(null);
     setSelectedLog(null);
     setRemarks('');
     setPreviewFile(null);
@@ -336,6 +363,8 @@ export const AllApprovals = ({
         let res;
         if (type === 'L2') {
           res = await getL2Attachment(changeNo, filename);
+        } else if (type === 'Effectiveness') {
+          res = await getEffectivenessAttachment(changeNo, filename);
         } else {
           res = await getL1Attachment(changeNo, filename);
         }
@@ -858,7 +887,7 @@ export const AllApprovals = ({
               </div>
               {/* Workflow progress strip */}
               <div className="mt-3">
-                <WorkflowStrip crStatus={selectedReq.crStatus} />
+                <WorkflowStrip crStatus={selectedReq.crStatus} qaApproval={selectedReq.qaApproval} />
               </div>
             </div>
 
@@ -920,6 +949,19 @@ export const AllApprovals = ({
                   }`}
                 >
                   3. L3 Approval Details
+                </button>
+              )}
+              {l1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (selectedReq?.crStatus || '').toLowerCase() === 'completed' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('effectiveness')}
+                  className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
+                    activeTab === 'effectiveness' 
+                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                  }`}
+                >
+                  4. Effectiveness
                 </button>
               )}
             </div>
@@ -1461,6 +1503,103 @@ export const AllApprovals = ({
                         })}
                       </div>
                     </div>
+                  )}
+
+                  {activeTab === 'effectiveness' && (
+                    (() => {
+                      const currentEffLog = selectedEffDetails;
+                      if (!currentEffLog) {
+                        return (
+                          <div className="text-center py-[64px] bg-slate-50 rounded-xl border border-dashed border-slate-200 w-full">
+                            <AlertTriangle className="mx-auto mb-[12px] text-slate-350" size={32} />
+                            <span className="text-slate-400 font-medium">Effectiveness monitoring log is pending creation/validation for this request.</span>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-[20px] animate-fade-in-up">
+                          <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                            <CheckCircle2 size={14} />
+                            <span>Effectiveness Monitoring Log Details</span>
+                          </h5>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                              <span className="font-mono font-bold text-slate-800">{currentEffLog.changeNo}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                              <span className="font-medium text-slate-700">{currentEffLog.reqDate ? formatDateToDDMMYYYY(currentEffLog.reqDate) : '-'}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start</span>
+                              <span className="font-medium text-slate-700">{currentEffLog.startDate ? formatDateToDDMMYYYY(currentEffLog.startDate) : '-'}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise</span>
+                              <span className="font-medium text-slate-700">{currentEffLog.monthWise || '-'}</span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Status</span>
+                              <div>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  currentEffLog.status === 'Effectiveness Ok'
+                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                    : 'bg-rose-50 border-rose-250 text-rose-700'
+                                }`}>
+                                  {currentEffLog.status}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Approval</span>
+                              <div>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  currentEffLog.qaApproval === 'Approved'
+                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                    : 'bg-rose-50 border-rose-200 text-rose-700'
+                                }`}>
+                                  {currentEffLog.qaApproval}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-[6px] mt-4">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Attachments</span>
+                            {currentEffLog.attachment ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {currentEffLog.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                                  <span
+                                    key={idx}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleViewAttachment(file, currentEffLog.id, 'Effectiveness');
+                                    }}
+                                    className="inline-flex items-center gap-1 bg-slate-50 border border-slate-150 text-[11px] font-medium text-slate-700 px-2.5 py-1 rounded-full hover:bg-slate-100 hover:border-[#0066cc] hover:text-[#0066cc] cursor-pointer"
+                                    title="Click to view file"
+                                  >
+                                    📎 {file}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : '-'}
+                          </div>
+
+                          <div className="space-y-[4px] mt-4">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Remarks / Comments</span>
+                            <div className="bg-slate-50 border border-slate-150 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
+                              {currentEffLog.remarks}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()
                   )}
                 </>
               )}
