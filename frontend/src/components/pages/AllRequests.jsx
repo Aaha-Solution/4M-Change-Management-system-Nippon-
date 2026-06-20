@@ -62,6 +62,7 @@ export const AllRequests = ({
   const [editL3Data, setEditL3Data] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
     setIsEditMode(false);
@@ -577,9 +578,13 @@ export const AllRequests = ({
                   <button
                     type="button"
                     onClick={() => {
-                      if (window.confirm('Are you sure you want to clear all table rows?')) {
-                        setData({ ...data, [key]: '' });
-                      }
+                      setDeleteConfirm({
+                        title: 'Clear Table Data?',
+                        message: 'Are you sure you want to clear all table rows?',
+                        onConfirm: () => {
+                          setData({ ...data, [key]: '' });
+                        }
+                      });
                     }}
                     className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                     title="Clear table data"
@@ -650,10 +655,14 @@ export const AllRequests = ({
                   <button
                     type="button"
                     onClick={() => {
-                      if (window.confirm('Are you sure you want to clear all attachments from this field?')) {
-                        setData({ ...data, [key]: '' });
-                        setUploadedFilesList(prev => prev.filter(f => f.fieldName !== key));
-                      }
+                      setDeleteConfirm({
+                        title: 'Clear Attachments?',
+                        message: 'Are you sure you want to clear all attachments from this field?',
+                        onConfirm: () => {
+                          setData({ ...data, [key]: '' });
+                          setUploadedFilesList(prev => prev.filter(f => f.fieldName !== key));
+                        }
+                      });
                     }}
                     className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                     title="Clear attachments"
@@ -733,12 +742,16 @@ export const AllRequests = ({
                     <button
                       type="button"
                       onClick={() => {
-                        if (window.confirm(`Are you sure you want to delete "${file}"?`)) {
-                          const existing = value.split(',').map(s => s.trim()).filter(Boolean);
-                          const updated = existing.filter(f => f !== file).join(', ');
-                          setData({ ...data, [key]: updated });
-                          setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === key && f.name === file)));
-                        }
+                        setDeleteConfirm({
+                          title: 'Delete Attachment?',
+                          message: `Are you sure you want to delete "${file}"?`,
+                          onConfirm: () => {
+                            const existing = value.split(',').map(s => s.trim()).filter(Boolean);
+                            const updated = existing.filter(f => f !== file).join(', ');
+                            setData({ ...data, [key]: updated });
+                            setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === key && f.name === file)));
+                          }
+                        });
                       }}
                       className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-[12px]"
                     >
@@ -1038,10 +1051,14 @@ export const AllRequests = ({
                     <button
                       type="button"
                       onClick={() => {
-                        if (window.confirm('Are you sure you want to clear all attachments from this field?')) {
-                          setData({ ...data, file_desc: '' });
-                          setUploadedFilesList(prev => prev.filter(f => f.fieldName !== 'file_desc'));
-                        }
+                        setDeleteConfirm({
+                          title: 'Clear Attachments?',
+                          message: 'Are you sure you want to clear all attachments from this field?',
+                          onConfirm: () => {
+                            setData({ ...data, file_desc: '' });
+                            setUploadedFilesList(prev => prev.filter(f => f.fieldName !== 'file_desc'));
+                          }
+                        });
                       }}
                       className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                       title="Clear attachments"
@@ -1120,12 +1137,16 @@ export const AllRequests = ({
                       <button
                         type="button"
                         onClick={() => {
-                          if (window.confirm(`Are you sure you want to delete "${file}"?`)) {
-                            const existing = data.file_desc.split(',').map(s => s.trim()).filter(Boolean);
-                            const updated = existing.filter(f => f !== file).join(', ');
-                            setData({ ...data, file_desc: updated });
-                            setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === 'file_desc' && f.name === file)));
-                          }
+                          setDeleteConfirm({
+                            title: 'Delete Attachment?',
+                            message: `Are you sure you want to delete "${file}"?`,
+                            onConfirm: () => {
+                              const existing = data.file_desc.split(',').map(s => s.trim()).filter(Boolean);
+                              const updated = existing.filter(f => f !== file).join(', ');
+                              setData({ ...data, file_desc: updated });
+                              setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === 'file_desc' && f.name === file)));
+                            }
+                          });
                         }}
                         className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-[12px]"
                       >
@@ -1326,10 +1347,14 @@ export const AllRequests = ({
                     <button
                       type="button"
                       onClick={() => {
-                        if (window.confirm('Are you sure you want to clear all attachments from this field?')) {
-                          setData({ ...data, file_risk: '' });
-                          setUploadedFilesList(prev => prev.filter(f => f.fieldName !== 'file_risk'));
-                        }
+                        setDeleteConfirm({
+                          title: 'Clear Attachments?',
+                          message: 'Are you sure you want to clear all attachments from this field?',
+                          onConfirm: () => {
+                            setData({ ...data, file_risk: '' });
+                            setUploadedFilesList(prev => prev.filter(f => f.fieldName !== 'file_risk'));
+                          }
+                        });
                       }}
                       className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                       title="Clear attachments"
@@ -1407,12 +1432,16 @@ export const AllRequests = ({
                       <button
                         type="button"
                         onClick={() => {
-                          if (window.confirm(`Are you sure you want to delete "${file}"?`)) {
-                            const existing = data.file_risk.split(',').map(s => s.trim()).filter(Boolean);
-                            const updated = existing.filter(f => f !== file).join(', ');
-                            setData({ ...data, file_risk: updated });
-                            setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === 'file_risk' && f.name === file)));
-                          }
+                          setDeleteConfirm({
+                            title: 'Delete Attachment?',
+                            message: `Are you sure you want to delete "${file}"?`,
+                            onConfirm: () => {
+                              const existing = data.file_risk.split(',').map(s => s.trim()).filter(Boolean);
+                              const updated = existing.filter(f => f !== file).join(', ');
+                              setData({ ...data, file_risk: updated });
+                              setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === 'file_risk' && f.name === file)));
+                            }
+                          });
                         }}
                         className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-[12px]"
                       >
@@ -1461,10 +1490,14 @@ export const AllRequests = ({
                     <button
                       type="button"
                       onClick={() => {
-                        if (window.confirm('Are you sure you want to clear all attachments from this field?')) {
-                          setData({ ...data, file_sop: '' });
-                          setUploadedFilesList(prev => prev.filter(f => f.fieldName !== 'file_sop'));
-                        }
+                        setDeleteConfirm({
+                          title: 'Clear Attachments?',
+                          message: 'Are you sure you want to clear all attachments from this field?',
+                          onConfirm: () => {
+                            setData({ ...data, file_sop: '' });
+                            setUploadedFilesList(prev => prev.filter(f => f.fieldName !== 'file_sop'));
+                          }
+                        });
                       }}
                       className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                       title="Clear attachments"
@@ -1542,12 +1575,16 @@ export const AllRequests = ({
                       <button
                         type="button"
                         onClick={() => {
-                          if (window.confirm(`Are you sure you want to delete "${file}"?`)) {
-                            const existing = data.file_sop.split(',').map(s => s.trim()).filter(Boolean);
-                            const updated = existing.filter(f => f !== file).join(', ');
-                            setData({ ...data, file_sop: updated });
-                            setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === 'file_sop' && f.name === file)));
-                          }
+                          setDeleteConfirm({
+                            title: 'Delete Attachment?',
+                            message: `Are you sure you want to delete "${file}"?`,
+                            onConfirm: () => {
+                              const existing = data.file_sop.split(',').map(s => s.trim()).filter(Boolean);
+                              const updated = existing.filter(f => f !== file).join(', ');
+                              setData({ ...data, file_sop: updated });
+                              setUploadedFilesList(prev => prev.filter(f => !(f.fieldName === 'file_sop' && f.name === file)));
+                            }
+                          });
                         }}
                         className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-[12px]"
                       >
@@ -3114,6 +3151,43 @@ export const AllRequests = ({
                 className="px-4 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
               >
                 Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Attachment Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-[16px]">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setDeleteConfirm(null)} />
+          <div className="relative bg-white w-full max-w-[320px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 p-[24px] text-center animate-fade-in-up">
+            <div className="mx-auto bg-rose-100 text-rose-600 p-[12px] rounded-full mb-[16px]">
+              <AlertTriangle size={24} />
+            </div>
+            <h4 className="text-[16px] font-bold text-slate-800 mb-[8px]">
+              {deleteConfirm.title || 'Delete Attachment?'}
+            </h4>
+            <p className="text-[13px] text-slate-500 mb-[24px]">
+              {deleteConfirm.message || 'Are you sure you want to delete this attachment? This action cannot be undone.'}
+            </p>
+            <div className="flex gap-[12px] w-full">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-[10px] rounded-[8px] text-[13px] font-bold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteConfirm.onConfirm();
+                  setDeleteConfirm(null);
+                }}
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-[10px] rounded-[8px] text-[13px] font-bold transition-colors shadow-sm cursor-pointer"
+              >
+                Delete
               </button>
             </div>
           </div>
