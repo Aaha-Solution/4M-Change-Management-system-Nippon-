@@ -26,12 +26,14 @@ export const getL3Approvals = async () => {
             COALESCE(l.marketing, 'Pending') as marketing,
             COALESCE(l.hr, 'Pending') as hr,
             COALESCE(l.safety, 'Pending') as safety,
-            COALESCE(l.unit_head, 'Pending') as unitHead
+            COALESCE(l.unit_head, 'Pending') as unitHead,
+            e.qa_approval as qaApproval
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
      LEFT JOIN users u ON c.requester = u.email
      INNER JOIN l2_validation_logs v ON c.id = v.change_no AND v.status = 'Accepted'
      LEFT JOIN l3_approvals l ON c.id = l.change_no
+     LEFT JOIN effectiveness_logs e ON c.id = e.change_no
      ORDER BY c.created_at DESC`
   );
   return rows;
@@ -175,23 +177,7 @@ export const addL3ApprovalLog = async (logData) => {
     const raisedDept = crRows.length > 0 ? crRows[0].raisedDept : '';
     const requesterEmail = crRows.length > 0 ? crRows[0].requesterEmail : '';
 
-    const mapDbDeptToL3Dept = (dbDept) => {
-      if (!dbDept) return 'QAD';
-      const dept = dbDept.trim().toLowerCase();
-      if (dept === 'qad' || dept === 'quality') return 'QAD';
-      if (dept === 'ped') return 'PED';
-      if (dept === 'production') return 'Production';
-      if (dept === 'maintenance') return 'Maintenance';
-      if (dept === 'pc & l' || dept === 'pcl') return 'PC & L';
-      if (dept === 'materials') return 'Materials';
-      if (dept === 'marketing') return 'Marketing';
-      if (dept === 'hr') return 'HR';
-      if (dept === 'safety') return 'Safety';
-      if (dept === 'unit head' || dept === 'unit_head') return 'Unit Head';
-      return 'QAD';
-    };
 
-    const mappedRaisedDept = mapDbDeptToL3Dept(raisedDept);
 
     const isAllL3Decided = 
       ped !== 'Pending' &&

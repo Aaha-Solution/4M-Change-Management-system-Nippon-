@@ -65,6 +65,15 @@ export const submitHodApproval = async (req, res) => {
   }
 
   try {
+    // Check if the change request is Closed
+    const [closedRows] = await pool.query(
+      `SELECT qa_approval FROM effectiveness_logs WHERE change_no = ?`,
+      [changeNo]
+    );
+    if (closedRows.length > 0 && closedRows[0].qa_approval === 'Approved') {
+      return res.status(403).json({ error: 'Access Denied: The change request is Closed and cannot be modified.' });
+    }
+
     // Verify the user is an HOD/Admin
     const [userRows] = await pool.query(
       'SELECT role, department FROM users WHERE email = ?',

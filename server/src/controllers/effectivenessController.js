@@ -79,6 +79,11 @@ export const updateLog = async (req, res) => {
   }
 
   try {
+    const [logRows] = await pool.query('SELECT qa_approval FROM effectiveness_logs WHERE id = ?', [id]);
+    if (logRows.length > 0 && logRows[0].qa_approval === 'Approved') {
+      return res.status(403).json({ error: 'Access Denied: This effectiveness log is Closed and cannot be updated.' });
+    }
+
     const [userRows] = await pool.query('SELECT department, role FROM users WHERE email = ?', [req.user?.email]);
     if (userRows.length === 0) {
       return res.status(403).json({ error: 'Access Denied: User not found.' });
@@ -116,6 +121,11 @@ export const deleteLog = async (req, res) => {
   const { id } = req.params;
 
   try {
+    const [logRows] = await pool.query('SELECT qa_approval FROM effectiveness_logs WHERE id = ?', [id]);
+    if (logRows.length > 0 && logRows[0].qa_approval === 'Approved') {
+      return res.status(403).json({ error: 'Access Denied: This effectiveness log is Closed and cannot be deleted.' });
+    }
+
     const canUpdate = await checkCanUpdate(req.user?.email);
     if (!canUpdate) {
       return res.status(403).json({ error: 'Access Denied: Only authorized users in the Quality (QA) department and Administrators are allowed to delete effectiveness logs.' });

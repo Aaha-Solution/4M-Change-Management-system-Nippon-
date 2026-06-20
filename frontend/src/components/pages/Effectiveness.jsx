@@ -500,8 +500,9 @@ export const Effectiveness = ({
   );
 
   const isAlreadyValidated = !!matchedLog;
+  const isClosed = matchedLog?.qaApproval === 'Approved';
   const isQaUpdateBlocked = !!(matchedLog && !isAdmin && isQADept && (matchedLog.qaUpdateCount >= 1));
-  const isUpdateBlocked = !canUpdate || isQaUpdateBlocked;
+  const isUpdateBlocked = !canUpdate || isQaUpdateBlocked || isClosed;
 
   // Derive display values for requested date, context, start date
   const displayReqDate = selectedChange ? formatDateShort(selectedChange.rawDate || selectedChange.date) : '';
@@ -538,31 +539,42 @@ export const Effectiveness = ({
               />
             </div>
 
-            {effChangeNo && isAlreadyValidated && isQaUpdateBlocked && (
-              <div className="bg-amber-50 border border-amber-250 text-amber-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
-                <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
+            {effChangeNo && isClosed ? (
+              <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                <CheckCircle2 size={14} className="shrink-0 mt-0.5 text-emerald-600" />
                 <div>
-                  <span className="font-bold">Log Locked:</span> You have already updated this effectiveness log once. Unlimited updates are allowed only for Administrators.
+                  <span className="font-bold">Log Closed:</span> This effectiveness log has been Approved and Closed. No further updates are allowed.
                 </div>
               </div>
-            )}
+            ) : (
+              <>
+                {effChangeNo && isAlreadyValidated && isQaUpdateBlocked && (
+                  <div className="bg-amber-50 border border-amber-250 text-amber-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                    <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
+                    <div>
+                      <span className="font-bold">Log Locked:</span> You have already updated this effectiveness log once. Unlimited updates are allowed only for Administrators.
+                    </div>
+                  </div>
+                )}
 
-            {effChangeNo && isAlreadyValidated && isAdmin && (
-              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
-                <AlertTriangle size={14} className="shrink-0 mt-0.5 text-blue-600" />
-                <div>
-                  <span className="font-bold">Admin Edit Mode:</span> You have unlimited update access to modify this effectiveness log.
-                </div>
-              </div>
-            )}
+                {effChangeNo && isAlreadyValidated && isAdmin && (
+                  <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                    <AlertTriangle size={14} className="shrink-0 mt-0.5 text-blue-600" />
+                    <div>
+                      <span className="font-bold">Admin Edit Mode:</span> You have unlimited update access to modify this effectiveness log.
+                    </div>
+                  </div>
+                )}
 
-            {effChangeNo && isAlreadyValidated && isQADept && !isAdmin && !isQaUpdateBlocked && (
-              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
-                <AlertTriangle size={14} className="shrink-0 mt-0.5 text-blue-600" />
-                <div>
-                  <span className="font-bold">Edit Mode:</span> This effectiveness log has already been submitted. As a QA user, you can update it once.
-                </div>
-              </div>
+                {effChangeNo && isAlreadyValidated && isQADept && !isAdmin && !isQaUpdateBlocked && (
+                  <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                    <AlertTriangle size={14} className="shrink-0 mt-0.5 text-blue-600" />
+                    <div>
+                      <span className="font-bold">Edit Mode:</span> This effectiveness log has already been submitted. As a QA user, you can update it once.
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {/* REQUESTED DATE */}
@@ -828,6 +840,8 @@ export const Effectiveness = ({
               >
                 {!effChangeNo ? (
                   <span>Select a Request to Evaluate</span>
+                ) : isClosed ? (
+                  <span>Log is Closed</span>
                 ) : (isAlreadyValidated && isUpdateBlocked) ? (
                   <span>Log Update Limit Reached</span>
                 ) : isAlreadyValidated ? (

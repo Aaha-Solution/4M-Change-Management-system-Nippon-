@@ -28,6 +28,14 @@ export const updateChangeStatus = async (req, res) => {
     return res.status(400).json({ error: 'Status is required.' });
   }
   try {
+    const [closedRows] = await pool.query(
+      `SELECT qa_approval FROM effectiveness_logs WHERE change_no = ?`,
+      [id]
+    );
+    if (closedRows.length > 0 && closedRows[0].qa_approval === 'Approved') {
+      return res.status(403).json({ error: 'Access Denied: The change request is Closed and cannot be modified.' });
+    }
+
     const updated = await allRequestsModel.updateChangeStatus(id, status);
     res.status(200).json({ message: 'Change request status updated successfully', change: updated });
   } catch (error) {
@@ -58,6 +66,14 @@ export const updateChangeDetails = async (req, res) => {
   }
 
   try {
+    const [closedRows] = await pool.query(
+      `SELECT qa_approval FROM effectiveness_logs WHERE change_no = ?`,
+      [id]
+    );
+    if (closedRows.length > 0 && closedRows[0].qa_approval === 'Approved') {
+      return res.status(403).json({ error: 'Access Denied: The change request is Closed and cannot be modified.' });
+    }
+
     let isAllowed = req.user?.role === 'Admin';
 
     if (!isAllowed) {
