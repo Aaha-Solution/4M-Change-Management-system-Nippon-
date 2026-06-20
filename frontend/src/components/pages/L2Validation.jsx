@@ -49,6 +49,8 @@ export const L2Validation = ({
   // File Upload states
   const [pedFiles, setPedFiles] = useState([]);
   const [qaFiles, setQaFiles] = useState([]);
+  const [existingPedFiles, setExistingPedFiles] = useState([]);
+  const [existingQaFiles, setExistingQaFiles] = useState([]);
 
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -155,13 +157,19 @@ export const L2Validation = ({
       if (savedLog) {
         setFormStatus(savedLog.status || '');
         setFormRemarks(savedLog.remarks === '-' ? '' : savedLog.remarks || '');
+        setExistingPedFiles(savedLog.weldTest && savedLog.weldTest !== '-' ? savedLog.weldTest.split(',').map(s => s.trim()).filter(Boolean) : []);
+        setExistingQaFiles(savedLog.qaTest && savedLog.qaTest !== '-' ? savedLog.qaTest.split(',').map(s => s.trim()).filter(Boolean) : []);
       } else {
         setFormStatus('');
         setFormRemarks('');
+        setExistingPedFiles([]);
+        setExistingQaFiles([]);
       }
     } else {
       setFormStatus('');
       setFormRemarks('');
+      setExistingPedFiles([]);
+      setExistingQaFiles([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formChangeNo, validationLogs]);
@@ -178,17 +186,14 @@ export const L2Validation = ({
     if (isQualityOrAdmin) {
       if (!formStatus) errors.status = 'Please select a validation status.';
       if (!formRemarks.trim()) errors.remarks = 'Remarks are required.';
-      const hasQaInDb = existingLog && existingLog.qaTest && existingLog.qaTest !== '-';
-      if (qaFiles.length === 0 && !hasQaInDb) {
+      if (qaFiles.length === 0 && existingQaFiles.length === 0) {
         errors.qaFile = 'QA attachment is required.';
       }
-      const hasPedInDb = existingLog && existingLog.weldTest && existingLog.weldTest !== '-';
-      if (pedFiles.length === 0 && !hasPedInDb) {
+      if (pedFiles.length === 0 && existingPedFiles.length === 0) {
         errors.pedFile = 'PED attachment is required.';
       }
     } else if (isRaisedByUserOrAdmin) {
-      const hasPedInDb = existingLog && existingLog.weldTest && existingLog.weldTest !== '-';
-      if (pedFiles.length === 0 && !hasPedInDb) {
+      if (pedFiles.length === 0 && existingPedFiles.length === 0) {
         errors.pedFile = 'PED attachment is required.';
       }
     }
@@ -231,8 +236,8 @@ export const L2Validation = ({
         changeNo: formChangeNo.trim(),
         date: formDate.trim(),
         requester: formRequester.trim(),
-        weldTest: pedFiles.map(f => f.name.replace(/,/g, '_')).join(', '),
-        qaTest: qaFiles.map(f => f.name.replace(/,/g, '_')).join(', '),
+        weldTest: [...existingPedFiles, ...pedFiles.map(f => f.name.replace(/,/g, '_'))].join(', ') || '-',
+        qaTest: [...existingQaFiles, ...qaFiles.map(f => f.name.replace(/,/g, '_'))].join(', ') || '-',
         status: formStatus,
         remarks: formRemarks.trim()
       };
@@ -513,11 +518,20 @@ export const L2Validation = ({
               </div>
             )}
 
-            {formChangeNo && isL2AlreadyValidated && isQualityOrAdmin && (
+            {formChangeNo && isL2AlreadyValidated && isQualityOrAdmin && !isAdmin && (
               <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
                 <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold">Validation Locked:</span> L2 validation has already been completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). QAD members and Admins cannot update these fields again.
+                </div>
+              </div>
+            )}
+
+            {formChangeNo && isL2AlreadyValidated && isAdmin && (
+              <div className="bg-sky-50 border border-sky-200 text-sky-850 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                <CheckCircle2 size={14} className="text-sky-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Administrator Access:</span> This validation record is completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). As an Admin, you are authorized to modify status, remarks, or delete files.
                 </div>
               </div>
             )}
@@ -669,17 +683,39 @@ export const L2Validation = ({
               </div>
             )}
             {/* Already Uploaded PED Files */}
-            {matchedL2 && matchedL2.weldTest && matchedL2.weldTest !== '-' && (
+            {existingPedFiles.length > 0 && (
               <div className="mt-1 flex flex-wrap gap-[6px]">
-                {matchedL2.weldTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                {existingPedFiles.map((file, idx) => (
                   <span
                     key={idx}
-                    onClick={() => handleViewAttachment(file, formChangeNo, 'L2')}
-                    className="inline-flex items-center gap-[5px] bg-[#f0f9ff] hover:bg-[#e0f2fe] border border-[#bae6fd] text-[#0284c7] rounded-[5px] py-[3px] px-[8px] text-[10px] font-semibold cursor-pointer max-w-full"
-                    title="Click to view/download previously uploaded file"
+                    className="inline-flex items-center gap-[5px] bg-[#f0f9ff] border border-[#bae6fd] text-[#0284c7] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
                   >
                     <Paperclip size={10} className="shrink-0" />
-                    <span className="underline truncate max-w-[180px]">{file}</span>
+                    <span 
+                      className="underline truncate max-w-[140px] cursor-pointer"
+                      onClick={() => handleViewAttachment(file, formChangeNo, 'L2')}
+                      title="Click to view/download previously uploaded file"
+                    >
+                      {file}
+                    </span>
+                    {formChangeNo.trim() && !isChangeClosed && (isAdmin || (isRaisedByUserOrAdmin && canUploadPed)) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeleteConfirm({
+                            title: 'Delete Uploaded File?',
+                            message: `Are you sure you want to delete the uploaded file "${file}"? This will be saved upon submitting the form.`,
+                            onConfirm: () => {
+                              setExistingPedFiles(prev => prev.filter(f => f !== file));
+                            }
+                          });
+                        }}
+                        className="ml-[2px] hover:bg-[#bae6fd] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
+                        title="Delete previously uploaded file"
+                      >
+                        <X size={9} />
+                      </button>
+                    )}
                   </span>
                 ))}
               </div>
@@ -773,17 +809,39 @@ export const L2Validation = ({
               </div>
             )}
             {/* Already Uploaded QA Files */}
-            {matchedL2 && matchedL2.qaTest && matchedL2.qaTest !== '-' && (
+            {existingQaFiles.length > 0 && (
               <div className="mt-1 flex flex-wrap gap-[6px]">
-                {matchedL2.qaTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                {existingQaFiles.map((file, idx) => (
                   <span
                     key={idx}
-                    onClick={() => handleViewAttachment(file, formChangeNo, 'L2')}
-                    className="inline-flex items-center gap-[5px] bg-[#f0f9ff] hover:bg-[#e0f2fe] border border-[#bae6fd] text-[#0284c7] rounded-[5px] py-[3px] px-[8px] text-[10px] font-semibold cursor-pointer max-w-full"
-                    title="Click to view/download previously uploaded file"
+                    className="inline-flex items-center gap-[5px] bg-[#f0f9ff] border border-[#bae6fd] text-[#0284c7] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
                   >
                     <Paperclip size={10} className="shrink-0" />
-                    <span className="underline truncate max-w-[180px]">{file}</span>
+                    <span 
+                      className="underline truncate max-w-[140px] cursor-pointer"
+                      onClick={() => handleViewAttachment(file, formChangeNo, 'L2')}
+                      title="Click to view/download previously uploaded file"
+                    >
+                      {file}
+                    </span>
+                    {formChangeNo.trim() && !isChangeClosed && (isAdmin || (isQualityOrAdmin && !isL2AlreadyValidated)) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeleteConfirm({
+                            title: 'Delete Uploaded File?',
+                            message: `Are you sure you want to delete the uploaded file "${file}"? This will be saved upon submitting the form.`,
+                            onConfirm: () => {
+                              setExistingQaFiles(prev => prev.filter(f => f !== file));
+                            }
+                          });
+                        }}
+                        className="ml-[2px] hover:bg-[#bae6fd] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
+                        title="Delete previously uploaded file"
+                      >
+                        <X size={9} />
+                      </button>
+                    )}
                   </span>
                 ))}
               </div>
@@ -871,9 +929,9 @@ export const L2Validation = ({
               <span>Validation is Closed</span>
             ) : !canEdit ? (
               <span>Access Restricted</span>
-            ) : (matchedL2 && matchedL2.status === 'Accepted') ? (
+            ) : (matchedL2 && matchedL2.status === 'Accepted') && !isAdmin ? (
               <span>Validation Locked (Approved)</span>
-            ) : (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0)) ? (
+            ) : (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0)) && !isAdmin ? (
               <span>Validation Locked (Rejected)</span>
             ) : (matchedL2 && matchedL2.status === 'Rejected' && isRaisedByUserOrAdmin && pedFiles.length > 0) ? (
               <>

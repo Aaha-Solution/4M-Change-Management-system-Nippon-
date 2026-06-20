@@ -45,8 +45,8 @@ export const addL2ValidationLog = async (logData, attachments) => {
         `UPDATE l2_validation_logs 
          SET validation_date = ?, 
              requester = ?, 
-             weld_test = COALESCE(NULLIF(?, ''), weld_test), 
-             qa_test = COALESCE(NULLIF(?, ''), qa_test), 
+             weld_test = ?, 
+             qa_test = ?, 
              status = COALESCE(NULLIF(?, ''), status), 
              remarks = COALESCE(NULLIF(?, ''), remarks)
          WHERE change_no = ?`,
@@ -87,16 +87,41 @@ export const addL2ValidationLog = async (logData, attachments) => {
       );
     }
 
-    // Save L2 attachments — bulk delete per field then insert all
+    // Sync weld_test attachments in table
+    const weldFiles = (weldTest || '').split(',').map(s => s.trim()).filter(Boolean);
+    if (weldFiles.length === 0 || weldTest === '-') {
+      await connection.query(
+        `DELETE FROM l2_attachments WHERE change_no = ? AND field_name = 'weld_test'`,
+        [changeNo]
+      );
+    } else {
+      await connection.query(
+        `DELETE FROM l2_attachments WHERE change_no = ? AND field_name = 'weld_test' AND file_name NOT IN (${weldFiles.map(() => '?').join(', ')})`,
+        [changeNo, ...weldFiles]
+      );
+    }
+
+    // Sync qa_test attachments in table
+    const qaFilesList = (qaTest || '').split(',').map(s => s.trim()).filter(Boolean);
+    if (qaFilesList.length === 0 || qaTest === '-') {
+      await connection.query(
+        `DELETE FROM l2_attachments WHERE change_no = ? AND field_name = 'qa_test'`,
+        [changeNo]
+      );
+    } else {
+      await connection.query(
+        `DELETE FROM l2_attachments WHERE change_no = ? AND field_name = 'qa_test' AND file_name NOT IN (${qaFilesList.map(() => '?').join(', ')})`,
+        [changeNo, ...qaFilesList]
+      );
+    }
+
+    // Save newly uploaded L2 attachments
     if (attachments && attachments.length > 0) {
-      const fieldNames = [...new Set(attachments.map(f => f.fieldName))];
-      for (const fieldName of fieldNames) {
-        await connection.query(
-          `DELETE FROM l2_attachments WHERE change_no = ? AND field_name = ?`,
-          [changeNo, fieldName]
-        );
-      }
       for (const file of attachments) {
+        await connection.query(
+          `DELETE FROM l2_attachments WHERE change_no = ? AND field_name = ? AND file_name = ?`,
+          [changeNo, file.fieldName, file.name]
+        );
         await connection.query(
           `INSERT INTO l2_attachments (change_no, field_name, file_name, file_data, file_type) 
            VALUES (?, ?, ?, ?, ?)`,
