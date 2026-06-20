@@ -2077,8 +2077,10 @@ export const AllRequests = ({
                   {canEdit && activeTab === 'l1' && (
                     <button
                       onClick={() => setIsEditMode(!isEditMode)}
-                      className={`ml-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                        isEditMode ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      className={`ml-3 px-3.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${
+                        isEditMode 
+                          ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100' 
+                          : 'bg-[#0066cc] text-white border-[#0052a3] hover:bg-[#0052a3] shadow-[0_2px_6px_rgba(0,102,204,0.2)]'
                       }`}
                     >
                       {isEditMode ? 'Cancel Edit' : 'Edit Mode'}

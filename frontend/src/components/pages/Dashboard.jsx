@@ -417,7 +417,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-sm shadow-[0_2px_8px_rgba(37,99,235,0.25)]">
-                {(userRole || 'A')[0]}
+                {(userName || userEmail || 'A')[0].toUpperCase()}
               </div>
               <div className="text-left">
                 <div className="text-sm font-bold text-slate-800 leading-tight max-w-[130px] truncate" title={userName || userEmail}>
@@ -655,7 +655,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
         const text = typeof toastMsg === 'object' ? toastMsg.text : toastMsg;
         const isError = typeof toastMsg === 'object'
           ? !!toastMsg.isError
-          : /error|please|must be|should be|failed|invalid|required|at least/i.test(text);
+          : /fail|error|denied|invalid|required|must|limit|locked|please|cannot|no\s+data|no\s+record|skipped|skip|not\s+allowed|only|wrong|warning|incorrect|unable|at\s+least/i.test(text);
         
         // Replace "Error" or "error" with more meaningful words like "Failed"
         const cleanedMsg = typeof text === 'string'
