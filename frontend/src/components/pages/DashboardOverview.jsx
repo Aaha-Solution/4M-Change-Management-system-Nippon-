@@ -1217,53 +1217,52 @@ export const DashboardOverview = ({
 
     const maxVal = Math.max(...data.map(item => item.value), 5);
 
+    const getShortLabel = (label) => {
+      const upper = label.trim().toUpperCase();
+      if (upper === 'PRODUCTION') return 'PROD';
+      if (upper === 'MAINTENANCE') return 'MAINT';
+      if (upper === 'MATERIALS') return 'MAT';
+      if (upper === 'MARKETING') return 'MKTG';
+      if (upper === 'SAFETY') return 'SAFE';
+      if (upper === 'GENERAL') return 'GEN';
+      if (upper === 'QUALITY ASSURANCE' || upper === 'QAD') return 'QAD';
+      if (upper === 'UNIT HEAD') return 'UNIT HD';
+      if (upper === 'PURCHASE & MATERIALS') return 'PURCH/MAT';
+      if (upper === 'PC & L') return 'PC&L';
+      
+      if (label.length > 8) {
+        if (label.includes('&')) {
+          return label.split('&').map(part => part.trim().substring(0, 4)).join('&');
+        }
+        return label.substring(0, 6) + '.';
+      }
+      return label;
+    };
+
     return (
-      <div className={`flex justify-around items-end ${height} px-[10px] mt-[10px]`}>
-        {data.map((item, idx) => {
-          const barHeight = (item.value / maxVal) * 100;
-          const labelUpper = item.label.toUpperCase();
-          return (
-            <div key={idx} className="flex flex-col items-center min-w-[35px] max-w-[65px] w-full h-full justify-end group">
-              <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div className="w-full h-[65%] flex items-end justify-center">
-                <div
-                  className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
-                  style={{ height: `${barHeight}%`, minHeight: '4px' }}
-                />
+      <div className="w-full overflow-x-auto pb-[8px] scrollbar-thin">
+        <div className={`flex justify-around items-end ${height} px-[10px] mt-[10px] min-w-[550px] lg:min-w-0`}>
+          {data.map((item, idx) => {
+            const barHeight = (item.value / maxVal) * 100;
+            return (
+              <div key={idx} className="flex flex-col items-center min-w-[35px] max-w-[65px] w-full h-full justify-end group">
+                <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
+                <div className="w-full h-[65%] flex items-end justify-center">
+                  <div
+                    className="w-full bg-[#1e60aa] hover:bg-[#1a5292] transition-all rounded-t-[2px]"
+                    style={{ height: `${barHeight}%`, minHeight: '4px' }}
+                  />
+                </div>
+                <span 
+                  className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center font-sans cursor-help"
+                  title={item.label}
+                >
+                  {getShortLabel(item.label)}
+                </span>
               </div>
-              <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center font-sans">
-                {labelUpper === 'PRODUCTION' ? (
-                  <>
-                    <span className="hidden sm:inline">PRODUCTION</span>
-                    <span className="inline sm:hidden">PROD</span>
-                  </>
-                ) : labelUpper === 'MAINTENANCE' ? (
-                  <>
-                    <span className="hidden sm:inline">MAINTENANCE</span>
-                    <span className="inline sm:hidden">MAINT</span>
-                  </>
-                ) : labelUpper === 'MATERIALS' ? (
-                  <>
-                    <span className="hidden sm:inline">MATERIALS</span>
-                    <span className="inline sm:hidden">MAT</span>
-                  </>
-                ) : labelUpper === 'MARKETING' ? (
-                  <>
-                    <span className="hidden sm:inline">MARKETING</span>
-                    <span className="inline sm:hidden">MKTG</span>
-                  </>
-                ) : labelUpper === 'SAFETY' ? (
-                  <>
-                    <span className="hidden sm:inline">SAFETY</span>
-                    <span className="inline sm:hidden">SAFE</span>
-                  </>
-                ) : (
-                  item.label
-                )}
-              </span>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     );
   };
