@@ -249,7 +249,32 @@ export const AllApprovals = ({
         const dept = actingDept || mapDept(userDept) || 'General';
         res = await getHodApprovalsByDept(dept);
       }
-      setRequests(res.data || []);
+      
+      // Fetch L3 approvals in parallel to merge their status values
+      const l3Res = await getL3Approvals().catch(() => ({ data: [] }));
+      const l3Data = l3Res.data || [];
+
+      const merged = (res.data || []).map(r => {
+        const matchedL3 = l3Data.find(l => l.changeNo === r.changeNo);
+        if (matchedL3) {
+          return {
+            ...r,
+            l3_ped: matchedL3.ped,
+            l3_qad: matchedL3.qad,
+            l3_production: matchedL3.production,
+            l3_maintenance: matchedL3.maintenance,
+            l3_pcl: matchedL3.pcl,
+            l3_materials: matchedL3.materials,
+            l3_marketing: matchedL3.marketing,
+            l3_hr: matchedL3.hr,
+            l3_safety: matchedL3.safety,
+            l3_unitHead: matchedL3.unitHead,
+          };
+        }
+        return r;
+      });
+
+      setRequests(merged);
     } catch (err) {
       console.error(err);
       if (setToastMsg) setToastMsg({ text: 'Error loading HOD approval requests.', isError: true });
@@ -428,6 +453,35 @@ export const AllApprovals = ({
     }
   };
 
+  const getRequestEffectiveStatus = (r) => {
+    if (r.crStatus?.toLowerCase() === 'approved') {
+      if (isAdmin) {
+        const statuses = [
+          r.l3_ped, r.l3_qad, r.l3_production, r.l3_maintenance, r.l3_pcl,
+          r.l3_materials, r.l3_marketing, r.l3_hr, r.l3_safety, r.l3_unitHead
+        ].map(s => (s || 'Pending'));
+        if (statuses.includes('Rejected')) return 'Rejected';
+        if (statuses.every(s => s === 'Approved' || s === 'Accepted')) return 'Approved';
+        return 'Pending';
+      } else {
+        const deptKey = actingDept === 'PED' ? 'l3_ped' :
+                        actingDept === 'QAD' ? 'l3_qad' :
+                        actingDept === 'Production' ? 'l3_production' :
+                        actingDept === 'Maintenance' ? 'l3_maintenance' :
+                        actingDept === 'PC & L' ? 'l3_pcl' :
+                        actingDept === 'Materials' ? 'l3_materials' :
+                        actingDept === 'Marketing' ? 'l3_marketing' :
+                        actingDept === 'HR' ? 'l3_hr' :
+                        actingDept === 'Safety' ? 'l3_safety' :
+                        actingDept === 'Unit Head' ? 'l3_unitHead' : '';
+        let L3Status = deptKey ? (r[deptKey] || 'Pending') : 'Pending';
+        if (L3Status === 'Accepted') L3Status = 'Approved';
+        return L3Status;
+      }
+    }
+    return r.rejectCount > 0 ? 'Rejected' : (r.hodStatus || 'Pending');
+  };
+
   // Filter
   const filtered = requests.filter(r => {
     const q = search.toLowerCase();
@@ -435,11 +489,12 @@ export const AllApprovals = ({
       r.changeNo.toLowerCase().includes(q) ||
       (r.requestBy || '').toLowerCase().includes(q) ||
       (r.dept || '').toLowerCase().includes(q);
-    const effectiveStatus = r.rejectCount > 0 ? 'Rejected' : (r.hodStatus || 'Pending');
+    const effectiveStatus = getRequestEffectiveStatus(r);
     const matchStatus = statusFilter === 'All' || effectiveStatus === statusFilter;
     const stageInfo = workflowStageConfig(r.crStatus);
     const matchStage = stageFilter === 'All' || stageInfo.level === stageFilter;
-    const matchScope = scopeFilter === 'All' || mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept);
+    const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
+    const matchScope = scopeFilter === 'All' || isL3Stage || mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept);
     return matchSearch && matchStatus && matchStage && matchScope;
   });
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -454,14 +509,31 @@ export const AllApprovals = ({
 
   // Stats
   const pendingCount = requests.filter(r => {
-    const isL1Pending = r.crStatus === 'Pending';
-    const isPendingDecision = !r.hodStatus || r.hodStatus === 'Pending';
-    const isMyDept = isAdmin || (isHOD && isDeptInRequired(r.hodApprovalNote, r.dept, actingDept));
-    const isRejected = r.rejectCount > 0;
-    return isL1Pending && isPendingDecision && isMyDept && !isRejected;
+    const stageInfo = workflowStageConfig(r.crStatus);
+    if (stageFilter !== 'All' && stageInfo.level !== stageFilter) return false;
+    const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
+    const isMyDept = isAdmin || isL3Stage || (isHOD && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
+    if (scopeFilter !== 'All' && !isMyDept) return false;
+    return getRequestEffectiveStatus(r) === 'Pending';
   }).length;
-  const approvedCount = requests.filter(r => r.hodStatus === 'Approved').length;
-  const rejectedCount = requests.filter(r => r.rejectCount > 0 || r.hodStatus === 'Rejected').length;
+
+  const approvedCount = requests.filter(r => {
+    const stageInfo = workflowStageConfig(r.crStatus);
+    if (stageFilter !== 'All' && stageInfo.level !== stageFilter) return false;
+    const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
+    const isMyDept = isAdmin || isL3Stage || (isHOD && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
+    if (scopeFilter !== 'All' && !isMyDept) return false;
+    return getRequestEffectiveStatus(r) === 'Approved';
+  }).length;
+
+  const rejectedCount = requests.filter(r => {
+    const stageInfo = workflowStageConfig(r.crStatus);
+    if (stageFilter !== 'All' && stageInfo.level !== stageFilter) return false;
+    const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
+    const isMyDept = isAdmin || isL3Stage || (isHOD && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
+    if (scopeFilter !== 'All' && !isMyDept) return false;
+    return getRequestEffectiveStatus(r) === 'Rejected';
+  }).length;
 
   const alreadyDecided = selectedReq &&
     selectedReq.hodStatus &&
@@ -686,7 +758,7 @@ export const AllApprovals = ({
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Calendar size={11} />Date</div></th>
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><User size={11} />Requested By</div></th>
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Building2 size={11} />Dept</div></th>
-                      <th className="px-5 py-3.5 font-black text-slate-500">L1 HOD Decision</th>
+                      <th className="px-5 py-3.5 font-black text-slate-500">{stageFilter === 'L3' ? 'L3 Decision' : 'L1 HOD Decision'}</th>
                       <th className="px-5 py-3.5 font-black text-slate-500 text-center">Action</th>
                     </tr>
                   </thead>
@@ -738,7 +810,9 @@ export const AllApprovals = ({
                             <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">{req.dept || '-'}</span>
                           </td>
                           <td className="px-5 py-3.5">
-                            {req.rejectCount > 0 ? (
+                            {req.crStatus?.toLowerCase() === 'approved' ? (
+                              <StatusBadge status={getRequestEffectiveStatus(req)} />
+                            ) : req.rejectCount > 0 ? (
                               <StatusBadge status="Rejected" />
                             ) : req.crStatus && req.crStatus.toLowerCase() !== 'pending' ? (
                               <StatusBadge status="Approved" />
