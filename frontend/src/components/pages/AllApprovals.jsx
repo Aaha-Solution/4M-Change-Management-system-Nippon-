@@ -85,20 +85,21 @@ const workflowStageConfig = (crStatus) => {
   }
 };
 
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status, prefix = '' }) => {
+  const displayPrefix = prefix ? `${prefix} ` : '';
   if (!status || status === 'Pending') return (
     <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border bg-amber-50 border-amber-200 text-amber-700">
-      <Clock size={11} /> Pending
+      <Clock size={11} /> {displayPrefix}Pending
     </span>
   );
-  if (status === 'Approved') return (
+  if (status === 'Approved' || status === 'Accepted') return (
     <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border bg-emerald-50 border-emerald-200 text-emerald-700">
-      <CheckCircle2 size={11} /> Approved
+      <CheckCircle2 size={11} /> {displayPrefix}Approved
     </span>
   );
   return (
     <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border bg-rose-50 border-rose-200 text-rose-700">
-      <XCircle size={11} /> Rejected
+      <XCircle size={11} /> {displayPrefix}Rejected
     </span>
   );
 };
@@ -485,6 +486,23 @@ export const AllApprovals = ({
     return r.rejectCount > 0 ? 'Rejected' : (r.hodStatus || 'Pending');
   };
 
+  const getDecisionStatusAndPrefix = (r) => {
+    const statusLower = (r.crStatus || '').toLowerCase();
+    if (statusLower === 'approved') {
+      return { status: getRequestEffectiveStatus(r), prefix: 'L3' };
+    }
+    if (r.rejectCount > 0) {
+      return { status: 'Rejected', prefix: '' };
+    }
+    if (statusLower === 'evaluating') {
+      return { status: 'Approved', prefix: 'L1' };
+    }
+    if (statusLower === 'completed') {
+      return { status: 'Approved', prefix: 'L3' };
+    }
+    return { status: r.hodStatus || 'Pending', prefix: 'L1' };
+  };
+
   // Filter
   const filtered = requests.filter(r => {
     const q = search.toLowerCase();
@@ -761,7 +779,7 @@ export const AllApprovals = ({
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Calendar size={11} />Date</div></th>
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><User size={11} />Requested By</div></th>
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Building2 size={11} />Dept</div></th>
-                      <th className="px-5 py-3.5 font-black text-slate-500">{stageFilter === 'L3' ? 'L3 Decision' : 'L1 HOD Decision'}</th>
+                      <th className="px-5 py-3.5 font-black text-slate-500">{stageFilter === 'L3' ? 'L3 Decision' : (stageFilter === 'L1' ? 'L1 HOD Decision' : 'Decision Status')}</th>
                       <th className="px-5 py-3.5 font-black text-slate-500 text-center">Action</th>
                     </tr>
                   </thead>
@@ -813,15 +831,12 @@ export const AllApprovals = ({
                             <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">{req.dept || '-'}</span>
                           </td>
                           <td className="px-5 py-3.5">
-                            {req.crStatus?.toLowerCase() === 'approved' ? (
-                              <StatusBadge status={getRequestEffectiveStatus(req)} />
-                            ) : req.rejectCount > 0 ? (
-                              <StatusBadge status="Rejected" />
-                            ) : req.crStatus && req.crStatus.toLowerCase() !== 'pending' ? (
-                              <StatusBadge status="Approved" />
-                            ) : (
-                              <StatusBadge status={req.hodStatus} />
-                            )}
+                            {(() => {
+                              const decisionInfo = getDecisionStatusAndPrefix(req);
+                              return (
+                                <StatusBadge status={decisionInfo.status} prefix={decisionInfo.prefix} />
+                              );
+                            })()}
                           </td>
                           <td className="px-5 py-3.5 text-center">
                             <button
@@ -887,13 +902,12 @@ export const AllApprovals = ({
                     <div className="flex justify-between items-center border-t border-slate-100 pt-[12px] mt-[4px]">
                       <div className="flex flex-col gap-1">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Decision</span>
-                        {req.rejectCount > 0 ? (
-                          <StatusBadge status="Rejected" />
-                        ) : req.crStatus && req.crStatus.toLowerCase() !== 'pending' ? (
-                          <StatusBadge status="Approved" />
-                        ) : (
-                          <StatusBadge status={req.hodStatus} />
-                        )}
+                        {(() => {
+                          const decisionInfo = getDecisionStatusAndPrefix(req);
+                          return (
+                            <StatusBadge status={decisionInfo.status} prefix={decisionInfo.prefix} />
+                          );
+                        })()}
                       </div>
 
                       <button
