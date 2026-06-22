@@ -2796,9 +2796,9 @@ export const DashboardOverview = ({
               <div className="space-y-[4px]">
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name <span className="text-rose-500">*</span></label>
                 <select
+                  disabled
                   value={data.process_name || ''}
-                  onChange={(e) => setData({ ...data, process_name: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-semibold"
                 >
                   <option value="">— Select or Add Process —</option>
                   {processOptions.filter(p => p !== 'All').map(p => (
@@ -2812,17 +2812,11 @@ export const DashboardOverview = ({
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line <span className="text-rose-500">*</span></label>
                 <input
                   type="text"
+                  disabled
                   placeholder="e.g. Line 3 / Bay B"
                   value={data.process_line || ''}
-                  maxLength={100}
-                  onChange={(e) => setData({ ...data, process_line: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] text-slate-500 cursor-not-allowed outline-none font-semibold"
                 />
-                <div className="flex justify-end text-[9px] text-slate-400 mt-1">
-                  <span className={`${100 - (data.process_line || '').length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
-                    {100 - (data.process_line || '').length} characters remaining (max 100 chars)
-                  </span>
-                </div>
               </div>
 
               {/* MACHINE NO */}
