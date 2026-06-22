@@ -29,7 +29,7 @@ export const getHodApprovals = async () => {
      FROM change_requests cr
      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
      LEFT JOIN users u ON cr.requester = u.email
-     LEFT JOIN hod_approvals ha ON cr.id = ha.change_no
+     LEFT JOIN hod_approvals ha ON cr.id = ha.change_no AND ha.hod_dept = l1.hod_approval
      LEFT JOIN users uh ON ha.hod_email = uh.email
      LEFT JOIN effectiveness_logs e ON cr.id = e.change_no
      ORDER BY cr.created_at DESC, CAST(SUBSTRING_INDEX(cr.id, '-', -1) AS UNSIGNED) DESC`
@@ -63,12 +63,11 @@ export const getHodApprovalsByDept = async (dept) => {
      FROM change_requests cr
      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
      LEFT JOIN users u ON cr.requester = u.email
-     LEFT JOIN hod_approvals ha ON cr.id = ha.change_no AND ha.hod_dept = ?
+     LEFT JOIN hod_approvals ha ON cr.id = ha.change_no AND ha.hod_dept = l1.hod_approval
      LEFT JOIN users uh ON ha.hod_email = uh.email
      LEFT JOIN effectiveness_logs e ON cr.id = e.change_no
      WHERE l1.change_no IS NOT NULL
-     ORDER BY cr.created_at DESC, CAST(SUBSTRING_INDEX(cr.id, '-', -1) AS UNSIGNED) DESC`,
-    [dept]
+     ORDER BY cr.created_at DESC, CAST(SUBSTRING_INDEX(cr.id, '-', -1) AS UNSIGNED) DESC`
   );
   return rows;
 };
