@@ -85,8 +85,64 @@ export const L1Request = ({
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
+      localStorage.removeItem('cms_l1_draft');
+      
+      setUnit('UNIT-2');
+      
+      const now = new Date();
+      setRequestedDate(formatDateToDDMMYYYY(now));
+      const hrs = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      setRequestedTime(`${hrs}:${mins}`);
+      
+      setChangeIn({
+        Man: false,
+        Machine: false,
+        Material: false,
+        Method: false,
+        Measurement: false,
+        'Mother Nature': false
+      });
+      setFileDesc('');
+      setFileImprovement('');
+      setFileTraceFrom('');
+      setFileTraceTo('');
+      setFileRisk('');
+      setFileSop('');
+      setUploadedFilesList([]);
+      
+      let defaultDept = '';
+      let defaultRequestBy = '';
+      if (userEmail && systemUsers.length > 0) {
+        const currentUser = systemUsers.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
+        if (currentUser) {
+          defaultDept = currentUser.department || '';
+          defaultRequestBy = currentUser.name || currentUser.email || '';
+        }
+      }
+      setDept(defaultDept);
+      setRequestBy(defaultRequestBy);
+      
+      setProcessName('');
+      setProcessLine('');
+      setMachineNo('');
+      setContext('');
+      setDescription('');
+      setImprovementArea('');
+      setChangeType('');
+      setDateStart('');
+      setTraceFrom('');
+      setDateClose('');
+      setTraceTo('');
+      setRiskAnalysis('');
+      setSopUpdate('');
+      setHodApproval('');
+      setCustomerApproval('');
+      setImprovementTableData([]);
+      setErrors({});
+
       await Promise.all([fetchOptions(), fetchNextChangeNo()]);
-      setToastMsg('Data refreshed successfully from server.');
+      setToastMsg('Form cleared and options refreshed successfully.');
     } catch (e) {
       console.error('Refresh error:', e);
       setToastMsg({ text: 'Failed to refresh data from server.', isError: true });
