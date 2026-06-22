@@ -377,11 +377,12 @@ export const AllRequests = ({
       setEditL2Data(l2Res.data || {});
 
       const matchedL3 = l3Res.data?.find(log => log.changeNo === request.id);
-      const newLogData = matchedL3 ? { ...matchedL3, hodStatus: request.hodStatus, requesterEmail: request.requesterEmail } : {
+      const newLogData = matchedL3 ? { ...matchedL3, status: request.status || matchedL3.status, hodStatus: request.hodStatus, requesterEmail: request.requesterEmail } : {
         changeNo: request.id,
         requester: request.requester,
         requesterEmail: request.requesterEmail,
         date: request.rawDate,
+        status: request.status,
         hodStatus: request.hodStatus,
         ped: 'Pending',
         qad: 'Pending',
@@ -2151,15 +2152,22 @@ export const AllRequests = ({
                   3. L3 Approval Details
                 </button>
               )}
-              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (selectedLog?.status || '').toLowerCase() === 'completed' && (
+              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && ((selectedLog?.status || '').toLowerCase() === 'completed' || selectedEffDetails !== null) && (
                 <button
                   onClick={() => { setActiveTab('effectiveness'); setIsEditMode(false); }}
                   className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
                     activeTab === 'effectiveness' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      ? (selectedEffDetails && (selectedEffDetails.qaApproval === 'Rejected' || selectedEffDetails.status === 'Effectiveness Not Ok' || selectedEffDetails.status === 'Rejected'))
+                        ? 'border-rose-600 text-rose-600 font-extrabold bg-rose-50/30'
+                        : 'border-[#0066cc] text-[#0066cc]' 
+                      : (selectedEffDetails && (selectedEffDetails.qaApproval === 'Rejected' || selectedEffDetails.status === 'Effectiveness Not Ok' || selectedEffDetails.status === 'Rejected'))
+                      ? 'border-transparent text-rose-650 hover:text-rose-800 bg-rose-50/10'
                       : 'border-transparent text-slate-500 hover:text-slate-850'
                   }`}
                 >
+                  {(selectedEffDetails && (selectedEffDetails.qaApproval === 'Rejected' || selectedEffDetails.status === 'Effectiveness Not Ok' || selectedEffDetails.status === 'Rejected')) && (
+                    <AlertTriangle size={12} className="text-rose-600 mr-1 animate-pulse" />
+                  )}
                   4. Effectiveness
                 </button>
               )}

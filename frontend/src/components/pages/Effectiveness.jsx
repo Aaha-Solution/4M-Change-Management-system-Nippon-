@@ -1144,16 +1144,33 @@ export const Effectiveness = ({
                 </button>
               )}
               {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (
-                <button
-                  onClick={() => setActiveTab('effectiveness')}
-                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                    activeTab === 'effectiveness' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
-                      : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
-                >
-                  4. Effectiveness
-                </button>
+                (() => {
+                  const currentEffLog = selectedLog ? effectivenessLogs.find(
+                    l => l.changeNo?.toLowerCase().trim() === selectedLog.changeNo?.toLowerCase().trim()
+                  ) : null;
+                  const isEffRejected = currentEffLog && (
+                    currentEffLog.qaApproval === 'Rejected' ||
+                    currentEffLog.status === 'Effectiveness Not Ok' ||
+                    currentEffLog.status === 'Rejected'
+                  );
+                  return (
+                    <button
+                      onClick={() => setActiveTab('effectiveness')}
+                      className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                        activeTab === 'effectiveness' 
+                          ? isEffRejected
+                            ? 'border-rose-600 text-rose-600 font-extrabold bg-rose-50/30'
+                            : 'border-[#0066cc] text-[#0066cc]' 
+                          : isEffRejected
+                          ? 'border-transparent text-rose-655 hover:text-rose-800 bg-rose-50/10'
+                          : 'border-transparent text-slate-500 hover:text-slate-850'
+                      }`}
+                    >
+                      {isEffRejected && <AlertTriangle size={12} className="text-rose-600 mr-1 animate-pulse" />}
+                      4. Effectiveness
+                    </button>
+                  );
+                })()
               )}
             </div>
 

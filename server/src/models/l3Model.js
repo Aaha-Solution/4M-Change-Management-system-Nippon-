@@ -12,6 +12,7 @@ import {
 export const getL3Approvals = async () => {
   const [rows] = await pool.query(
     `SELECT c.id as changeNo, 
+            c.status as status,
             DATE_FORMAT(c.date, '%e %b') as date, 
             COALESCE(l1.request_by, u.name, c.requester) as requester,
             COALESCE(l1.dept, u.department) as raisedDept,

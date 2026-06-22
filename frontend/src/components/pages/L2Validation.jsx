@@ -1004,6 +1004,7 @@ export const L2Validation = ({
               <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                   <tr className="bg-[#fdfaf5] border-b border-slate-150">
+                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Sl No</th>
                     <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
                     <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
                     <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Change Request By</th>
@@ -1017,7 +1018,7 @@ export const L2Validation = ({
                 <tbody className="divide-y divide-slate-100 text-[12px]">
                   {isFetchingLogs ? (
                     <tr>
-                      <td colSpan={8} className="text-center py-[48px] text-slate-400">
+                      <td colSpan={9} className="text-center py-[48px] text-slate-400">
                         <div className="flex flex-col items-center justify-center gap-[8px]">
                           <Loader2 className="animate-spin text-[#0066cc]" size={20} />
                           <span>Fetching validation logs...</span>
@@ -1026,7 +1027,7 @@ export const L2Validation = ({
                     </tr>
                   ) : filteredLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="text-center py-[48px] text-slate-400">
+                      <td colSpan={9} className="text-center py-[48px] text-slate-400">
                         No L2 validation records found.
                       </td>
                     </tr>
@@ -1041,6 +1042,7 @@ export const L2Validation = ({
                           setFormRequester(log.requester || '');
                         }}
                       >
+                        <td className="p-[12px] font-bold text-slate-400">{page * rowsPerPage + idx + 1}</td>
                         <td className="p-[12px] font-bold text-[#0066cc]">{log.changeNo}</td>
                         <td className="p-[12px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
                         <td className="p-[12px] font-medium text-slate-700">{log.requester}</td>

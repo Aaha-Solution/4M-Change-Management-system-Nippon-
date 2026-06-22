@@ -681,6 +681,7 @@ export const L3RequestTracker = ({
               <table className="w-full text-left border-collapse table-fixed min-w-[1020px]">
                 <thead>
                   <tr className="bg-[#fdfaf5] border-b border-slate-150 text-[10px]">
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[50px]">Sl No</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[105px]">4M Change No</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[90px]">Requested Date</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[110px]">Change Request By</th>
@@ -700,7 +701,7 @@ export const L3RequestTracker = ({
                 <tbody className="divide-y divide-slate-100 text-[11px]">
                   {isFetchingLogs ? (
                     <tr>
-                      <td colSpan={14} className="text-center py-[48px] text-slate-400">
+                      <td colSpan={15} className="text-center py-[48px] text-slate-400">
                         <div className="flex flex-col items-center justify-center gap-[8px]">
                           <Loader2 className="animate-spin text-[#0066cc]" size={20} />
                           <span>Fetching approvals data...</span>
@@ -709,7 +710,7 @@ export const L3RequestTracker = ({
                     </tr>
                   ) : filteredLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={14} className="text-center py-[48px] text-slate-400">
+                      <td colSpan={15} className="text-center py-[48px] text-slate-400">
                         No L3 validation approval records found.
                       </td>
                     </tr>
@@ -724,6 +725,7 @@ export const L3RequestTracker = ({
                             isSelected ? 'bg-sky-50/60 hover:bg-sky-50/60 border-l-[3px] border-l-[#0066cc]' : ''
                           }`}
                         >
+                          <td className="p-[8px] font-bold text-slate-400">{page * rowsPerPage + idx + 1}</td>
                           <td className="p-[8px] font-bold text-[#0066cc]">{log.changeNo}</td>
                           <td className="p-[8px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
                           <td className="p-[8px] font-medium text-slate-700 truncate" title={log.requester}>{log.requester}</td>
@@ -945,15 +947,22 @@ export const L3RequestTracker = ({
                   3. L3 Approval Matrix
                 </button>
               )}
-              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (selectedLog?.status || '').toLowerCase() === 'completed' && (
+              {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && ((selectedLog?.status || '').toLowerCase() === 'completed' || selectedEffDetails !== null) && (
                 <button
                   onClick={() => setActiveTab('effectiveness')}
                   className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
                     activeTab === 'effectiveness' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
+                      ? (selectedEffDetails && (selectedEffDetails.qaApproval === 'Rejected' || selectedEffDetails.status === 'Effectiveness Not Ok' || selectedEffDetails.status === 'Rejected'))
+                        ? 'border-rose-600 text-rose-600 font-extrabold bg-rose-50/30'
+                        : 'border-[#0066cc] text-[#0066cc]' 
+                      : (selectedEffDetails && (selectedEffDetails.qaApproval === 'Rejected' || selectedEffDetails.status === 'Effectiveness Not Ok' || selectedEffDetails.status === 'Rejected'))
+                      ? 'border-transparent text-rose-655 hover:text-rose-800 bg-rose-50/10'
                       : 'border-transparent text-slate-500 hover:text-slate-850'
                   }`}
                 >
+                  {(selectedEffDetails && (selectedEffDetails.qaApproval === 'Rejected' || selectedEffDetails.status === 'Effectiveness Not Ok' || selectedEffDetails.status === 'Rejected')) && (
+                    <AlertTriangle size={12} className="text-rose-600 mr-1 animate-pulse" />
+                  )}
                   4. Effectiveness
                 </button>
               )}
