@@ -1726,12 +1726,12 @@ export const DashboardOverview = ({
                   {/* Closed */}
                   <div className="flex flex-col items-center justify-end w-[22%] h-full">
                     {item.closed > 0 && (
-                      <span className="text-[#475569] text-[8px] font-bold mb-[2px]">
+                      <span className="text-[#2563eb] text-[8px] font-bold mb-[2px]">
                         {item.closed}
                       </span>
                     )}
                     <div
-                      className="w-full bg-[#475569] rounded-t-[1px]"
+                      className="w-full bg-[#2563eb] rounded-t-[1px]"
                       style={{ height: `${hClosed}%`, minHeight: item.closed > 0 ? '2px' : '0px' }}
                     />
                   </div>
@@ -1851,12 +1851,12 @@ export const DashboardOverview = ({
                   {/* Closed */}
                   <div className="flex flex-col items-center justify-end w-[22%] h-full">
                     {item.closed > 0 && (
-                      <span className="text-[#475569] text-[8px] font-bold mb-[2px]">
+                      <span className="text-[#2563eb] text-[8px] font-bold mb-[2px]">
                         {item.closed}
                       </span>
                     )}
                     <div
-                      className="w-full bg-[#475569] rounded-t-[1px]"
+                      className="w-full bg-[#2563eb] rounded-t-[1px]"
                       style={{ height: `${hClosed}%`, minHeight: item.closed > 0 ? '2px' : '0px' }}
                     />
                   </div>
@@ -3904,7 +3904,7 @@ export const DashboardOverview = ({
                       <span>Approved</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
-                      <span className="w-[8px] h-[8px] rounded-full bg-[#475569]" />
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#2563eb]" />
                       <span>Closed</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
