@@ -1219,26 +1219,50 @@ export const DashboardOverview = ({
 
     const maxVal = Math.max(...data.map(item => item.value), 5);
 
-    const getShortLabel = (label) => {
+    const getLabelElements = (label) => {
       const upper = label.trim().toUpperCase();
-      if (upper === 'PRODUCTION') return 'PROD';
-      if (upper === 'MAINTENANCE') return 'MAINT';
-      if (upper === 'MATERIALS') return 'MAT';
-      if (upper === 'MARKETING') return 'MKTG';
-      if (upper === 'SAFETY') return 'SAFE';
-      if (upper === 'GENERAL') return 'GEN';
-      if (upper === 'QUALITY ASSURANCE' || upper === 'QAD') return 'QAD';
-      if (upper === 'UNIT HEAD') return 'UNIT HD';
-      if (upper === 'PURCHASE & MATERIALS') return 'PURCH/MAT';
-      if (upper === 'PC & L') return 'PC&L';
+      let short = label;
+      let full = label;
       
-      if (label.length > 8) {
+      if (upper === 'PRODUCTION') {
+        short = 'PROD';
+        full = 'PRODUCTION';
+      } else if (upper === 'MAINTENANCE') {
+        short = 'MAINT';
+        full = 'MAINTENANCE';
+      } else if (upper === 'MATERIALS') {
+        short = 'MAT';
+        full = 'MATERIALS';
+      } else if (upper === 'MARKETING') {
+        short = 'MKTG';
+        full = 'MARKETING';
+      } else if (upper === 'SAFETY') {
+        short = 'SAFE';
+        full = 'SAFETY';
+      } else if (upper === 'GENERAL') {
+        short = 'GEN';
+        full = 'GENERAL';
+      } else if (upper === 'QUALITY ASSURANCE' || upper === 'QAD') {
+        short = 'QAD';
+        full = 'QAD';
+      } else if (upper === 'UNIT HEAD') {
+        short = 'UNIT HD';
+        full = 'UNIT HEAD';
+      } else if (upper === 'PURCHASE & MATERIALS') {
+        short = 'PURCH/MAT';
+        full = 'PURCHASE & MATERIALS';
+      } else if (upper === 'PC & L' || upper === 'PC&L') {
+        short = 'PC&L';
+        full = 'PC & L';
+      } else if (label.length > 8) {
         if (label.includes('&')) {
-          return label.split('&').map(part => part.trim().substring(0, 4)).join('&');
+          short = label.split('&').map(part => part.trim().substring(0, 4)).join('&');
+        } else {
+          short = label.substring(0, 6) + '.';
         }
-        return label.substring(0, 6) + '.';
       }
-      return label;
+
+      return { short, full };
     };
 
     return (
@@ -1246,6 +1270,7 @@ export const DashboardOverview = ({
         <div className={`flex justify-around items-end ${height} px-[10px] mt-[10px] min-w-[550px] lg:min-w-0`}>
           {data.map((item, idx) => {
             const barHeight = (item.value / maxVal) * 100;
+            const { short, full } = getLabelElements(item.label);
             return (
               <div key={idx} className="flex flex-col items-center min-w-[35px] max-w-[65px] w-full h-full justify-end group">
                 <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
@@ -1259,7 +1284,8 @@ export const DashboardOverview = ({
                   className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center font-sans cursor-help"
                   title={item.label}
                 >
-                  {getShortLabel(item.label)}
+                  <span className="hidden lg:inline">{full}</span>
+                  <span className="inline lg:hidden">{short}</span>
                 </span>
               </div>
             );
