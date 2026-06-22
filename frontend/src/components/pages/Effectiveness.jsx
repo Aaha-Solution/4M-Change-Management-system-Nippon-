@@ -155,7 +155,7 @@ export const Effectiveness = ({
     return (
       <div className="mt-1 flex flex-wrap gap-2">
         {files.map((file, idx) => (
-          <span 
+          <span
             key={idx}
             className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
             onClick={() => handleViewAttachment(file, changeNo, 'L1')}
@@ -278,8 +278,35 @@ export const Effectiveness = ({
       return;
     }
     if (!effMonthWise) {
-      setToastMsg('Please select Month Wise.');
+      setToastMsg({ text: 'Please select Month Wise.', isError: true });
       return;
+    }
+
+    // Validate: Month Wise must be on or after Change Date Start
+    const selectedChangeForValidation = changes.find(c => c.id === effChangeNo);
+    if (selectedChangeForValidation) {
+      const rawStart = selectedChangeForValidation.dateStart || selectedChangeForValidation.rawDate || selectedChangeForValidation.date;
+      if (rawStart) {
+        // Parse effMonthWise (DD/MM/YYYY) into a Date
+        let monthWiseDate = null;
+        if (effMonthWise.includes('/')) {
+          const parts = effMonthWise.split('/');
+          if (parts.length === 3) {
+            monthWiseDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+          }
+        } else {
+          monthWiseDate = new Date(effMonthWise);
+        }
+        // Parse startDate (YYYY-MM-DD) into a Date (compare at day level)
+        const startParts = rawStart.split('-');
+        const startDate = startParts.length === 3
+          ? new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
+          : new Date(rawStart);
+        if (monthWiseDate && !isNaN(startDate) && !isNaN(monthWiseDate) && monthWiseDate < startDate) {
+          setToastMsg({ text: `Month Wise date must be on or after the Change Start Date (${displayStartDate || rawStart}).`, isError: true });
+          return;
+        }
+      }
     }
     if (!effRemarks || !effRemarks.trim()) {
       setToastMsg('Please enter Observation Remarks.');
@@ -457,7 +484,7 @@ export const Effectiveness = ({
       (log.changeNo || '').toLowerCase().includes(query) ||
       (log.context || '').toLowerCase().includes(query) ||
       (log.remarks || '').toLowerCase().includes(query);
-    
+
     let matchesStatus = true;
     if (effFilterStatus !== 'All') {
       if (effFilterStatus === 'Pending') {
@@ -466,7 +493,7 @@ export const Effectiveness = ({
         matchesStatus = log.status === effFilterStatus;
       }
     }
-    
+
     let matchesMonth = true;
     if (effFilterMonth !== 'All') {
       if (effFilterMonth === 'Pending') {
@@ -537,363 +564,391 @@ export const Effectiveness = ({
         {/* LEFT COLUMN: Add Effectiveness Log Form */}
         {canUpdate && (
           <div className="lg:col-span-4 bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px] h-fit">
-          <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
-            <Save size={16} className="text-[#0066cc]" />
-            <h4 className="text-[13px] font-bold text-slate-900">Add Monitoring Log</h4>
-          </div>
-
-          <form onSubmit={handleAddOrEditEff} className="space-y-[14px]">
-            {/* 4M CHANGE NO */}
-            <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
-              <input
-                type="text"
-                disabled
-                placeholder="Click a row on the right to select"
-                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none animate-fade-in-up"
-                value={effChangeNo}
-              />
+            <div className="flex items-center gap-[8px] border-b border-slate-100 pb-[8px]">
+              <Save size={16} className="text-[#0066cc]" />
+              <h4 className="text-[13px] font-bold text-slate-900">Add Monitoring Log</h4>
             </div>
 
-            {effChangeNo && isClosed ? (
-              <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
-                <CheckCircle2 size={14} className="shrink-0 mt-0.5 text-emerald-600" />
-                <div>
-                  <span className="font-bold">Log Closed:</span> This effectiveness log has been Approved and Closed. No further updates are allowed.
+            <form onSubmit={handleAddOrEditEff} className="space-y-[14px]">
+              {/* 4M CHANGE NO */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  disabled
+                  placeholder="Click a row on the right to select"
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none animate-fade-in-up"
+                  value={effChangeNo}
+                />
+              </div>
+
+              {effChangeNo && isClosed ? (
+                <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                  <CheckCircle2 size={14} className="shrink-0 mt-0.5 text-emerald-600" />
+                  <div>
+                    <span className="font-bold">Log Closed:</span> This effectiveness log has been Approved and Closed. No further updates are allowed.
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <>
-                {effChangeNo && isAlreadyValidated && isQaUpdateBlocked && (
-                  <div className="bg-amber-50 border border-amber-250 text-amber-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
-                    <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
-                    <div>
-                      <span className="font-bold">Log Locked:</span> You have already updated this effectiveness log once. Unlimited updates are allowed only for Administrators.
+              ) : (
+                <>
+                  {effChangeNo && isAlreadyValidated && isQaUpdateBlocked && (
+                    <div className="bg-amber-50 border border-amber-250 text-amber-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                      <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
+                      <div>
+                        <span className="font-bold">Log Locked:</span> You have already updated this effectiveness log once. Unlimited updates are allowed only for Administrators.
+                      </div>
                     </div>
-                  </div>
-                )}
-
-                {effChangeNo && isAlreadyValidated && isAdmin && (
-                  <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
-                    <AlertTriangle size={14} className="shrink-0 mt-0.5 text-blue-600" />
-                    <div>
-                      <span className="font-bold">Admin Edit Mode:</span> You have unlimited update access to modify this effectiveness log.
-                    </div>
-                  </div>
-                )}
-
-                {effChangeNo && isAlreadyValidated && isQADept && !isAdmin && !isQaUpdateBlocked && (
-                  <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
-                    <AlertTriangle size={14} className="shrink-0 mt-0.5 text-blue-600" />
-                    <div>
-                      <span className="font-bold">Edit Mode:</span> This effectiveness log has already been submitted. As a QA user, you can update it once.
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* REQUESTED DATE */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
-              <input
-                type="text"
-                disabled
-                placeholder="Click a row on the right to select"
-                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
-                value={displayReqDate}
-              />
-            </div>
-
-            {/* CONTEXT OF CHANGE */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change <span className="text-rose-500">*</span></label>
-              <input
-                type="text"
-                disabled
-                placeholder="Click a row on the right to select"
-                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
-                value={displayContext}
-              />
-            </div>
-
-            {/* CHANGE DATE START */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start <span className="text-rose-500">*</span></label>
-              <input
-                type="text"
-                disabled
-                placeholder="Click a row on the right to select"
-                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
-                value={displayStartDate}
-              />
-            </div>
-
-            {/* MONTH WISE */}
-            <div className="space-y-[4px] relative">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise <span className="text-rose-500">*</span></label>
-              <CustomDatePicker
-                value={effMonthWise}
-                onChange={setEffMonthWise}
-                readOnly={true}
-                disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
-                inputClassName={`w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[30px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'}`}
-                buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
-              />
-            </div>
-
-            {/* OBSERVATION REMARKS */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Observation Remarks <span className="text-rose-500">*</span></label>
-              <textarea
-                required
-                disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
-                rows={3}
-                placeholder="Enter evaluation remarks/results..."
-                maxLength={1000}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
-                  }`}
-                value={effRemarks}
-                onChange={(e) => setEffRemarks(e.target.value)}
-              />
-              <div className="flex justify-between items-center text-[9px] text-slate-400">
-                <span>Enter observation remarks</span>
-                <span className={`${1000 - effRemarks.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
-                  {1000 - effRemarks.length} characters remaining (max 1000 chars)
-                </span>
-              </div>
-            </div>
-
-            {/* ATTACHMENTS */}
-            <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attachments <span className="text-rose-500">*</span></label>
-              <div className="flex gap-[8px]">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    required
-                    readOnly
-                    disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
-                    placeholder="e.g. proof-log.pdf, image.png"
-                    className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
-                      }`}
-                    value={effAttachment}
-                  />
-                  {effAttachment && (!isAlreadyValidated || !isUpdateBlocked) && (
-                    <button
-                      type="button"
-                      disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
-                      onClick={() => {
-                        setDeleteConfirm({
-                          title: 'Clear All Attachments?',
-                          message: 'Are you sure you want to clear all attachments from this field?',
-                          onConfirm: () => {
-                            setEffAttachment('');
-                            setUploadedFilesList([]);
-                          }
-                        });
-                      }}
-                      className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                      title="Clear all attachments"
-                    >
-                      <X size={14} />
-                    </button>
                   )}
-                </div>
-                <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 rounded-[6px] text-[12px] font-bold transition-all cursor-pointer ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'
-                  }`}>
-                  <Paperclip size={14} />
-                  <span>Upload</span>
-                  <input
-                    key={effAttachment || ''}
-                    type="file"
-                    multiple
-                    accept="image/*,application/pdf"
-                    disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
-                    className="hidden"
-                    onChange={async (e) => {
-                      const target = e.target;
-                      if (target.files && target.files.length > 0) {
-                        const files = Array.from(target.files);
-                        const MAX_SIZE = 100 * 1024 * 1024; // 100MB
-                        const tooLargeFiles = files.filter(f => f.size > MAX_SIZE);
 
-                        if (tooLargeFiles.length > 0) {
-                          if (setToastMsg) {
-                            setToastMsg(`Upload not allowed: File(s) exceed 100MB limit: ${tooLargeFiles.map(f => f.name).join(', ')}`);
-                          }
-                          target.value = '';
-                          return;
-                        }
-                        
-                        // Validate file type
-                        const allowedFiles = files.filter(file => {
-                          const isImage = file.type.startsWith('image/');
-                          const isPdf = file.type === 'application/pdf';
-                          const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bold|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
-                          return (isImage || isPdf) && hasAllowedExt;
-                        });
+                  {effChangeNo && isAlreadyValidated && isAdmin && (
+                    <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                      <AlertTriangle size={14} className="shrink-0 mt-0.5 text-blue-600" />
+                      <div>
+                        <span className="font-bold">Admin Edit Mode:</span> You have unlimited update access to modify this effectiveness log.
+                      </div>
+                    </div>
+                  )}
 
-                        if (allowedFiles.length !== files.length) {
-                          if (setToastMsg) {
-                            setToastMsg('Only PDF and image files are allowed. Invalid files were skipped.');
-                          }
-                        }
+                  {effChangeNo && isAlreadyValidated && isQADept && !isAdmin && !isQaUpdateBlocked && (
+                    <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] leading-relaxed flex items-start gap-2 animate-fade-in-up">
+                      <AlertTriangle size={14} className="shrink-0 mt-0.5 text-blue-600" />
+                      <div>
+                        <span className="font-bold">Edit Mode:</span> This effectiveness log has already been submitted. As a QA user, you can update it once.
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
-                        if (allowedFiles.length === 0) {
-                          target.value = '';
-                          return;
-                        }
-
-                        const names = allowedFiles.map(f => f.name.replace(/,/g, '_'));
-
-                        // Reset input value synchronously immediately to allow uploading the same file again
-                        target.value = '';
-
-                        // Store object URLs for preview
-                         const newUrls = {};
-                         const newTypes = {};
-                         allowedFiles.forEach(file => {
-                           const name = file.name.replace(/,/g, '_');
-                           newUrls[name] = URL.createObjectURL(file);
-                           newTypes[name] = file.type || 'application/octet-stream';
-                         });
-                         setFileUrls(prev => ({ ...prev, ...newUrls }));
-                         setFileTypes(prev => ({ ...prev, ...newTypes }));
-
-                        // Convert files to base64 for server upload
-                        const base64Files = await Promise.all(
-                          allowedFiles.map(async (file) => ({
-                            name: file.name.replace(/,/g, '_'),
-                            type: file.type || 'application/octet-stream',
-                            data: await fileToBase64(file)
-                          }))
-                        );
-                        setUploadedFilesList(prev => {
-                          const existingNames = prev.map(f => f.name);
-                          const newOnes = base64Files.filter(f => !existingNames.includes(f.name));
-                          return [...prev, ...newOnes];
-                        });
-
-                        const existing = effAttachment ? effAttachment.split(',').map(s => s.trim()).filter(Boolean) : [];
-                        const updated = Array.from(new Set([...existing, ...names])).join(', ');
-                        setEffAttachment(updated);
-                      }
-                    }}
-                  />
-                </label>
+              {/* REQUESTED DATE */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  disabled
+                  placeholder="Click a row on the right to select"
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
+                  value={displayReqDate}
+                />
               </div>
 
-              {/* Selected File Pills */}
-              {effAttachment && (
-                <div className="flex flex-wrap gap-[6px] pt-[6px]">
-                  {effAttachment.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
-                    <span key={i} className="inline-flex items-center gap-[4px] bg-slate-50 border border-slate-200 text-[11px] font-semibold text-slate-700 px-[8px] py-[2px] rounded-[4px] select-none">
-                      <span
-                        onClick={() => handleViewAttachment(file)}
-                        className="truncate max-w-[150px] cursor-pointer hover:underline text-[#0066cc]"
-                        title="Click to view file"
-                      >
-                        📎 {file}
+              {/* CONTEXT OF CHANGE */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  disabled
+                  placeholder="Click a row on the right to select"
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
+                  value={displayContext}
+                />
+              </div>
+
+              {/* CHANGE DATE START */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  disabled
+                  placeholder="Click a row on the right to select"
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-500 cursor-not-allowed select-none"
+                  value={displayStartDate}
+                />
+              </div>
+
+              {/* MONTH WISE */}
+              <div className="space-y-[4px] relative">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise <span className="text-rose-500">*</span></label>
+                <CustomDatePicker
+                  value={effMonthWise}
+                  onChange={setEffMonthWise}
+                  readOnly={true}
+                  disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
+                  minDate={(() => {
+                    // Convert YYYY-MM-DD startDate to DD/MM/YYYY for the picker minDate
+                    const rawStart = selectedChange?.dateStart || selectedChange?.rawDate || selectedChange?.date;
+                    if (!rawStart) return undefined;
+                    const parts = rawStart.split('-');
+                    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                    return undefined;
+                  })()}
+                  inputClassName={`w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] pl-[12px] pr-[30px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'}`}
+                  buttonClassName="right-[10px] top-[50%] -translate-y-1/2"
+                />
+                {effMonthWise && selectedChange && (() => {
+                  // Show inline warning if current value is before start date
+                  const rawStart = selectedChange.dateStart || selectedChange.rawDate || selectedChange.date;
+                  if (!rawStart) return null;
+                  let monthWiseDate = null;
+                  if (effMonthWise.includes('/')) {
+                    const p = effMonthWise.split('/');
+                    if (p.length === 3) monthWiseDate = new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+                  } else { monthWiseDate = new Date(effMonthWise); }
+                  const sp = rawStart.split('-');
+                  const startD = sp.length === 3 ? new Date(parseInt(sp[0]), parseInt(sp[1]) - 1, parseInt(sp[2])) : new Date(rawStart);
+                  if (monthWiseDate && !isNaN(startD) && !isNaN(monthWiseDate) && monthWiseDate < startD) {
+                    return (
+                      <span className="text-rose-500 text-[10px] block mt-[2px] font-semibold">
+                        ⚠ Month Wise must be on or after Change Start Date ({displayStartDate})
                       </span>
-                      {(!isAlreadyValidated || !isUpdateBlocked) && (
-                        <button
-                          type="button"
-                          disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
-                          onClick={() => {
-                            setDeleteConfirm({
-                              title: 'Delete Attachment?',
-                              message: `Are you sure you want to delete "${file}"? This action cannot be undone.`,
-                              onConfirm: () => {
-                                const existing = effAttachment.split(',').map(s => s.trim()).filter(Boolean);
-                                const updated = existing.filter(f => f !== file).join(', ');
-                                setEffAttachment(updated);
-                                setUploadedFilesList(prev => prev.filter(f => f.name !== file));
-                              }
-                            });
-                          }}
-                          className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-xs"
-                        >
-                          &times;
-                        </button>
-                      )}
-                    </span>
-                  ))}
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+
+              {/* OBSERVATION REMARKS */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Observation Remarks <span className="text-rose-500">*</span></label>
+                <textarea
+                  required
+                  disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
+                  rows={3}
+                  placeholder="Enter evaluation remarks/results..."
+                  maxLength={1000}
+                  className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
+                    }`}
+                  value={effRemarks}
+                  onChange={(e) => setEffRemarks(e.target.value)}
+                />
+                <div className="flex justify-between items-center text-[9px] text-slate-400">
+                  <span>Enter observation remarks</span>
+                  <span className={`${1000 - effRemarks.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                    {1000 - effRemarks.length} characters remaining (max 1000 chars)
+                  </span>
                 </div>
-              )}
-            </div>
+              </div>
 
-            {/* EFFECTIVENESS STATUS */}
-            <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Status <span className="text-rose-500">*</span></label>
-              <select
-                required
-                disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
-                  }`}
-                value={effStatus}
-                onChange={(e) => setEffStatus(e.target.value)}
-              >
-                <option value="">Select Status</option>
-                <option value="Effectiveness Ok">Effectiveness Ok</option>
-                <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
-              </select>
-            </div>
+              {/* ATTACHMENTS */}
+              <div className="space-y-[4px]">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attachments <span className="text-rose-500">*</span></label>
+                <div className="flex gap-[8px]">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      required
+                      readOnly
+                      disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
+                      placeholder="e.g. proof-log.pdf, image.png"
+                      className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none pr-[30px] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200'
+                        }`}
+                      value={effAttachment}
+                    />
+                    {effAttachment && (!isAlreadyValidated || !isUpdateBlocked) && (
+                      <button
+                        type="button"
+                        disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
+                        onClick={() => {
+                          setDeleteConfirm({
+                            title: 'Clear All Attachments?',
+                            message: 'Are you sure you want to clear all attachments from this field?',
+                            onConfirm: () => {
+                              setEffAttachment('');
+                              setUploadedFilesList([]);
+                            }
+                          });
+                        }}
+                        className="absolute right-[10px] top-[10px] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                        title="Clear all attachments"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                  <label className={`flex items-center justify-center gap-[6px] px-[12px] py-[8px] border border-slate-200 rounded-[6px] text-[12px] font-bold transition-all cursor-pointer ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white hover:bg-slate-50 text-slate-700'
+                    }`}>
+                    <Paperclip size={14} />
+                    <span>Upload</span>
+                    <input
+                      key={effAttachment || ''}
+                      type="file"
+                      multiple
+                      accept="image/*,application/pdf"
+                      disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
+                      className="hidden"
+                      onChange={async (e) => {
+                        const target = e.target;
+                        if (target.files && target.files.length > 0) {
+                          const files = Array.from(target.files);
+                          const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+                          const tooLargeFiles = files.filter(f => f.size > MAX_SIZE);
 
-            {/* QA APPROVAL DECISION */}
-            <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Approval Decision <span className="text-rose-500">*</span></label>
-              <select
-                required
-                disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
-                className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
-                  }`}
-                value={effQaApproval}
-                onChange={(e) => setEffQaApproval(e.target.value)}
-              >
-                <option value="">Select QA Decision</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-            </div>
+                          if (tooLargeFiles.length > 0) {
+                            if (setToastMsg) {
+                              setToastMsg(`Upload not allowed: File(s) exceed 100MB limit: ${tooLargeFiles.map(f => f.name).join(', ')}`);
+                            }
+                            target.value = '';
+                            return;
+                          }
 
-            {/* Buttons */}
-            <div className="space-y-[8px] pt-[4px]">
-              <button
-                type="submit"
-                disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
-                className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
-              >
-                {!effChangeNo ? (
-                  <span>Select a Request to Evaluate</span>
-                ) : isClosed ? (
-                  <span>Log is Closed</span>
-                ) : (isAlreadyValidated && isUpdateBlocked) ? (
-                  <span>Log Update Limit Reached</span>
-                ) : isAlreadyValidated ? (
-                  <>
-                    <Save size={14} />
-                    <span>Update Log Entry</span>
-                  </>
-                ) : (
-                  <>
-                    <Save size={14} />
-                    <span>Add Log Entry</span>
-                  </>
+                          // Validate file type
+                          const allowedFiles = files.filter(file => {
+                            const isImage = file.type.startsWith('image/');
+                            const isPdf = file.type === 'application/pdf';
+                            const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bold|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
+                            return (isImage || isPdf) && hasAllowedExt;
+                          });
+
+                          if (allowedFiles.length !== files.length) {
+                            if (setToastMsg) {
+                              setToastMsg('Only PDF and image files are allowed. Invalid files were skipped.');
+                            }
+                          }
+
+                          if (allowedFiles.length === 0) {
+                            target.value = '';
+                            return;
+                          }
+
+                          const names = allowedFiles.map(f => f.name.replace(/,/g, '_'));
+
+                          // Reset input value synchronously immediately to allow uploading the same file again
+                          target.value = '';
+
+                          // Store object URLs for preview
+                          const newUrls = {};
+                          const newTypes = {};
+                          allowedFiles.forEach(file => {
+                            const name = file.name.replace(/,/g, '_');
+                            newUrls[name] = URL.createObjectURL(file);
+                            newTypes[name] = file.type || 'application/octet-stream';
+                          });
+                          setFileUrls(prev => ({ ...prev, ...newUrls }));
+                          setFileTypes(prev => ({ ...prev, ...newTypes }));
+
+                          // Convert files to base64 for server upload
+                          const base64Files = await Promise.all(
+                            allowedFiles.map(async (file) => ({
+                              name: file.name.replace(/,/g, '_'),
+                              type: file.type || 'application/octet-stream',
+                              data: await fileToBase64(file)
+                            }))
+                          );
+                          setUploadedFilesList(prev => {
+                            const existingNames = prev.map(f => f.name);
+                            const newOnes = base64Files.filter(f => !existingNames.includes(f.name));
+                            return [...prev, ...newOnes];
+                          });
+
+                          const existing = effAttachment ? effAttachment.split(',').map(s => s.trim()).filter(Boolean) : [];
+                          const updated = Array.from(new Set([...existing, ...names])).join(', ');
+                          setEffAttachment(updated);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {/* Selected File Pills */}
+                {effAttachment && (
+                  <div className="flex flex-wrap gap-[6px] pt-[6px]">
+                    {effAttachment.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
+                      <span key={i} className="inline-flex items-center gap-[4px] bg-slate-50 border border-slate-200 text-[11px] font-semibold text-slate-700 px-[8px] py-[2px] rounded-[4px] select-none">
+                        <span
+                          onClick={() => handleViewAttachment(file)}
+                          className="truncate max-w-[150px] cursor-pointer hover:underline text-[#0066cc]"
+                          title="Click to view file"
+                        >
+                          📎 {file}
+                        </span>
+                        {(!isAlreadyValidated || !isUpdateBlocked) && (
+                          <button
+                            type="button"
+                            disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
+                            onClick={() => {
+                              setDeleteConfirm({
+                                title: 'Delete Attachment?',
+                                message: `Are you sure you want to delete "${file}"? This action cannot be undone.`,
+                                onConfirm: () => {
+                                  const existing = effAttachment.split(',').map(s => s.trim()).filter(Boolean);
+                                  const updated = existing.filter(f => f !== file).join(', ');
+                                  setEffAttachment(updated);
+                                  setUploadedFilesList(prev => prev.filter(f => f.name !== file));
+                                }
+                              });
+                            }}
+                            className="text-slate-400 hover:text-rose-600 font-bold ml-[2px] cursor-pointer text-xs"
+                          >
+                            &times;
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                  </div>
                 )}
-              </button>
-              {(editingEffLogId || effChangeNo) && (
-                <button
-                  type="button"
-                  onClick={handleCancelEditing}
-                  className="w-full text-center py-[6px] text-slate-500 hover:text-slate-800 text-[11px] font-semibold cursor-pointer"
+              </div>
+
+              {/* EFFECTIVENESS STATUS */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Status <span className="text-rose-500">*</span></label>
+                <select
+                  required
+                  disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
+                  className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                    }`}
+                  value={effStatus}
+                  onChange={(e) => setEffStatus(e.target.value)}
                 >
-                  Cancel Selection
+                  <option value="">Select Status</option>
+                  <option value="Effectiveness Ok">Effectiveness Ok</option>
+                  <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
+                </select>
+              </div>
+
+              {/* QA APPROVAL DECISION */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Approval Decision <span className="text-rose-500">*</span></label>
+                <select
+                  required
+                  disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
+                  className={`w-full border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] ${(!effChangeNo || (isAlreadyValidated && isUpdateBlocked)) ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-50 border-slate-200 cursor-pointer'
+                    }`}
+                  value={effQaApproval}
+                  onChange={(e) => setEffQaApproval(e.target.value)}
+                >
+                  <option value="">Select QA Decision</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+
+              {/* Buttons */}
+              <div className="space-y-[8px] pt-[4px]">
+                <button
+                  type="submit"
+                  disabled={!effChangeNo || (isAlreadyValidated && isUpdateBlocked)}
+                  className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-50 disabled:cursor-not-allowed border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer"
+                >
+                  {!effChangeNo ? (
+                    <span>Select a Request to Evaluate</span>
+                  ) : isClosed ? (
+                    <span>Log is Closed</span>
+                  ) : (isAlreadyValidated && isUpdateBlocked) ? (
+                    <span>Log Update Limit Reached</span>
+                  ) : isAlreadyValidated ? (
+                    <>
+                      <Save size={14} />
+                      <span>Update Log Entry</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={14} />
+                      <span>Add Log Entry</span>
+                    </>
+                  )}
                 </button>
-              )}
-            </div>
-          </form>
-        </div>
+                {(editingEffLogId || effChangeNo) && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEditing}
+                    className="w-full text-center py-[6px] text-slate-500 hover:text-slate-800 text-[11px] font-semibold cursor-pointer"
+                  >
+                    Cancel Selection
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
         )}
 
         {/* RIGHT COLUMN: Table Column */}
@@ -903,54 +958,48 @@ export const Effectiveness = ({
             <button
               type="button"
               onClick={() => handleMainTabChange('ongoing')}
-              className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${
-                activeMainTab === 'ongoing'
+              className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${activeMainTab === 'ongoing'
                   ? 'bg-[#0066cc] text-white font-extrabold shadow-md'
                   : 'bg-slate-100/60 text-slate-600 hover:bg-[#e6f0fa]/80 hover:text-[#0066cc] font-medium'
-              }`}
+                }`}
             >
               <span>Ongoing Monitoring</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${
-                activeMainTab === 'ongoing' 
-                  ? 'bg-white text-[#0066cc] font-bold' 
+              <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${activeMainTab === 'ongoing'
+                  ? 'bg-white text-[#0066cc] font-bold'
                   : 'bg-slate-200 text-slate-600'
-              }`}>
+                }`}>
                 {tableLogs.filter(log => log.qaApproval !== 'Approved' && log.qaApproval !== 'Rejected').length}
               </span>
             </button>
             <button
               type="button"
               onClick={() => handleMainTabChange('closed')}
-              className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${
-                activeMainTab === 'closed'
+              className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${activeMainTab === 'closed'
                   ? 'bg-emerald-600 text-white font-extrabold shadow-md'
                   : 'bg-slate-100/60 text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-700 font-medium'
-              }`}
+                }`}
             >
               <span>Closed Requests</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${
-                activeMainTab === 'closed' 
-                  ? 'bg-white text-emerald-600 font-bold' 
+              <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${activeMainTab === 'closed'
+                  ? 'bg-white text-emerald-600 font-bold'
                   : 'bg-slate-200 text-slate-600'
-              }`}>
+                }`}>
                 {tableLogs.filter(log => log.qaApproval === 'Approved').length}
               </span>
             </button>
             <button
               type="button"
               onClick={() => handleMainTabChange('rejected')}
-              className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${
-                activeMainTab === 'rejected'
+              className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${activeMainTab === 'rejected'
                   ? 'bg-rose-600 text-white font-extrabold shadow-md'
                   : 'bg-slate-100/60 text-slate-600 hover:bg-rose-50/80 hover:text-rose-700 font-medium'
-              }`}
+                }`}
             >
               <span>Rejected Requests</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${
-                activeMainTab === 'rejected' 
-                  ? 'bg-white text-rose-600 font-bold' 
+              <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${activeMainTab === 'rejected'
+                  ? 'bg-white text-rose-600 font-bold'
                   : 'bg-slate-200 text-slate-600'
-              }`}>
+                }`}>
                 {tableLogs.filter(log => log.qaApproval === 'Rejected').length}
               </span>
             </button>
@@ -1068,8 +1117,8 @@ export const Effectiveness = ({
 
                           <td className="p-3">
                             <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${log.status === 'Effectiveness Ok'
-                                ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                                : log.status === 'Pending'
+                              ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                              : log.status === 'Pending'
                                 ? 'bg-slate-50 border-slate-200 text-slate-500'
                                 : 'bg-rose-50 border-rose-250 text-rose-700'
                               }`}>
@@ -1079,8 +1128,8 @@ export const Effectiveness = ({
 
                           <td className="p-3">
                             <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${log.qaApproval === 'Approved'
-                                ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                                : log.qaApproval === 'Pending'
+                              ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                              : log.qaApproval === 'Pending'
                                 ? 'bg-slate-50 border-slate-200 text-slate-500'
                                 : 'bg-rose-50 border-rose-250 text-rose-700'
                               }`}>
@@ -1126,11 +1175,11 @@ export const Effectiveness = ({
       {selectedLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => setSelectedLog(null)}
           />
-          
+
           {/* Modal Container */}
           <div className="relative bg-white w-full max-w-[800px] max-h-[90vh] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
@@ -1144,7 +1193,7 @@ export const Effectiveness = ({
                   <p className="text-[11px] text-slate-400 mt-0.5">Tracking details for: <span className="font-mono font-bold text-slate-600">{selectedLog.changeNo}</span></p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedLog(null)}
                 className="p-[6px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
               >
@@ -1156,22 +1205,20 @@ export const Effectiveness = ({
             <div className="flex h-11 border-b border-slate-200 bg-slate-50/50 shrink-0">
               <button
                 onClick={() => setActiveTab('l1')}
-                className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                  activeTab === 'l1' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
+                className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l1'
+                    ? 'border-[#0066cc] text-[#0066cc]'
                     : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
+                  }`}
               >
                 1. L1 Request
               </button>
               {selectedL1Details?.hodStatus !== 'Rejected' && (
                 <button
                   onClick={() => setActiveTab('l2')}
-                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                    activeTab === 'l2' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l2'
+                      ? 'border-[#0066cc] text-[#0066cc]'
                       : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
+                    }`}
                 >
                   2. L2 Validation
                 </button>
@@ -1179,11 +1226,10 @@ export const Effectiveness = ({
               {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (
                 <button
                   onClick={() => setActiveTab('l3')}
-                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                    activeTab === 'l3' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l3'
+                      ? 'border-[#0066cc] text-[#0066cc]'
                       : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
+                    }`}
                 >
                   3. L3 Approval
                 </button>
@@ -1201,15 +1247,14 @@ export const Effectiveness = ({
                   return (
                     <button
                       onClick={() => setActiveTab('effectiveness')}
-                      className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                        activeTab === 'effectiveness' 
+                      className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'effectiveness'
                           ? isEffRejected
                             ? 'border-rose-600 text-rose-600 font-extrabold bg-rose-50/30'
-                            : 'border-[#0066cc] text-[#0066cc]' 
+                            : 'border-[#0066cc] text-[#0066cc]'
                           : isEffRejected
-                          ? 'border-transparent text-rose-655 hover:text-rose-800 bg-rose-50/10'
-                          : 'border-transparent text-slate-500 hover:text-slate-850'
-                      }`}
+                            ? 'border-transparent text-rose-655 hover:text-rose-800 bg-rose-50/10'
+                            : 'border-transparent text-slate-500 hover:text-slate-850'
+                        }`}
                     >
                       {isEffRejected && <AlertTriangle size={12} className="text-rose-600 mr-1 animate-pulse" />}
                       4. Effectiveness
@@ -1252,13 +1297,12 @@ export const Effectiveness = ({
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                             <div className="flex gap-1.5 items-center mt-0.5">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                selectedL1Details.hodStatus === 'Rejected'
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL1Details.hodStatus === 'Rejected'
                                   ? 'bg-rose-50 border-rose-220 text-rose-700'
                                   : (selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending')
-                                  ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
-                                  : 'bg-amber-50 border-amber-220 text-amber-700'
-                              }`}>
+                                    ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                                    : 'bg-amber-50 border-amber-220 text-amber-700'
+                                }`}>
                                 L1 {selectedL1Details.hodStatus === 'Rejected' ? 'Rejected' : ((selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
                               </span>
                             </div>
@@ -1344,7 +1388,7 @@ export const Effectiveness = ({
                           <Calendar size={14} />
                           <span>Implementation Timeline</span>
                         </h5>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
                           <div className="space-y-[12px]">
                             <div className="space-y-[4px]">
@@ -1591,13 +1635,12 @@ export const Effectiveness = ({
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
                             <div>
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                selectedL2Details.status === 'Accepted'
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL2Details.status === 'Accepted'
                                   ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
                                   : selectedL2Details.status === 'Rejected'
-                                  ? 'bg-rose-50 border-rose-220 text-rose-700'
-                                  : 'bg-amber-50 border-amber-220 text-amber-700'
-                              }`}>
+                                    ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                    : 'bg-amber-50 border-amber-220 text-amber-700'
+                                }`}>
                                 L2 {selectedL2Details.status === 'Accepted' ? 'Approved' : (selectedL2Details.status || 'Pending')}
                               </span>
                             </div>
@@ -1618,7 +1661,7 @@ export const Effectiveness = ({
                                 selectedL2Details.weldTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
                                   <div key={idx} className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
                                     <span className="font-medium text-slate-650 truncate max-w-[200px]" title={file}>{file}</span>
-                                    <span 
+                                    <span
                                       className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer select-none"
                                       onClick={() => handleViewAttachment(file, selectedL2Details.changeNo, 'L2')}
                                     >
@@ -1639,7 +1682,7 @@ export const Effectiveness = ({
                                 selectedL2Details.qaTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
                                   <div key={idx} className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
                                     <span className="font-medium text-slate-655 truncate max-w-[200px]" title={file}>{file}</span>
-                                    <span 
+                                    <span
                                       className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer select-none"
                                       onClick={() => handleViewAttachment(file, selectedL2Details.changeNo, 'L2')}
                                     >
@@ -1702,15 +1745,15 @@ export const Effectiveness = ({
                           const status = selectedLog[dept.prop] || 'Pending';
                           const isAccepted = status === 'Accepted' || status === 'Approved';
                           const isRejected = status === 'Rejected';
-                          const badgeClass = isAccepted 
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
-                            : isRejected 
-                            ? 'bg-rose-50 border-rose-200 text-rose-700' 
-                            : 'bg-amber-50 border-amber-200 text-amber-700';
+                          const badgeClass = isAccepted
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                            : isRejected
+                              ? 'bg-rose-50 border-rose-200 text-rose-700'
+                              : 'bg-amber-50 border-amber-200 text-amber-700';
 
                           return (
-                            <div 
-                              key={index} 
+                            <div
+                              key={index}
                               className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
                             >
                               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
@@ -1729,7 +1772,7 @@ export const Effectiveness = ({
                       const currentEffLog = effectivenessLogs.find(
                         l => l.changeNo?.toLowerCase().trim() === selectedLog.changeNo?.toLowerCase().trim()
                       );
-                      
+
                       if (!currentEffLog) {
                         return (
                           <div className="text-center py-[64px] bg-slate-50 rounded-xl border border-dashed border-slate-200">
@@ -1769,11 +1812,10 @@ export const Effectiveness = ({
                             <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Status</span>
                               <div>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                                  currentEffLog.status === 'Effectiveness Ok'
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.status === 'Effectiveness Ok'
                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                                     : 'bg-rose-50 border-rose-250 text-rose-700'
-                                }`}>
+                                  }`}>
                                   {currentEffLog.status}
                                 </span>
                               </div>
@@ -1781,11 +1823,10 @@ export const Effectiveness = ({
                             <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Approval</span>
                               <div>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                                  currentEffLog.qaApproval === 'Approved'
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.qaApproval === 'Approved'
                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                                     : 'bg-rose-50 border-rose-200 text-rose-700'
-                                }`}>
+                                  }`}>
                                   {currentEffLog.qaApproval}
                                 </span>
                               </div>
@@ -1829,7 +1870,7 @@ export const Effectiveness = ({
 
             {/* Footer */}
             <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px] shrink-0">
-              <button 
+              <button
                 onClick={handleExportRequestDetailsPDF}
                 disabled={isFetchingDetails}
                 className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px]"
@@ -1838,7 +1879,7 @@ export const Effectiveness = ({
                 <Download size={14} />
                 <span>Export PDF</span>
               </button>
-              <button 
+              <button
                 onClick={() => setSelectedLog(null)}
                 className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-650 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
               >
@@ -1877,19 +1918,19 @@ export const Effectiveness = ({
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
                 (previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) || (fileTypes[previewFile] && fileTypes[previewFile].startsWith('image/'))) ? (
-                  <img 
+                  <img
                     src={fileUrls[previewFile]}
                     alt={previewFile}
                     className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200"
                   />
                 ) : (previewFile.toLowerCase().endsWith('.pdf') || (fileTypes[previewFile] && fileTypes[previewFile] === 'application/pdf')) ? (
-                  <iframe 
+                  <iframe
                     src={`${fileUrls[previewFile]}#navpanes=0`}
                     title={previewFile}
                     className="w-full h-[60vh] rounded border border-slate-200 bg-white"
                   />
                 ) : (
-                  <iframe 
+                  <iframe
                     src={fileUrls[previewFile]}
                     title={previewFile}
                     className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700"
