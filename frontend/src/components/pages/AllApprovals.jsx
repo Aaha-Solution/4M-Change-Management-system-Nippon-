@@ -697,32 +697,7 @@ export const AllApprovals = ({
             </div>
           </div>
         </div>
-        {/* Stage filter row */}
-        <div className="flex flex-wrap items-center gap-[8px] pt-1">
-          <Layers size={14} className="text-slate-400 shrink-0" />
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Workflow Stage:</span>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {[
-              { key: 'All', label: 'All Stages' },
-              { key: 'L1', label: '🟡 L1 HOD Review' },
-              { key: 'L2', label: '🔵 L2 QA Validation' },
-              { key: 'L3', label: '🟣 L3 Multi-HOD' },
-              { key: '✓', label: '🟢 Completed' },
-            ].map(s => (
-              <button
-                key={s.key}
-                onClick={() => setStageFilter(s.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                  stageFilter === s.key
-                    ? 'bg-slate-800 text-white border-slate-800 shadow-md'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </div>
+
         {/* Scope/Source filter row */}
         {!isAdmin && (
           <div className="flex flex-wrap items-center gap-[8px] pt-2.5 border-t border-slate-100">
@@ -775,11 +750,11 @@ export const AllApprovals = ({
                     <tr className="bg-gradient-to-r from-slate-50 to-slate-100/50 border-b border-slate-200 text-[10px] uppercase tracking-wider">
                       <th className="px-5 py-3.5 font-black text-slate-500 w-[80px]">Sl No</th>
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Hash size={11} />Change No.</div></th>
-                      <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Layers size={11} />Workflow Stage</div></th>
+
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Calendar size={11} />Date</div></th>
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><User size={11} />Requested By</div></th>
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Building2 size={11} />Dept</div></th>
-                      <th className="px-5 py-3.5 font-black text-slate-500">{stageFilter === 'L3' ? 'L3 Decision' : (stageFilter === 'L1' ? 'L1 HOD Decision' : 'Decision Status')}</th>
+                      <th className="px-5 py-3.5 font-black text-slate-500">L1 HOD Decision</th>
                       <th className="px-5 py-3.5 font-black text-slate-500 text-center">Action</th>
                     </tr>
                   </thead>
@@ -801,27 +776,7 @@ export const AllApprovals = ({
                               {req.changeNo}
                             </span>
                           </td>
-                          <td className="px-5 py-3.5">
-                            <div className="flex flex-col gap-1 items-start">
-                              <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${stage.color}`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${stage.dot} ${isActionable ? 'animate-pulse' : ''}`} />
-                                {stage.label}
-                              </span>
-                              {req.crStatus && (
-                                <div className="text-[9px] font-bold tracking-wide mt-0.5 pl-1 select-none">
-                                  {req.crStatus.toLowerCase() === 'evaluating' && (
-                                    <span className="text-blue-600 bg-blue-50/60 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-0.5">✓ L1 Completed</span>
-                                  )}
-                                  {req.crStatus.toLowerCase() === 'approved' && (
-                                    <span className="text-indigo-600 bg-indigo-50/60 px-1.5 py-0.5 rounded border border-indigo-100 flex items-center gap-0.5">✓ L1 & L2 Completed</span>
-                                  )}
-                                  {req.crStatus.toLowerCase() === 'completed' && (
-                                    <span className="text-emerald-600 bg-emerald-50/60 px-1.5 py-0.5 rounded border border-emerald-100 flex items-center gap-0.5">✓ L1, L2 & L3 Completed</span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </td>
+
                           <td className="px-5 py-3.5 text-[12px] text-slate-500 font-medium">{req.date || '-'}</td>
                           <td className="px-5 py-3.5">
                             <div className="text-[12px] font-semibold text-slate-800 truncate max-w-[160px]">{req.requestBy || req.requesterEmail}</div>
@@ -831,12 +786,7 @@ export const AllApprovals = ({
                             <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">{req.dept || '-'}</span>
                           </td>
                           <td className="px-5 py-3.5">
-                            {(() => {
-                              const decisionInfo = getDecisionStatusAndPrefix(req);
-                              return (
-                                <StatusBadge status={decisionInfo.status} prefix={decisionInfo.prefix} />
-                              );
-                            })()}
+                            <StatusBadge status={req.hodStatus || 'Pending'} />
                           </td>
                           <td className="px-5 py-3.5 text-center">
                             <button
@@ -902,12 +852,7 @@ export const AllApprovals = ({
                     <div className="flex justify-between items-center border-t border-slate-100 pt-[12px] mt-[4px]">
                       <div className="flex flex-col gap-1">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Decision</span>
-                        {(() => {
-                          const decisionInfo = getDecisionStatusAndPrefix(req);
-                          return (
-                            <StatusBadge status={decisionInfo.status} prefix={decisionInfo.prefix} />
-                          );
-                        })()}
+                        <StatusBadge status={req.hodStatus || 'Pending'} />
                       </div>
 
                       <button
