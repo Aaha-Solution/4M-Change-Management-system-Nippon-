@@ -392,7 +392,7 @@ export const L3RequestTracker = ({
 
   // Filter logic
   const filteredLogs = approvalLogs.filter(log => {
-    if (log.qaApproval === 'Approved') return false;
+    if (log.qaApproval === 'Approved' || log.qaApproval === 'Rejected') return false;
 
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch = !q || 
