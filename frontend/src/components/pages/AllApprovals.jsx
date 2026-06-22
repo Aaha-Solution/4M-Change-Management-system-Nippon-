@@ -557,11 +557,7 @@ export const AllApprovals = ({
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
     const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
-    if (isAdmin) {
-      return getL1HODStatus(r) === 'Approved';
-    } else {
-      return r.hodStatus === 'Approved';
-    }
+    return getL1HODStatus(r) === 'Approved';
   }).length;
 
   const rejectedCount = requests.filter(r => {
@@ -570,11 +566,7 @@ export const AllApprovals = ({
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
     const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
-    if (isAdmin) {
-      return getL1HODStatus(r) === 'Rejected';
-    } else {
-      return r.hodStatus === 'Rejected';
-    }
+    return getL1HODStatus(r) === 'Rejected';
   }).length;
 
   const alreadyDecided = selectedReq &&
