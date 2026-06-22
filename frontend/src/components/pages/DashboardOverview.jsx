@@ -3451,27 +3451,27 @@ export const DashboardOverview = ({
                 USER DEPT HOD APPROVAL <span className="text-rose-500">*</span>
               </label>
               <div className="flex flex-wrap gap-[8px] pt-[2px]">
-                {[
+                {(dbDepartments && dbDepartments.length > 0 ? dbDepartments : [
                   'PED', 'QAD', 'Production', 'Maintenance', 'PC & L',
                   'Materials', 'Marketing', 'HR', 'Safety', 'General',
                   'Unit Head'
-                ].map((dept) => {
-                  const isSelected = (data.hod_approval || '').trim().toLowerCase() === dept.trim().toLowerCase();
+                ]).map((dept) => {
+                  const isSelected = data.hod_approval && data.hod_approval.trim().toUpperCase() === dept.trim().toUpperCase();
                   return (
                     <button
                       key={dept}
                       type="button"
-                      onClick={() => setData({ ...data, hod_approval: dept })}
-                      className={`flex items-center gap-[6px] px-[10px] py-[6px] border rounded-[6px] text-[10px] font-bold transition-all duration-200 cursor-pointer select-none ${
+                      disabled={true}
+                      className={`flex items-center gap-[6px] px-[10px] py-[6px] border rounded-[6px] text-[10px] font-bold transition-all duration-200 cursor-not-allowed select-none ${
                         isSelected
-                          ? 'border-[#0066cc] bg-[#0066cc]/5 text-[#0066cc] shadow-sm'
-                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                          ? 'border-[#0066cc]/60 bg-[#0066cc]/5 text-[#0066cc]/80 shadow-sm'
+                          : 'border-slate-100 bg-slate-50/50 text-slate-400'
                       }`}
                     >
                       <span className={`w-[12px] h-[12px] rounded-full border flex items-center justify-center transition-all ${
-                        isSelected ? 'border-[#0066cc]' : 'border-slate-350'
+                        isSelected ? 'border-[#0066cc]/60' : 'border-slate-200'
                       }`}>
-                        {isSelected && <span className="w-[6px] h-[6px] rounded-full bg-[#0066cc]" />}
+                        {isSelected && <span className="w-[6px] h-[6px] rounded-full bg-[#0066cc]/80" />}
                       </span>
                       <span>{dept}</span>
                     </button>
