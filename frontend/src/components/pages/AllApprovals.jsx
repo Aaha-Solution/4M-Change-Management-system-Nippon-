@@ -213,6 +213,17 @@ export const AllApprovals = ({
     userDept.toLowerCase() === 'qad'
   );
 
+  const getL1HODStatus = (r) => {
+    const statusLower = (r.crStatus || '').toLowerCase();
+    if (statusLower === 'evaluating' || statusLower === 'approved' || statusLower === 'completed') {
+      return 'Approved';
+    }
+    if (r.rejectCount > 0) {
+      return 'Rejected';
+    }
+    return r.hodStatus || 'Pending';
+  };
+
   useEffect(() => {
     if (isAdmin) {
       setScopeFilter('All');
@@ -510,8 +521,8 @@ export const AllApprovals = ({
       r.changeNo.toLowerCase().includes(q) ||
       (r.requestBy || '').toLowerCase().includes(q) ||
       (r.dept || '').toLowerCase().includes(q);
-    const effectiveStatus = getRequestEffectiveStatus(r);
-    const matchStatus = statusFilter === 'All' || effectiveStatus === statusFilter;
+    const l1Status = getL1HODStatus(r);
+    const matchStatus = statusFilter === 'All' || l1Status === statusFilter;
     const stageInfo = workflowStageConfig(r.crStatus);
     const matchStage = stageFilter === 'All' || stageInfo.level === stageFilter;
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
@@ -535,7 +546,9 @@ export const AllApprovals = ({
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
     const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
-    return (r.hodStatus || 'Pending') === 'Pending';
+    if (getL1HODStatus(r) !== 'Pending') return false;
+    if (!isAdmin && !isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)) return false;
+    return true;
   }).length;
 
   const approvedCount = requests.filter(r => {
@@ -544,7 +557,11 @@ export const AllApprovals = ({
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
     const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
-    return r.hodStatus === 'Approved';
+    if (isAdmin) {
+      return getL1HODStatus(r) === 'Approved';
+    } else {
+      return r.hodStatus === 'Approved';
+    }
   }).length;
 
   const rejectedCount = requests.filter(r => {
@@ -553,7 +570,11 @@ export const AllApprovals = ({
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
     const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
-    return r.hodStatus === 'Rejected';
+    if (isAdmin) {
+      return getL1HODStatus(r) === 'Rejected';
+    } else {
+      return r.hodStatus === 'Rejected';
+    }
   }).length;
 
   const alreadyDecided = selectedReq &&
@@ -720,7 +741,7 @@ export const AllApprovals = ({
                   <tbody className="divide-y divide-slate-100">
                     {paginated.map((req, idx) => {
                       const isL1Pending = req.crStatus === 'Pending';
-                      const isPendingDecision = !req.hodStatus || req.hodStatus === 'Pending';
+                      const isPendingDecision = getL1HODStatus(req) === 'Pending';
                       const isMyDept = isAdmin || ((isHOD || isQA) && isDeptInRequired(req.hodApprovalNote, req.dept, actingDept));
                       const isRejected = req.rejectCount > 0;
                       const isActionable = isL1Pending && isPendingDecision && isMyDept && !isRejected;
@@ -745,7 +766,7 @@ export const AllApprovals = ({
                             <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">{req.dept || '-'}</span>
                           </td>
                           <td className="px-5 py-3.5">
-                            <StatusBadge status={req.hodStatus || 'Pending'} />
+                            <StatusBadge status={getL1HODStatus(req)} />
                           </td>
                           <td className="px-5 py-3.5 text-center">
                             <button
@@ -775,7 +796,7 @@ export const AllApprovals = ({
             <div className="flex md:hidden flex-col gap-[12px] p-[12px] bg-slate-50">
               {paginated.map((req, idx) => {
                 const isL1Pending = req.crStatus === 'Pending';
-                const isPendingDecision = !req.hodStatus || req.hodStatus === 'Pending';
+                const isPendingDecision = getL1HODStatus(req) === 'Pending';
                 const isMyDept = isAdmin || ((isHOD || isQA) && isDeptInRequired(req.hodApprovalNote, req.dept, actingDept));
                 const isRejected = req.rejectCount > 0;
                 const isActionable = isL1Pending && isPendingDecision && isMyDept && !isRejected;
@@ -811,7 +832,7 @@ export const AllApprovals = ({
                     <div className="flex justify-between items-center border-t border-slate-100 pt-[12px] mt-[4px]">
                       <div className="flex flex-col gap-1">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Decision</span>
-                        <StatusBadge status={req.hodStatus || 'Pending'} />
+                        <StatusBadge status={getL1HODStatus(req)} />
                       </div>
 
                       <button
