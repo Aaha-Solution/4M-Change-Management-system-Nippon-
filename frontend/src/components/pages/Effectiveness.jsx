@@ -1345,17 +1345,17 @@ export const Effectiveness = ({
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
-                          <div className="space-y-[4px]">
+                          <div className="space-y-[4px] min-w-0">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
-                            <span className="font-medium text-slate-700">{selectedL1Details.process_name}</span>
+                            <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_name}</span>
                           </div>
-                          <div className="space-y-[4px]">
+                          <div className="space-y-[4px] min-w-0">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line</span>
-                            <span className="font-medium text-slate-700">{selectedL1Details.process_line}</span>
+                            <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_line}</span>
                           </div>
-                          <div className="space-y-[4px] col-span-2 md:col-span-1">
+                          <div className="space-y-[4px] col-span-2 md:col-span-1 min-w-0">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No</span>
-                            <span className="font-mono text-slate-700">{selectedL1Details.machine_no}</span>
+                            <span className="font-mono text-slate-700 block break-words break-all">{selectedL1Details.machine_no}</span>
                           </div>
                         </div>
                       </div>
