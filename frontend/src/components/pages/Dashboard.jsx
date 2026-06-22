@@ -216,6 +216,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
 
 
 
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [autoOpenChangeNo, setAutoOpenChangeNo] = useState(null);
 
   // Helper to handle tab select
@@ -415,15 +416,19 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
         {/* Sidebar Footer User Details */}
         <div className="p-4 border-t border-slate-200 bg-white">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-sm shadow-[0_2px_8px_rgba(37,99,235,0.25)]">
+            <button
+              onClick={() => setShowProfileModal(true)}
+              className="flex items-center gap-3 cursor-pointer text-left focus:outline-none hover:bg-slate-50 p-1.5 rounded-lg -ml-1.5 transition-all duration-200 shrink-0"
+              title="View profile details"
+            >
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-sm shadow-[0_2px_8px_rgba(37,99,235,0.25)] shrink-0">
                 {(userName || userEmail || 'A')[0].toUpperCase()}
               </div>
               <div className="text-left">
-                <div className="text-sm font-bold text-slate-800 leading-tight max-w-[130px] truncate" title={userName || userEmail}>
+                <div className="text-sm font-bold text-slate-800 leading-tight max-w-[110px] truncate" title={userName || userEmail}>
                   {userName || (userEmail ? userEmail.split('@')[0] : 'Admin')}
                 </div>
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mt-0.5">
                   {userRole || 'Administrator'}
                 </span>
                 {userDept && (
@@ -432,7 +437,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                   </span>
                 )}
               </div>
-            </div>
+            </button>
             {/* Logout button */}
             <button
               onClick={handleLocalSignOut}
@@ -475,8 +480,6 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
           </div>
 
           <div className="flex items-center gap-[8px] sm:gap-[16px] shrink-0">
-            {/* Email always visible */}
-            <span className="text-[13px] font-medium text-slate-600 hidden sm:inline">{userEmail}</span>
 
 
 
@@ -672,6 +675,82 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
           </div>
         );
       })()}
+
+      {/* Profile Details Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setShowProfileModal(false)} 
+          />
+          
+          {/* Modal Container */}
+          <div className="relative bg-white w-full max-w-[420px] rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden z-10 transform scale-100 transition-all duration-300">
+            {/* Header / Accent top */}
+            <div className="h-2 bg-gradient-to-r from-blue-600 to-indigo-700" />
+            
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowProfileModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+              title="Close"
+            >
+              <X size={18} />
+            </button>
+
+            {/* Modal Body */}
+            <div className="p-6 flex flex-col items-center text-center">
+              {/* Large Avatar */}
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-2xl shadow-[0_4px_14px_rgba(37,99,235,0.3)] mb-4">
+                {(userName || userEmail || 'A')[0].toUpperCase()}
+              </div>
+
+              {/* User Name */}
+              <h3 className="text-lg font-bold text-slate-800 tracking-tight">
+                {userName || (userEmail ? userEmail.split('@')[0] : 'Admin User')}
+              </h3>
+              
+              {/* Role badge */}
+              <span className={`inline-block mt-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+                (userRole || '').toLowerCase().includes('admin')
+                  ? 'bg-rose-50 border-rose-250 text-rose-700'
+                  : (userRole || '').toLowerCase().includes('hod') || (userRole || '').toLowerCase().includes('manager')
+                  ? 'bg-purple-50 border-purple-250 text-purple-700'
+                  : 'bg-slate-50 border-slate-200 text-slate-700'
+              }`}>
+                {userRole || 'Administrator'}
+              </span>
+
+              {/* Divider */}
+              <div className="w-full border-t border-slate-100 my-5" />
+
+              {/* Profile Details List */}
+              <div className="w-full text-left space-y-4">
+                {/* Email detail */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</span>
+                  <span className="text-sm font-semibold text-slate-700 break-all">{userEmail || 'N/A'}</span>
+                </div>
+
+                {/* Department detail */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
+                  <span className="text-sm font-semibold text-slate-700">{userDept || 'Not Assigned'}</span>
+                </div>
+              </div>
+
+              {/* Close Action button */}
+              <button
+                onClick={() => setShowProfileModal(false)}
+                className="mt-6 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg text-xs transition-colors"
+              >
+                Close Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

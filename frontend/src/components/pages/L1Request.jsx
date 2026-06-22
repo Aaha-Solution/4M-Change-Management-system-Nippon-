@@ -23,6 +23,8 @@ export const L1Request = ({
   fetchChanges
 }) => {
   const isAdmin = userRole && userRole.toLowerCase().includes('admin');
+  const [isDraftInitialized, setIsDraftInitialized] = useState(false);
+  const draftLoadedRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
@@ -139,12 +141,15 @@ export const L1Request = ({
         const latency = (Date.now() - start) / 2;
         const offset = (serverTimeMs + latency) - Date.now();
 
-        // Update initially synced date/time
+        // Update initially synced date/time only if no draft exists
         const syncedNow = new Date(Date.now() + offset);
-        setRequestedDate(formatDateToDDMMYYYY(syncedNow));
-        const hrs = String(syncedNow.getHours()).padStart(2, '0');
-        const mins = String(syncedNow.getMinutes()).padStart(2, '0');
-        setRequestedTime(`${hrs}:${mins}`);
+        const stored = localStorage.getItem('cms_l1_draft');
+        if (!stored) {
+          setRequestedDate(formatDateToDDMMYYYY(syncedNow));
+          const hrs = String(syncedNow.getHours()).padStart(2, '0');
+          const mins = String(syncedNow.getMinutes()).padStart(2, '0');
+          setRequestedTime(`${hrs}:${mins}`);
+        }
       } catch (err) {
         console.error('Failed to sync time with server, falling back to local time:', err);
       }
@@ -192,6 +197,8 @@ export const L1Request = ({
 
 
   useEffect(() => {
+    // Only set default if dept and requestBy are not already set (e.g. from draft)
+    if (dept || requestBy) return;
     if (userEmail && systemUsers.length > 0) {
       const currentUser = systemUsers.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
       if (currentUser) {
@@ -213,6 +220,12 @@ export const L1Request = ({
         u => (u.department || '').toLowerCase() === dept.toLowerCase()
       );
       if (matchedUsers.length > 0) {
+        // If requestBy is already set and matches one of the users in this department, don't overwrite it
+        const requestByExistsInMatched = matchedUsers.some(
+          u => (u.name || u.email || '').toLowerCase() === (requestBy || '').toLowerCase()
+        );
+        if (requestByExistsInMatched) return;
+
         const currentUser = systemUsers.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
         if (currentUser && (currentUser.department || '').toLowerCase() === dept.toLowerCase()) {
           setRequestBy(currentUser.name || currentUser.email);
@@ -225,7 +238,7 @@ export const L1Request = ({
     } else {
       setRequestBy('');
     }
-  }, [dept, systemUsers, userEmail]);
+  }, [dept, systemUsers, userEmail, requestBy]);
 
   const [processName, setProcessName] = useState('');
   const [processLine, setProcessLine] = useState('');
@@ -254,6 +267,122 @@ export const L1Request = ({
   const [modalError, setModalError] = useState('');
   const lastAreaRef = useRef('');
 
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('cms_l1_draft');
+      if (stored) {
+        const draft = JSON.parse(stored);
+        if (draft.unit !== undefined) setUnit(draft.unit);
+        if (draft.requestedDate !== undefined) setRequestedDate(draft.requestedDate);
+        if (draft.requestedTime !== undefined) setRequestedTime(draft.requestedTime);
+        if (draft.changeIn !== undefined) setChangeIn(draft.changeIn);
+        if (draft.fileDesc !== undefined) setFileDesc(draft.fileDesc);
+        if (draft.fileImprovement !== undefined) setFileImprovement(draft.fileImprovement);
+        if (draft.fileTraceFrom !== undefined) setFileTraceFrom(draft.fileTraceFrom);
+        if (draft.fileTraceTo !== undefined) setFileTraceTo(draft.fileTraceTo);
+        if (draft.fileRisk !== undefined) setFileRisk(draft.fileRisk);
+        if (draft.fileSop !== undefined) setFileSop(draft.fileSop);
+        if (draft.uploadedFilesList !== undefined) setUploadedFilesList(draft.uploadedFilesList);
+        if (draft.dept !== undefined) setDept(draft.dept);
+        if (draft.requestBy !== undefined) setRequestBy(draft.requestBy);
+        if (draft.processName !== undefined) setProcessName(draft.processName);
+        if (draft.processLine !== undefined) setProcessLine(draft.processLine);
+        if (draft.machineNo !== undefined) setMachineNo(draft.machineNo);
+        if (draft.context !== undefined) setContext(draft.context);
+        if (draft.description !== undefined) setDescription(draft.description);
+        if (draft.improvementArea !== undefined) setImprovementArea(draft.improvementArea);
+        if (draft.changeType !== undefined) setChangeType(draft.changeType);
+        if (draft.dateStart !== undefined) setDateStart(draft.dateStart);
+        if (draft.traceFrom !== undefined) setTraceFrom(draft.traceFrom);
+        if (draft.dateClose !== undefined) setDateClose(draft.dateClose);
+        if (draft.traceTo !== undefined) setTraceTo(draft.traceTo);
+        if (draft.riskAnalysis !== undefined) setRiskAnalysis(draft.riskAnalysis);
+        if (draft.sopUpdate !== undefined) setSopUpdate(draft.sopUpdate);
+        if (draft.hodApproval !== undefined) setHodApproval(draft.hodApproval);
+        if (draft.customerApproval !== undefined) setCustomerApproval(draft.customerApproval);
+        if (draft.improvementTableData !== undefined) setImprovementTableData(draft.improvementTableData);
+        draftLoadedRef.current = true;
+      }
+    } catch (e) {
+      console.error('Error loading L1 draft:', e);
+    } finally {
+      setIsDraftInitialized(true);
+    }
+  }, []);
+
+  // Save draft to localStorage whenever fields change, but only after initialized
+  useEffect(() => {
+    if (!isDraftInitialized) return;
+    try {
+      const draft = {
+        unit,
+        requestedDate,
+        requestedTime,
+        changeIn,
+        fileDesc,
+        fileImprovement,
+        fileTraceFrom,
+        fileTraceTo,
+        fileRisk,
+        fileSop,
+        uploadedFilesList,
+        dept,
+        requestBy,
+        processName,
+        processLine,
+        machineNo,
+        context,
+        description,
+        improvementArea,
+        changeType,
+        dateStart,
+        traceFrom,
+        dateClose,
+        traceTo,
+        riskAnalysis,
+        sopUpdate,
+        hodApproval,
+        customerApproval,
+        improvementTableData
+      };
+      localStorage.setItem('cms_l1_draft', JSON.stringify(draft));
+    } catch (e) {
+      console.error('Error saving L1 draft:', e);
+    }
+  }, [
+    isDraftInitialized,
+    unit,
+    requestedDate,
+    requestedTime,
+    changeIn,
+    fileDesc,
+    fileImprovement,
+    fileTraceFrom,
+    fileTraceTo,
+    fileRisk,
+    fileSop,
+    uploadedFilesList,
+    dept,
+    requestBy,
+    processName,
+    processLine,
+    machineNo,
+    context,
+    description,
+    improvementArea,
+    changeType,
+    dateStart,
+    traceFrom,
+    dateClose,
+    traceTo,
+    riskAnalysis,
+    sopUpdate,
+    hodApproval,
+    customerApproval,
+    improvementTableData
+  ]);
+
   useEffect(() => {
     if (!isImprovementModalOpen) {
       setModalError('');
@@ -262,6 +391,14 @@ export const L1Request = ({
 
   useEffect(() => {
     const area = (improvementArea || '').toLowerCase();
+    
+    // If draft was loaded, synchronize lastAreaRef to avoid resetting table data
+    if (draftLoadedRef.current) {
+      lastAreaRef.current = area;
+      draftLoadedRef.current = false;
+      return;
+    }
+
     if (area !== lastAreaRef.current) {
       lastAreaRef.current = area;
       setErrors(prev => {
@@ -624,6 +761,9 @@ export const L1Request = ({
       }
       setToastMsg(`Successfully submitted L1 Change Request: ${changeNo}`);
       logAction('L1 Request Created', `Successfully submitted L1 Change Request ${changeNo} for department ${dept}`);
+
+      // Clear L1 draft from localStorage
+      localStorage.removeItem('cms_l1_draft');
 
       // Redirect back to dashboard overview
       onTabChange('dashboard');
