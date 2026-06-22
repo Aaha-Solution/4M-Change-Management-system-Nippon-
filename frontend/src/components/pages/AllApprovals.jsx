@@ -574,7 +574,7 @@ export const AllApprovals = ({
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0066cc] to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
               <ShieldCheck size={16} className="text-white" />
             </div>
-            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">All Approvals</h2>
+            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">All L1 Approvals</h2>
           </div>
           <p className="text-sm text-slate-500 ml-10">
             Review L1 HOD approval decisions for change requests —{' '}
@@ -884,10 +884,7 @@ export const AllApprovals = ({
                   <X size={16} />
                 </button>
               </div>
-              {/* Workflow progress strip */}
-              <div className="mt-3">
-                <WorkflowStrip crStatus={selectedReq.crStatus} qaApproval={selectedReq.qaApproval} />
-              </div>
+
             </div>
 
             {/* Approval type info bar */}

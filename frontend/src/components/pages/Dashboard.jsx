@@ -292,7 +292,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               >
                 <div className="flex items-center gap-3">
                   <CheckCheck size={18} className={activeTab === 'all-approvals' ? 'text-[#0066cc]' : 'text-slate-400'} />
-                  <span>All Approvals</span>
+                  <span>All L1 Approvals</span>
                 </div>
               </button>
             )}
@@ -473,7 +473,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                       activeTab === 'l1' ? 'New L1 Change Request' :
                         activeTab === 'l3' ? 'L3 Request Tracker & Final Approval' :
                           activeTab === 'all-requests' ? 'All Change Requests' :
-                            activeTab === 'all-approvals' ? 'All Approvals' :
+                            activeTab === 'all-approvals' ? 'All L1 Approvals' :
                               activeTab === 'effectiveness' ? 'Effectiveness' :
                                 activeTab === 'users' ? 'Users' :
                                   activeTab.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
