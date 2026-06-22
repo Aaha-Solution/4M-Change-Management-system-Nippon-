@@ -208,6 +208,10 @@ export const AllApprovals = ({
     userRole.toLowerCase().includes('manager') ||
     userRole.toLowerCase().includes('unit head')
   );
+  const isQA = userDept && (
+    userDept.toLowerCase() === 'qad' ||
+    userDept.toLowerCase() === 'qa'
+  );
 
   useEffect(() => {
     if (isAdmin) {
@@ -512,7 +516,7 @@ export const AllApprovals = ({
     const stageInfo = workflowStageConfig(r.crStatus);
     if (stageFilter !== 'All' && stageInfo.level !== stageFilter) return false;
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
-    const isMyDept = isAdmin || isL3Stage || (isHOD && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
+    const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
     return getRequestEffectiveStatus(r) === 'Pending';
   }).length;
@@ -521,7 +525,7 @@ export const AllApprovals = ({
     const stageInfo = workflowStageConfig(r.crStatus);
     if (stageFilter !== 'All' && stageInfo.level !== stageFilter) return false;
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
-    const isMyDept = isAdmin || isL3Stage || (isHOD && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
+    const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
     return getRequestEffectiveStatus(r) === 'Approved';
   }).length;
@@ -530,7 +534,7 @@ export const AllApprovals = ({
     const stageInfo = workflowStageConfig(r.crStatus);
     if (stageFilter !== 'All' && stageInfo.level !== stageFilter) return false;
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
-    const isMyDept = isAdmin || isL3Stage || (isHOD && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
+    const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
     return getRequestEffectiveStatus(r) === 'Rejected';
   }).length;
@@ -766,7 +770,7 @@ export const AllApprovals = ({
                     {paginated.map((req, idx) => {
                       const isL1Pending = req.crStatus === 'Pending';
                       const isPendingDecision = !req.hodStatus || req.hodStatus === 'Pending';
-                      const isMyDept = isAdmin || (isHOD && isDeptInRequired(req.hodApprovalNote, req.dept, actingDept));
+                      const isMyDept = isAdmin || ((isHOD || isQA) && isDeptInRequired(req.hodApprovalNote, req.dept, actingDept));
                       const isRejected = req.rejectCount > 0;
                       const isActionable = isL1Pending && isPendingDecision && isMyDept && !isRejected;
                       const stage = workflowStageConfig(req.crStatus);
@@ -849,7 +853,7 @@ export const AllApprovals = ({
               {paginated.map((req, idx) => {
                 const isL1Pending = req.crStatus === 'Pending';
                 const isPendingDecision = !req.hodStatus || req.hodStatus === 'Pending';
-                const isMyDept = isAdmin || (isHOD && isDeptInRequired(req.hodApprovalNote, req.dept, actingDept));
+                const isMyDept = isAdmin || ((isHOD || isQA) && isDeptInRequired(req.hodApprovalNote, req.dept, actingDept));
                 const isRejected = req.rejectCount > 0;
                 const isActionable = isL1Pending && isPendingDecision && isMyDept && !isRejected;
                 const stage = workflowStageConfig(req.crStatus);

@@ -48,6 +48,10 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
   );
 
   const isAdmin = userRole && userRole.toLowerCase().includes('admin');
+  const isQA = userDept && (
+    userDept.toLowerCase() === 'qad' ||
+    userDept.toLowerCase() === 'qa'
+  );
   const handleLocalSignOut = () => {
     logAction('Sign Out', 'User logged out of the system.');
     onSignOut();
@@ -279,8 +283,8 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               </div>
             </button>
 
-            {/* All Approvals (HOD & Admin) */}
-            {(isHOD || isAdmin) && (
+            {/* All Approvals (HOD & Admin & QA) */}
+            {(isHOD || isAdmin || isQA) && (
               <button
                 onClick={() => handleTabChange('all-approvals')}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer rounded-lg ${activeTab === 'all-approvals'
@@ -633,6 +637,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 setNotifications={setNotifications}
                 fetchNotifications={fetchNotifications}
                 userRole={userRole}
+                userDept={userDept}
                 onTabChange={handleTabChange}
               />
             )}

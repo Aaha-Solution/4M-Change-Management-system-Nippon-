@@ -95,58 +95,6 @@ export const L1Request = ({
     }
   };
 
-  const handleResetForm = () => {
-    if (window.confirm('Are you sure you want to reset all fields in the form and discard the current draft?')) {
-      localStorage.removeItem('cms_l1_draft');
-
-      setUnit('UNIT-2');
-      setChangeIn({
-        Man: false,
-        Machine: false,
-        Material: false,
-        Method: false,
-        Measurement: false,
-        'Mother Nature': false
-      });
-      setFileDesc('');
-      setFileImprovement('');
-      setFileTraceFrom('');
-      setFileTraceTo('');
-      setFileRisk('');
-      setFileSop('');
-      setUploadedFilesList([]);
-      
-      setDept('');
-      setRequestBy('');
-      
-      setProcessName('');
-      setProcessLine('');
-      setMachineNo('');
-      setContext('');
-      setDescription('');
-      setImprovementArea('');
-      setChangeType('');
-      setDateStart('');
-      setTraceFrom('');
-      setDateClose('');
-      setTraceTo('');
-      setRiskAnalysis('');
-      setSopUpdate('');
-      setHodApproval('');
-      setCustomerApproval('');
-      setImprovementTableData([]);
-      setErrors({});
-
-      const now = new Date();
-      setRequestedDate(formatDateToDDMMYYYY(now));
-      const hrs = String(now.getHours()).padStart(2, '0');
-      const mins = String(now.getMinutes()).padStart(2, '0');
-      setRequestedTime(`${hrs}:${mins}`);
-
-      setToastMsg('Form fields have been reset and draft removed.');
-    }
-  };
-
   const handleAddProcess = async () => {
     if (tempProcessName.trim()) {
       try {
@@ -1003,14 +951,6 @@ export const L1Request = ({
           >
             <RefreshCw className={`w-[14px] h-[14px] ${isRefreshing ? 'animate-spin text-[#0066cc]' : ''}`} />
             <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleResetForm}
-            className="flex items-center gap-[6px] bg-rose-50 border border-rose-100 rounded-[6px] py-[8px] px-[12px] text-[12px] font-semibold text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all duration-200 shadow-sm active:scale-95"
-          >
-            <RotateCcw className="w-[14px] h-[14px]" />
-            <span>Reset Form</span>
           </button>
         </div>
       </div>

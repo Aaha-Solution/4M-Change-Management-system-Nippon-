@@ -18,7 +18,7 @@ import {
 } from '../../api/apiRoutes';
 
 
-export const Notifications = ({ setToastMsg, notifications, setNotifications, fetchNotifications, userRole, onTabChange }) => {
+export const Notifications = ({ setToastMsg, notifications, setNotifications, fetchNotifications, userRole, userDept, onTabChange }) => {
   const alerts = notifications || [];
   const [search, setSearch] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('All'); // 'All' | 'Unread'
@@ -327,8 +327,12 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                           userRole.toLowerCase().includes('manager')
                         );
                         const isAdmin = userRole && userRole.toLowerCase().includes('admin');
+                        const isQA = userDept && (
+                          userDept.toLowerCase() === 'qad' ||
+                          userDept.toLowerCase() === 'qa'
+                        );
                         
-                        let targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'all-requests';
+                        let targetTab = (isHOD || isAdmin || isQA) ? 'all-approvals' : 'all-requests';
                         
                         const idStr = (alert.id || '').toUpperCase();
                         const titleStr = (alert.title || '').toUpperCase();
@@ -345,7 +349,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                         } else if (idStr.startsWith('L2-')) {
                           targetTab = 'approvals';
                         } else if (idStr.startsWith('L1-') || idStr.startsWith('HOD-DECISION-')) {
-                          targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'all-requests';
+                          targetTab = (isHOD || isAdmin || isQA) ? 'all-approvals' : 'all-requests';
                         } else {
                           // Fallback to substring matching if ID prefix is generic
                           const isL3 = idStr.includes('L3') || titleStr.includes('L3') || detailsStr.includes('L3');
@@ -357,7 +361,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                           } else if (isL2) {
                             targetTab = 'approvals';
                           } else if (isL1) {
-                            targetTab = (isHOD || isAdmin) ? 'all-approvals' : 'all-requests';
+                            targetTab = (isHOD || isAdmin || isQA) ? 'all-approvals' : 'all-requests';
                           }
                         }
                         
