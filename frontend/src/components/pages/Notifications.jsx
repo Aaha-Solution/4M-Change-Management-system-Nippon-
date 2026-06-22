@@ -68,7 +68,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
   };
 
   // Departments are now fetched directly from the DB
-  const deptList = dbDepartments;
+  const deptList = dbDepartments.filter(d => d.trim().toLowerCase() !== 'general');
 
   // Determine the level badge text
   const getLevelBadge = (alert) => {

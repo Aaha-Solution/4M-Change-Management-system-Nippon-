@@ -1827,8 +1827,10 @@ export const AllRequests = ({
             value={selectedPerson}
             onChange={(e) => setSelectedPerson(e.target.value)}
           >
-            {uniquePersons.map(p => {
-              if (p.email === 'All') return <option key="All" value="All">All Persons</option>;
+            {uniquePersons
+              .filter(p => p.email === 'All' || (p.department || '').trim().toLowerCase() !== 'general')
+              .map(p => {
+                if (p.email === 'All') return <option key="All" value="All">All Persons</option>;
               
               const value = p.email || p.name;
               const displayName = p.name || (p.email ? p.email.split('@')[0] : 'Unknown');
