@@ -997,6 +997,7 @@ export const Effectiveness = ({
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-150 text-[10px]">
+                    <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[50px]">Sl No</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
                     <th className="p-[8px] font-bold text-slate-500 uppercase tracking-wider w-[320px] min-w-[320px] max-w-[320px]">Context of Change</th>
@@ -1012,18 +1013,19 @@ export const Effectiveness = ({
                 <tbody className="divide-y divide-slate-100 text-[11px]">
                   {displayLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="text-center py-10 text-slate-400">
+                      <td colSpan={11} className="text-center py-10 text-slate-400">
                         No observations logs recorded.
                       </td>
                     </tr>
                   ) : (
-                    paginatedLogs.map(log => {
+                    paginatedLogs.map((log, idx) => {
                       return (
                         <tr
                           key={log.id}
                           className="hover:bg-slate-50/50 cursor-pointer transition-colors"
                           onClick={() => handleSelectChangeNo(log.changeNo)}
                         >
+                          <td className="p-3 font-bold text-slate-400">{page * rowsPerPage + idx + 1}</td>
                           <td className="p-3 font-bold text-[#0066cc]">{log.changeNo}</td>
                           <td className="p-3 text-slate-500">{formatDateShort(log.reqDate)}</td>
                           <td className="p-3 font-medium text-slate-700 whitespace-normal break-words w-[320px] min-w-[320px] max-w-[320px]" title={log.context}>{log.context}</td>
@@ -1408,6 +1410,7 @@ export const Effectiveness = ({
                                 <table className="w-full text-left border-collapse text-[11px]">
                                   <thead>
                                     <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
+                                      <th className="p-2 w-[50px]">Sl No</th>
                                       <th className="p-2">4M #</th>
                                       <th className="p-2">Date</th>
                                       {hasCost && (
@@ -1434,6 +1437,7 @@ export const Effectiveness = ({
                                   <tbody className="divide-y divide-slate-100">
                                     {tableData.map((row, idx) => (
                                       <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
+                                        <td className="p-2 font-bold text-slate-400">{idx + 1}</td>
                                         <td className="p-2 font-mono font-medium">{row.changeNo}</td>
                                         <td className="p-2">{row.date || '-'}</td>
                                         {hasCost && (

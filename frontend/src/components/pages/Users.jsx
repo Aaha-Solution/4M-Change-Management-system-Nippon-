@@ -519,6 +519,7 @@ export const Users = ({
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-150">
+                      <th className="p-3 font-bold text-slate-500 uppercase tracking-wider w-[50px]">Sl No</th>
                       <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">User ID</th>
                       <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Name</th>
                       <th className="p-3 font-bold text-slate-500 uppercase tracking-wider">Email</th>
@@ -532,12 +533,12 @@ export const Users = ({
                   <tbody className="divide-y divide-slate-100">
                     {filteredUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="text-center py-10 text-slate-400">
+                        <td colSpan={9} className="text-center py-10 text-slate-400">
                           No accounts found in directory.
                         </td>
                       </tr>
                     ) : (
-                      paginatedUsers.map(u => {
+                      paginatedUsers.map((u, idx) => {
                         const nameToUse = u.name && u.name.trim() ? u.name.trim() : u.email.split('@')[0];
                         const parts = nameToUse.split(/\s+/);
                         const initials = parts.length >= 2 
@@ -548,6 +549,8 @@ export const Users = ({
 
                         return (
                           <tr key={u.id} className="hover:bg-slate-50/70 transition-colors">
+                            {/* Sl No */}
+                            <td className="p-3 font-bold text-slate-400">{page * rowsPerPage + idx + 1}</td>
                             {/* User ID */}
                             <td className="p-3 font-mono font-bold text-slate-400">
                               USR-{String(u.id).padStart(3, '0')}

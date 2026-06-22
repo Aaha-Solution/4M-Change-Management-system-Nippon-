@@ -2113,23 +2113,25 @@ export const DashboardOverview = ({
                 <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
                   <thead>
                     <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
-                      <th className="p-[10px] border-r border-[#1a5596] w-[18%]">4M </th>
-                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">Implementation date</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[8%]">Sl No</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[15%]">4M </th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[18%]">Implementation date</th>
                       <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Total Cost Saved / month(Rs)</th>
                       <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Total Cost Saved / Annum(Rs)</th>
-                      <th className="p-[10px] w-[18%]">ROI (Rs)</th>
+                      <th className="p-[10px] w-[15%]">ROI (Rs)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredCost.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="p-[16px] text-center text-slate-400 font-medium">
+                        <td colSpan={6} className="p-[16px] text-center text-slate-400 font-medium">
                           No Cost Saving data available matching selection.
                         </td>
                       </tr>
                     ) : (
                       filteredCost.map((row, idx) => (
                         <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
+                          <td className="p-[10px] border-r border-slate-100 font-bold text-slate-400">{idx + 1}</td>
                           <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
                           <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
                           <td className="p-[10px] border-r border-slate-100 font-semibold text-slate-800">Rs. {row.monthlySave || '0'}</td>
@@ -2211,22 +2213,24 @@ export const DashboardOverview = ({
                 <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
                   <thead>
                     <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
-                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M</th>
-                      <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Implementation date</th>
-                      <th className="p-[10px] border-r border-[#1a5596] w-[29%]">Current Productivity (nos)</th>
-                      <th className="p-[10px] w-[29%]">Productivity Improved (nos)</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[8%]">Sl No</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[17%]">4M</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">Implementation date</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[27%]">Current Productivity (nos)</th>
+                      <th className="p-[10px] w-[28%]">Productivity Improved (nos)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredProductivity.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="p-[16px] text-center text-slate-400 font-medium">
+                        <td colSpan={5} className="p-[16px] text-center text-slate-400 font-medium">
                           No Productivity Improvement data available matching selection.
                         </td>
                       </tr>
                     ) : (
                       filteredProductivity.map((row, idx) => (
                         <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
+                          <td className="p-[10px] border-r border-slate-100 font-bold text-slate-400">{idx + 1}</td>
                           <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
                           <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
                           <td className="p-[10px] border-r border-slate-100 text-slate-600">{row.currentProd || '0'} nos</td>
@@ -2307,22 +2311,24 @@ export const DashboardOverview = ({
                 <table className="w-full text-left border-collapse text-[11px] min-w-[700px]">
                   <thead>
                     <tr className="bg-[#1e60aa] text-white border-b border-[#154a85] font-semibold">
-                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">4M </th>
-                      <th className="p-[10px] border-r border-[#1a5596] w-[22%]">Implementation date</th>
-                      <th className="p-[10px] border-r border-[#1a5596] w-[29%]">Current PPM</th>
-                      <th className="p-[10px] w-[29%]">Reduced PPM</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[8%]">Sl No</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[17%]">4M </th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[20%]">Implementation date</th>
+                      <th className="p-[10px] border-r border-[#1a5596] w-[27%]">Current PPM</th>
+                      <th className="p-[10px] w-[28%]">Reduced PPM</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredQuality.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="p-[16px] text-center text-slate-400 font-medium">
+                        <td colSpan={5} className="p-[16px] text-center text-slate-400 font-medium">
                           No Quality Improvement data available matching selection.
                         </td>
                       </tr>
                     ) : (
                       filteredQuality.map((row, idx) => (
                         <tr key={idx} className="hover:bg-slate-50/50 text-slate-700 font-medium odd:bg-slate-50/20">
+                          <td className="p-[10px] border-r border-slate-100 font-bold text-slate-400">{idx + 1}</td>
                           <td className="p-[10px] border-r border-slate-100 font-bold text-[#0066cc]">{row.changeNo}</td>
                           <td className="p-[10px] border-r border-slate-100 text-slate-500">{row.date}</td>
                           <td className="p-[10px] border-r border-slate-100 text-slate-600">{row.currentPpm || '0'}</td>
@@ -4429,6 +4435,7 @@ export const DashboardOverview = ({
                             <table className="w-full text-left border-collapse text-[11px]">
                               <thead>
                                 <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
+                                  <th className="p-2 w-[50px]">Sl No</th>
                                   <th className="p-2">4M #</th>
                                   <th className="p-2">Date</th>
                                   {hasCost && (
@@ -4455,6 +4462,7 @@ export const DashboardOverview = ({
                               <tbody className="divide-y divide-slate-100">
                                 {tableData.map((row, idx) => (
                                   <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
+                                    <td className="p-2 font-bold text-slate-400">{idx + 1}</td>
                                     <td className="p-2 font-mono font-medium">{row.changeNo}</td>
                                     <td className="p-2">{row.date || '-'}</td>
                                     {hasCost && (
@@ -4899,6 +4907,7 @@ export const DashboardOverview = ({
                 <table className="w-full text-left border-collapse min-w-[650px] text-[12px]">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
+                      <th className="p-[10px] w-[60px]">Sl No</th>
                       <th className="p-[10px] w-[150px]">4M #</th>
                       <th className="p-[10px] w-[160px]">Implementation Date</th>
                       {(editL1Data.improvement_area || '').toLowerCase() === 'cost' && (
@@ -4926,6 +4935,7 @@ export const DashboardOverview = ({
                   <tbody className="divide-y divide-slate-100">
                     {tempTableData.map((row, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/50">
+                        <td className="p-[8px] font-bold text-slate-400 text-center">{idx + 1}</td>
                         <td className="p-[8px]">
                           <input
                             type="text"

@@ -680,6 +680,7 @@ export const AllApprovals = ({
                 <table className="w-full text-left border-collapse min-w-[700px]">
                   <thead>
                     <tr className="bg-gradient-to-r from-slate-50 to-slate-100/50 border-b border-slate-200 text-[10px] uppercase tracking-wider">
+                      <th className="px-5 py-3.5 font-black text-slate-500 w-[80px]">Sl No</th>
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Hash size={11} />Change No.</div></th>
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Layers size={11} />Workflow Stage</div></th>
                       <th className="px-5 py-3.5 font-black text-slate-500"><div className="flex items-center gap-1.5"><Calendar size={11} />Date</div></th>
@@ -699,6 +700,9 @@ export const AllApprovals = ({
                       const stage = workflowStageConfig(req.crStatus);
                       return (
                         <tr key={idx} className="hover:bg-blue-50/30 transition-colors group">
+                          <td className="px-5 py-3.5 font-bold text-slate-400">
+                            {page * rowsPerPage + idx + 1}
+                          </td>
                           <td className="px-5 py-3.5">
                             <span className="font-mono font-bold text-[#0066cc] text-[12px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
                               {req.changeNo}
@@ -1113,6 +1117,7 @@ export const AllApprovals = ({
                                       <table className="w-full text-left border-collapse text-[11px]">
                                         <thead>
                                           <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
+                                            <th className="p-2 w-[50px]">Sl No</th>
                                             <th className="p-2">4M #</th>
                                             <th className="p-2">Date</th>
                                             {hasCost && (
@@ -1139,6 +1144,7 @@ export const AllApprovals = ({
                                         <tbody className="divide-y divide-slate-100">
                                           {tableData.map((row, idx) => (
                                             <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
+                                              <td className="p-2 font-bold text-slate-400">{idx + 1}</td>
                                               <td className="p-2 font-mono font-medium">{row.changeNo}</td>
                                               <td className="p-2">{row.date || '-'}</td>
                                               {hasCost && (

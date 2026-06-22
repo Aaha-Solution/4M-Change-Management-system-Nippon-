@@ -2383,6 +2383,7 @@ export const AllRequests = ({
                             <table className="w-full text-left border-collapse text-[11px]">
                               <thead>
                                 <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
+                                  <th className="p-2 w-[50px]">Sl No</th>
                                   <th className="p-2">4M #</th>
                                   <th className="p-2">Date</th>
                                   {hasCost && (
@@ -2409,6 +2410,7 @@ export const AllRequests = ({
                               <tbody className="divide-y divide-slate-100">
                                 {tableData.map((row, idx) => (
                                   <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
+                                    <td className="p-2 font-bold text-slate-400">{idx + 1}</td>
                                     <td className="p-2 font-mono font-medium">{row.changeNo}</td>
                                     <td className="p-2">{row.date || '-'}</td>
                                     {hasCost && (
@@ -2855,6 +2857,7 @@ export const AllRequests = ({
                 <table className="w-full text-left border-collapse min-w-[650px] text-[12px]">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
+                      <th className="p-[10px] w-[60px]">Sl No</th>
                       <th className="p-[10px] w-[150px]">4M #</th>
                       <th className="p-[10px] w-[160px]">Implementation Date</th>
                       {(editL1Data.improvement_area || '').toLowerCase() === 'cost' && (
@@ -2882,6 +2885,7 @@ export const AllRequests = ({
                   <tbody className="divide-y divide-slate-100">
                     {tempTableData.map((row, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/50">
+                        <td className="p-[8px] font-bold text-slate-400 text-center">{idx + 1}</td>
                         <td className="p-[8px]">
                           <input
                             type="text"
