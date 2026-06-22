@@ -5,7 +5,7 @@ import { createL2Notifications, sendL2Emails } from './l2NotificationModel.js';
 export const getL2ValidationLogs = async () => {
   const [rows] = await pool.query(
     `SELECT v.change_no as changeNo, v.validation_date as date, 
-            COALESCE(l1.request_by, u.name, v.requester) as requester, 
+            COALESCE(NULLIF(u.name, ''), l1.request_by, v.requester) as requester, 
             v.weld_test as weldTest, v.qa_test as qaTest, v.status, v.remarks,
             c.requester as requesterEmail
      FROM l2_validation_logs v
@@ -178,7 +178,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
 export const getL2Details = async (changeNo) => {
   const [rows] = await pool.query(
     `SELECT v.change_no as changeNo, v.validation_date as date, 
-            COALESCE(l1.request_by, u.name, v.requester) as requester, 
+            COALESCE(NULLIF(u.name, ''), l1.request_by, v.requester) as requester, 
             v.weld_test as weldTest, v.qa_test as qaTest, v.status, v.remarks 
      FROM l2_validation_logs v
      LEFT JOIN l1_requests l1 ON v.change_no = l1.change_no

@@ -135,7 +135,15 @@ export const getNextChangeNo = async () => {
 export const getL1Details = async (changeNo) => {
   const [rows] = await pool.query(
     `SELECT cr.title, cr.requester as crRequester, DATE_FORMAT(cr.date, '%Y-%m-%d') as crDate, cr.priority, cr.status as crStatus,
-            l1.*,
+            l1.change_no, l1.unit, l1.requested_time, l1.change_in,
+            l1.process_name, l1.process_line, l1.machine_no, l1.description,
+            l1.improvement_area, l1.change_type, l1.trace_from, l1.trace_to,
+            l1.risk_analysis, l1.sop_update, l1.hod_approval, l1.customer_approval,
+            l1.effectiveness_monitoring, l1.file_desc, l1.file_improvement,
+            l1.file_trace_from, l1.file_trace_to, l1.file_risk, l1.file_sop,
+            l1.file_effectiveness, l1.improvement_table_data, l1.created_at,
+            COALESCE(NULLIF(u.name, ''), l1.request_by) as request_by,
+            COALESCE(NULLIF(u.department, ''), l1.dept) as dept,
             DATE_FORMAT(l1.date_start, '%Y-%m-%d') as date_start,
             DATE_FORMAT(l1.date_close, '%Y-%m-%d') as date_close,
             ha.status as hodStatus,
@@ -143,6 +151,7 @@ export const getL1Details = async (changeNo) => {
             ha.hod_dept as hodDept
      FROM change_requests cr
      LEFT JOIN l1_requests l1 ON cr.id = l1.change_no
+     LEFT JOIN users u ON cr.requester = u.email
      LEFT JOIN (
        SELECT change_no,
               COALESCE(

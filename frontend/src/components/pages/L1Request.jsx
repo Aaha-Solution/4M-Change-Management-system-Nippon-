@@ -341,49 +341,54 @@ export const L1Request = ({
       const stored = localStorage.getItem('cms_l1_draft');
       if (stored) {
         const draft = JSON.parse(stored);
-        if (draft.unit !== undefined) setUnit(draft.unit);
-        if (draft.requestedDate !== undefined) setRequestedDate(draft.requestedDate);
-        if (draft.requestedTime !== undefined) setRequestedTime(draft.requestedTime);
-        if (draft.changeIn !== undefined) setChangeIn(draft.changeIn);
-        if (draft.fileDesc !== undefined) setFileDesc(draft.fileDesc);
-        if (draft.fileImprovement !== undefined) setFileImprovement(draft.fileImprovement);
-        if (draft.fileTraceFrom !== undefined) setFileTraceFrom(draft.fileTraceFrom);
-        if (draft.fileTraceTo !== undefined) setFileTraceTo(draft.fileTraceTo);
-        if (draft.fileRisk !== undefined) setFileRisk(draft.fileRisk);
-        if (draft.fileSop !== undefined) setFileSop(draft.fileSop);
-        if (draft.uploadedFilesList !== undefined) setUploadedFilesList(draft.uploadedFilesList);
-        if (draft.dept !== undefined) setDept(draft.dept);
-        if (draft.requestBy !== undefined) setRequestBy(draft.requestBy);
-        if (draft.processName !== undefined) setProcessName(draft.processName);
-        if (draft.processLine !== undefined) setProcessLine(draft.processLine);
-        if (draft.machineNo !== undefined) setMachineNo(draft.machineNo);
-        if (draft.context !== undefined) setContext(draft.context);
-        if (draft.description !== undefined) setDescription(draft.description);
-        if (draft.improvementArea !== undefined) setImprovementArea(draft.improvementArea);
-        if (draft.changeType !== undefined) setChangeType(draft.changeType);
-        if (draft.dateStart !== undefined) setDateStart(draft.dateStart);
-        if (draft.traceFrom !== undefined) setTraceFrom(draft.traceFrom);
-        if (draft.dateClose !== undefined) setDateClose(draft.dateClose);
-        if (draft.traceTo !== undefined) setTraceTo(draft.traceTo);
-        if (draft.riskAnalysis !== undefined) setRiskAnalysis(draft.riskAnalysis);
-        if (draft.sopUpdate !== undefined) setSopUpdate(draft.sopUpdate);
-        if (draft.hodApproval !== undefined) setHodApproval(draft.hodApproval);
-        if (draft.customerApproval !== undefined) setCustomerApproval(draft.customerApproval);
-        if (draft.improvementTableData !== undefined) setImprovementTableData(draft.improvementTableData);
-        draftLoadedRef.current = true;
+        if (draft.userEmail === userEmail) {
+          if (draft.unit !== undefined) setUnit(draft.unit);
+          if (draft.requestedDate !== undefined) setRequestedDate(draft.requestedDate);
+          if (draft.requestedTime !== undefined) setRequestedTime(draft.requestedTime);
+          if (draft.changeIn !== undefined) setChangeIn(draft.changeIn);
+          if (draft.fileDesc !== undefined) setFileDesc(draft.fileDesc);
+          if (draft.fileImprovement !== undefined) setFileImprovement(draft.fileImprovement);
+          if (draft.fileTraceFrom !== undefined) setFileTraceFrom(draft.fileTraceFrom);
+          if (draft.fileTraceTo !== undefined) setFileTraceTo(draft.fileTraceTo);
+          if (draft.fileRisk !== undefined) setFileRisk(draft.fileRisk);
+          if (draft.fileSop !== undefined) setFileSop(draft.fileSop);
+          if (draft.uploadedFilesList !== undefined) setUploadedFilesList(draft.uploadedFilesList);
+          if (draft.dept !== undefined) setDept(draft.dept);
+          if (draft.requestBy !== undefined) setRequestBy(draft.requestBy);
+          if (draft.processName !== undefined) setProcessName(draft.processName);
+          if (draft.processLine !== undefined) setProcessLine(draft.processLine);
+          if (draft.machineNo !== undefined) setMachineNo(draft.machineNo);
+          if (draft.context !== undefined) setContext(draft.context);
+          if (draft.description !== undefined) setDescription(draft.description);
+          if (draft.improvementArea !== undefined) setImprovementArea(draft.improvementArea);
+          if (draft.changeType !== undefined) setChangeType(draft.changeType);
+          if (draft.dateStart !== undefined) setDateStart(draft.dateStart);
+          if (draft.traceFrom !== undefined) setTraceFrom(draft.traceFrom);
+          if (draft.dateClose !== undefined) setDateClose(draft.dateClose);
+          if (draft.traceTo !== undefined) setTraceTo(draft.traceTo);
+          if (draft.riskAnalysis !== undefined) setRiskAnalysis(draft.riskAnalysis);
+          if (draft.sopUpdate !== undefined) setSopUpdate(draft.sopUpdate);
+          if (draft.hodApproval !== undefined) setHodApproval(draft.hodApproval);
+          if (draft.customerApproval !== undefined) setCustomerApproval(draft.customerApproval);
+          if (draft.improvementTableData !== undefined) setImprovementTableData(draft.improvementTableData);
+          draftLoadedRef.current = true;
+        } else {
+          localStorage.removeItem('cms_l1_draft');
+        }
       }
     } catch (e) {
       console.error('Error loading L1 draft:', e);
     } finally {
       setIsDraftInitialized(true);
     }
-  }, []);
+  }, [userEmail]);
 
   // Save draft to localStorage whenever fields change, but only after initialized
   useEffect(() => {
     if (!isDraftInitialized) return;
     try {
       const draft = {
+        userEmail,
         unit,
         requestedDate,
         requestedTime,
@@ -420,6 +425,7 @@ export const L1Request = ({
     }
   }, [
     isDraftInitialized,
+    userEmail,
     unit,
     requestedDate,
     requestedTime,

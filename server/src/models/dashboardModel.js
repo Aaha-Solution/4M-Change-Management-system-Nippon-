@@ -47,10 +47,10 @@ export const getDashboardChanges = async () => {
 
   const [rows] = await pool.query(
     `SELECT c.id, c.title, 
-            COALESCE(l1.request_by, u.name, c.requester) as requester, 
+            COALESCE(NULLIF(u.name, ''), l1.request_by, c.requester) as requester, 
             DATE_FORMAT(c.date, '%b %d, %Y') as date, c.priority, c.status,
-            l1.dept, l1.process_name as processName, l1.machine_no as machineNo, l1.change_in as changeIn,
-            l1.request_by as requestBy,
+            COALESCE(NULLIF(u.department, ''), l1.dept) as dept, l1.process_name as processName, l1.machine_no as machineNo, l1.change_in as changeIn,
+            COALESCE(NULLIF(u.name, ''), l1.request_by) as requestBy,
             l1.improvement_area as improvementArea,
             l1.improvement_table_data as improvementTableData,
             c.requester as requesterEmail,
