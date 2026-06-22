@@ -47,7 +47,7 @@ export const Effectiveness = ({
     userDept.toLowerCase() === 'qa'
   );
   const canUpdate = isAdmin || isQADept;
-  const [activeMainTab, setActiveMainTab] = useState('ongoing'); // 'ongoing' | 'closed'
+  const [activeMainTab, setActiveMainTab] = useState('ongoing'); // 'ongoing' | 'closed' | 'rejected'
   // Effectiveness Monitoring Form States
   const [effChangeNo, setEffChangeNo] = useState('');
   const [effMonthWise, setEffMonthWise] = useState(() => getDefaultDateString());
@@ -471,8 +471,10 @@ export const Effectiveness = ({
   const displayLogs = filteredLogs.filter(log => {
     if (activeMainTab === 'closed') {
       return log.qaApproval === 'Approved';
+    } else if (activeMainTab === 'rejected') {
+      return log.qaApproval === 'Rejected';
     } else {
-      return log.qaApproval !== 'Approved';
+      return log.qaApproval !== 'Approved' && log.qaApproval !== 'Rejected';
     }
   });
 
@@ -882,20 +884,24 @@ export const Effectiveness = ({
 
         {/* RIGHT COLUMN: Table Column */}
         <div className={`${canUpdate ? 'lg:col-span-8' : 'lg:col-span-12'} space-y-[16px]`}>
-          {/* Tabs for Active/Closed Monitoring */}
-          <div className="flex border-b border-slate-200 bg-white p-1 rounded-t-xl gap-1 shrink-0">
+          {/* Tabs for Active/Closed/Rejected Monitoring */}
+          <div className="flex border-b border-slate-200 bg-white p-1 rounded-t-xl gap-2 shrink-0">
             <button
               type="button"
               onClick={() => handleMainTabChange('ongoing')}
               className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${
                 activeMainTab === 'ongoing'
-                  ? 'bg-blue-50 text-[#0066cc] font-extrabold border border-blue-100 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  ? 'bg-[#0066cc] text-white font-extrabold shadow-md'
+                  : 'bg-slate-100/60 text-slate-600 hover:bg-[#e6f0fa]/80 hover:text-[#0066cc] font-medium'
               }`}
             >
               <span>Ongoing Monitoring</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeMainTab === 'ongoing' ? 'bg-[#0066cc] text-white' : 'bg-slate-100 text-slate-500'}`}>
-                {tableLogs.filter(log => log.qaApproval !== 'Approved').length}
+              <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${
+                activeMainTab === 'ongoing' 
+                  ? 'bg-white text-[#0066cc] font-bold' 
+                  : 'bg-slate-200 text-slate-600'
+              }`}>
+                {tableLogs.filter(log => log.qaApproval !== 'Approved' && log.qaApproval !== 'Rejected').length}
               </span>
             </button>
             <button
@@ -903,13 +909,35 @@ export const Effectiveness = ({
               onClick={() => handleMainTabChange('closed')}
               className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${
                 activeMainTab === 'closed'
-                  ? 'bg-blue-50 text-[#0066cc] font-extrabold border border-blue-100 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  ? 'bg-emerald-600 text-white font-extrabold shadow-md'
+                  : 'bg-slate-100/60 text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-700 font-medium'
               }`}
             >
               <span>Closed Requests</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeMainTab === 'closed' ? 'bg-[#0066cc] text-white' : 'bg-slate-100 text-slate-500'}`}>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${
+                activeMainTab === 'closed' 
+                  ? 'bg-white text-emerald-600 font-bold' 
+                  : 'bg-slate-200 text-slate-600'
+              }`}>
                 {tableLogs.filter(log => log.qaApproval === 'Approved').length}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleMainTabChange('rejected')}
+              className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${
+                activeMainTab === 'rejected'
+                  ? 'bg-rose-600 text-white font-extrabold shadow-md'
+                  : 'bg-slate-100/60 text-slate-600 hover:bg-rose-50/80 hover:text-rose-700 font-medium'
+              }`}
+            >
+              <span>Rejected Requests</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${
+                activeMainTab === 'rejected' 
+                  ? 'bg-white text-rose-600 font-bold' 
+                  : 'bg-slate-200 text-slate-600'
+              }`}>
+                {tableLogs.filter(log => log.qaApproval === 'Rejected').length}
               </span>
             </button>
           </div>
