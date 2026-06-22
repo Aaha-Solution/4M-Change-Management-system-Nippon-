@@ -5,7 +5,9 @@ import {
   Plus,
   X,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw,
+  RotateCcw
 } from 'lucide-react';
 import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo, getUsers, getDepartments, getServerTime } from '../../api/apiRoutes';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
@@ -27,6 +29,7 @@ export const L1Request = ({
   const draftLoadedRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [isMachineModalOpen, setIsMachineModalOpen] = useState(false);
   const [tempProcessName, setTempProcessName] = useState('');
@@ -78,6 +81,71 @@ export const L1Request = ({
       console.error('Error fetching options:', e);
     }
   }
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([fetchOptions(), fetchNextChangeNo()]);
+      setToastMsg('Data refreshed successfully from server.');
+    } catch (e) {
+      console.error('Refresh error:', e);
+      setToastMsg({ text: 'Failed to refresh data from server.', isError: true });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleResetForm = () => {
+    if (window.confirm('Are you sure you want to reset all fields in the form and discard the current draft?')) {
+      localStorage.removeItem('cms_l1_draft');
+
+      setUnit('UNIT-2');
+      setChangeIn({
+        Man: false,
+        Machine: false,
+        Material: false,
+        Method: false,
+        Measurement: false,
+        'Mother Nature': false
+      });
+      setFileDesc('');
+      setFileImprovement('');
+      setFileTraceFrom('');
+      setFileTraceTo('');
+      setFileRisk('');
+      setFileSop('');
+      setUploadedFilesList([]);
+      
+      setDept('');
+      setRequestBy('');
+      
+      setProcessName('');
+      setProcessLine('');
+      setMachineNo('');
+      setContext('');
+      setDescription('');
+      setImprovementArea('');
+      setChangeType('');
+      setDateStart('');
+      setTraceFrom('');
+      setDateClose('');
+      setTraceTo('');
+      setRiskAnalysis('');
+      setSopUpdate('');
+      setHodApproval('');
+      setCustomerApproval('');
+      setImprovementTableData([]);
+      setErrors({});
+
+      const now = new Date();
+      setRequestedDate(formatDateToDDMMYYYY(now));
+      const hrs = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      setRequestedTime(`${hrs}:${mins}`);
+
+      setToastMsg('Form fields have been reset and draft removed.');
+    }
+  };
 
   const handleAddProcess = async () => {
     if (tempProcessName.trim()) {
@@ -914,10 +982,31 @@ export const L1Request = ({
   return (
     <div className="w-full space-y-[24px] animate-fade-in-up pb-[40px] text-slate-800">
 
-      {/* Title */}
-      <div>
-        <h3 className="font-heading text-[20px] font-bold text-slate-900">New L1 Change Request</h3>
-        <p className="text-slate-500 text-[12px] mt-[4px]">Change No: {changeNo} — Auto-assigned on submission</p>
+      {/* Title & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200/60 pb-[16px]">
+        <div>
+          <h3 className="font-heading text-[20px] font-bold text-slate-900">New L1 Change Request</h3>
+          <p className="text-slate-500 text-[12px] mt-[4px]">Change No: {changeNo} — Auto-assigned on submission</p>
+        </div>
+        <div className="flex items-center gap-[12px]">
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-[6px] bg-white border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-[#0066cc] hover:border-slate-300 transition-all duration-200 shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+          >
+            <RefreshCw className={`w-[14px] h-[14px] ${isRefreshing ? 'animate-spin text-[#0066cc]' : ''}`} />
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleResetForm}
+            className="flex items-center gap-[6px] bg-rose-50 border border-rose-100 rounded-[6px] py-[8px] px-[12px] text-[12px] font-semibold text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all duration-200 shadow-sm active:scale-95"
+          >
+            <RotateCcw className="w-[14px] h-[14px]" />
+            <span>Reset Form</span>
+          </button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-[24px]">
