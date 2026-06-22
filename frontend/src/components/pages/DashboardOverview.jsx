@@ -1210,10 +1210,12 @@ export const DashboardOverview = ({
       }
     });
 
-    const data = Object.keys(counts).map(key => ({
-      label: key,
-      value: counts[key]
-    }));
+    const data = Object.keys(counts)
+      .filter(key => key.trim().toUpperCase() !== 'GENERAL')
+      .map(key => ({
+        label: key,
+        value: counts[key]
+      }));
 
     const maxVal = Math.max(...data.map(item => item.value), 5);
 
