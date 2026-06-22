@@ -128,7 +128,7 @@ export const getDashboardChanges = async () => {
         FROM hod_approvals
         GROUP BY change_no
       ) ha ON c.id = ha.change_no
-     ORDER BY c.created_at DESC`
+     ORDER BY c.created_at DESC, CAST(SUBSTRING_INDEX(c.id, '-', -1) AS UNSIGNED) DESC`
   );
   return rows;
 };

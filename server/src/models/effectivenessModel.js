@@ -74,7 +74,7 @@ export const getLogs = async () => {
      FROM effectiveness_logs e
      LEFT JOIN change_requests c ON e.change_no = c.id
      LEFT JOIN l1_requests l1 ON e.change_no = l1.change_no
-     ORDER BY e.created_at DESC`
+     ORDER BY e.created_at DESC, CAST(SUBSTRING_INDEX(e.change_no, '-', -1) AS UNSIGNED) DESC`
   );
   return rows;
 };

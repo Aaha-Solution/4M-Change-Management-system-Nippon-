@@ -32,7 +32,7 @@ export const getHodApprovals = async () => {
      LEFT JOIN hod_approvals ha ON cr.id = ha.change_no
      LEFT JOIN users uh ON ha.hod_email = uh.email
      LEFT JOIN effectiveness_logs e ON cr.id = e.change_no
-     ORDER BY cr.created_at DESC`
+     ORDER BY cr.created_at DESC, CAST(SUBSTRING_INDEX(cr.id, '-', -1) AS UNSIGNED) DESC`
   );
   return rows;
 };
@@ -67,7 +67,7 @@ export const getHodApprovalsByDept = async (dept) => {
      LEFT JOIN users uh ON ha.hod_email = uh.email
      LEFT JOIN effectiveness_logs e ON cr.id = e.change_no
      WHERE l1.change_no IS NOT NULL
-     ORDER BY cr.created_at DESC`,
+     ORDER BY cr.created_at DESC, CAST(SUBSTRING_INDEX(cr.id, '-', -1) AS UNSIGNED) DESC`,
     [dept]
   );
   return rows;

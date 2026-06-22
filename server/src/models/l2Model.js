@@ -12,7 +12,7 @@ export const getL2ValidationLogs = async () => {
      LEFT JOIN l1_requests l1 ON v.change_no = l1.change_no
      LEFT JOIN change_requests c ON v.change_no = c.id
      LEFT JOIN users u ON c.requester = u.email
-     ORDER BY v.created_at DESC`
+     ORDER BY v.created_at DESC, CAST(SUBSTRING_INDEX(v.change_no, '-', -1) AS UNSIGNED) DESC`
   );
   return rows;
 };

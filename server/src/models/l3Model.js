@@ -35,7 +35,7 @@ export const getL3Approvals = async () => {
      INNER JOIN l2_validation_logs v ON c.id = v.change_no AND v.status = 'Accepted'
      LEFT JOIN l3_approvals l ON c.id = l.change_no
      LEFT JOIN effectiveness_logs e ON c.id = e.change_no
-     ORDER BY c.created_at DESC`
+     ORDER BY c.created_at DESC, CAST(SUBSTRING_INDEX(c.id, '-', -1) AS UNSIGNED) DESC`
   );
   return rows;
 };
