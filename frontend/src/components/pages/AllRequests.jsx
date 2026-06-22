@@ -2119,10 +2119,10 @@ export const AllRequests = ({
             </div>
 
             {/* Tabs Header */}
-            <div className="flex h-11 border-b border-slate-200 bg-slate-50/50 shrink-0">
+            <div className="flex h-11 border-b border-slate-200 bg-slate-50/50 overflow-x-auto scrollbar-none -webkit-overflow-scrolling-touch shrink-0">
               <button
                 onClick={() => { setActiveTab('l1'); setIsEditMode(false); }}
-                className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === 'l1' 
                     ? 'border-[#0066cc] text-[#0066cc]' 
                     : 'border-transparent text-slate-500 hover:text-slate-850'
@@ -2133,7 +2133,7 @@ export const AllRequests = ({
               {selectedL1Details?.hodStatus !== 'Rejected' && (
                 <button
                   onClick={() => { setActiveTab('l2'); setIsEditMode(false); }}
-                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                  className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'l2' 
                       ? 'border-[#0066cc] text-[#0066cc]' 
                       : 'border-transparent text-slate-500 hover:text-slate-850'
@@ -2145,7 +2145,7 @@ export const AllRequests = ({
               {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (
                 <button
                   onClick={() => { setActiveTab('l3'); setIsEditMode(false); }}
-                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                  className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'l3' 
                       ? 'border-[#0066cc] text-[#0066cc]' 
                       : 'border-transparent text-slate-500 hover:text-slate-850'
@@ -2157,7 +2157,7 @@ export const AllRequests = ({
               {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && ((selectedLog?.status || '').toLowerCase() === 'completed' || selectedEffDetails !== null) && (
                 <button
                   onClick={() => { setActiveTab('effectiveness'); setIsEditMode(false); }}
-                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
+                  className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'effectiveness' 
                       ? (selectedEffDetails && (selectedEffDetails.qaApproval === 'Rejected' || selectedEffDetails.status === 'Effectiveness Not Ok' || selectedEffDetails.status === 'Rejected'))
                         ? 'border-rose-600 text-rose-600 font-extrabold bg-rose-50/30'
