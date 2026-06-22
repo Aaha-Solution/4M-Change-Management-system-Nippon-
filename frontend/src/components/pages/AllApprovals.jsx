@@ -582,14 +582,7 @@ export const AllApprovals = ({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-[12px] w-full md:w-auto">
-          <button
-            onClick={() => setShowLegend(v => !v)}
-            className="flex-grow md:flex-grow-0 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all shadow-sm cursor-pointer"
-            title="Show workflow guide"
-          >
-            <Info size={14} />
-            Guide
-          </button>
+
           <button
             onClick={fetchRequests}
             disabled={isFetching}
@@ -609,41 +602,7 @@ export const AllApprovals = ({
         </div>
       </div>
 
-      {/* ─── Workflow Legend ─── */}
-      {showLegend && (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 space-y-3 animate-fade-in-up">
-          <div className="flex items-center gap-2 mb-1">
-            <Layers size={15} className="text-[#0066cc]" />
-            <h4 className="text-[12px] font-black text-slate-700 uppercase tracking-wider">Change Request Workflow — How Approvals Work</h4>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            {[
-              { level: 'L1', name: 'HOD Review', desc: 'Department HOD approves/rejects the initial change request', color: 'from-amber-500 to-orange-500', badge: 'bg-amber-50 border-amber-200 text-amber-700', status: 'CR Status: Pending' },
-              { level: 'L2', name: 'QA Validation', desc: 'QAD department verifies the setup & compliance documentation', color: 'from-blue-500 to-cyan-500', badge: 'bg-blue-50 border-blue-200 text-blue-700', status: 'CR Status: Evaluating' },
-              { level: 'L3', name: 'Multi-Dept HOD', desc: 'All department HODs review and give their final decision', color: 'from-indigo-500 to-purple-500', badge: 'bg-indigo-50 border-indigo-200 text-indigo-700', status: 'CR Status: Approved' },
-              { level: '✓', name: 'Completed', desc: 'All levels signed off — change is fully approved', color: 'from-emerald-500 to-teal-500', badge: 'bg-emerald-50 border-emerald-200 text-emerald-700', status: 'CR Status: Completed' },
-            ].map((s, i, arr) => (
-              <div key={s.level} className="flex items-start gap-2">
-                <div className="flex items-center gap-1">
-                  <div className={`relative bg-white border rounded-xl p-3 flex-1 shadow-sm`}>
-                    <div className={`inline-flex items-center gap-1.5 text-[10px] font-black px-2 py-0.5 rounded-full border mb-2 ${s.badge}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-br ${s.color} inline-block`} />
-                      {s.level} · {s.name}
-                    </div>
-                    <p className="text-[11px] text-slate-600 leading-relaxed">{s.desc}</p>
-                    <p className="text-[10px] text-slate-400 mt-1 font-mono">{s.status}</p>
-                  </div>
-                  {i < arr.length - 1 && <ArrowRight size={16} className="text-slate-300 shrink-0 mt-4" />}
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-[11px] text-blue-700 bg-blue-100 rounded-lg px-3 py-2 flex items-center gap-1.5">
-            <Info size={12} />
-            <strong>This page shows L1 HOD approvals only.</strong> The "Stage" column shows where each request is in the overall workflow.
-          </p>
-        </div>
-      )}
+
 
       {/* ─── Summary Cards ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px]">

@@ -240,7 +240,6 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
           <div className="px-6 py-5 flex items-center justify-between border-b border-slate-200">
             <div>
               <h1 className="font-heading text-2xl font-extrabold tracking-tight text-[#0066cc] flex items-center gap-2">
-                <GitPullRequest size={22} className="text-[#0066cc]" />
                 4M CMS
               </h1>
               <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mt-0.5">Change Management</p>
