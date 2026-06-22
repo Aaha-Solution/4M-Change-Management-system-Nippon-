@@ -83,6 +83,18 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
       }
     }
 
+    // 4. QAD department users (both HOD and standard user)
+    const [qadUsers] = await connection.query(
+      `SELECT email, name, department, role FROM users 
+       WHERE department != '' AND department IS NOT NULL AND LOWER(department) = 'qad'`
+    );
+    for (const u of qadUsers) {
+      if (!seenEmails.has(u.email.toLowerCase())) {
+        seenEmails.add(u.email.toLowerCase());
+        targetUsers.push(u);
+      }
+    }
+
     title = `L2 Validation Approved – ${changeNo}`;
     details = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been approved at L2 validation by ${requestBy} (Status: L2 Approved).${processName ? ` Process: ${processName}.` : ''}${machineNo ? ` Machine: ${machineNo}.` : ''}${remarks ? ` Remarks: ${remarks}` : ''} The next process is L3 Multi-Department HOD Decisions (Awaiting decision / acknowledgement from all selected department HODs and Admin).`;
     statusColor = 'green';
@@ -91,7 +103,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
       `SELECT email, name, department, role FROM users 
        WHERE department != '' AND department IS NOT NULL 
          AND (
-           LOWER(department) IN ('qad') 
+           LOWER(department) = 'qad'
            OR LOWER(role) IN ('admin', 'administrator') 
            OR LOWER(role) LIKE '%hod%' 
            OR LOWER(role) LIKE '%manager%'
@@ -255,7 +267,7 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
         `SELECT email, name, department, role FROM users 
          WHERE department != '' AND department IS NOT NULL 
            AND (
-             LOWER(department) IN ('qad') 
+             LOWER(department) = 'qad'
              OR LOWER(role) IN ('admin', 'administrator')
              OR (
                LOWER(department) = LOWER(?)
@@ -323,7 +335,7 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
       const [rows] = await pool.query(
         `SELECT email, name, department, role FROM users 
          WHERE department != '' AND department IS NOT NULL 
-           AND (LOWER(department) IN ('qad') 
+           AND (LOWER(department) = 'qad'
                 OR LOWER(role) IN ('admin', 'administrator') 
                 OR LOWER(role) LIKE '%hod%' 
                 OR LOWER(role) LIKE '%manager%'

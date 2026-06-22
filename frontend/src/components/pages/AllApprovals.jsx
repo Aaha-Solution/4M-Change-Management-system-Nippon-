@@ -48,7 +48,7 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 const mapDept = (raw) => {
   if (!raw) return '';
   const d = raw.trim().toLowerCase();
-  if (d === 'qad' || d === 'quality') return 'QAD';
+  if (d === 'qad') return 'QAD';
   if (d === 'ped') return 'PED';
   if (d === 'production') return 'Production';
   if (d === 'maintenance') return 'Maintenance';
@@ -209,8 +209,7 @@ export const AllApprovals = ({
     userRole.toLowerCase().includes('unit head')
   );
   const isQA = userDept && (
-    userDept.toLowerCase() === 'qad' ||
-    userDept.toLowerCase() === 'qa'
+    userDept.toLowerCase() === 'qad'
   );
 
   useEffect(() => {

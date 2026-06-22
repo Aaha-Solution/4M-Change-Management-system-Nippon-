@@ -425,8 +425,7 @@ export const L2Validation = ({
   );
 
   const isQuality = userDept && (
-    userDept.toLowerCase() === 'qad' || 
-    userDept.toLowerCase() === 'qa'
+    userDept.toLowerCase() === 'qad'
   );
 
   const isQualityOrAdmin = isQuality || isAdmin;

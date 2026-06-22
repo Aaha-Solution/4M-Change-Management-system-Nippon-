@@ -328,8 +328,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                         );
                         const isAdmin = userRole && userRole.toLowerCase().includes('admin');
                         const isQA = userDept && (
-                          userDept.toLowerCase() === 'qad' ||
-                          userDept.toLowerCase() === 'qa'
+                          userDept.toLowerCase() === 'qad'
                         );
                         
                         let targetTab = (isHOD || isAdmin || isQA) ? 'all-approvals' : 'all-requests';

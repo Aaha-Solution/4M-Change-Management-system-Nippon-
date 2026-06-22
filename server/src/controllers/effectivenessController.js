@@ -10,7 +10,7 @@ const checkCanUpdate = async (email) => {
     const dept = (user.department || '').toLowerCase();
     const role = (user.role || '').toLowerCase();
     const isAdmin = role === 'admin' || role === 'administrator';
-    const isQADept = dept === 'quality' || dept === 'qad' || dept === 'qa';
+    const isQADept = dept === 'qad';
     return isAdmin || isQADept;
   }
   return false;
@@ -92,7 +92,7 @@ export const updateLog = async (req, res) => {
     const dept = (user.department || '').toLowerCase();
     const role = (user.role || '').toLowerCase();
     const isAdmin = role === 'admin' || role === 'administrator';
-    const isQADept = dept === 'quality' || dept === 'qad' || dept === 'qa';
+    const isQADept = dept === 'qad';
 
     if (!isAdmin && !isQADept) {
       return res.status(403).json({ error: 'Access Denied: Only authorized users in the QAD (QA) department and Administrators are allowed to update effectiveness logs.' });

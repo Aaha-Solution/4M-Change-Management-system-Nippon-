@@ -58,7 +58,7 @@ export const getDashboardChanges = async () => {
             ha.status as hodStatus,
             COALESCE(
               CASE 
-                WHEN LOWER(COALESCE(l1.dept, u.department)) IN ('quality', 'qad', 'qa') THEN l3.qad
+                WHEN LOWER(COALESCE(l1.dept, u.department)) = 'qad' THEN l3.qad
                 WHEN LOWER(COALESCE(l1.dept, u.department)) = 'ped' THEN l3.ped
                 WHEN LOWER(COALESCE(l1.dept, u.department)) = 'production' THEN l3.production
                 WHEN LOWER(COALESCE(l1.dept, u.department)) = 'maintenance' THEN l3.maintenance

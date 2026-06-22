@@ -42,9 +42,7 @@ export const Effectiveness = ({
     userRole.toLowerCase() === 'administrator'
   );
   const isQADept = userDept && (
-    userDept.toLowerCase() === 'quality' ||
-    userDept.toLowerCase() === 'qad' ||
-    userDept.toLowerCase() === 'qa'
+    userDept.toLowerCase() === 'qad'
   );
   const canUpdate = isAdmin || isQADept;
   const [activeMainTab, setActiveMainTab] = useState('ongoing'); // 'ongoing' | 'closed' | 'rejected'

@@ -49,8 +49,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
 
   const isAdmin = userRole && userRole.toLowerCase().includes('admin');
   const isQA = userDept && (
-    userDept.toLowerCase() === 'qad' ||
-    userDept.toLowerCase() === 'qa'
+    userDept.toLowerCase() === 'qad'
   );
   const handleLocalSignOut = () => {
     logAction('Sign Out', 'User logged out of the system.');
@@ -471,7 +470,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
               <h2 className="font-heading text-[13px] xs:text-[15px] sm:text-[20px] md:text-[22px] font-bold text-slate-900 leading-tight truncate">
                 {activeTab === 'dashboard' ? 'Overview' :
                   activeTab === 'approvals' ? 'L2 Validation Workflow' :
-                    activeTab === 'notifications' ? 'Notifications Feed' :
+                    activeTab === 'notifications' ? 'Notifications' :
                       activeTab === 'l1' ? 'New L1 Change Request' :
                         activeTab === 'l3' ? 'L3 Request Tracker & Final Approval' :
                           activeTab === 'all-requests' ? 'All Change Requests' :

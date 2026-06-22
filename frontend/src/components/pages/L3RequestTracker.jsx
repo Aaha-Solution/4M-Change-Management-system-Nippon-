@@ -64,7 +64,7 @@ export const L3RequestTracker = ({
   const mapDbDeptToL3Dept = (dbDept) => {
     if (!dbDept) return 'QAD';
     const dept = dbDept.trim().toLowerCase();
-    if (dept === 'qad' || dept === 'quality') return 'QAD';
+    if (dept === 'qad') return 'QAD';
     if (dept === 'ped') return 'PED';
     if (dept === 'production') return 'Production';
     if (dept === 'maintenance') return 'Maintenance';

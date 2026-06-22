@@ -46,7 +46,7 @@ export const createL2ValidationLog = async (req, res) => {
         const user = userRows[0];
         const dept = (user.department || '').toLowerCase();
         const role = (user.role || '').toLowerCase();
-        isQuality = dept === 'quality' || dept === 'qad' || dept === 'qa';
+        isQuality = dept === 'qad';
         isAdmin = role === 'admin' || role === 'administrator';
         isQualityOrAdmin = isAdmin || isQuality;
       }
