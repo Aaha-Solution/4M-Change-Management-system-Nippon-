@@ -908,59 +908,7 @@ export const AllApprovals = ({
               </div>
             )}
 
-            {/* Tabs Header */}
-            <div className="flex h-11 border-b border-slate-200 bg-slate-50/50 overflow-x-auto scrollbar-none -webkit-overflow-scrolling-touch shrink-0">
-              <button
-                type="button"
-                onClick={() => setActiveTab('l1')}
-                className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === 'l1' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
-              >
-                1. L1 Request Details
-              </button>
-              {l1Details?.hodStatus !== 'Rejected' && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('l2')}
-                  className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === 'l2' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
-                      : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
-                >
-                  2. L2 Validation Details
-                </button>
-              )}
-              {l1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('l3')}
-                  className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === 'l3' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
-                      : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
-                >
-                  3. L3 Approval Details
-                </button>
-              )}
-              {l1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (selectedReq?.crStatus || '').toLowerCase() === 'completed' && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('effectiveness')}
-                  className={`flex-1 min-w-[120px] sm:min-w-0 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === 'effectiveness' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
-                      : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
-                >
-                  4. Effectiveness
-                </button>
-              )}
-            </div>
+
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-5 text-[13px] text-slate-700">
