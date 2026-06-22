@@ -1106,7 +1106,7 @@ export const Effectiveness = ({
               </table>
             </div>
             <TablePagination
-              rowsPerPageOptions={[5, 10, 25, 50]}
+              rowsPerPageOptions={[5, 10]}
               component="div"
               count={displayLogs.length}
               rowsPerPage={rowsPerPage}

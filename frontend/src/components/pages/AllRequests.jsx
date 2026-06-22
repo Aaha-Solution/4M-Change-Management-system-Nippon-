@@ -2036,7 +2036,7 @@ export const AllRequests = ({
           </table>
         </div>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 50]}
+          rowsPerPageOptions={[5, 10]}
           component="div"
           count={filteredData.length}
           rowsPerPage={rowsPerPage}

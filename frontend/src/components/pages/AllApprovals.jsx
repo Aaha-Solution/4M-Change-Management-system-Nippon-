@@ -836,7 +836,7 @@ export const AllApprovals = ({
 
             <div className="border-t border-slate-100">
               <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
+                rowsPerPageOptions={[5, 10]}
                 component="div"
                 count={filtered.length}
                 rowsPerPage={rowsPerPage}

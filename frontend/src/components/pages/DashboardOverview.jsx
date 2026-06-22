@@ -4109,7 +4109,7 @@ export const DashboardOverview = ({
           )}
         </div>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[5, 10]}
           component="div"
           count={allTableRows.length}
           rowsPerPage={rowsPerPage}
