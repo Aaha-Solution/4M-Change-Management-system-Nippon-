@@ -363,6 +363,14 @@ export const L1Request = ({
   };
 
   const handleDoneClick = () => {
+    if (!improvementTableData || improvementTableData.length === 0) {
+      setModalError('Please add at least one row of data.');
+      setErrors(prev => ({
+        ...prev,
+        improvementTable: `Please add at least one row in the ${improvementArea} Table.`
+      }));
+      return;
+    }
     if (!checkTableCompleteness(improvementTableData)) {
       setModalError('Please fill in all empty fields marked in red.');
       setErrors(prev => ({
