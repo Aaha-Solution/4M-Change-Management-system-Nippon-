@@ -144,7 +144,7 @@ CREATE TABLE notifications (
     title VARCHAR(255) NOT NULL,
     details TEXT NOT NULL,
     change_no VARCHAR(50) NOT NULL DEFAULT '',
-    category VARCHAR(50) NOT NULL DEFAULT '',
+    category VARCHAR(255) NOT NULL DEFAULT '',
     dept VARCHAR(100) NOT NULL DEFAULT '',
     time_str VARCHAR(100) NOT NULL DEFAULT '',
     is_read BOOLEAN NOT NULL DEFAULT FALSE,

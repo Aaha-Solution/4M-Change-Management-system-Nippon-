@@ -632,8 +632,8 @@ export const AllApprovals = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px]">
         {[
           { label: 'Awaiting Your Decision', value: pendingCount, icon: <Clock size={18} />, gradient: 'from-amber-500 to-orange-500', border: 'border-amber-100', text: 'text-amber-700', sublabel: 'L1 HOD Review Pending' },
-          { label: 'Approved by You', value: approvedCount, icon: <CheckCircle2 size={18} />, gradient: 'from-emerald-500 to-teal-500', border: 'border-emerald-100', text: 'text-emerald-700', sublabel: 'HOD Approved' },
-          { label: 'Rejected by You', value: rejectedCount, icon: <XCircle size={18} />, gradient: 'from-rose-500 to-pink-500', border: 'border-rose-100', text: 'text-rose-700', sublabel: 'HOD Rejected' },
+          { label: 'Approved by You', value: approvedCount, icon: <CheckCircle2 size={18} />, gradient: 'from-emerald-500 to-teal-500', border: 'border-emerald-100', text: 'text-emerald-700', sublabel: 'L1 HOD Approved' },
+          { label: 'Rejected by You', value: rejectedCount, icon: <XCircle size={18} />, gradient: 'from-rose-500 to-pink-500', border: 'border-rose-100', text: 'text-rose-700', sublabel: 'L1 HOD Rejected' },
         ].map((card, i) => (
           <div key={i} className={`relative bg-white border ${card.border} rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group`}>
             <div className={`absolute top-0 right-0 w-20 h-20 rounded-full bg-gradient-to-br ${card.gradient} opacity-[0.07] -translate-y-4 translate-x-4 group-hover:opacity-[0.13] transition-opacity`} />

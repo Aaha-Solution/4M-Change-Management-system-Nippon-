@@ -781,8 +781,8 @@ export const L1Request = ({
       } else {
         setChanges([newChange, ...changes]);
       }
-      setToastMsg(`Successfully submitted L1 Change Request: ${changeNo}`);
-      logAction('L1 Request Created', `Successfully submitted L1 Change Request ${changeNo} for department ${dept}`);
+      setToastMsg(`Successfully submitted L1 Change Request: ${newChange.id}`);
+      logAction('L1 Request Created', `Successfully submitted L1 Change Request ${newChange.id} for department ${dept}`);
 
       // Clear L1 draft from localStorage
       localStorage.removeItem('cms_l1_draft');
@@ -1634,11 +1634,11 @@ export const L1Request = ({
         </div>
 
         {/* Centered Submit Button */}
-        <div className="flex justify-center pt-[16px]">
+        <div className="flex flex-col items-center justify-center pt-[16px] gap-2">
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="flex items-center justify-center gap-[8px] bg-[#0066cc] hover:bg-[#0052a3] disabled:opacity-60 text-white px-[32px] py-[12px] rounded-[6px] text-[13px] font-bold shadow-md transition-all transform active:scale-[0.98] cursor-pointer"
+            disabled={isSubmitting || isAdmin}
+            className="flex items-center justify-center gap-[8px] bg-[#0066cc] hover:bg-[#0052a3] disabled:opacity-60 disabled:cursor-not-allowed text-white px-[32px] py-[12px] rounded-[6px] text-[13px] font-bold shadow-md transition-all transform active:scale-[0.98] cursor-pointer"
           >
             {isSubmitting ? (
               <>
@@ -1649,6 +1649,11 @@ export const L1Request = ({
               <span>Submit</span>
             )}
           </button>
+          {isAdmin && (
+            <span className="text-[11px] text-rose-500 font-semibold">
+              Admin is not allowed to submit L1 request
+            </span>
+          )}
         </div>
       </form>
 

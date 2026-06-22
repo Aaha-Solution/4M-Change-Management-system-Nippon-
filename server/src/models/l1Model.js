@@ -34,6 +34,18 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
   try {
     await connection.beginTransaction();
 
+    // Lock the change_requests table to retrieve all current IDs safely and prevent duplicate sequential number generation
+    const [idRows] = await connection.query('SELECT id FROM change_requests FOR UPDATE');
+    let maxNum = 0;
+    for (const row of idRows) {
+      const match = row.id.match(/^4M-2026-(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNum) maxNum = num;
+      }
+    }
+    const resolvedChangeNo = `4M-2026-${maxNum + 1}`;
+
     let requesterEmail = userEmail;
     if (!requesterEmail || requesterEmail === 'unknown@cms.com') {
       const [adminRows] = await connection.query("SELECT email FROM users WHERE role = 'Admin'");
@@ -45,7 +57,7 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
 
     await connection.query(
       'INSERT INTO change_requests (id, title, requester, date, priority, status) VALUES (?, ?, ?, CURDATE(), ?, ?)',
-      [changeNo, title, requesterEmail, priority, status]
+      [resolvedChangeNo, title, requesterEmail, priority, status]
     );
 
     const serializedTableData = improvementTableData ? JSON.stringify(improvementTableData) : null;
@@ -61,7 +73,7 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
         file_risk, file_sop, file_effectiveness, improvement_table_data
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        changeNo, unit, requestedTime, changeIn || '', dept, requestBy,
+        resolvedChangeNo, unit, requestedTime, changeIn || '', dept, requestBy,
         processName, processLine, machineNo, description,
         improvementArea, changeType, formatDateToSql(dateStart), traceFrom,
         formatDateToSql(dateClose), traceTo, riskAnalysis, sopUpdate,
@@ -87,24 +99,24 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
         await connection.query(
           `INSERT INTO l1_attachments (change_no, field_name, file_name, file_data, file_type) 
            VALUES (?, ?, ?, ?, ?)`,
-          [changeNo, dbFieldName, file.name, file.data, file.type]
+          [resolvedChangeNo, dbFieldName, file.name, file.data, file.type]
         );
       }
     }
 
     // Create notifications for selected HODs
-    await createL1RequestNotifications(connection, changeNo, hodApproval, changeIn, requestBy, dept);
+    await createL1RequestNotifications(connection, resolvedChangeNo, hodApproval, changeIn, requestBy, dept);
 
     await connection.commit();
     broadcast({ type: 'REFRESH_CHANGES' });
     broadcast({ type: 'REFRESH_NOTIFICATIONS' });
 
     // Send email notifications asynchronously after commit
-    sendL1RequestEmails(changeNo, hodApproval, changeIn, requestBy, dept).catch(err =>
+    sendL1RequestEmails(resolvedChangeNo, hodApproval, changeIn, requestBy, dept).catch(err =>
       console.error('Error sending L1 HOD notification email:', err)
     );
     return {
-      id: changeNo,
+      id: resolvedChangeNo,
       title,
       requester: userEmail,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
