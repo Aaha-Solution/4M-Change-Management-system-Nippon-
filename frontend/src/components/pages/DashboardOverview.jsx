@@ -3446,11 +3446,11 @@ export const DashboardOverview = ({
               </label>
               <div className="flex flex-wrap gap-[8px] pt-[2px]">
                 {[
-                  'PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L',
-                  'MATERIALS', 'MARKETING', 'HR', 'SAFETY', 'GENERAL',
-                  'UNIT HEAD'
+                  'PED', 'QAD', 'Production', 'Maintenance', 'PC & L',
+                  'Materials', 'Marketing', 'HR', 'Safety', 'General',
+                  'Unit Head'
                 ].map((dept) => {
-                  const isSelected = data.hod_approval === dept;
+                  const isSelected = (data.hod_approval || '').trim().toLowerCase() === dept.trim().toLowerCase();
                   return (
                     <button
                       key={dept}
