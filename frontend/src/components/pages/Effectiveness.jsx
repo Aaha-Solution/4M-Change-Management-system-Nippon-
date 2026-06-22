@@ -373,6 +373,11 @@ export const Effectiveness = ({
   const handleMainTabChange = (tab) => {
     setActiveMainTab(tab);
     handleCancelEditing();
+    // Reset filters when switching tabs to avoid confusing empty states
+    setEffSearch('');
+    setEffFilterStatus('All');
+    setEffFilterMonth('All');
+    setPage(0);
   };
 
   const handleSelectChangeNo = (val) => {
@@ -448,11 +453,19 @@ export const Effectiveness = ({
 
   const filteredLogs = tableLogs.filter(log => {
     const query = effSearch.toLowerCase();
-    const matchesSearch = (log.changeNo || '').toLowerCase().includes(query) ||
+    const matchesSearch = !query ||
+      (log.changeNo || '').toLowerCase().includes(query) ||
       (log.context || '').toLowerCase().includes(query) ||
       (log.remarks || '').toLowerCase().includes(query);
     
-    const matchesStatus = effFilterStatus === 'All' || log.status === effFilterStatus;
+    let matchesStatus = true;
+    if (effFilterStatus !== 'All') {
+      if (effFilterStatus === 'Pending') {
+        matchesStatus = log.isPending || log.status === 'Pending';
+      } else {
+        matchesStatus = log.status === effFilterStatus;
+      }
+    }
     
     let matchesMonth = true;
     if (effFilterMonth !== 'All') {
@@ -479,16 +492,19 @@ export const Effectiveness = ({
   const paginatedLogs = displayLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleExportPDF = () => {
+    // Export all filtered logs for the current tab (respects all active filters)
     const logsToExport = displayLogs.map(l => ({
       ...l,
       reqDate: l.reqDate,
       startDate: l.startDate,
       qaApproval: l.qaApproval
     }));
+    const tabLabel = activeMainTab === 'closed' ? 'Closed Requests' : activeMainTab === 'rejected' ? 'Rejected Requests' : 'Ongoing Monitoring';
     exportEffectivenessLogsPDF(logsToExport, {
       searchQuery: effSearch,
       statusFilter: effFilterStatus,
-      monthFilter: effFilterMonth
+      monthFilter: effFilterMonth,
+      tabLabel
     }, setToastMsg);
   };
 
@@ -960,6 +976,7 @@ export const Effectiveness = ({
                 onChange={(e) => setEffFilterStatus(e.target.value)}
               >
                 <option value="All">All Statuses</option>
+                <option value="Pending">Pending</option>
                 <option value="Effectiveness Ok">Effectiveness Ok</option>
                 <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
               </select>

@@ -1067,7 +1067,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       return;
     }
 
-    const { searchQuery = '', statusFilter = 'All', monthFilter = 'All' } = filtersInfo;
+    const { searchQuery = '', statusFilter = 'All', monthFilter = 'All', tabLabel = 'Ongoing Monitoring' } = filtersInfo;
 
     const doc = new jsPDF({
       orientation: 'landscape',
@@ -1134,7 +1134,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139); // Slate-500
-    doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
+    doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}   |   View: ${tabLabel}`, 40, 60);
 
     const filterParts = [];
     if (searchQuery) filterParts.push(`Search: "${searchQuery}"`);
