@@ -284,8 +284,8 @@ export const AllRequests = ({
       return Array.from(peopleMap.values());
     })()
   ];
-  const filterProcesses = ['All', ...new Set(combinedData.map(i => i.processName).filter(Boolean))];
-  const filterMachines = ['All', ...new Set(combinedData.map(i => i.machineNo).filter(Boolean))];
+  const filterProcesses = ['All', ...new Set([...(dbProcesses || []), ...combinedData.map(i => i.processName).filter(Boolean)])];
+  const filterMachines = ['All', ...new Set([...(dbMachines || []), ...combinedData.map(i => i.machineNo).filter(Boolean)])];
   const filterStatuses = ['All', ...new Set(combinedData.map(i => i.status).filter(Boolean))];
 
   // Apply filters
