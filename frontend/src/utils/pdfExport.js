@@ -1107,7 +1107,17 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
     });
     addLogoToDoc(doc);
 
-    const headers = [['SL. NO.', '4M CHANGE NO', 'REQUESTED DATE', 'CONTEXT OF CHANGE', 'CHANGE DATE START', 'MONTH WISE', 'EFFECTIVENESS STATUS', 'QA APPROVAL', 'REMARKS']];
+    const headers = [[
+      { content: 'SL.\nNO.', styles: { halign: 'center' } },
+      '4M CHANGE NO',
+      'REQUESTED\nDATE',
+      'CONTEXT OF CHANGE',
+      'CHANGE\nDATE START',
+      'MONTH\nWISE',
+      'EFFECTIVENESS\nSTATUS',
+      'QA\nAPPROVAL',
+      'REMARKS'
+    ]];
 
     const tableData = filteredLogs.map((item, idx) => {
       // Month-Wise mapping function
@@ -1187,24 +1197,27 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       headStyles: {
         fillColor: [0, 102, 204],
         textColor: [255, 255, 255],
-        fontSize: 9,
+        fontSize: 7.5,
         fontStyle: 'bold',
-        halign: 'left'
+        halign: 'center',
+        valign: 'middle',
+        cellPadding: { top: 4, right: 3, bottom: 4, left: 3 }
       },
       bodyStyles: {
-        fontSize: 8.5,
-        textColor: [51, 65, 85] // Slate-700
+        fontSize: 8,
+        textColor: [51, 65, 85],
+        cellPadding: { top: 3, right: 4, bottom: 3, left: 4 }
       },
       columnStyles: {
-        0: { cellWidth: 40 },  // SL. NO.
-        1: { cellWidth: 80, fontStyle: 'bold' },  // 4M CHANGE NO.
-        2: { cellWidth: 70 },  // REQUESTED DATE
-        3: { cellWidth: 120 }, // CONTEXT OF CHANGE
-        4: { cellWidth: 70 },  // CHANGE DATE START
-        5: { cellWidth: 70 },  // MONTH WISE
-        6: { cellWidth: 120 }, // EFFECTIVENESS STATUS
-        7: { cellWidth: 80 },  // QA APPROVAL
-        8: { cellWidth: 110 }  // REMARKS
+        0: { cellWidth: 28, halign: 'center' },   // SL. NO.
+        1: { cellWidth: 75, fontStyle: 'bold' },   // 4M CHANGE NO
+        2: { cellWidth: 65, halign: 'center' },    // REQUESTED DATE
+        3: { cellWidth: 118 },                     // CONTEXT OF CHANGE
+        4: { cellWidth: 65, halign: 'center' },    // CHANGE DATE START
+        5: { cellWidth: 55, halign: 'center' },    // MONTH WISE
+        6: { cellWidth: 110 },                     // EFFECTIVENESS STATUS
+        7: { cellWidth: 72, halign: 'center' },    // QA APPROVAL
+        8: { cellWidth: 118 }                      // REMARKS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
