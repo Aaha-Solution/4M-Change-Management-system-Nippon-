@@ -1459,8 +1459,8 @@ export const Effectiveness = ({
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
-                          <div className="space-y-[4px] md:col-span-2 min-w-0">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                          <div className="space-y-[4px] min-w-0">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                             <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
                             {selectedL1Details.crRequester && selectedL1Details.crRequester.toLowerCase() !== selectedL1Details.request_by?.toLowerCase() && (
