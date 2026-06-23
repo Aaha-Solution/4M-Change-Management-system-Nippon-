@@ -75,6 +75,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
     if ((alert.id && alert.id.startsWith('L2-NOTIF')) || (alert.id && alert.id.includes('L2-VAL'))) return 'L2 VALIDATION';
     if (alert.id && alert.id.startsWith('L3-')) return 'L3 APPROVAL';
     if (alert.id && alert.id.startsWith('L1-')) return 'L1 APPROVAL';
+    if (alert.id && alert.id.startsWith('EFF-')) return 'EFFECTIVENESS';
     if (alert.id && alert.id.startsWith('ALR-')) return 'SYSTEM';
     return 'NOTIFICATION';
   };
@@ -143,6 +144,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
     if (alert.id && alert.id.startsWith('L2-NOTIF')) return <FileText size={18} />;
     if (alert.id && alert.id.startsWith('L3-')) return <Layers size={18} />;
     if (alert.id && alert.id.startsWith('L1-')) return <FileText size={18} />;
+    if (alert.id && alert.id.startsWith('EFF-')) return <CheckCheck size={18} />;
     return <Layers size={18} />;
   };
 
@@ -232,6 +234,7 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                   <option value="L1 APPROVAL">L1 HOD Approval</option>
                   <option value="L2 VALIDATION">L2 Validation</option>
                   <option value="L3 APPROVAL">L3 Final Approval</option>
+                  <option value="EFFECTIVENESS">Effectiveness</option>
                  
                 </select>
               </div>
@@ -347,19 +350,20 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                           targetTab = 'approvals';
                         } else if (idStr.startsWith('L2-')) {
                           targetTab = 'approvals';
-                        } else if (idStr.startsWith('L1-') || idStr.startsWith('HOD-DECISION-')) {
+                        } else if (idStr.startsWith('L1-') || idStr.startsWith('HOD-DECISION-') || idStr.startsWith('EFF-')) {
                           targetTab = (isHOD || isAdmin || isQA) ? 'all-approvals' : 'all-requests';
                         } else {
                           // Fallback to substring matching if ID prefix is generic
                           const isL3 = idStr.includes('L3') || titleStr.includes('L3') || detailsStr.includes('L3');
                           const isL2 = idStr.includes('L2') || titleStr.includes('L2') || detailsStr.includes('L2');
                           const isL1 = idStr.includes('L1') || titleStr.includes('L1') || detailsStr.includes('L1') || idStr.includes('HOD-DECISION');
+                          const isEff = idStr.includes('EFF') || titleStr.includes('EFFECTIVENESS') || detailsStr.includes('EFFECTIVENESS');
 
                           if (isL3) {
                             targetTab = 'l3';
                           } else if (isL2) {
                             targetTab = 'approvals';
-                          } else if (isL1) {
+                          } else if (isL1 || isEff) {
                             targetTab = (isHOD || isAdmin || isQA) ? 'all-approvals' : 'all-requests';
                           }
                         }
