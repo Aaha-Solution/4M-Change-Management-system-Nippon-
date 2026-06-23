@@ -113,7 +113,7 @@ export const L2Validation = ({
   // Auto-populate logic based on autoOpenChangeNo or first pending request
   useEffect(() => {
     if (changes && changes.length > 0) {
-      const approvedChanges = changes.filter(c => c.hodStatus === 'Approved');
+      const approvedChanges = changes.filter(c => c.hodStatus === 'Approved' && c.qaApproval !== 'Approved');
       
       if (autoOpenChangeNo) {
         const targetChange = approvedChanges.find(c => c.id.toLowerCase().trim() === autoOpenChangeNo.toLowerCase().trim());
@@ -399,7 +399,7 @@ export const L2Validation = ({
 
   // Construct L2 table rows by combining changes and validationLogs
   const tableLogs = (changes || [])
-    .filter(change => change.hodStatus === 'Approved')
+    .filter(change => change.hodStatus === 'Approved' && change.qaApproval !== 'Approved')
     .map(change => {
     const savedLog = validationLogs.find(log => log.changeNo?.toLowerCase().trim() === change.id?.toLowerCase().trim());
     return {
