@@ -101,7 +101,7 @@ export const Login = ({ onLoginSuccess }) => {
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-[12px]">
           <img src={nipponLogo} alt="Nippon Logo" className="h-[40px] w-auto object-contain select-none" />
-          <span className="font-heading text-[24px] font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">4M·CMS</span>
+          <span className="font-heading text-[24px] font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">4M CMS</span>
         </div>
 
 
@@ -118,7 +118,7 @@ export const Login = ({ onLoginSuccess }) => {
           {/* Logo on mobile/tablet */}
           <div className="flex lg:hidden items-center gap-[12px] mb-[24px] justify-center">
             <img src={nipponLogo} alt="Nippon Logo" className="h-[36px] w-auto object-contain select-none" />
-            <span className="font-heading text-[24px] font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">4M·CMS</span>
+            <span className="font-heading text-[24px] font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">4M CMS</span>
           </div>
 
           <div className="mb-[32px] px-[8px] sm:px-0 text-center lg:text-left">
