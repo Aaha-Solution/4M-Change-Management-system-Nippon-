@@ -880,7 +880,7 @@ export const AllApprovals = ({
                   <strong>L1 HOD Approval</strong> — You are reviewing this change request as <span className="text-[#0066cc] font-black">{actingDept}</span> HOD.
                   {alreadyDecided
                     ? <span className="ml-1 text-slate-500 font-normal">A decision has already been recorded.</span>
-                    : <span className="ml-1 text-amber-700 font-normal">Your decision will advance or halt this change request.</span>
+                    :''
                   }
                 </p>
               </div>
