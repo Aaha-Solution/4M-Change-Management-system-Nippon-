@@ -1989,7 +1989,7 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
         if (d && !isNaN(d.getTime())) {
           const monthIdx = d.getMonth();
           const dispStatus = getRequestDisplayStatus(c);
-          if (dispStatus === 'Approved') {
+          if (dispStatus === 'Approved' || dispStatus === 'L3 Approved') {
             dataMap[monthIdx].appr++;
           } else if (dispStatus === 'Closed') {
             dataMap[monthIdx].closed++;
@@ -2004,7 +2004,7 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
       }
     });
 
-    const summaryHeaders = [['MONTH', 'APPROVED', 'CLOSED', 'REJECTED', 'PENDING', 'TOTAL']];
+    const summaryHeaders = [['MONTH', 'L3 APPROVED', 'CLOSED', 'REJECTED', 'PENDING', 'TOTAL']];
     const summaryRows = dataMap.map(item => {
       const monthTotal = item.appr + item.closed + item.rej + item.pend;
       return [item.label, item.appr, item.closed, item.rej, item.pend, monthTotal];

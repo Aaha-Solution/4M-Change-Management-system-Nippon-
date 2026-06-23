@@ -207,7 +207,7 @@ export const getDashboardCounts = async () => {
       if (hasL3Rejection === 1 || hasL3Rejection === true) {
         dispStatus = 'Rejected';
       } else {
-        dispStatus = 'Approved';
+        dispStatus = 'L3 Approved';
       }
     } else if (status === 'Completed') {
       dispStatus = 'Closed';
@@ -219,7 +219,7 @@ export const getDashboardCounts = async () => {
       dispStatus = 'Pending L1 HOD';
     }
 
-    if (dispStatus === 'Approved') {
+    if (dispStatus === 'L3 Approved') {
       approved++;
     } else if (dispStatus === 'Closed') {
       closed++;
