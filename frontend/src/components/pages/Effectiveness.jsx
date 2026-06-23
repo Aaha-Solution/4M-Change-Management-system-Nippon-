@@ -39,7 +39,7 @@ export const Effectiveness = ({
   userDept,
   fetchChanges,
   autoOpenChangeNo = null,
-  clearAutoOpen = () => {}
+  clearAutoOpen = () => { }
 }) => {
   const isAdmin = userRole && (
     userRole.toLowerCase() === 'admin' ||
@@ -1036,14 +1036,14 @@ export const Effectiveness = ({
               type="button"
               onClick={() => handleMainTabChange('ongoing')}
               className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${activeMainTab === 'ongoing'
-                  ? 'bg-[#0066cc] text-white font-extrabold shadow-md'
-                  : 'bg-slate-100/60 text-slate-600 hover:bg-[#e6f0fa]/80 hover:text-[#0066cc] font-medium'
+                ? 'bg-[#0066cc] text-white font-extrabold shadow-md'
+                : 'bg-slate-100/60 text-slate-600 hover:bg-[#e6f0fa]/80 hover:text-[#0066cc] font-medium'
                 }`}
             >
               <span>Ongoing Monitoring</span>
               <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${activeMainTab === 'ongoing'
-                  ? 'bg-white text-[#0066cc] font-bold'
-                  : 'bg-slate-200 text-slate-600'
+                ? 'bg-white text-[#0066cc] font-bold'
+                : 'bg-slate-200 text-slate-600'
                 }`}>
                 {tabCounts.ongoing}
               </span>
@@ -1052,14 +1052,14 @@ export const Effectiveness = ({
               type="button"
               onClick={() => handleMainTabChange('closed')}
               className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${activeMainTab === 'closed'
-                  ? 'bg-emerald-600 text-white font-extrabold shadow-md'
-                  : 'bg-slate-100/60 text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-700 font-medium'
+                ? 'bg-emerald-600 text-white font-extrabold shadow-md'
+                : 'bg-slate-100/60 text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-700 font-medium'
                 }`}
             >
               <span>Closed Requests</span>
               <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${activeMainTab === 'closed'
-                  ? 'bg-white text-emerald-600 font-bold'
-                  : 'bg-slate-200 text-slate-600'
+                ? 'bg-white text-emerald-600 font-bold'
+                : 'bg-slate-200 text-slate-600'
                 }`}>
                 {tabCounts.closed}
               </span>
@@ -1068,14 +1068,14 @@ export const Effectiveness = ({
               type="button"
               onClick={() => handleMainTabChange('rejected')}
               className={`flex-1 sm:flex-initial text-center py-2 px-5 text-xs font-bold transition-all duration-200 rounded-lg flex items-center justify-center gap-2 cursor-pointer ${activeMainTab === 'rejected'
-                  ? 'bg-rose-600 text-white font-extrabold shadow-md'
-                  : 'bg-slate-100/60 text-slate-600 hover:bg-rose-50/80 hover:text-rose-700 font-medium'
+                ? 'bg-rose-600 text-white font-extrabold shadow-md'
+                : 'bg-slate-100/60 text-slate-600 hover:bg-rose-50/80 hover:text-rose-700 font-medium'
                 }`}
             >
               <span>Rejected Requests</span>
               <span className={`px-2 py-0.5 rounded-full text-[10px] transition-colors duration-200 ${activeMainTab === 'rejected'
-                  ? 'bg-white text-rose-600 font-bold'
-                  : 'bg-slate-200 text-slate-600'
+                ? 'bg-white text-rose-600 font-bold'
+                : 'bg-slate-200 text-slate-600'
                 }`}>
                 {tabCounts.rejected}
               </span>
@@ -1096,7 +1096,7 @@ export const Effectiveness = ({
             </div>
 
             <div className="flex-1 min-w-[120px] max-w-[150px] relative">
-              <CustomDatePicker 
+              <CustomDatePicker
                 value={effFromDate}
                 onChange={(val) => {
                   if (val && effToDate) {
@@ -1105,9 +1105,9 @@ export const Effectiveness = ({
                     const fDate = new Date(fy, fm - 1, fd);
                     const tDate = new Date(ty, tm - 1, td);
                     if (fDate > tDate) {
-                       setToastMsg({ text: "From Date cannot be later than To Date", isError: true });
-                       return;
-                     }
+                      setToastMsg({ text: "From Date cannot be later than To Date", isError: true });
+                      return;
+                    }
                   }
                   setEffFromDate(val);
                 }}
@@ -1119,23 +1119,23 @@ export const Effectiveness = ({
             </div>
 
             <div className="flex-1 min-w-[120px] max-w-[150px] relative" onClickCapture={(e) => {
-                if (!effFromDate) {
-                  e.stopPropagation();
-                  setToastMsg("Please select 'From Date' before selecting 'To Date'.");
-                }
-              }}>
-              <CustomDatePicker 
+              if (!effFromDate) {
+                e.stopPropagation();
+                setToastMsg("Please select 'From Date' before selecting 'To Date'.");
+              }
+            }}>
+              <CustomDatePicker
                 value={effToDate}
                 onChange={(val) => {
                   if (val && effFromDate) {
-                     const [fd, fm, fy] = effFromDate.split('/');
-                     const [td, tm, ty] = val.split('/');
-                     const fDate = new Date(fy, fm - 1, fd);
-                     const tDate = new Date(ty, tm - 1, td);
-                     if (tDate < fDate) {
-                       setToastMsg({ text: "To Date cannot be earlier than From Date", isError: true });
-                       return;
-                     }
+                    const [fd, fm, fy] = effFromDate.split('/');
+                    const [td, tm, ty] = val.split('/');
+                    const fDate = new Date(fy, fm - 1, fd);
+                    const tDate = new Date(ty, tm - 1, td);
+                    if (tDate < fDate) {
+                      setToastMsg({ text: "To Date cannot be earlier than From Date", isError: true });
+                      return;
+                    }
                   }
                   setEffToDate(val);
                 }}
@@ -1148,7 +1148,7 @@ export const Effectiveness = ({
             </div>
 
             {(effSearch || effFilterMonth !== 'All' || effFromDate || effToDate) && (
-              <button 
+              <button
                 onClick={() => {
                   setEffSearch('');
                   setEffFilterMonth('All');
@@ -1345,8 +1345,8 @@ export const Effectiveness = ({
               <button
                 onClick={() => setActiveTab('l1')}
                 className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l1'
-                    ? 'border-[#0066cc] text-[#0066cc]'
-                    : 'border-transparent text-slate-500 hover:text-slate-850'
+                  ? 'border-[#0066cc] text-[#0066cc]'
+                  : 'border-transparent text-slate-500 hover:text-slate-850'
                   }`}
               >
                 1. L1 Request
@@ -1355,8 +1355,8 @@ export const Effectiveness = ({
                 <button
                   onClick={() => setActiveTab('l2')}
                   className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l2'
-                      ? 'border-[#0066cc] text-[#0066cc]'
-                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                    ? 'border-[#0066cc] text-[#0066cc]'
+                    : 'border-transparent text-slate-500 hover:text-slate-850'
                     }`}
                 >
                   2. L2 Validation
@@ -1366,8 +1366,8 @@ export const Effectiveness = ({
                 <button
                   onClick={() => setActiveTab('l3')}
                   className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l3'
-                      ? 'border-[#0066cc] text-[#0066cc]'
-                      : 'border-transparent text-slate-500 hover:text-slate-850'
+                    ? 'border-[#0066cc] text-[#0066cc]'
+                    : 'border-transparent text-slate-500 hover:text-slate-850'
                     }`}
                 >
                   3. L3 Approval
@@ -1387,12 +1387,12 @@ export const Effectiveness = ({
                     <button
                       onClick={() => setActiveTab('effectiveness')}
                       className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'effectiveness'
-                          ? isEffRejected
-                            ? 'border-rose-600 text-rose-600 font-extrabold bg-rose-50/30'
-                            : 'border-[#0066cc] text-[#0066cc]'
-                          : isEffRejected
-                            ? 'border-transparent text-rose-655 hover:text-rose-800 bg-rose-50/10'
-                            : 'border-transparent text-slate-500 hover:text-slate-850'
+                        ? isEffRejected
+                          ? 'border-rose-600 text-rose-600 font-extrabold bg-rose-50/30'
+                          : 'border-[#0066cc] text-[#0066cc]'
+                        : isEffRejected
+                          ? 'border-transparent text-rose-655 hover:text-rose-800 bg-rose-50/10'
+                          : 'border-transparent text-slate-500 hover:text-slate-850'
                         }`}
                     >
                       {isEffRejected && <AlertTriangle size={12} className="text-rose-600 mr-1 animate-pulse" />}
@@ -1437,10 +1437,10 @@ export const Effectiveness = ({
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                             <div className="flex gap-1.5 items-center mt-0.5">
                               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL1Details.hodStatus === 'Rejected'
-                                  ? 'bg-rose-50 border-rose-220 text-rose-700'
-                                  : (selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending')
-                                    ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
-                                    : 'bg-amber-50 border-amber-220 text-amber-700'
+                                ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                : (selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending')
+                                  ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                                  : 'bg-amber-50 border-amber-220 text-amber-700'
                                 }`}>
                                 L1 {selectedL1Details.hodStatus === 'Rejected' ? 'Rejected' : ((selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
                               </span>
@@ -1450,7 +1450,7 @@ export const Effectiveness = ({
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[12px]">
                           <div className="space-y-[4px] min-w-0">
-                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change</span>
                             <span className="font-semibold text-slate-855 block break-words">{selectedL1Details.title ? selectedL1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}</span>
                           </div>
                           <div className="grid grid-cols-2 gap-[16px]">
@@ -1773,10 +1773,10 @@ export const Effectiveness = ({
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
                             <div>
                               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL2Details.status === 'Accepted'
-                                  ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
-                                  : selectedL2Details.status === 'Rejected'
-                                    ? 'bg-rose-50 border-rose-220 text-rose-700'
-                                    : 'bg-amber-50 border-amber-220 text-amber-700'
+                                ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                                : selectedL2Details.status === 'Rejected'
+                                  ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                  : 'bg-amber-50 border-amber-220 text-amber-700'
                                 }`}>
                                 L2 {selectedL2Details.status === 'Accepted' ? 'Approved' : (selectedL2Details.status || 'Pending')}
                               </span>
@@ -1950,10 +1950,10 @@ export const Effectiveness = ({
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Status</span>
                               <div>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.status === 'Effectiveness Ok'
-                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                    : currentEffLog.status === 'Pending'
-                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                      : 'bg-rose-50 border-rose-250 text-rose-700'
+                                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                  : currentEffLog.status === 'Pending'
+                                    ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                    : 'bg-rose-50 border-rose-250 text-rose-700'
                                   }`}>
                                   {currentEffLog.status}
                                 </span>
@@ -1963,10 +1963,10 @@ export const Effectiveness = ({
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Approval</span>
                               <div>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.qaApproval === 'Approved'
-                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                    : currentEffLog.qaApproval === 'Pending'
-                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                      : 'bg-rose-50 border-rose-250 text-rose-700'
+                                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                  : currentEffLog.qaApproval === 'Pending'
+                                    ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                    : 'bg-rose-50 border-rose-250 text-rose-700'
                                   }`}>
                                   {currentEffLog.qaApproval}
                                 </span>

@@ -509,12 +509,12 @@ export const DashboardOverview = ({
         matchesToDate = false;
       }
 
-      const matchesPerson = personVal === 'All' || 
+      const matchesPerson = personVal === 'All' ||
         (c.requesterEmail && c.requesterEmail.toLowerCase() === personVal.toLowerCase()) ||
         (c.requester && c.requester.toLowerCase() === personVal.toLowerCase());
       const matchesProcess = processVal === 'All' || c.processName === processVal;
       const matchesMachine = machineVal === 'All' || c.machineNo === machineVal;
-      
+
       let matchesStatus = true;
       if (statusVal !== 'All') {
         const dispStatus = getRequestDisplayStatus(c);
@@ -642,7 +642,7 @@ export const DashboardOverview = ({
         l => l.changeNo?.toLowerCase().trim() === request.id?.toLowerCase().trim()
       );
       setSelectedEffDetails(matchedEff || null);
-      
+
       if (!silent) {
         setEditL1Data(l1Res.data || {});
         setEditL2Data(l2Res.data || {});
@@ -668,7 +668,7 @@ export const DashboardOverview = ({
         unitHead: 'Pending'
       };
       setSelectedLog(newLogData);
-      
+
       if (!silent) {
         setEditL3Data(newLogData || {});
       }
@@ -730,7 +730,7 @@ export const DashboardOverview = ({
     return (
       <div className="mt-1 flex flex-wrap gap-2">
         {files.map((file, idx) => (
-          <span 
+          <span
             key={idx}
             className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
             onClick={() => handleViewAttachment(file, changeNo)}
@@ -916,14 +916,14 @@ export const DashboardOverview = ({
           value={fromDateVal}
           onChange={(val) => {
             if (val && toDateVal) {
-               const [fd, fm, fy] = val.split('/');
-               const [td, tm, ty] = toDateVal.split('/');
-               const fDate = new Date(fy, fm - 1, fd);
-               const tDate = new Date(ty, tm - 1, td);
-               if (fDate > tDate) {
-                 setToastMsg("'From Date' cannot be later than 'To Date'.");
-                 return;
-               }
+              const [fd, fm, fy] = val.split('/');
+              const [td, tm, ty] = toDateVal.split('/');
+              const fDate = new Date(fy, fm - 1, fd);
+              const tDate = new Date(ty, tm - 1, td);
+              if (fDate > tDate) {
+                setToastMsg("'From Date' cannot be later than 'To Date'.");
+                return;
+              }
             }
             setFromDateVal(val);
             if (val) {
@@ -947,14 +947,14 @@ export const DashboardOverview = ({
             value={toDateVal}
             onChange={(val) => {
               if (val && fromDateVal) {
-                 const [fd, fm, fy] = fromDateVal.split('/');
-                 const [td, tm, ty] = val.split('/');
-                 const fDate = new Date(fy, fm - 1, fd);
-                 const tDate = new Date(ty, tm - 1, td);
-                 if (tDate < fDate) {
-                   setToastMsg("'To Date' cannot be earlier than 'From Date'.");
-                   return;
-                 }
+                const [fd, fm, fy] = fromDateVal.split('/');
+                const [td, tm, ty] = val.split('/');
+                const fDate = new Date(fy, fm - 1, fd);
+                const tDate = new Date(ty, tm - 1, td);
+                if (tDate < fDate) {
+                  setToastMsg("'To Date' cannot be earlier than 'From Date'.");
+                  return;
+                }
               }
               setToDateVal(val);
               if (val) {
@@ -979,31 +979,31 @@ export const DashboardOverview = ({
             .filter(p => p.email === 'All' || (p.department || '').trim().toLowerCase() !== 'general')
             .map(p => {
               if (p.email === 'All') return <option key="All" value="All">All Persons</option>;
-            
-            const value = p.email || p.name;
-            const displayName = p.name || (p.email ? p.email.split('@')[0] : 'Unknown');
-            
-            const roleLower = (p.role || '').toLowerCase();
-            const isUserHOD = roleLower.includes('hod') || 
-                              roleLower.includes('unit head') || 
-                              roleLower.includes('unit_head') || 
-                              roleLower.includes('manager');
-            const deptName = p.department || '';
 
-            let labelSuffix = '';
-            if (deptName) {
-              labelSuffix = isUserHOD ? `${deptName} - HOD` : deptName;
-            } else if (isUserHOD) {
-              labelSuffix = 'HOD';
-            }
+              const value = p.email || p.name;
+              const displayName = p.name || (p.email ? p.email.split('@')[0] : 'Unknown');
 
-            const label = labelSuffix ? `${displayName} (${labelSuffix})` : displayName;
-            return (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            );
-          })}
+              const roleLower = (p.role || '').toLowerCase();
+              const isUserHOD = roleLower.includes('hod') ||
+                roleLower.includes('unit head') ||
+                roleLower.includes('unit_head') ||
+                roleLower.includes('manager');
+              const deptName = p.department || '';
+
+              let labelSuffix = '';
+              if (deptName) {
+                labelSuffix = isUserHOD ? `${deptName} - HOD` : deptName;
+              } else if (isUserHOD) {
+                labelSuffix = 'HOD';
+              }
+
+              const label = labelSuffix ? `${displayName} (${labelSuffix})` : displayName;
+              return (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              );
+            })}
         </select>
       </div>
       <div className="space-y-[2px]">
@@ -1066,14 +1066,14 @@ export const DashboardOverview = ({
           value={fromDateVal}
           onChange={(val) => {
             if (val && toDateVal) {
-               const [fd, fm, fy] = val.split('/');
-               const [td, tm, ty] = toDateVal.split('/');
-               const fDate = new Date(fy, fm - 1, fd);
-               const tDate = new Date(ty, tm - 1, td);
-               if (fDate > tDate) {
-                 setToastMsg("'From Date' cannot be later than 'To Date'.");
-                 return;
-               }
+              const [fd, fm, fy] = val.split('/');
+              const [td, tm, ty] = toDateVal.split('/');
+              const fDate = new Date(fy, fm - 1, fd);
+              const tDate = new Date(ty, tm - 1, td);
+              if (fDate > tDate) {
+                setToastMsg("'From Date' cannot be later than 'To Date'.");
+                return;
+              }
             }
             setFromDateVal(val);
             if (val) {
@@ -1097,14 +1097,14 @@ export const DashboardOverview = ({
             value={toDateVal}
             onChange={(val) => {
               if (val && fromDateVal) {
-                 const [fd, fm, fy] = fromDateVal.split('/');
-                 const [td, tm, ty] = val.split('/');
-                 const fDate = new Date(fy, fm - 1, fd);
-                 const tDate = new Date(ty, tm - 1, td);
-                 if (tDate < fDate) {
-                   setToastMsg("'To Date' cannot be earlier than 'From Date'.");
-                   return;
-                 }
+                const [fd, fm, fy] = fromDateVal.split('/');
+                const [td, tm, ty] = val.split('/');
+                const fDate = new Date(fy, fm - 1, fd);
+                const tDate = new Date(ty, tm - 1, td);
+                if (tDate < fDate) {
+                  setToastMsg("'To Date' cannot be earlier than 'From Date'.");
+                  return;
+                }
               }
               setToDateVal(val);
               if (val) {
@@ -1121,13 +1121,12 @@ export const DashboardOverview = ({
       <div className="space-y-[2px]">
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
         <select
-          className={`w-full px-[6px] py-[4px] border rounded-[4px] outline-none transition-all duration-200 ${
-            statusVal === 'Approved' || statusVal === 'L3 Approved' ? 'text-emerald-600 border-emerald-355 bg-emerald-50/10 font-bold' :
-            statusVal === 'Rejected' ? 'text-rose-600 border-rose-350 bg-rose-50/10 font-bold' :
-            statusVal === 'Closed' ? 'text-blue-600 border-blue-350 bg-blue-50/10 font-bold' :
-            statusVal === 'Pending' ? 'text-amber-600 border-amber-350 bg-amber-50/10 font-bold' :
-            'text-slate-500 border-slate-200 bg-white font-medium'
-          }`}
+          className={`w-full px-[6px] py-[4px] border rounded-[4px] outline-none transition-all duration-200 ${statusVal === 'Approved' || statusVal === 'L3 Approved' ? 'text-emerald-600 border-emerald-355 bg-emerald-50/10 font-bold' :
+              statusVal === 'Rejected' ? 'text-rose-600 border-rose-350 bg-rose-50/10 font-bold' :
+                statusVal === 'Closed' ? 'text-blue-600 border-blue-350 bg-blue-50/10 font-bold' :
+                  statusVal === 'Pending' ? 'text-amber-600 border-amber-350 bg-amber-50/10 font-bold' :
+                    'text-slate-500 border-slate-200 bg-white font-medium'
+            }`}
           value={statusVal}
           onChange={(e) => setStatusVal(e.target.value)}
         >
@@ -1253,7 +1252,7 @@ export const DashboardOverview = ({
       const upper = label.trim().toUpperCase();
       let short = label;
       let full = label;
-      
+
       if (upper === 'PRODUCTION') {
         short = 'PROD';
         full = 'PRODUCTION';
@@ -1310,7 +1309,7 @@ export const DashboardOverview = ({
                     style={{ height: `${barHeight}%`, minHeight: '4px' }}
                   />
                 </div>
-                <span 
+                <span
                   className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center font-sans cursor-help"
                   title={item.label}
                 >
@@ -1601,19 +1600,19 @@ export const DashboardOverview = ({
 
       const maxVal = Math.max(...dataMap.map(item => item.value), 5);
 
-      const barWidthClass = datesToShow.length <= 10 
-        ? 'w-[8%]' 
-        : datesToShow.length <= 20 
-        ? 'w-[4%]' 
-        : 'w-[2.5%]';
+      const barWidthClass = datesToShow.length <= 10
+        ? 'w-[8%]'
+        : datesToShow.length <= 20
+          ? 'w-[4%]'
+          : 'w-[2.5%]';
 
       return (
         <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px] overflow-x-auto overflow-y-hidden gap-2`}>
           {dataMap.map((item, idx) => {
             const barHeight = (item.value / maxVal) * 100;
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`flex flex-col items-center h-full justify-end group min-w-[36px] ${barWidthClass}`}
               >
                 <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
@@ -1870,11 +1869,11 @@ export const DashboardOverview = ({
       );
 
       // Dynamically calculate width of bar groups depending on count to prevent squeeze/overflow
-      const barWidthClass = datesToShow.length <= 10 
-        ? 'w-[8%]' 
-        : datesToShow.length <= 20 
-        ? 'w-[4%]' 
-        : 'w-[2.5%]';
+      const barWidthClass = datesToShow.length <= 10
+        ? 'w-[8%]'
+        : datesToShow.length <= 20
+          ? 'w-[4%]'
+          : 'w-[2.5%]';
 
       return (
         <div className={`flex justify-between items-end ${height} px-[10px] mt-[10px] overflow-x-auto overflow-y-hidden gap-2`}>
@@ -1885,8 +1884,8 @@ export const DashboardOverview = ({
             const hPend = (item.pend / maxVal) * 100;
 
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`flex flex-col items-center h-full justify-end group min-w-[36px] ${barWidthClass}`}
               >
                 <div className="flex items-end justify-center gap-[2px] w-full h-[85%]">
@@ -2415,7 +2414,7 @@ export const DashboardOverview = ({
           } catch (e) {
             console.error("Failed to parse improvement_table_data JSON:", e);
           }
-          
+
           if (!checkEditTableCompleteness(parsedRows)) {
             setToastMsg({ text: `Please fill in all details in the ${editL1Data.improvement_area} Saving/Improvement Data Table.`, isError: true });
             setIsSaving(false);
@@ -2539,13 +2538,13 @@ export const DashboardOverview = ({
           </div>
         );
       }
-      
+
       const fileKeys = [
-        'file_desc', 'file_improvement', 'file_trace_from', 'file_trace_to', 
-        'file_risk', 'file_sop', 'file_effectiveness', 
+        'file_desc', 'file_improvement', 'file_trace_from', 'file_trace_to',
+        'file_risk', 'file_sop', 'file_effectiveness',
         'weldTest', 'qaTest'
       ];
-      
+
       if (fileKeys.includes(key)) {
         return (
           <div key={key} className="space-y-[4px] min-w-0">
@@ -2610,7 +2609,7 @@ export const DashboardOverview = ({
                           const localUrl = URL.createObjectURL(file);
                           setFileUrls(prev => ({ ...prev, [name]: localUrl }));
                           setFileTypes(prev => ({ ...prev, [name]: file.type || 'application/octet-stream' }));
-                          
+
                           return {
                             name,
                             type: file.type || 'application/octet-stream',
@@ -2639,7 +2638,7 @@ export const DashboardOverview = ({
               <div className="flex flex-wrap gap-[6px] pt-[4px]">
                 {value.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
                   <span key={i} className="inline-flex items-center gap-[6px] bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 px-[8px] py-[2px] rounded-full select-none">
-                    <span 
+                    <span
                       className="truncate max-w-[150px] font-semibold text-[#0066cc] cursor-pointer hover:underline"
                       onClick={() => handleViewAttachment(file, data.change_no || data.changeNo || selectedLog.changeNo, tab === 'l2' ? 'L2' : 'L1')}
                       title="Click to preview file"
@@ -2720,7 +2719,7 @@ export const DashboardOverview = ({
           {/* Identifiers Card */}
           <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
             <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Identifiers</h4>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
               {/* UNIT */}
               <div className="space-y-[4px]">
@@ -2822,7 +2821,7 @@ export const DashboardOverview = ({
           {/* Request Details Card */}
           <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
             <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Request Details</h4>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
               {/* CHANGE REQUEST DEPT */}
               <div className="space-y-[4px]">
@@ -2894,7 +2893,7 @@ export const DashboardOverview = ({
           {/* Change Description */}
           <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px]">
             <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Change Description</h4>
-            
+
             {/* CONTEXT OF CHANGE */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
@@ -2998,7 +2997,7 @@ export const DashboardOverview = ({
                             const localUrl = URL.createObjectURL(file);
                             setFileUrls(prev => ({ ...prev, [name]: localUrl }));
                             setFileTypes(prev => ({ ...prev, [name]: file.type || 'application/octet-stream' }));
-                            
+
                             return {
                               name,
                               type: file.type || 'application/octet-stream',
@@ -3027,7 +3026,7 @@ export const DashboardOverview = ({
                 <div className="flex flex-wrap gap-[6px] pt-[4px]">
                   {data.file_desc.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
                     <span key={i} className="inline-flex items-center gap-[6px] bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 px-[8px] py-[2px] rounded-full select-none">
-                      <span 
+                      <span
                         className="truncate max-w-[150px] font-semibold text-[#0066cc] cursor-pointer hover:underline"
                         onClick={() => handleViewAttachment(file, data.change_no || data.changeNo || selectedLog.changeNo, 'L1')}
                         title="Click to preview file"
@@ -3062,7 +3061,7 @@ export const DashboardOverview = ({
           {/* Implementation Timeline */}
           <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[16px]">
             <h4 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-[8px]">Implementation Timeline</h4>
-            
+
             <div className="grid grid-cols-1 gap-[16px]">
               {/* CHANGE IMPROVEMENT AREA * */}
               <div className="space-y-[4px]">
@@ -3293,7 +3292,7 @@ export const DashboardOverview = ({
                             const localUrl = URL.createObjectURL(file);
                             setFileUrls(prev => ({ ...prev, [name]: localUrl }));
                             setFileTypes(prev => ({ ...prev, [name]: file.type || 'application/octet-stream' }));
-                            
+
                             return {
                               name,
                               type: file.type || 'application/octet-stream',
@@ -3321,7 +3320,7 @@ export const DashboardOverview = ({
                 <div className="flex flex-wrap gap-[6px] pt-[4px]">
                   {data.file_risk.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
                     <span key={i} className="inline-flex items-center gap-[6px] bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 px-[8px] py-[2px] rounded-full select-none">
-                      <span 
+                      <span
                         className="truncate max-w-[150px] font-semibold text-[#0066cc] cursor-pointer hover:underline"
                         onClick={() => handleViewAttachment(file, data.change_no || data.changeNo || selectedLog.changeNo, 'L1')}
                         title="Click to preview file"
@@ -3435,7 +3434,7 @@ export const DashboardOverview = ({
                             const localUrl = URL.createObjectURL(file);
                             setFileUrls(prev => ({ ...prev, [name]: localUrl }));
                             setFileTypes(prev => ({ ...prev, [name]: file.type || 'application/octet-stream' }));
-                            
+
                             return {
                               name,
                               type: file.type || 'application/octet-stream',
@@ -3463,7 +3462,7 @@ export const DashboardOverview = ({
                 <div className="flex flex-wrap gap-[6px] pt-[4px]">
                   {data.file_sop.split(',').map(s => s.trim()).filter(Boolean).map((file, i) => (
                     <span key={i} className="inline-flex items-center gap-[6px] bg-slate-100 border border-slate-200 text-[10px] font-medium text-slate-700 px-[8px] py-[2px] rounded-full select-none">
-                      <span 
+                      <span
                         className="truncate max-w-[150px] font-semibold text-[#0066cc] cursor-pointer hover:underline"
                         onClick={() => handleViewAttachment(file, data.change_no || data.changeNo || selectedLog.changeNo, 'L1')}
                         title="Click to preview file"
@@ -3511,15 +3510,13 @@ export const DashboardOverview = ({
                       key={dept}
                       type="button"
                       disabled={true}
-                      className={`flex items-center gap-[6px] px-[10px] py-[6px] border rounded-[6px] text-[10px] font-bold transition-all duration-200 cursor-not-allowed select-none ${
-                        isSelected
+                      className={`flex items-center gap-[6px] px-[10px] py-[6px] border rounded-[6px] text-[10px] font-bold transition-all duration-200 cursor-not-allowed select-none ${isSelected
                           ? 'border-[#0066cc]/60 bg-[#0066cc]/5 text-[#0066cc]/80 shadow-sm'
                           : 'border-slate-100 bg-slate-50/50 text-slate-400'
-                      }`}
+                        }`}
                     >
-                      <span className={`w-[12px] h-[12px] rounded-full border flex items-center justify-center transition-all ${
-                        isSelected ? 'border-[#0066cc]/60' : 'border-slate-200'
-                      }`}>
+                      <span className={`w-[12px] h-[12px] rounded-full border flex items-center justify-center transition-all ${isSelected ? 'border-[#0066cc]/60' : 'border-slate-200'
+                        }`}>
                         {isSelected && <span className="w-[6px] h-[6px] rounded-full bg-[#0066cc]/80" />}
                       </span>
                       <span>{dept}</span>
@@ -3732,8 +3729,8 @@ export const DashboardOverview = ({
                     key={tab}
                     onClick={() => setActiveAnalyticsTab(tab)}
                     className={`px-[12px] py-[6px] text-[11px] font-bold rounded-[4px] transition-all cursor-pointer ${activeAnalyticsTab === tab
-                        ? 'bg-white text-[#1e60aa] shadow-sm'
-                        : 'text-slate-500 hover:text-slate-800'
+                      ? 'bg-white text-[#1e60aa] shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
                       }`}
                   >
                     {tab}
@@ -4108,13 +4105,12 @@ export const DashboardOverview = ({
                       <td className="p-[16px] text-[12px] text-slate-600 font-medium">{r.department}</td>
                       <td className="p-[16px] text-[12px] text-slate-500">{r.date}</td>
                       <td className="p-[16px]">
-                        <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
-                          r.status?.startsWith('Pending') ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                          r.status === 'Approved' || r.status === 'L3 Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
-                          r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
-                          r.status === 'Closed' ? 'bg-blue-50 border-blue-200 text-blue-700' :
-                          'bg-teal-50 border-teal-200 text-teal-700'
-                        }`}>
+                        <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${r.status?.startsWith('Pending') ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                            r.status === 'Approved' || r.status === 'L3 Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
+                              r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
+                                r.status === 'Closed' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                                  'bg-teal-50 border-teal-200 text-teal-700'
+                          }`}>
                           {r.status}
                         </span>
                       </td>
@@ -4153,8 +4149,8 @@ export const DashboardOverview = ({
       {selectedLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px]">
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
             onClick={() => {
               if (isEditMode) {
                 setIsEditMode(false);
@@ -4164,7 +4160,7 @@ export const DashboardOverview = ({
               }
             }}
           />
-          
+
           {/* Modal Container */}
           <div className="relative bg-white w-full max-w-[800px] max-h-[90vh] rounded-[16px] shadow-2xl border border-slate-200 overflow-hidden flex flex-col z-10 animate-fade-in-up">
             {/* Header */}
@@ -4174,35 +4170,34 @@ export const DashboardOverview = ({
                   <Eye size={18} />
                 </span>
                 <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-[15px] font-bold text-slate-900">Change Request Details (L1, L2, L3)</h4>
-                  {canEdit && activeTab === 'l1' && (
-                    <button
-                      onClick={() => setIsEditMode(!isEditMode)}
-                      className={`ml-3 px-3.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${
-                        isEditMode 
-                          ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100' 
-                          : 'bg-[#0066cc] text-white border-[#0052a3] hover:bg-[#0052a3] shadow-[0_2px_6px_rgba(0,102,204,0.2)]'
-                      }`}
-                    >
-                      {isEditMode ? 'Cancel Edit' : 'Edit Mode'}
-                    </button>
-                  )}
-                  {isEditMode && (
-                    <button
-                      onClick={handleSaveEdits}
-                      disabled={isSaving}
-                      className="ml-2 px-3 py-1 bg-emerald-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-emerald-700 transition-colors flex items-center gap-1 disabled:opacity-50"
-                    >
-                      {isSaving ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
-                      Save
-                    </button>
-                  )}
-                </div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-[15px] font-bold text-slate-900">Change Request Details (L1, L2, L3)</h4>
+                    {canEdit && activeTab === 'l1' && (
+                      <button
+                        onClick={() => setIsEditMode(!isEditMode)}
+                        className={`ml-3 px-3.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors border ${isEditMode
+                            ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                            : 'bg-[#0066cc] text-white border-[#0052a3] hover:bg-[#0052a3] shadow-[0_2px_6px_rgba(0,102,204,0.2)]'
+                          }`}
+                      >
+                        {isEditMode ? 'Cancel Edit' : 'Edit Mode'}
+                      </button>
+                    )}
+                    {isEditMode && (
+                      <button
+                        onClick={handleSaveEdits}
+                        disabled={isSaving}
+                        className="ml-2 px-3 py-1 bg-emerald-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wider hover:bg-emerald-700 transition-colors flex items-center gap-1 disabled:opacity-50"
+                      >
+                        {isSaving ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+                        Save
+                      </button>
+                    )}
+                  </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">Tracking details for: <span className="font-mono font-bold text-slate-600">{selectedLog.changeNo}</span></p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   if (isEditMode) {
                     setIsEditMode(false);
@@ -4221,22 +4216,20 @@ export const DashboardOverview = ({
             <div className="flex h-11 border-b border-slate-200 bg-slate-50/50 shrink-0">
               <button
                 onClick={() => { setActiveTab('l1'); setIsEditMode(false); }}
-                className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                  activeTab === 'l1' 
-                    ? 'border-[#0066cc] text-[#0066cc]' 
+                className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l1'
+                    ? 'border-[#0066cc] text-[#0066cc]'
                     : 'border-transparent text-slate-500 hover:text-slate-850'
-                }`}
+                  }`}
               >
                 1. L1 Request Details
               </button>
               {selectedL1Details?.hodStatus !== 'Rejected' && (
                 <button
                   onClick={() => { setActiveTab('l2'); setIsEditMode(false); }}
-                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                    activeTab === 'l2' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l2'
+                      ? 'border-[#0066cc] text-[#0066cc]'
                       : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
+                    }`}
                 >
                   2. L2 Validation Details
                 </button>
@@ -4244,11 +4237,10 @@ export const DashboardOverview = ({
               {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && (
                 <button
                   onClick={() => { setActiveTab('l3'); setIsEditMode(false); }}
-                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                    activeTab === 'l3' 
-                      ? 'border-[#0066cc] text-[#0066cc]' 
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'l3'
+                      ? 'border-[#0066cc] text-[#0066cc]'
                       : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
+                    }`}
                 >
                   3. L3 Approval Details
                 </button>
@@ -4256,15 +4248,14 @@ export const DashboardOverview = ({
               {selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details?.status === 'Accepted' && ((selectedLog?.status || '').toLowerCase() === 'completed' || selectedEffDetails !== null) && (
                 <button
                   onClick={() => { setActiveTab('effectiveness'); setIsEditMode(false); }}
-                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${
-                    activeTab === 'effectiveness' 
+                  className={`flex-1 h-full flex items-center justify-center text-[12px] font-bold border-b-2 transition-colors ${activeTab === 'effectiveness'
                       ? (selectedEffDetails && (selectedEffDetails.qaApproval === 'Rejected' || selectedEffDetails.status === 'Effectiveness Not Ok' || selectedEffDetails.status === 'Rejected'))
                         ? 'border-rose-600 text-rose-600 font-extrabold bg-rose-50/30'
-                        : 'border-[#0066cc] text-[#0066cc]' 
+                        : 'border-[#0066cc] text-[#0066cc]'
                       : (selectedEffDetails && (selectedEffDetails.qaApproval === 'Rejected' || selectedEffDetails.status === 'Effectiveness Not Ok' || selectedEffDetails.status === 'Rejected'))
-                      ? 'border-transparent text-rose-650 hover:text-rose-800 bg-rose-50/10'
-                      : 'border-transparent text-slate-500 hover:text-slate-850'
-                  }`}
+                        ? 'border-transparent text-rose-650 hover:text-rose-800 bg-rose-50/10'
+                        : 'border-transparent text-slate-500 hover:text-slate-850'
+                    }`}
                 >
                   {(selectedEffDetails && (selectedEffDetails.qaApproval === 'Rejected' || selectedEffDetails.status === 'Effectiveness Not Ok' || selectedEffDetails.status === 'Rejected')) && (
                     <AlertTriangle size={12} className="text-rose-600 mr-1 animate-pulse" />
@@ -4283,641 +4274,637 @@ export const DashboardOverview = ({
                 </div>
               ) : (
                 <>
-              {activeTab === 'l1' && selectedL1Details && (
-                <div className="space-y-[20px]">
-                  {isEditMode ? renderDynamicEditForm(editL1Data, setEditL1Data, 'l1') : (
-                    <>
-                  {/* General Info */}
-                  <div className="space-y-[12px]">
-                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                      <Folder size={14} />
-                      <span>General Information</span>
-                    </h5>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
-                        <span className="font-mono font-bold text-slate-800">{selectedL1Details.change_no}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.crDate ? formatDateToDDMMYYYY(selectedL1Details.crDate) : '-'}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Time</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.requested_time}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
-                        <div className="flex gap-1.5 items-center mt-0.5">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                            selectedL1Details.hodStatus === 'Rejected'
-                              ? 'bg-rose-50 border-rose-220 text-rose-700'
-                              : (selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending')
-                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
-                              : 'bg-amber-50 border-amber-220 text-amber-700'
-                          }`}>
-                            L1 {selectedL1Details.hodStatus === 'Rejected' ? 'Rejected' : ((selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[12px]">
-                      <div className="space-y-[4px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
-                        <span className="font-semibold text-slate-855 block break-words">{selectedL1Details.title ? selectedL1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-[16px]">
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
-                          <span className="font-medium text-slate-700">{selectedL1Details.unit}</span>
-                        </div>
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In</span>
-                          <span className="font-medium text-slate-750">{selectedL1Details.change_in}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
-                      <div className="space-y-[4px] md:col-span-2 min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
-                        <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
-                        {selectedL1Details.crRequester && selectedL1Details.crRequester.toLowerCase() !== selectedL1Details.request_by?.toLowerCase() && (
-                          <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
-                        )}
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.dept}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.change_type}</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
-                      <div className="space-y-[4px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
-                        <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_name}</span>
-                      </div>
-                      <div className="space-y-[4px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line</span>
-                        <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_line}</span>
-                      </div>
-                      <div className="space-y-[4px] col-span-2 md:col-span-1 min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No</span>
-                        <span className="font-mono text-slate-700 block break-words break-all">{selectedL1Details.machine_no}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Change Description */}
-                  <div className="space-y-[12px] pt-4 border-t border-slate-100">
-                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                      <FileText size={14} />
-                      <span>Change Description</span>
-                    </h5>
-                    <div className="grid grid-cols-1 gap-[16px]">
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Detailed Change Description</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                          {selectedL1Details.description}
-                        </div>
-                      </div>
-                    </div>
-                    {selectedL1Details.file_desc && (
-                      <div className="space-y-[4px] mt-2">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files</span>
-                        {renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Implementation Timeline */}
-                  <div className="space-y-[12px] pt-4 border-t border-slate-100">
-                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                      <Calendar size={14} />
-                      <span>Implementation Timeline</span>
-                    </h5>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-                      {/* Column 1 */}
-                      <div className="space-y-[12px]">
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Improvement Area</span>
-                          <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.improvement_area || '-'}</span>
-                        </div>
-
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Upload Supporting Files (Improvement)</span>
-                          {selectedL1Details.file_improvement ? renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no) : <span className="text-slate-500 font-medium text-xs">-</span>}
-                        </div>
-
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Permanent / Temporary Change</span>
-                          <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.change_type || '-'}</span>
-                        </div>
-
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start</span>
-                          <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                            <Calendar size={13} className="text-slate-400" />
-                            {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
-                          </span>
-                        </div>
-
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes)</span>
-                          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
-                            {selectedL1Details.trace_from || '-'}
-                          </div>
-                          {selectedL1Details.file_trace_from && renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
-                        </div>
-                      </div>
-
-                      {/* Column 2 */}
-                      <div className="space-y-[12px]">
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close</span>
-                          <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                            <Calendar size={13} className="text-slate-400" />
-                            {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
-                          </span>
-                        </div>
-
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (To Changes)</span>
-                          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
-                            {selectedL1Details.trace_to || '-'}
-                          </div>
-                          {selectedL1Details.file_trace_to && renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* TABLE VIEW FOR IMPROVEMENT DATA */}
-                    {(() => {
-                      if (!selectedL1Details.improvement_table_data) return null;
-                      let tableData;
-                      try {
-                        tableData = JSON.parse(selectedL1Details.improvement_table_data);
-                      } catch {
-                        return null;
-                      }
-                      if (!Array.isArray(tableData) || tableData.length === 0) return null;
-
-                      const area = (selectedL1Details.improvement_area || '').toLowerCase();
-                      const hasCost = area === 'cost';
-                      const hasProductivity = area === 'productivity';
-                      const hasQuality = area === 'quality';
-
-                      if (!hasCost && !hasProductivity && !hasQuality) return null;
-
-                      return (
-                        <div className="mt-3 border border-slate-200 rounded-[8px] overflow-hidden bg-white max-w-md">
-                          <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 text-[10px] font-bold text-slate-655 uppercase tracking-wider">
-                            {hasCost ? 'Cost Saving Data' : hasProductivity ? 'Productivity Improvement Data' : 'Quality Improvement Data'}
-                          </div>
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse text-[11px]">
-                              <thead>
-                                <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
-                                  <th className="p-2 w-[50px]">Sl No</th>
-                                  <th className="p-2">4M #</th>
-                                  <th className="p-2">Date</th>
-                                  {hasCost && (
-                                    <>
-                                      <th className="p-2">Save/Month</th>
-                                      <th className="p-2">Save/Annum</th>
-                                      <th className="p-2">ROI</th>
-                                    </>
-                                  )}
-                                  {hasProductivity && (
-                                    <>
-                                      <th className="p-2">Current</th>
-                                      <th className="p-2">Improved</th>
-                                    </>
-                                  )}
-                                  {hasQuality && (
-                                    <>
-                                      <th className="p-2">Current PPM</th>
-                                      <th className="p-2">Reduced PPM</th>
-                                    </>
-                                  )}
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-100">
-                                {tableData.map((row, idx) => (
-                                  <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
-                                    <td className="p-2 font-bold text-slate-400">{idx + 1}</td>
-                                    <td className="p-2 font-mono font-medium">{row.changeNo}</td>
-                                    <td className="p-2">{row.date || '-'}</td>
-                                    {hasCost && (
-                                      <>
-                                        <td className="p-2 font-semibold">Rs. {row.monthlySave || '0'}</td>
-                                        <td className="p-2 font-semibold">Rs. {row.annualSave || '0'}</td>
-                                        <td className="p-2">{row.roi || '-'}</td>
-                                      </>
-                                    )}
-                                    {hasProductivity && (
-                                      <>
-                                        <td className="p-2">{row.currentProd || '0'} nos</td>
-                                        <td className="p-2 font-semibold">{row.improvedProd || '0'} nos</td>
-                                      </>
-                                    )}
-                                    {hasQuality && (
-                                      <>
-                                        <td className="p-2">{row.currentPpm || '0'}</td>
-                                        <td className="p-2 font-semibold">{row.reducedPpm || '0'}</td>
-                                      </>
-                                    )}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Risk Analysis Card (Read-Only) */}
-                  <div className="space-y-[16px] pt-4 border-t border-slate-100">
-                    <h5 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                      <span>Risk Analysis</span>
-                    </h5>
-
-                    {/* RISK ANALYSIS */}
-                    <div className="space-y-[4px] min-w-0">
-                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">RISK ANALYSIS</span>
-                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-[12px] font-medium">
-                        {selectedL1Details.risk_analysis || '-'}
-                      </div>
-                    </div>
-
-                    {/* UPLOAD SUPPORTING FILES (file_risk) */}
-                    <div className="space-y-[4px] min-w-0">
-                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">SUPPORTING FILES</span>
-                      {selectedL1Details.file_risk && selectedL1Details.file_risk !== '-' ? (
-                        renderL1FilePill(selectedL1Details.file_risk, selectedL1Details.change_no)
-                      ) : (
-                        <span className="text-[12px] text-slate-400 italic">No file attached</span>
-                      )}
-                    </div>
-
-                    {/* UPDATE IN SOP / WI / CONTROL PLAN / FMEA */}
-                    <div className="space-y-[4px] min-w-0">
-                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">UPDATE IN SOP / WI / CONTROL PLAN / FMEA</span>
-                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-[12px] font-medium">
-                        {selectedL1Details.sop_update || '-'}
-                      </div>
-                    </div>
-
-                    {/* UPLOAD SUPPORTING FILES (SOP, WI, CONTROL PLAN, FMEA) */}
-                    <div className="space-y-[4px] min-w-0">
-                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">SUPPORTING FILES (SOP, WI, CONTROL PLAN, FMEA)</span>
-                      {selectedL1Details.file_sop && selectedL1Details.file_sop !== '-' ? (
-                        renderL1FilePill(selectedL1Details.file_sop, selectedL1Details.change_no)
-                      ) : (
-                        <span className="text-[12px] text-slate-400 italic">No file attached</span>
-                      )}
-                    </div>
-
-                    {/* USER DEPT HOD APPROVAL */}
-                    <div className="space-y-[4px]">
-                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">USER DEPT HOD APPROVAL</span>
-                      {selectedL1Details.hod_approval ? (
-                        <div className="pt-1">
-                          <span className="inline-flex items-center gap-[6px] px-[10px] py-[6px] border border-[#0066cc] bg-[#0066cc]/5 text-[#0066cc] rounded-[6px] text-[10px] font-bold shadow-sm select-none">
-                            <span className="w-[12px] h-[12px] rounded-full border border-[#0066cc] flex items-center justify-center">
-                              <span className="w-[6px] h-[6px] rounded-full bg-[#0066cc]" />
-                            </span>
-                            <span>{selectedL1Details.hod_approval}</span>
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-[12px] text-slate-400 italic">No department selected</span>
-                      )}
-                    </div>
-
-                    {/* CUSTOMER APPROVAL REQUIRED */}
-                    <div className="space-y-[4px]">
-                      <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5 text-[12px]">
-                        <span>{showCustomerApproval ? (selectedL1Details.customer_approval || '-') : '••••'}</span>
-                        <button
-                          type="button"
-                          onClick={() => setShowCustomerApproval(!showCustomerApproval)}
-                          className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
-                          title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
-                        >
-                          {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
-                        </button>
-                      </span>
-                    </div>
-
-                    {/* HOD status and comments (if approved/rejected) */}
-                    {selectedL1Details.hodStatus && (
-                      <div className="space-y-[4px] mt-4 border-t border-slate-100 pt-4">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD {selectedL1Details.hodStatus} Remarks / Comments ({selectedL1Details.hodDept || 'HOD'})</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words text-[12px]">
-                          {selectedL1Details.hodRemarks || 'No remarks provided.'}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </>
-                    )}
-                </div>
-              )}
-
-              {activeTab === 'l2' && (
-                !selectedL2Details ? (
-                  <div className="text-center py-[64px] bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                    <AlertTriangle className="mx-auto mb-[12px] text-slate-300" size={32} />
-                    <span className="text-slate-400 font-medium">No L2 Validation Details found for this request.</span>
-                  </div>
-                ) : (
-                  <div className="space-y-[20px]">
-                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                      <CheckCircle2 size={14} />
-                      <span>L2 Validation Details</span>
-                    </h5>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Date</span>
-                        <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
-                        <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
-                        <div>
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                            selectedL2Details.status === 'Accepted'
-                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
-                              : selectedL2Details.status === 'Rejected'
-                              ? 'bg-rose-50 border-rose-220 text-rose-700'
-                              : 'bg-amber-50 border-amber-220 text-amber-700'
-                          }`}>
-                            L2 {selectedL2Details.status === 'Accepted' ? 'Approved' : (selectedL2Details.status || 'Pending')}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
-                        <span className="font-mono font-bold text-slate-800">{selectedL2Details.changeNo}</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
-                      <div className="space-y-[6px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">PED Validation Attachment</span>
-                        <div className="space-y-2">
-                          {!selectedL2Details.weldTest || selectedL2Details.weldTest === '-' ? (
-                            <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-550 text-[12px] font-medium">
-                              -
-                            </div>
-                          ) : (
-                            selectedL2Details.weldTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
-                              <div key={idx} className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
-                                <span className="font-medium text-slate-655 truncate max-w-[200px]" title={file}>
-                                  {file}
-                                </span>
-                                <span 
-                                  className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer select-none"
-                                  onClick={() => handleViewAttachment(file, selectedL2Details.changeNo, 'L2')}
-                                >
-                                  Preview
-                                </span>
+                  {activeTab === 'l1' && selectedL1Details && (
+                    <div className="space-y-[20px]">
+                      {isEditMode ? renderDynamicEditForm(editL1Data, setEditL1Data, 'l1') : (
+                        <>
+                          {/* General Info */}
+                          <div className="space-y-[12px]">
+                            <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                              <Folder size={14} />
+                              <span>General Information</span>
+                            </h5>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
+                              <div className="space-y-[4px]">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                                <span className="font-mono font-bold text-slate-800">{selectedL1Details.change_no}</span>
                               </div>
-                            ))
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="space-y-[6px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Setup Verification Attachment</span>
-                        <div className="space-y-2">
-                          {!selectedL2Details.qaTest || selectedL2Details.qaTest === '-' ? (
-                            <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-550 text-[12px] font-medium">
-                              -
-                            </div>
-                          ) : (
-                            selectedL2Details.qaTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
-                              <div key={idx} className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
-                                <span className="font-medium text-slate-655 truncate max-w-[200px]" title={file}>
-                                  {file}
-                                </span>
-                                <span 
-                                  className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer select-none"
-                                  onClick={() => handleViewAttachment(file, selectedL2Details.changeNo, 'L2')}
-                                >
-                                  Preview
-                                </span>
+                              <div className="space-y-[4px]">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                                <span className="font-medium text-slate-700">{selectedL1Details.crDate ? formatDateToDDMMYYYY(selectedL1Details.crDate) : '-'}</span>
                               </div>
-                            ))
-                          )}
+                              <div className="space-y-[4px]">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Time</span>
+                                <span className="font-medium text-slate-700">{selectedL1Details.requested_time}</span>
+                              </div>
+                              <div className="space-y-[4px]">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
+                                <div className="flex gap-1.5 items-center mt-0.5">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL1Details.hodStatus === 'Rejected'
+                                      ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                      : (selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending')
+                                        ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                                        : 'bg-amber-50 border-amber-220 text-amber-700'
+                                    }`}>
+                                    L1 {selectedL1Details.hodStatus === 'Rejected' ? 'Rejected' : ((selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[12px]">
+                              <div className="space-y-[4px] min-w-0">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change</span>
+                                <span className="font-semibold text-slate-855 block break-words">{selectedL1Details.title ? selectedL1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-[16px]">
+                                <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
+                                  <span className="font-medium text-slate-700">{selectedL1Details.unit}</span>
+                                </div>
+                                <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In</span>
+                                  <span className="font-medium text-slate-750">{selectedL1Details.change_in}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                              <div className="space-y-[4px] md:col-span-2 min-w-0">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
+                                <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
+                                {selectedL1Details.crRequester && selectedL1Details.crRequester.toLowerCase() !== selectedL1Details.request_by?.toLowerCase() && (
+                                  <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
+                                )}
+                              </div>
+                              <div className="space-y-[4px]">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
+                                <span className="font-medium text-slate-700">{selectedL1Details.dept}</span>
+                              </div>
+                              <div className="space-y-[4px]">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
+                                <span className="font-medium text-slate-700">{selectedL1Details.change_type}</span>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
+                              <div className="space-y-[4px] min-w-0">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
+                                <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_name}</span>
+                              </div>
+                              <div className="space-y-[4px] min-w-0">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line</span>
+                                <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_line}</span>
+                              </div>
+                              <div className="space-y-[4px] col-span-2 md:col-span-1 min-w-0">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No</span>
+                                <span className="font-mono text-slate-700 block break-words break-all">{selectedL1Details.machine_no}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Change Description */}
+                          <div className="space-y-[12px] pt-4 border-t border-slate-100">
+                            <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                              <FileText size={14} />
+                              <span>Change Description</span>
+                            </h5>
+                            <div className="grid grid-cols-1 gap-[16px]">
+                              <div className="space-y-[6px] min-w-0">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Detailed Change Description</span>
+                                <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
+                                  {selectedL1Details.description}
+                                </div>
+                              </div>
+                            </div>
+                            {selectedL1Details.file_desc && (
+                              <div className="space-y-[4px] mt-2">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files</span>
+                                {renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Implementation Timeline */}
+                          <div className="space-y-[12px] pt-4 border-t border-slate-100">
+                            <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                              <Calendar size={14} />
+                              <span>Implementation Timeline</span>
+                            </h5>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                              {/* Column 1 */}
+                              <div className="space-y-[12px]">
+                                <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Improvement Area</span>
+                                  <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.improvement_area || '-'}</span>
+                                </div>
+
+                                <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Upload Supporting Files (Improvement)</span>
+                                  {selectedL1Details.file_improvement ? renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no) : <span className="text-slate-500 font-medium text-xs">-</span>}
+                                </div>
+
+                                <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Permanent / Temporary Change</span>
+                                  <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.change_type || '-'}</span>
+                                </div>
+
+                                <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start</span>
+                                  <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                                    <Calendar size={13} className="text-slate-400" />
+                                    {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
+                                  </span>
+                                </div>
+
+                                <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes)</span>
+                                  <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
+                                    {selectedL1Details.trace_from || '-'}
+                                  </div>
+                                  {selectedL1Details.file_trace_from && renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
+                                </div>
+                              </div>
+
+                              {/* Column 2 */}
+                              <div className="space-y-[12px]">
+                                <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close</span>
+                                  <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                                    <Calendar size={13} className="text-slate-400" />
+                                    {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
+                                  </span>
+                                </div>
+
+                                <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (To Changes)</span>
+                                  <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
+                                    {selectedL1Details.trace_to || '-'}
+                                  </div>
+                                  {selectedL1Details.file_trace_to && renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* TABLE VIEW FOR IMPROVEMENT DATA */}
+                            {(() => {
+                              if (!selectedL1Details.improvement_table_data) return null;
+                              let tableData;
+                              try {
+                                tableData = JSON.parse(selectedL1Details.improvement_table_data);
+                              } catch {
+                                return null;
+                              }
+                              if (!Array.isArray(tableData) || tableData.length === 0) return null;
+
+                              const area = (selectedL1Details.improvement_area || '').toLowerCase();
+                              const hasCost = area === 'cost';
+                              const hasProductivity = area === 'productivity';
+                              const hasQuality = area === 'quality';
+
+                              if (!hasCost && !hasProductivity && !hasQuality) return null;
+
+                              return (
+                                <div className="mt-3 border border-slate-200 rounded-[8px] overflow-hidden bg-white max-w-md">
+                                  <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 text-[10px] font-bold text-slate-655 uppercase tracking-wider">
+                                    {hasCost ? 'Cost Saving Data' : hasProductivity ? 'Productivity Improvement Data' : 'Quality Improvement Data'}
+                                  </div>
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse text-[11px]">
+                                      <thead>
+                                        <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
+                                          <th className="p-2 w-[50px]">Sl No</th>
+                                          <th className="p-2">4M #</th>
+                                          <th className="p-2">Date</th>
+                                          {hasCost && (
+                                            <>
+                                              <th className="p-2">Save/Month</th>
+                                              <th className="p-2">Save/Annum</th>
+                                              <th className="p-2">ROI</th>
+                                            </>
+                                          )}
+                                          {hasProductivity && (
+                                            <>
+                                              <th className="p-2">Current</th>
+                                              <th className="p-2">Improved</th>
+                                            </>
+                                          )}
+                                          {hasQuality && (
+                                            <>
+                                              <th className="p-2">Current PPM</th>
+                                              <th className="p-2">Reduced PPM</th>
+                                            </>
+                                          )}
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-slate-100">
+                                        {tableData.map((row, idx) => (
+                                          <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
+                                            <td className="p-2 font-bold text-slate-400">{idx + 1}</td>
+                                            <td className="p-2 font-mono font-medium">{row.changeNo}</td>
+                                            <td className="p-2">{row.date || '-'}</td>
+                                            {hasCost && (
+                                              <>
+                                                <td className="p-2 font-semibold">Rs. {row.monthlySave || '0'}</td>
+                                                <td className="p-2 font-semibold">Rs. {row.annualSave || '0'}</td>
+                                                <td className="p-2">{row.roi || '-'}</td>
+                                              </>
+                                            )}
+                                            {hasProductivity && (
+                                              <>
+                                                <td className="p-2">{row.currentProd || '0'} nos</td>
+                                                <td className="p-2 font-semibold">{row.improvedProd || '0'} nos</td>
+                                              </>
+                                            )}
+                                            {hasQuality && (
+                                              <>
+                                                <td className="p-2">{row.currentPpm || '0'}</td>
+                                                <td className="p-2 font-semibold">{row.reducedPpm || '0'}</td>
+                                              </>
+                                            )}
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
+
+                          {/* Risk Analysis Card (Read-Only) */}
+                          <div className="space-y-[16px] pt-4 border-t border-slate-100">
+                            <h5 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                              <span>Risk Analysis</span>
+                            </h5>
+
+                            {/* RISK ANALYSIS */}
+                            <div className="space-y-[4px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">RISK ANALYSIS</span>
+                              <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-[12px] font-medium">
+                                {selectedL1Details.risk_analysis || '-'}
+                              </div>
+                            </div>
+
+                            {/* UPLOAD SUPPORTING FILES (file_risk) */}
+                            <div className="space-y-[4px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">SUPPORTING FILES</span>
+                              {selectedL1Details.file_risk && selectedL1Details.file_risk !== '-' ? (
+                                renderL1FilePill(selectedL1Details.file_risk, selectedL1Details.change_no)
+                              ) : (
+                                <span className="text-[12px] text-slate-400 italic">No file attached</span>
+                              )}
+                            </div>
+
+                            {/* UPDATE IN SOP / WI / CONTROL PLAN / FMEA */}
+                            <div className="space-y-[4px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">UPDATE IN SOP / WI / CONTROL PLAN / FMEA</span>
+                              <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-[12px] font-medium">
+                                {selectedL1Details.sop_update || '-'}
+                              </div>
+                            </div>
+
+                            {/* UPLOAD SUPPORTING FILES (SOP, WI, CONTROL PLAN, FMEA) */}
+                            <div className="space-y-[4px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">SUPPORTING FILES (SOP, WI, CONTROL PLAN, FMEA)</span>
+                              {selectedL1Details.file_sop && selectedL1Details.file_sop !== '-' ? (
+                                renderL1FilePill(selectedL1Details.file_sop, selectedL1Details.change_no)
+                              ) : (
+                                <span className="text-[12px] text-slate-400 italic">No file attached</span>
+                              )}
+                            </div>
+
+                            {/* USER DEPT HOD APPROVAL */}
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">USER DEPT HOD APPROVAL</span>
+                              {selectedL1Details.hod_approval ? (
+                                <div className="pt-1">
+                                  <span className="inline-flex items-center gap-[6px] px-[10px] py-[6px] border border-[#0066cc] bg-[#0066cc]/5 text-[#0066cc] rounded-[6px] text-[10px] font-bold shadow-sm select-none">
+                                    <span className="w-[12px] h-[12px] rounded-full border border-[#0066cc] flex items-center justify-center">
+                                      <span className="w-[6px] h-[6px] rounded-full bg-[#0066cc]" />
+                                    </span>
+                                    <span>{selectedL1Details.hod_approval}</span>
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-[12px] text-slate-400 italic">No department selected</span>
+                              )}
+                            </div>
+
+                            {/* CUSTOMER APPROVAL REQUIRED */}
+                            <div className="space-y-[4px]">
+                              <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5 text-[12px]">
+                                <span>{showCustomerApproval ? (selectedL1Details.customer_approval || '-') : '••••'}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowCustomerApproval(!showCustomerApproval)}
+                                  className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
+                                  title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
+                                >
+                                  {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
+                                </button>
+                              </span>
+                            </div>
+
+                            {/* HOD status and comments (if approved/rejected) */}
+                            {selectedL1Details.hodStatus && (
+                              <div className="space-y-[4px] mt-4 border-t border-slate-100 pt-4">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD {selectedL1Details.hodStatus} Remarks / Comments ({selectedL1Details.hodDept || 'HOD'})</span>
+                                <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words text-[12px]">
+                                  {selectedL1Details.hodRemarks || 'No remarks provided.'}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {activeTab === 'l2' && (
+                    !selectedL2Details ? (
+                      <div className="text-center py-[64px] bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        <AlertTriangle className="mx-auto mb-[12px] text-slate-300" size={32} />
+                        <span className="text-slate-400 font-medium">No L2 Validation Details found for this request.</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-[20px]">
+                        <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                          <CheckCircle2 size={14} />
+                          <span>L2 Validation Details</span>
+                        </h5>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Date</span>
+                            <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
+                            <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
+                            <div>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL2Details.status === 'Accepted'
+                                  ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                                  : selectedL2Details.status === 'Rejected'
+                                    ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                    : 'bg-amber-50 border-amber-220 text-amber-700'
+                                }`}>
+                                L2 {selectedL2Details.status === 'Accepted' ? 'Approved' : (selectedL2Details.status || 'Pending')}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                            <span className="font-mono font-bold text-slate-800">{selectedL2Details.changeNo}</span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                          <div className="space-y-[6px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">PED Validation Attachment</span>
+                            <div className="space-y-2">
+                              {!selectedL2Details.weldTest || selectedL2Details.weldTest === '-' ? (
+                                <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-550 text-[12px] font-medium">
+                                  -
+                                </div>
+                              ) : (
+                                selectedL2Details.weldTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                                  <div key={idx} className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
+                                    <span className="font-medium text-slate-655 truncate max-w-[200px]" title={file}>
+                                      {file}
+                                    </span>
+                                    <span
+                                      className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer select-none"
+                                      onClick={() => handleViewAttachment(file, selectedL2Details.changeNo, 'L2')}
+                                    >
+                                      Preview
+                                    </span>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="space-y-[6px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Setup Verification Attachment</span>
+                            <div className="space-y-2">
+                              {!selectedL2Details.qaTest || selectedL2Details.qaTest === '-' ? (
+                                <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-550 text-[12px] font-medium">
+                                  -
+                                </div>
+                              ) : (
+                                selectedL2Details.qaTest.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                                  <div key={idx} className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 flex items-center justify-between">
+                                    <span className="font-medium text-slate-655 truncate max-w-[200px]" title={file}>
+                                      {file}
+                                    </span>
+                                    <span
+                                      className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer select-none"
+                                      onClick={() => handleViewAttachment(file, selectedL2Details.changeNo, 'L2')}
+                                    >
+                                      Preview
+                                    </span>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-[4px] mt-4">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validator Remarks / Comments</span>
+                          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
+                            {selectedL2Details.remarks || 'No remarks provided.'}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )
+                  )}
 
-                    <div className="space-y-[4px] mt-4">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validator Remarks / Comments</span>
-                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
-                        {selectedL2Details.remarks || 'No remarks provided.'}
-                      </div>
-                    </div>
-                  </div>
-                )
-              )}
-
-              {activeTab === 'l3' && selectedLog && (
-                <div className="space-y-[20px]">
-                  <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                    <Cpu size={14} />
-                    <span>L3 Approval Status Matrix</span>
-                  </h5>
-
-                  {/* Metadata */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-[16px] pb-[16px] border-b border-slate-100">
-                    <div className="space-y-[4px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</span>
-                      <span className="font-bold text-[#0066cc] text-[13px]">{selectedLog.changeNo}</span>
-                    </div>
-                    <div className="space-y-[4px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By</span>
-                      <span className="font-medium text-slate-700">{selectedLog.requester}</span>
-                    </div>
-                    <div className="space-y-[4px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
-                      <span className="font-medium text-slate-700">{selectedLog.date ? formatDateToDDMMYYYY(selectedLog.date) : '-'}</span>
-                    </div>
-                  </div>
-
-                  {/* Matrix Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
-                    {[
-                      { label: 'PED', value: selectedLog.ped },
-                      { label: 'QAD', value: selectedLog.qad },
-                      { label: 'Production', value: selectedLog.production },
-                      { label: 'Maintenance', value: selectedLog.maintenance },
-                      { label: 'PC & L', value: selectedLog.pcl },
-                      { label: 'Materials', value: selectedLog.materials },
-                      { label: 'Marketing', value: selectedLog.marketing },
-                      { label: 'HR', value: selectedLog.hr },
-                      { label: 'Safety', value: selectedLog.safety },
-                      { label: 'Unit Head', value: selectedLog.unitHead }
-                    ].map((dept, index) => {
-                      // Map label to the corresponding property in selectedLog safely
-                      const propMap = {
-                        'PED': selectedLog.ped,
-                        'QAD': selectedLog.qad,
-                        'Production': selectedLog.production,
-                        'Maintenance': selectedLog.maintenance,
-                        'PC & L': selectedLog.pcl || selectedLog.ped,
-                        'Materials': selectedLog.materials,
-                        'Marketing': selectedLog.marketing,
-                        'HR': selectedLog.hr,
-                        'Safety': selectedLog.safety,
-                        'Unit Head': selectedLog.unitHead || selectedLog.unit_head
-                      };
-                      const status = propMap[dept.label] || 'Pending';
-                      const isAccepted = status === 'Accepted' || status === 'Approved';
-                      const isRejected = status === 'Rejected';
-                      const badgeClass = isAccepted 
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
-                        : isRejected 
-                        ? 'bg-rose-50 border-rose-200 text-rose-700' 
-                        : 'bg-amber-50 border-amber-200 text-amber-700';
-
-                      return (
-                        <div 
-                          key={index} 
-                          className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
-                        >
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
-                          <span className={`inline-block px-[10px] py-[3px] rounded-full border text-[10px] font-bold shadow-sm ${badgeClass}`}>
-                            L3 {status}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'effectiveness' && (
-                (() => {
-                  const currentEffLog = selectedEffDetails;
-                  if (!currentEffLog) {
-                    return (
-                      <div className="text-center py-[64px] bg-slate-50 rounded-xl border border-dashed border-slate-200 w-full animate-fade-in-up">
-                        <AlertTriangle className="mx-auto mb-[12px] text-slate-350" size={32} />
-                        <span className="text-slate-400 font-medium">Effectiveness monitoring log is pending creation/validation for this request.</span>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div className="space-y-[20px] animate-fade-in-up">
-                      <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5 font-sans">
-                        <CheckCircle2 size={14} />
-                        <span>Effectiveness Monitoring Log Details</span>
+                  {activeTab === 'l3' && selectedLog && (
+                    <div className="space-y-[20px]">
+                      <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                        <Cpu size={14} />
+                        <span>L3 Approval Status Matrix</span>
                       </h5>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                      {/* Metadata */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-[16px] pb-[16px] border-b border-slate-100">
                         <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
-                          <span className="font-mono font-bold text-slate-800">{currentEffLog.changeNo}</span>
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No</span>
+                          <span className="font-bold text-[#0066cc] text-[13px]">{selectedLog.changeNo}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By</span>
+                          <span className="font-medium text-slate-700">{selectedLog.requester}</span>
                         </div>
                         <div className="space-y-[4px]">
                           <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
-                          <span className="font-medium text-slate-700">{currentEffLog.reqDate ? formatDateToDDMMYYYY(currentEffLog.reqDate) : '-'}</span>
-                        </div>
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start</span>
-                          <span className="font-medium text-slate-700">{currentEffLog.startDate ? formatDateToDDMMYYYY(currentEffLog.startDate) : '-'}</span>
-                        </div>
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise</span>
-                          <span className="font-medium text-slate-700">{currentEffLog.monthWise || '-'}</span>
+                          <span className="font-medium text-slate-700">{selectedLog.date ? formatDateToDDMMYYYY(selectedLog.date) : '-'}</span>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Status</span>
-                          <div>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                              currentEffLog.status === 'Effectiveness Ok'
-                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                : currentEffLog.status === 'Pending'
-                                  ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                  : 'bg-rose-50 border-rose-255 text-rose-700'
-                            }`}>
-                              {currentEffLog.status}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="space-y-[4px]">
-                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Approval</span>
-                          <div>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                              currentEffLog.qaApproval === 'Approved'
-                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                : currentEffLog.qaApproval === 'Pending'
-                                  ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                  : 'bg-rose-50 border-rose-200 text-rose-700'
-                            }`}>
-                              {currentEffLog.qaApproval}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                      {/* Matrix Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
+                        {[
+                          { label: 'PED', value: selectedLog.ped },
+                          { label: 'QAD', value: selectedLog.qad },
+                          { label: 'Production', value: selectedLog.production },
+                          { label: 'Maintenance', value: selectedLog.maintenance },
+                          { label: 'PC & L', value: selectedLog.pcl },
+                          { label: 'Materials', value: selectedLog.materials },
+                          { label: 'Marketing', value: selectedLog.marketing },
+                          { label: 'HR', value: selectedLog.hr },
+                          { label: 'Safety', value: selectedLog.safety },
+                          { label: 'Unit Head', value: selectedLog.unitHead }
+                        ].map((dept, index) => {
+                          // Map label to the corresponding property in selectedLog safely
+                          const propMap = {
+                            'PED': selectedLog.ped,
+                            'QAD': selectedLog.qad,
+                            'Production': selectedLog.production,
+                            'Maintenance': selectedLog.maintenance,
+                            'PC & L': selectedLog.pcl || selectedLog.ped,
+                            'Materials': selectedLog.materials,
+                            'Marketing': selectedLog.marketing,
+                            'HR': selectedLog.hr,
+                            'Safety': selectedLog.safety,
+                            'Unit Head': selectedLog.unitHead || selectedLog.unit_head
+                          };
+                          const status = propMap[dept.label] || 'Pending';
+                          const isAccepted = status === 'Accepted' || status === 'Approved';
+                          const isRejected = status === 'Rejected';
+                          const badgeClass = isAccepted
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                            : isRejected
+                              ? 'bg-rose-50 border-rose-200 text-rose-700'
+                              : 'bg-amber-50 border-amber-200 text-amber-700';
 
-                      <div className="space-y-[6px] mt-4">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Attachments</span>
-                        {currentEffLog.attachment ? (
-                          <div className="flex flex-wrap gap-1.5">
-                            {currentEffLog.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
-                              <span
-                                key={idx}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewAttachment(file, currentEffLog.id, 'Effectiveness');
-                                }}
-                                className="inline-flex items-center gap-1 bg-slate-50 border border-slate-150 text-[11px] font-medium text-slate-700 px-2.5 py-1 rounded-full hover:bg-slate-100 hover:border-[#0066cc] hover:text-[#0066cc] cursor-pointer"
-                                title="Click to view file"
-                              >
-                                📎 {file}
+                          return (
+                            <div
+                              key={index}
+                              className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
+                            >
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
+                              <span className={`inline-block px-[10px] py-[3px] rounded-full border text-[10px] font-bold shadow-sm ${badgeClass}`}>
+                                L3 {status}
                               </span>
-                            ))}
-                          </div>
-                        ) : '-'}
-                      </div>
-
-                      <div className="space-y-[4px] mt-4">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Remarks / Comments</span>
-                        <div className="bg-slate-50 border border-slate-150 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
-                          {currentEffLog.remarks}
-                        </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-                  );
-                })()
+                  )}
+
+                  {activeTab === 'effectiveness' && (
+                    (() => {
+                      const currentEffLog = selectedEffDetails;
+                      if (!currentEffLog) {
+                        return (
+                          <div className="text-center py-[64px] bg-slate-50 rounded-xl border border-dashed border-slate-200 w-full animate-fade-in-up">
+                            <AlertTriangle className="mx-auto mb-[12px] text-slate-350" size={32} />
+                            <span className="text-slate-400 font-medium">Effectiveness monitoring log is pending creation/validation for this request.</span>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-[20px] animate-fade-in-up">
+                          <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5 font-sans">
+                            <CheckCircle2 size={14} />
+                            <span>Effectiveness Monitoring Log Details</span>
+                          </h5>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                              <span className="font-mono font-bold text-slate-800">{currentEffLog.changeNo}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                              <span className="font-medium text-slate-700">{currentEffLog.reqDate ? formatDateToDDMMYYYY(currentEffLog.reqDate) : '-'}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Start</span>
+                              <span className="font-medium text-slate-700">{currentEffLog.startDate ? formatDateToDDMMYYYY(currentEffLog.startDate) : '-'}</span>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Month Wise</span>
+                              <span className="font-medium text-slate-700">{currentEffLog.monthWise || '-'}</span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-4">
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Status</span>
+                              <div>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.status === 'Effectiveness Ok'
+                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                    : currentEffLog.status === 'Pending'
+                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                      : 'bg-rose-50 border-rose-255 text-rose-700'
+                                  }`}>
+                                  {currentEffLog.status}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Approval</span>
+                              <div>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.qaApproval === 'Approved'
+                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                    : currentEffLog.qaApproval === 'Pending'
+                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                      : 'bg-rose-50 border-rose-200 text-rose-700'
+                                  }`}>
+                                  {currentEffLog.qaApproval}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-[6px] mt-4">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Attachments</span>
+                            {currentEffLog.attachment ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {currentEffLog.attachment.split(',').map(s => s.trim()).filter(Boolean).map((file, idx) => (
+                                  <span
+                                    key={idx}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleViewAttachment(file, currentEffLog.id, 'Effectiveness');
+                                    }}
+                                    className="inline-flex items-center gap-1 bg-slate-50 border border-slate-150 text-[11px] font-medium text-slate-700 px-2.5 py-1 rounded-full hover:bg-slate-100 hover:border-[#0066cc] hover:text-[#0066cc] cursor-pointer"
+                                    title="Click to view file"
+                                  >
+                                    📎 {file}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : '-'}
+                          </div>
+
+                          <div className="space-y-[4px] mt-4">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Remarks / Comments</span>
+                            <div className="bg-slate-50 border border-slate-150 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words">
+                              {currentEffLog.remarks}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()
+                  )}
+                </>
               )}
-              </>
-            )}
             </div>
 
             {/* Footer */}
             <div className="px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex justify-end gap-[12px] shrink-0">
-              <button 
+              <button
                 onClick={handleExportRequestDetailsPDF}
                 disabled={isFetchingDetails}
                 className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px]"
@@ -4926,7 +4913,7 @@ export const DashboardOverview = ({
                 <Download size={14} />
                 <span>Export PDF</span>
               </button>
-              <button 
+              <button
                 onClick={() => setSelectedLog(null)}
                 className="px-[16px] py-[8px] bg-white border border-slate-250 rounded-[6px] text-slate-655 hover:bg-slate-50 hover:text-slate-800 text-[12px] font-semibold transition-colors shadow-sm cursor-pointer"
               >
@@ -4944,9 +4931,9 @@ export const DashboardOverview = ({
           <div className="relative bg-white w-full max-w-[850px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 max-h-[85vh] overflow-hidden animate-fade-in-up">
             <div className="bg-slate-50 px-[24px] py-[16px] border-b border-slate-100 flex items-center justify-between rounded-t-[16px]">
               <h4 className="text-[14px] font-bold text-slate-800 uppercase tracking-wider">
-                {(editL1Data.improvement_area || '').toLowerCase() === 'cost' ? 'Cost Saving Data Table' : 
-                 (editL1Data.improvement_area || '').toLowerCase() === 'productivity' ? 'Productivity Improvement Data Table' : 
-                 'Quality Improvement Data Table'}
+                {(editL1Data.improvement_area || '').toLowerCase() === 'cost' ? 'Cost Saving Data Table' :
+                  (editL1Data.improvement_area || '').toLowerCase() === 'productivity' ? 'Productivity Improvement Data Table' :
+                    'Quality Improvement Data Table'}
               </h4>
               <button onClick={() => setIsTableModalOpen(false)} className="p-[4px] hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-655 transition-colors">
                 <X size={18} />
@@ -5002,9 +4989,8 @@ export const DashboardOverview = ({
                             readOnly={true}
                             minDate={editL1Data.crDate ? formatDateToDDMMYYYY(editL1Data.crDate) : ''}
                             placeholder="dd/mm/yyyy"
-                            inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[6px] pl-[10px] pr-[24px] text-[11px] outline-none focus:border-[#0066cc] ${
-                              tableModalError && !row.date ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
-                            }`}
+                            inputClassName={`w-full bg-slate-50 border rounded-[6px] py-[6px] pl-[10px] pr-[24px] text-[11px] outline-none focus:border-[#0066cc] ${tableModalError && !row.date ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                              }`}
                             buttonClassName="right-[6px] top-[50%] -translate-y-1/2"
                           />
                         </td>
@@ -5016,9 +5002,8 @@ export const DashboardOverview = ({
                                 placeholder="0"
                                 value={row.monthlySave || ''}
                                 onChange={(e) => handleUpdateEditTableCell(idx, 'monthlySave', e.target.value)}
-                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
-                                  tableModalError && !row.monthlySave ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
-                                }`}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${tableModalError && !row.monthlySave ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                  }`}
                               />
                             </td>
                             <td className="p-[8px]">
@@ -5027,9 +5012,8 @@ export const DashboardOverview = ({
                                 placeholder="0"
                                 value={row.annualSave || ''}
                                 onChange={(e) => handleUpdateEditTableCell(idx, 'annualSave', e.target.value)}
-                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
-                                  tableModalError && !row.annualSave ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
-                                }`}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${tableModalError && !row.annualSave ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                  }`}
                               />
                             </td>
                             <td className="p-[8px]">
@@ -5038,9 +5022,8 @@ export const DashboardOverview = ({
                                 placeholder="0"
                                 value={row.roi || ''}
                                 onChange={(e) => handleUpdateEditTableCell(idx, 'roi', e.target.value)}
-                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
-                                  tableModalError && !row.roi ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
-                                }`}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${tableModalError && !row.roi ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                  }`}
                               />
                             </td>
                           </>
@@ -5053,9 +5036,8 @@ export const DashboardOverview = ({
                                 placeholder="0"
                                 value={row.currentProd || ''}
                                 onChange={(e) => handleUpdateEditTableCell(idx, 'currentProd', e.target.value)}
-                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
-                                  tableModalError && !row.currentProd ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
-                                }`}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${tableModalError && !row.currentProd ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                  }`}
                               />
                             </td>
                             <td className="p-[8px]">
@@ -5064,9 +5046,8 @@ export const DashboardOverview = ({
                                 placeholder="0"
                                 value={row.improvedProd || ''}
                                 onChange={(e) => handleUpdateEditTableCell(idx, 'improvedProd', e.target.value)}
-                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
-                                  tableModalError && !row.improvedProd ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
-                                }`}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${tableModalError && !row.improvedProd ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                  }`}
                               />
                             </td>
                           </>
@@ -5079,9 +5060,8 @@ export const DashboardOverview = ({
                                 placeholder="0"
                                 value={row.currentPpm || ''}
                                 onChange={(e) => handleUpdateEditTableCell(idx, 'currentPpm', e.target.value)}
-                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
-                                  tableModalError && !row.currentPpm ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
-                                }`}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${tableModalError && !row.currentPpm ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                  }`}
                               />
                             </td>
                             <td className="p-[8px]">
@@ -5090,9 +5070,8 @@ export const DashboardOverview = ({
                                 placeholder="0"
                                 value={row.reducedPpm || ''}
                                 onChange={(e) => handleUpdateEditTableCell(idx, 'reducedPpm', e.target.value)}
-                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${
-                                  tableModalError && !row.reducedPpm ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
-                                }`}
+                                className={`w-full bg-slate-50 border rounded-[6px] py-[6px] px-[10px] text-[11px] outline-none focus:border-[#0066cc] ${tableModalError && !row.reducedPpm ? 'border-rose-500 bg-rose-50/10 focus:border-rose-500' : 'border-slate-200'
+                                  }`}
                               />
                             </td>
                           </>
@@ -5146,11 +5125,11 @@ export const DashboardOverview = ({
 
       {/* Attachment Preview Modal */}
       {previewFile && (
-        <div 
+        <div
           className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={handleClosePreview}
         >
-          <div 
+          <div
             className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -5161,33 +5140,33 @@ export const DashboardOverview = ({
                 </span>
                 <span className="font-bold text-slate-800 text-sm">{previewFile}</span>
               </div>
-              <button 
-                onClick={handleClosePreview} 
+              <button
+                onClick={handleClosePreview}
                 className="text-slate-400 hover:text-slate-655 p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
                 (previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) || (fileTypes[previewFile] && fileTypes[previewFile].startsWith('image/'))) ? (
-                  <img 
-                    src={fileUrls[previewFile]} 
-                    alt={previewFile} 
-                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200" 
+                  <img
+                    src={fileUrls[previewFile]}
+                    alt={previewFile}
+                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200"
                   />
                 ) : (previewFile.toLowerCase().endsWith('.pdf') || (fileTypes[previewFile] && fileTypes[previewFile] === 'application/pdf')) ? (
-                  <iframe 
-                    src={`${fileUrls[previewFile]}#navpanes=0`} 
-                    title={previewFile} 
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white" 
+                  <iframe
+                    src={`${fileUrls[previewFile]}#navpanes=0`}
+                    title={previewFile}
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white"
                   />
                 ) : (
-                  <iframe 
-                    src={fileUrls[previewFile]} 
-                    title={previewFile} 
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700" 
+                  <iframe
+                    src={fileUrls[previewFile]}
+                    title={previewFile}
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700"
                   />
                 )
               ) : (
@@ -5248,7 +5227,7 @@ export const DashboardOverview = ({
                 )
               )}
             </div>
-            
+
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-[8px]">
               {fileUrls[previewFile] && (
                 <a

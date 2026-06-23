@@ -116,7 +116,7 @@ export const L2Validation = ({
       const approvedChanges = changes.filter(
         c => activeL2Nos.has(c.id?.toLowerCase().trim())
       );
-      
+
       if (autoOpenChangeNo) {
         const targetChange = approvedChanges.find(c => c.id.toLowerCase().trim() === autoOpenChangeNo.toLowerCase().trim());
         if (targetChange) {
@@ -127,7 +127,7 @@ export const L2Validation = ({
         if (clearAutoOpen) clearAutoOpen();
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [changes, validationLogs, autoOpenChangeNo]);
 
   // Sync form inputs with saved validation logs when formChangeNo or validationLogs changes
@@ -308,16 +308,16 @@ export const L2Validation = ({
       ]);
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
-      
+
       const matchedChange = changes?.find(c => c.id === changeNo);
-      
+
       if (l2Res.data) {
         setSelectedLog(l2Res.data);
         return;
       }
 
       const matchedL3 = l3Res.data;
-      
+
       const newLogData = {
         changeNo: changeNo,
         date: matchedChange ? formatDateToDDMMYYYY(matchedChange.date) : '-',
@@ -384,7 +384,7 @@ export const L2Validation = ({
     return (
       <div className="mt-1 flex flex-wrap gap-2">
         {files.map((file, idx) => (
-          <span 
+          <span
             key={idx}
             className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
             onClick={() => handleViewAttachment(file, changeNo)}
@@ -405,7 +405,7 @@ export const L2Validation = ({
   const tableLogs = validationLogs || [];
 
   const matchedChange = changes?.find(c => c.id.toLowerCase().trim() === formChangeNo.toLowerCase().trim());
-  const isRaisedByUser = matchedChange && userEmail && 
+  const isRaisedByUser = matchedChange && userEmail &&
     matchedChange.requesterEmail?.toLowerCase().trim() === userEmail.toLowerCase().trim();
 
   const isAdmin = userRole && (
@@ -483,779 +483,773 @@ export const L2Validation = ({
             <h4 className="text-[13px] font-bold text-slate-900">Add L2 Validation Log</h4>
           </div>
 
-        {formChangeNo && isChangeClosed ? (
-          <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-            <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Validation Closed:</span> This change request has been Approved and Closed at the Effectiveness Monitoring stage. No further L2 modifications are allowed.
+          {formChangeNo && isChangeClosed ? (
+            <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+              <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold">Validation Closed:</span> This change request has been Approved and Closed at the Effectiveness Monitoring stage. No further L2 modifications are allowed.
+              </div>
             </div>
-          </div>
-        ) : (
-          <>
-            {formChangeNo && isRaisedByUser && !isQualityOrAdmin && (
-              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-                <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Notice:</span> You raised this change request. You are authorized to upload the <span className="font-semibold">Requester Validation Attachment</span>. QAD department will review and complete the validation.
+          ) : (
+            <>
+              {formChangeNo && isRaisedByUser && !isQualityOrAdmin && (
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                  <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Notice:</span> You raised this change request. You are authorized to upload the <span className="font-semibold">Requester Validation Attachment</span>. QAD department will review and complete the validation.
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {formChangeNo && !isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
-              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-                <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Notice:</span> You are logged in as {isAdmin ? 'Admin' : 'QAD'}. You are authorized to complete the L2 validation status, remarks, and upload the <span className="font-semibold">QA Setup Verification Attachment</span>.
+              {formChangeNo && !isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                  <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Notice:</span> You are logged in as {isAdmin ? 'Admin' : 'QAD'}. You are authorized to complete the L2 validation status, remarks, and upload the <span className="font-semibold">QA Setup Verification Attachment</span>.
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {formChangeNo && isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
-              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-                <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Notice:</span> You are the creator of this change request and {isAdmin ? 'an Admin' : 'a QAD'} member. You have full permissions to update all L2 validation fields.
+              {formChangeNo && isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                  <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Notice:</span> You are the creator of this change request and {isAdmin ? 'an Admin' : 'a QAD'} member. You have full permissions to update all L2 validation fields.
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {formChangeNo && isL2AlreadyValidated && isQualityOrAdmin && !isAdmin && (
-              <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-                <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Validation Locked:</span> L2 validation has already been completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). QAD members and Admins cannot update these fields again.
+              {formChangeNo && isL2AlreadyValidated && isQualityOrAdmin && !isAdmin && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                  <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Validation Locked:</span> L2 validation has already been completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). QAD members and Admins cannot update these fields again.
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {formChangeNo && isL2AlreadyValidated && isAdmin && (
-              <div className="bg-sky-50 border border-sky-200 text-sky-850 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-                <CheckCircle2 size={14} className="text-sky-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Administrator Access:</span> This validation record is completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). As an Admin, you are authorized to modify status, remarks, or delete files.
+              {formChangeNo && isL2AlreadyValidated && isAdmin && (
+                <div className="bg-sky-50 border border-sky-200 text-sky-850 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                  <CheckCircle2 size={14} className="text-sky-500 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Administrator Access:</span> This validation record is completed (Status: <span className="font-bold uppercase">{matchedL2.status === 'Accepted' ? 'Approved' : matchedL2.status}</span>). As an Admin, you are authorized to modify status, remarks, or delete files.
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Accepted' && (
-              <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-                <AlertTriangle size={14} className="text-emerald-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Validation Completed:</span> This request has already been validated and Approved by QAD. No further actions are required.
+              {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Accepted' && (
+                <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                  <AlertTriangle size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Validation Completed:</span> This request has already been validated and Approved by QAD. No further actions are required.
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Rejected' && (
-              <div className="bg-rose-50 border border-rose-250 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-                <AlertTriangle size={14} className="text-rose-505 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Validation Rejected:</span> L2 validation has been rejected by QAD. Please upload a new <span className="font-semibold">Requester Validation Attachment</span> to reset the status to Pending and notify QAD for re-evaluation.
+              {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Rejected' && (
+                <div className="bg-rose-50 border border-rose-250 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                  <AlertTriangle size={14} className="text-rose-505 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Validation Rejected:</span> L2 validation has been rejected by QAD. Please upload a new <span className="font-semibold">Requester Validation Attachment</span> to reset the status to Pending and notify QAD for re-evaluation.
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {formChangeNo && !isRaisedByUser && !isQualityOrAdmin && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-                <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request or QAD department members / Admins.
+              {formChangeNo && !isRaisedByUser && !isQualityOrAdmin && (
+                <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
+                  <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request or QAD department members / Admins.
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
 
-        <form onSubmit={handleSaveLog} className="space-y-[14px]">
-          {/* 4M CHANGE NO */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
-            <input
-              type="text"
-              placeholder="Click a row on the right to select"
-              value={formChangeNo}
-              disabled
-              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
-            />
-          </div>
+          <form onSubmit={handleSaveLog} className="space-y-[14px]">
+            {/* 4M CHANGE NO */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">4M Change No <span className="text-rose-500">*</span></label>
+              <input
+                type="text"
+                placeholder="Click a row on the right to select"
+                value={formChangeNo}
+                disabled
+                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
+              />
+            </div>
 
-          {/* REQUESTED DATE */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
-            <input
-              type="text"
-              placeholder="Click a row on the right to select"
-              value={formDate}
-              disabled
-              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
-            />
-          </div>
+            {/* REQUESTED DATE */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date <span className="text-rose-500">*</span></label>
+              <input
+                type="text"
+                placeholder="Click a row on the right to select"
+                value={formDate}
+                disabled
+                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
+              />
+            </div>
 
-          {/* CHANGE REQUEST BY */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
-            <input
-              type="text"
-              placeholder="Click a row on the right to select"
-              value={formRequester}
-              disabled
-              className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
-            />
-          </div>
+            {/* CHANGE REQUEST BY */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
+              <input
+                type="text"
+                placeholder="Click a row on the right to select"
+                value={formRequester}
+                disabled
+                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
+              />
+            </div>
 
-          {/* REQUESTER VALIDATION ATTACHMENT */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requester Validation Attachment <span className="text-rose-500">*</span></label>
-            <input
-              key={`ped-${formChangeNo}-${pedFiles.map(f => f.name).join(',')}`}
-              type="file"
-              multiple
-              accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isRaisedByUserOrAdmin || !canUploadPed))}
-              onChange={(e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  const files = Array.from(e.target.files);
-                  const MAX_SIZE = 100 * 1024 * 1024; // 100MB
-                  const tooLargeFiles = files.filter(f => f.size > MAX_SIZE);
+            {/* REQUESTER VALIDATION ATTACHMENT */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requester Validation Attachment <span className="text-rose-500">*</span></label>
+              <input
+                key={`ped-${formChangeNo}-${pedFiles.map(f => f.name).join(',')}`}
+                type="file"
+                multiple
+                accept="image/*,application/pdf"
+                disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isRaisedByUserOrAdmin || !canUploadPed))}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    const files = Array.from(e.target.files);
+                    const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+                    const tooLargeFiles = files.filter(f => f.size > MAX_SIZE);
 
-                  if (tooLargeFiles.length > 0) {
-                    setFieldErrors(prev => ({
-                      ...prev,
-                      pedFile: `Upload not allowed: File(s) exceed 100MB limit: ${tooLargeFiles.map(f => f.name).join(', ')}`
-                    }));
-                    e.target.value = '';
-                    return;
-                  }
-
-                  const validFiles = [];
-                  let hasInvalid = false;
-                  files.forEach(file => {
-                    const isImage = file.type.startsWith('image/');
-                    const isPdf = file.type === 'application/pdf';
-                    const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
-                    if ((isImage || isPdf) && hasAllowedExt) {
-                      validFiles.push(file);
-                    } else {
-                      hasInvalid = true;
+                    if (tooLargeFiles.length > 0) {
+                      setFieldErrors(prev => ({
+                        ...prev,
+                        pedFile: `Upload not allowed: File(s) exceed 100MB limit: ${tooLargeFiles.map(f => f.name).join(', ')}`
+                      }));
+                      e.target.value = '';
+                      return;
                     }
-                  });
-                  if (hasInvalid) {
-                    setFieldErrors(prev => ({ ...prev, pedFile: 'Some files were skipped (only PDF and image files are allowed).' }));
-                  } else {
-                    setFieldErrors(prev => ({ ...prev, pedFile: '' }));
-                  }
-                  setPedFiles(prev => [...prev, ...validFiles]);
-                  e.target.value = '';
-                }
-              }}
-              className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
-                fieldErrors.pedFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
-              }`}
-            />
-            {/* Selected PED file chips */}
-            {pedFiles.length > 0 && (
-              <div className="flex flex-wrap gap-[6px] mt-1">
-                {pedFiles.map((file, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-[5px] bg-[#e6f0fa] border border-[#b2d1f0] text-[#0066cc] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
-                  >
-                    <Paperclip size={10} className="shrink-0" />
-                    <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
-                    {formChangeNo.trim() && isRaisedByUserOrAdmin && canUploadPed && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDeleteConfirm({
-                            title: 'Remove File Selection?',
-                            message: `Are you sure you want to remove "${file.name}" from selection?`,
-                            onConfirm: () => {
-                              setPedFiles(prev => prev.filter((_, i) => i !== idx));
-                            }
-                          });
-                        }}
-                        className="ml-[2px] hover:bg-[#b2d1f0] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
-                      >
-                        <X size={9} />
-                      </button>
-                    )}
-                  </span>
-                ))}
-              </div>
-            )}
-            {/* Already Uploaded PED Files */}
-            {existingPedFiles.length > 0 && (
-              <div className="mt-1 flex flex-wrap gap-[6px]">
-                {existingPedFiles.map((file, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-[5px] bg-[#f0f9ff] border border-[#bae6fd] text-[#0284c7] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
-                  >
-                    <Paperclip size={10} className="shrink-0" />
-                    <span 
-                      className="underline truncate max-w-[140px] cursor-pointer"
-                      onClick={() => handleViewAttachment(file, formChangeNo, 'L2')}
-                      title="Click to view/download previously uploaded file"
-                    >
-                      {file}
-                    </span>
-                    {formChangeNo.trim() && !isChangeClosed && (isAdmin || (isRaisedByUserOrAdmin && canUploadPed)) && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDeleteConfirm({
-                            title: 'Delete Uploaded File?',
-                            message: `Are you sure you want to delete the uploaded file "${file}"? This will be saved upon submitting the form.`,
-                            onConfirm: () => {
-                              setExistingPedFiles(prev => prev.filter(f => f !== file));
-                            }
-                          });
-                        }}
-                        className="ml-[2px] hover:bg-[#bae6fd] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
-                        title="Delete previously uploaded file"
-                      >
-                        <X size={9} />
-                      </button>
-                    )}
-                  </span>
-                ))}
-              </div>
-            )}
-            {fieldErrors.pedFile && (
-              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
-                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
-                {fieldErrors.pedFile}
-              </p>
-            )}
-          </div>
 
-          {/* APPROVER SET UP VERIFICATION (QA) ATTACHMENT */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Set Up Verification(QA) Attachment <span className="text-rose-500">*</span></label>
-            <input
-              key={`qa-${formChangeNo}-${qaFiles.map(f => f.name).join(',')}`}
-              type="file"
-              multiple
-              accept="image/*,application/pdf"
-              disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
-              onChange={(e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  const files = Array.from(e.target.files);
-                  const MAX_SIZE = 100 * 1024 * 1024; // 100MB
-                  const tooLargeFiles = files.filter(f => f.size > MAX_SIZE);
-
-                  if (tooLargeFiles.length > 0) {
-                    setFieldErrors(prev => ({
-                      ...prev,
-                      qaFile: `Upload not allowed: File(s) exceed 100MB limit: ${tooLargeFiles.map(f => f.name).join(', ')}`
-                    }));
-                    e.target.value = '';
-                    return;
-                  }
-
-                  const validFiles = [];
-                  let hasInvalid = false;
-                  files.forEach(file => {
-                    const isImage = file.type.startsWith('image/');
-                    const isPdf = file.type === 'application/pdf';
-                    const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
-                    if ((isImage || isPdf) && hasAllowedExt) {
-                      validFiles.push(file);
+                    const validFiles = [];
+                    let hasInvalid = false;
+                    files.forEach(file => {
+                      const isImage = file.type.startsWith('image/');
+                      const isPdf = file.type === 'application/pdf';
+                      const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
+                      if ((isImage || isPdf) && hasAllowedExt) {
+                        validFiles.push(file);
+                      } else {
+                        hasInvalid = true;
+                      }
+                    });
+                    if (hasInvalid) {
+                      setFieldErrors(prev => ({ ...prev, pedFile: 'Some files were skipped (only PDF and image files are allowed).' }));
                     } else {
-                      hasInvalid = true;
+                      setFieldErrors(prev => ({ ...prev, pedFile: '' }));
                     }
-                  });
-                  if (hasInvalid) {
-                    setFieldErrors(prev => ({ ...prev, qaFile: 'Some files were skipped (only PDF and image files are allowed).' }));
-                  } else {
-                    setFieldErrors(prev => ({ ...prev, qaFile: '' }));
+                    setPedFiles(prev => [...prev, ...validFiles]);
+                    e.target.value = '';
                   }
-                  setQaFiles(prev => [...prev, ...validFiles]);
-                  e.target.value = '';
-                }
-              }}
-              className={`w-full text-[11px] text-slate-555 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
-                fieldErrors.qaFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
-              }`}
-            />
-            {/* Selected QA file chips */}
-            {qaFiles.length > 0 && (
-              <div className="flex flex-wrap gap-[6px] mt-1">
-                {qaFiles.map((file, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-[5px] bg-[#e6f0fa] border border-[#b2d1f0] text-[#0066cc] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
-                  >
-                    <Paperclip size={10} className="shrink-0" />
-                    <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
-                    {formChangeNo.trim() && isQualityOrAdmin && !isL2AlreadyValidated && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDeleteConfirm({
-                            title: 'Remove File Selection?',
-                            message: `Are you sure you want to remove "${file.name}" from selection?`,
-                            onConfirm: () => {
-                              setQaFiles(prev => prev.filter((_, i) => i !== idx));
-                            }
-                          });
-                        }}
-                        className="ml-[2px] hover:bg-[#b2d1f0] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
-                      >
-                        <X size={9} />
-                      </button>
-                    )}
-                  </span>
-                ))}
-              </div>
-            )}
-            {/* Already Uploaded QA Files */}
-            {existingQaFiles.length > 0 && (
-              <div className="mt-1 flex flex-wrap gap-[6px]">
-                {existingQaFiles.map((file, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-[5px] bg-[#f0f9ff] border border-[#bae6fd] text-[#0284c7] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
-                  >
-                    <Paperclip size={10} className="shrink-0" />
-                    <span 
-                      className="underline truncate max-w-[140px] cursor-pointer"
-                      onClick={() => handleViewAttachment(file, formChangeNo, 'L2')}
-                      title="Click to view/download previously uploaded file"
+                }}
+                className={`w-full text-[11px] text-slate-550 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${fieldErrors.pedFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
+                  }`}
+              />
+              {/* Selected PED file chips */}
+              {pedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-[6px] mt-1">
+                  {pedFiles.map((file, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-[5px] bg-[#e6f0fa] border border-[#b2d1f0] text-[#0066cc] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
                     >
-                      {file}
+                      <Paperclip size={10} className="shrink-0" />
+                      <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
+                      {formChangeNo.trim() && isRaisedByUserOrAdmin && canUploadPed && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteConfirm({
+                              title: 'Remove File Selection?',
+                              message: `Are you sure you want to remove "${file.name}" from selection?`,
+                              onConfirm: () => {
+                                setPedFiles(prev => prev.filter((_, i) => i !== idx));
+                              }
+                            });
+                          }}
+                          className="ml-[2px] hover:bg-[#b2d1f0] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
+                        >
+                          <X size={9} />
+                        </button>
+                      )}
                     </span>
-                    {formChangeNo.trim() && !isChangeClosed && (isAdmin || (isQualityOrAdmin && !isL2AlreadyValidated)) && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDeleteConfirm({
-                            title: 'Delete Uploaded File?',
-                            message: `Are you sure you want to delete the uploaded file "${file}"? This will be saved upon submitting the form.`,
-                            onConfirm: () => {
-                              setExistingQaFiles(prev => prev.filter(f => f !== file));
-                            }
-                          });
-                        }}
-                        className="ml-[2px] hover:bg-[#bae6fd] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
-                        title="Delete previously uploaded file"
+                  ))}
+                </div>
+              )}
+              {/* Already Uploaded PED Files */}
+              {existingPedFiles.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-[6px]">
+                  {existingPedFiles.map((file, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-[5px] bg-[#f0f9ff] border border-[#bae6fd] text-[#0284c7] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
+                    >
+                      <Paperclip size={10} className="shrink-0" />
+                      <span
+                        className="underline truncate max-w-[140px] cursor-pointer"
+                        onClick={() => handleViewAttachment(file, formChangeNo, 'L2')}
+                        title="Click to view/download previously uploaded file"
                       >
-                        <X size={9} />
-                      </button>
-                    )}
-                  </span>
-                ))}
-              </div>
-            )}
-            {fieldErrors.qaFile && (
-              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
-                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
-                {fieldErrors.qaFile}
-              </p>
-            )}
-          </div>
- 
-          {/* APPROVER VALIDATION STATUS */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
-            <select
-              value={formStatus}
-              disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
-              onChange={(e) => {
-                setFormStatus(e.target.value);
-                setFieldErrors(prev => ({ ...prev, status: '' }));
-              }}
-              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 disabled:cursor-not-allowed text-slate-555 ${
-                fieldErrors.status ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
-              }`}
-            >
-              <option value="">Select Status</option>
-              <option value="Accepted">Approved</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-            {fieldErrors.status && (
-              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
-                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
-                {fieldErrors.status}
-              </p>
-            )}
-          </div>
- 
-          {/* REMARKS */}
-          <div className="space-y-[4px]">
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remarks <span className="text-rose-500">*</span></label>
-            <textarea
-              placeholder="Enter Remarks..."
-              rows={3}
-              value={formRemarks}
-              maxLength={1000}
-              disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
-              onChange={(e) => {
-                setFormRemarks(e.target.value);
-                setFieldErrors(prev => ({ ...prev, remarks: '' }));
-              }}
-              className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none disabled:cursor-not-allowed text-slate-555 ${
-                fieldErrors.remarks ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
-              }`}
-            />
-            <div className="flex justify-between items-center text-[9px] text-slate-400">
-              {fieldErrors.remarks ? (
+                        {file}
+                      </span>
+                      {formChangeNo.trim() && !isChangeClosed && (isAdmin || (isRaisedByUserOrAdmin && canUploadPed)) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteConfirm({
+                              title: 'Delete Uploaded File?',
+                              message: `Are you sure you want to delete the uploaded file "${file}"? This will be saved upon submitting the form.`,
+                              onConfirm: () => {
+                                setExistingPedFiles(prev => prev.filter(f => f !== file));
+                              }
+                            });
+                          }}
+                          className="ml-[2px] hover:bg-[#bae6fd] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
+                          title="Delete previously uploaded file"
+                        >
+                          <X size={9} />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {fieldErrors.pedFile && (
                 <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
                   <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
-                  {fieldErrors.remarks}
+                  {fieldErrors.pedFile}
                 </p>
-              ) : (
-                <span>Provide L2 validation remarks</span>
               )}
-              <span className={`${1000 - formRemarks.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
-                {1000 - formRemarks.length} characters remaining (max 1000 chars)
-              </span>
             </div>
-          </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isSaveDisabled}
-            className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-60 border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="animate-spin" size={14} />
-                <span>Saving Validation Log...</span>
-              </>
-            ) : !formChangeNo.trim() ? (
-              <span>Select a Request to Validate</span>
-            ) : isChangeClosed ? (
-              <span>Validation is Closed</span>
-            ) : !canEdit ? (
-              <span>Access Restricted</span>
-            ) : (matchedL2 && matchedL2.status === 'Accepted') && !isAdmin ? (
-              <span>Validation Locked (Approved)</span>
-            ) : (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0)) && !isAdmin ? (
-              <span>Validation Locked (Rejected)</span>
-            ) : (matchedL2 && matchedL2.status === 'Rejected' && isRaisedByUserOrAdmin && pedFiles.length > 0) ? (
-              <>
-                <Save size={14} />
-                <span>Reset & Resubmit Validation</span>
-              </>
-            ) : (matchedL2 && matchedL2.status === 'Pending' && isRaisedByUser && !isQualityOrAdmin && hasPedUploaded) ? (
-              <span>Awaiting QA Review</span>
-            ) : isAlreadyValidated ? (
-              <>
-                <Save size={14} />
-                <span>Update Validation Log</span>
-              </>
-            ) : (
-              <>
-                <Save size={14} />
-                <span>Save Validation Log</span>
-              </>
-            )}
-          </button>
-        </form>
-      </div>
+            {/* APPROVER SET UP VERIFICATION (QA) ATTACHMENT */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Set Up Verification(QA) Attachment <span className="text-rose-500">*</span></label>
+              <input
+                key={`qa-${formChangeNo}-${qaFiles.map(f => f.name).join(',')}`}
+                type="file"
+                multiple
+                accept="image/*,application/pdf"
+                disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    const files = Array.from(e.target.files);
+                    const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+                    const tooLargeFiles = files.filter(f => f.size > MAX_SIZE);
 
-      {/* RIGHT COLUMN: Table Area */}
-      <div className="lg:col-span-8 min-w-0 space-y-[16px]">
-        {/* Search & Action bar */}
-        <div className="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-wrap gap-3 items-center">
-          <div className="flex-1 min-w-[200px] relative">
-            <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
-            <input
-              type="text"
-              placeholder="Search by change no or remarks..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
-            />
-          </div>
+                    if (tooLargeFiles.length > 0) {
+                      setFieldErrors(prev => ({
+                        ...prev,
+                        qaFile: `Upload not allowed: File(s) exceed 100MB limit: ${tooLargeFiles.map(f => f.name).join(', ')}`
+                      }));
+                      e.target.value = '';
+                      return;
+                    }
 
-          <div>
-            <select
-              value={decisionFilter}
-              onChange={(e) => setDecisionFilter(e.target.value)}
-              className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none focus:border-[#0066cc]"
+                    const validFiles = [];
+                    let hasInvalid = false;
+                    files.forEach(file => {
+                      const isImage = file.type.startsWith('image/');
+                      const isPdf = file.type === 'application/pdf';
+                      const hasAllowedExt = /\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif|pdf)$/i.test(file.name);
+                      if ((isImage || isPdf) && hasAllowedExt) {
+                        validFiles.push(file);
+                      } else {
+                        hasInvalid = true;
+                      }
+                    });
+                    if (hasInvalid) {
+                      setFieldErrors(prev => ({ ...prev, qaFile: 'Some files were skipped (only PDF and image files are allowed).' }));
+                    } else {
+                      setFieldErrors(prev => ({ ...prev, qaFile: '' }));
+                    }
+                    setQaFiles(prev => [...prev, ...validFiles]);
+                    e.target.value = '';
+                  }
+                }}
+                className={`w-full text-[11px] text-slate-555 file:mr-[8px] file:py-[4px] file:px-[8px] file:rounded-[4px] file:border file:bg-slate-50 file:text-[11px] file:font-semibold hover:file:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${fieldErrors.qaFile ? 'file:border-rose-400 border border-rose-300 rounded-[6px] p-1' : 'file:border-slate-200'
+                  }`}
+              />
+              {/* Selected QA file chips */}
+              {qaFiles.length > 0 && (
+                <div className="flex flex-wrap gap-[6px] mt-1">
+                  {qaFiles.map((file, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-[5px] bg-[#e6f0fa] border border-[#b2d1f0] text-[#0066cc] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
+                    >
+                      <Paperclip size={10} className="shrink-0" />
+                      <span className="truncate max-w-[140px]" title={file.name}>{file.name}</span>
+                      {formChangeNo.trim() && isQualityOrAdmin && !isL2AlreadyValidated && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteConfirm({
+                              title: 'Remove File Selection?',
+                              message: `Are you sure you want to remove "${file.name}" from selection?`,
+                              onConfirm: () => {
+                                setQaFiles(prev => prev.filter((_, i) => i !== idx));
+                              }
+                            });
+                          }}
+                          className="ml-[2px] hover:bg-[#b2d1f0] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
+                        >
+                          <X size={9} />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* Already Uploaded QA Files */}
+              {existingQaFiles.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-[6px]">
+                  {existingQaFiles.map((file, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-[5px] bg-[#f0f9ff] border border-[#bae6fd] text-[#0284c7] rounded-[5px] py-[3px] pl-[8px] pr-[5px] text-[10px] font-semibold max-w-full"
+                    >
+                      <Paperclip size={10} className="shrink-0" />
+                      <span
+                        className="underline truncate max-w-[140px] cursor-pointer"
+                        onClick={() => handleViewAttachment(file, formChangeNo, 'L2')}
+                        title="Click to view/download previously uploaded file"
+                      >
+                        {file}
+                      </span>
+                      {formChangeNo.trim() && !isChangeClosed && (isAdmin || (isQualityOrAdmin && !isL2AlreadyValidated)) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteConfirm({
+                              title: 'Delete Uploaded File?',
+                              message: `Are you sure you want to delete the uploaded file "${file}"? This will be saved upon submitting the form.`,
+                              onConfirm: () => {
+                                setExistingQaFiles(prev => prev.filter(f => f !== file));
+                              }
+                            });
+                          }}
+                          className="ml-[2px] hover:bg-[#bae6fd] rounded-full p-[2px] transition-colors cursor-pointer shrink-0"
+                          title="Delete previously uploaded file"
+                        >
+                          <X size={9} />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {fieldErrors.qaFile && (
+                <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
+                  <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
+                  {fieldErrors.qaFile}
+                </p>
+              )}
+            </div>
+
+            {/* APPROVER VALIDATION STATUS */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approver Validation Status <span className="text-rose-500">*</span></label>
+              <select
+                value={formStatus}
+                disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
+                onChange={(e) => {
+                  setFormStatus(e.target.value);
+                  setFieldErrors(prev => ({ ...prev, status: '' }));
+                }}
+                className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 disabled:cursor-not-allowed text-slate-555 ${fieldErrors.status ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+                  }`}
+              >
+                <option value="">Select Status</option>
+                <option value="Accepted">Approved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+              {fieldErrors.status && (
+                <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
+                  <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
+                  {fieldErrors.status}
+                </p>
+              )}
+            </div>
+
+            {/* REMARKS */}
+            <div className="space-y-[4px]">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remarks <span className="text-rose-500">*</span></label>
+              <textarea
+                placeholder="Enter Remarks..."
+                rows={3}
+                value={formRemarks}
+                maxLength={1000}
+                disabled={!formChangeNo.trim() || isChangeClosed || (!isAdmin && (!isQualityOrAdmin || isL2AlreadyValidated))}
+                onChange={(e) => {
+                  setFormRemarks(e.target.value);
+                  setFieldErrors(prev => ({ ...prev, remarks: '' }));
+                }}
+                className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 resize-none disabled:cursor-not-allowed text-slate-555 ${fieldErrors.remarks ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+                  }`}
+              />
+              <div className="flex justify-between items-center text-[9px] text-slate-400">
+                {fieldErrors.remarks ? (
+                  <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
+                    <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
+                    {fieldErrors.remarks}
+                  </p>
+                ) : (
+                  <span>Provide L2 validation remarks</span>
+                )}
+                <span className={`${1000 - formRemarks.length <= 15 ? 'text-amber-600 font-bold animate-pulse' : 'text-slate-400'}`}>
+                  {1000 - formRemarks.length} characters remaining (max 1000 chars)
+                </span>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isSaveDisabled}
+              className="w-full flex items-center justify-center gap-[6px] bg-[#e6f0fa] hover:bg-[#d6e6f5] disabled:opacity-60 border border-[#b2d1f0] text-[#0066cc] py-[10px] rounded-[6px] text-[12px] font-bold transition-all transform active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed"
             >
-              <option value="All">All Decisions</option>
-              <option value="Rejected">Rejected</option>
-              <option value="QA Approval Needed">QA Approval Needed</option>
-              <option value="Pending Requester Validation">Pending Requester Validation</option>
-            </select>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleExportPDF}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
-            title="Export L2 validation logs as PDF"
-          >
-            <Download size={12} />
-            <span>Export PDF</span>
-          </button>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="animate-spin" size={14} />
+                  <span>Saving Validation Log...</span>
+                </>
+              ) : !formChangeNo.trim() ? (
+                <span>Select a Request to Validate</span>
+              ) : isChangeClosed ? (
+                <span>Validation is Closed</span>
+              ) : !canEdit ? (
+                <span>Access Restricted</span>
+              ) : (matchedL2 && matchedL2.status === 'Accepted') && !isAdmin ? (
+                <span>Validation Locked (Approved)</span>
+              ) : (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0)) && !isAdmin ? (
+                <span>Validation Locked (Rejected)</span>
+              ) : (matchedL2 && matchedL2.status === 'Rejected' && isRaisedByUserOrAdmin && pedFiles.length > 0) ? (
+                <>
+                  <Save size={14} />
+                  <span>Reset & Resubmit Validation</span>
+                </>
+              ) : (matchedL2 && matchedL2.status === 'Pending' && isRaisedByUser && !isQualityOrAdmin && hasPedUploaded) ? (
+                <span>Awaiting QA Review</span>
+              ) : isAlreadyValidated ? (
+                <>
+                  <Save size={14} />
+                  <span>Update Validation Log</span>
+                </>
+              ) : (
+                <>
+                  <Save size={14} />
+                  <span>Save Validation Log</span>
+                </>
+              )}
+            </button>
+          </form>
         </div>
 
-        {/* Table layout */}
-        <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-          {/* Desktop Table View */}
-          <div className="hidden md:block">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[1000px]">
-                <thead>
-                  <tr className="bg-[#fdfaf5] border-b border-slate-150">
-                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Sl No</th>
-                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
-                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
-                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Change Request By</th>
-                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requester Validation</th>
-                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approver Set Up Verification(QA)</th>
-                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approver Validation Status</th>
-                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
-                    <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-[12px]">
-                  {isFetchingLogs ? (
-                    <tr>
-                      <td colSpan={9} className="text-center py-[48px] text-slate-400">
-                        <div className="flex flex-col items-center justify-center gap-[8px]">
-                          <Loader2 className="animate-spin text-[#0066cc]" size={20} />
-                          <span>Fetching validation logs...</span>
-                        </div>
-                      </td>
+        {/* RIGHT COLUMN: Table Area */}
+        <div className="lg:col-span-8 min-w-0 space-y-[16px]">
+          {/* Search & Action bar */}
+          <div className="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-wrap gap-3 items-center">
+            <div className="flex-1 min-w-[200px] relative">
+              <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
+              <input
+                type="text"
+                placeholder="Search by change no or remarks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:border-[#0066cc]"
+              />
+            </div>
+
+            <div>
+              <select
+                value={decisionFilter}
+                onChange={(e) => setDecisionFilter(e.target.value)}
+                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none focus:border-[#0066cc]"
+              >
+                <option value="All">All Decisions</option>
+                <option value="Rejected">Rejected</option>
+                <option value="QA Approval Needed">QA Approval Needed</option>
+                <option value="Pending Requester Validation">Pending Requester Validation</option>
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleExportPDF}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
+              title="Export L2 validation logs as PDF"
+            >
+              <Download size={12} />
+              <span>Export PDF</span>
+            </button>
+          </div>
+
+          {/* Table layout */}
+          <div className="bg-white border border-slate-200/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[1000px]">
+                  <thead>
+                    <tr className="bg-[#fdfaf5] border-b border-slate-150">
+                      <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Sl No</th>
+                      <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">4M Change No</th>
+                      <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requested Date</th>
+                      <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Change Request By</th>
+                      <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Requester Validation</th>
+                      <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approver Set Up Verification(QA)</th>
+                      <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Approver Validation Status</th>
+                      <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
+                      <th className="p-[12px] text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Actions</th>
                     </tr>
-                  ) : filteredLogs.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="text-center py-[48px] text-slate-400">
-                        No L2 validation records found.
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedLogs.map((log, idx) => (
-                      <tr
-                        key={idx}
-                        className="hover:bg-slate-50/50 cursor-pointer"
-                        onClick={() => {
-                          setFormChangeNo(log.changeNo || '');
-                          setFormDate(formatDateToDDMMYYYY(log.date));
-                          setFormRequester(log.requester || '');
-                        }}
-                      >
-                        <td className="p-[12px] font-bold text-slate-400">{page * rowsPerPage + idx + 1}</td>
-                        <td className="p-[12px] font-bold text-[#0066cc]">{log.changeNo}</td>
-                        <td className="p-[12px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
-                        <td className="p-[12px] font-medium text-slate-700">{log.requester}</td>
-                        <td className="p-[12px]">
-                          <div className="flex flex-wrap gap-[4px]">
-                            {(log.weldTest && log.weldTest !== '-'
-                              ? log.weldTest.split(',').map(s => s.trim()).filter(Boolean)
-                              : [log.weldTest || '-']
-                            ).map((fname, fi) => (
-                              <span
-                                key={fi}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewAttachment(fname, log.changeNo, 'L2');
-                                }}
-                                className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
-                              >
-                                <Paperclip size={12} className="text-slate-400" />
-                                <span className="underline truncate max-w-[120px]">{fname}</span>
-                              </span>
-                            ))}
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-[12px]">
+                    {isFetchingLogs ? (
+                      <tr>
+                        <td colSpan={9} className="text-center py-[48px] text-slate-400">
+                          <div className="flex flex-col items-center justify-center gap-[8px]">
+                            <Loader2 className="animate-spin text-[#0066cc]" size={20} />
+                            <span>Fetching validation logs...</span>
                           </div>
-                        </td>
-                        <td className="p-[12px]">
-                          <div className="flex flex-wrap gap-[4px]">
-                            {(log.qaTest && log.qaTest !== '-'
-                              ? log.qaTest.split(',').map(s => s.trim()).filter(Boolean)
-                              : [log.qaTest || '-']
-                            ).map((fname, fi) => (
-                              <span
-                                key={fi}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleViewAttachment(fname, log.changeNo, 'L2');
-                                }}
-                                className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
-                              >
-                                <Paperclip size={12} className="text-slate-400" />
-                                <span className="underline truncate max-w-[120px]">{fname}</span>
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="p-[12px]">
-                          <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
-                              log.status === 'Accepted'
-                                ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                                : log.status === 'Pending'
-                                ? (log.weldTest && log.weldTest !== '-' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-250 text-amber-700')
-                                : 'bg-rose-50 border-rose-250 text-rose-700'
-                            }`}>
-                            {log.status === 'Accepted'
-                              ? 'Approved'
-                              : log.status === 'Pending'
-                              ? (log.weldTest && log.weldTest !== '-' ? 'QA Approval Needed' : 'Pending Requester Validation')
-                              : log.status}
-                          </span>
-                        </td>
-                        <td className="p-[12px] text-slate-500 max-w-[220px] truncate" title={log.remarks}>
-                          {log.remarks}
-                        </td>
-                        <td className="p-[12px] text-center">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewL1Details(log.changeNo);
-                            }}
-                            className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
-                          >
-                            <Eye size={14} />
-                          </button>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : filteredLogs.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="text-center py-[48px] text-slate-400">
+                          No L2 validation records found.
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedLogs.map((log, idx) => (
+                        <tr
+                          key={idx}
+                          className="hover:bg-slate-50/50 cursor-pointer"
+                          onClick={() => {
+                            setFormChangeNo(log.changeNo || '');
+                            setFormDate(formatDateToDDMMYYYY(log.date));
+                            setFormRequester(log.requester || '');
+                          }}
+                        >
+                          <td className="p-[12px] font-bold text-slate-400">{page * rowsPerPage + idx + 1}</td>
+                          <td className="p-[12px] font-bold text-[#0066cc]">{log.changeNo}</td>
+                          <td className="p-[12px] text-slate-500">{formatDateToDDMMYYYY(log.date)}</td>
+                          <td className="p-[12px] font-medium text-slate-700">{log.requester}</td>
+                          <td className="p-[12px]">
+                            <div className="flex flex-wrap gap-[4px]">
+                              {(log.weldTest && log.weldTest !== '-'
+                                ? log.weldTest.split(',').map(s => s.trim()).filter(Boolean)
+                                : [log.weldTest || '-']
+                              ).map((fname, fi) => (
+                                <span
+                                  key={fi}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewAttachment(fname, log.changeNo, 'L2');
+                                  }}
+                                  className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
+                                >
+                                  <Paperclip size={12} className="text-slate-400" />
+                                  <span className="underline truncate max-w-[120px]">{fname}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="p-[12px]">
+                            <div className="flex flex-wrap gap-[4px]">
+                              {(log.qaTest && log.qaTest !== '-'
+                                ? log.qaTest.split(',').map(s => s.trim()).filter(Boolean)
+                                : [log.qaTest || '-']
+                              ).map((fname, fi) => (
+                                <span
+                                  key={fi}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewAttachment(fname, log.changeNo, 'L2');
+                                  }}
+                                  className="inline-flex items-center gap-[4px] text-slate-500 hover:text-[#0066cc] cursor-pointer"
+                                >
+                                  <Paperclip size={12} className="text-slate-400" />
+                                  <span className="underline truncate max-w-[120px]">{fname}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="p-[12px]">
+                            <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${log.status === 'Accepted'
+                                ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                                : log.status === 'Pending'
+                                  ? (log.weldTest && log.weldTest !== '-' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-250 text-amber-700')
+                                  : 'bg-rose-50 border-rose-250 text-rose-700'
+                              }`}>
+                              {log.status === 'Accepted'
+                                ? 'Approved'
+                                : log.status === 'Pending'
+                                  ? (log.weldTest && log.weldTest !== '-' ? 'QA Approval Needed' : 'Pending Requester Validation')
+                                  : log.status}
+                            </span>
+                          </td>
+                          <td className="p-[12px] text-slate-500 max-w-[220px] truncate" title={log.remarks}>
+                            {log.remarks}
+                          </td>
+                          <td className="p-[12px] text-center">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewL1Details(log.changeNo);
+                              }}
+                              className="p-[4px] hover:bg-slate-100 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer"
+                            >
+                              <Eye size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
 
-          {/* Mobile Cards View */}
-          <div className="flex md:hidden flex-col gap-[12px] p-[12px] bg-slate-50">
-            {isFetchingLogs ? (
-              <div className="flex flex-col items-center justify-center py-[24px] text-slate-400">
-                <Loader2 className="animate-spin text-[#0066cc]" size={20} />
-                <span className="text-[12px] mt-1">Fetching validation logs...</span>
-              </div>
-            ) : filteredLogs.length === 0 ? (
-              <div className="text-center py-[24px] text-slate-400 text-[12px]">
-                No L2 validation records found.
-              </div>
-            ) : (
-              paginatedLogs.map((log, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => {
-                    setFormChangeNo(log.changeNo || '');
-                    setFormDate(formatDateToDDMMYYYY(log.date));
-                    setFormRequester(log.requester || '');
-                  }}
-                  className="bg-white border border-slate-200 rounded-[12px] p-[16px] shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-[12px]"
-                >
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-[8px]">
-                    <span className="font-mono font-bold text-[#0066cc] text-[12px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-                      {log.changeNo}
-                    </span>
-                    <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${
-                        log.status === 'Accepted'
+            {/* Mobile Cards View */}
+            <div className="flex md:hidden flex-col gap-[12px] p-[12px] bg-slate-50">
+              {isFetchingLogs ? (
+                <div className="flex flex-col items-center justify-center py-[24px] text-slate-400">
+                  <Loader2 className="animate-spin text-[#0066cc]" size={20} />
+                  <span className="text-[12px] mt-1">Fetching validation logs...</span>
+                </div>
+              ) : filteredLogs.length === 0 ? (
+                <div className="text-center py-[24px] text-slate-400 text-[12px]">
+                  No L2 validation records found.
+                </div>
+              ) : (
+                paginatedLogs.map((log, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      setFormChangeNo(log.changeNo || '');
+                      setFormDate(formatDateToDDMMYYYY(log.date));
+                      setFormRequester(log.requester || '');
+                    }}
+                    className="bg-white border border-slate-200 rounded-[12px] p-[16px] shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-[12px]"
+                  >
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-[8px]">
+                      <span className="font-mono font-bold text-[#0066cc] text-[12px] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                        {log.changeNo}
+                      </span>
+                      <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${log.status === 'Accepted'
                           ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
                           : log.status === 'Pending'
-                          ? (log.weldTest && log.weldTest !== '-' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-250 text-amber-700')
-                          : 'bg-rose-50 border-rose-250 text-rose-700'
-                      }`}>
-                      {log.status === 'Accepted'
-                        ? 'Approved'
-                        : log.status === 'Pending'
-                        ? (log.weldTest && log.weldTest !== '-' ? 'QA Approval Needed' : 'Pending Requester Validation')
-                        : log.status}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-[8px] gap-x-[12px]">
-                    <div className="flex flex-col gap-[2px]">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
-                      <span className="text-[12px] font-semibold text-slate-755">{formatDateToDDMMYYYY(log.date)}</span>
-                    </div>
-                    <div className="flex flex-col gap-[2px]">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
-                      <span className="text-[12px] font-semibold text-slate-755 break-words">{log.requester}</span>
+                            ? (log.weldTest && log.weldTest !== '-' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-250 text-amber-700')
+                            : 'bg-rose-50 border-rose-250 text-rose-700'
+                        }`}>
+                        {log.status === 'Accepted'
+                          ? 'Approved'
+                          : log.status === 'Pending'
+                            ? (log.weldTest && log.weldTest !== '-' ? 'QA Approval Needed' : 'Pending Requester Validation')
+                            : log.status}
+                      </span>
                     </div>
 
-                    <div className="flex flex-col gap-[2px] col-span-2">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Requester Validation</span>
-                      <div className="flex flex-wrap gap-[4px] mt-0.5">
-                        {(log.weldTest && log.weldTest !== '-'
-                          ? log.weldTest.split(',').map(s => s.trim()).filter(Boolean)
-                          : [log.weldTest || '-']
-                        ).map((fname, fi) => (
-                          <span
-                            key={fi}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewAttachment(fname, log.changeNo, 'L2');
-                            }}
-                            className="inline-flex items-center gap-[4px] text-[#0066cc] hover:underline cursor-pointer bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[11px]"
-                          >
-                            <Paperclip size={11} className="text-slate-400" />
-                            <span className="truncate max-w-[120px]">{fname}</span>
-                          </span>
-                        ))}
+                    <div className="grid grid-cols-2 gap-[8px] gap-x-[12px]">
+                      <div className="flex flex-col gap-[2px]">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                        <span className="text-[12px] font-semibold text-slate-755">{formatDateToDDMMYYYY(log.date)}</span>
                       </div>
+                      <div className="flex flex-col gap-[2px]">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
+                        <span className="text-[12px] font-semibold text-slate-755 break-words">{log.requester}</span>
+                      </div>
+
+                      <div className="flex flex-col gap-[2px] col-span-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Requester Validation</span>
+                        <div className="flex flex-wrap gap-[4px] mt-0.5">
+                          {(log.weldTest && log.weldTest !== '-'
+                            ? log.weldTest.split(',').map(s => s.trim()).filter(Boolean)
+                            : [log.weldTest || '-']
+                          ).map((fname, fi) => (
+                            <span
+                              key={fi}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewAttachment(fname, log.changeNo, 'L2');
+                              }}
+                              className="inline-flex items-center gap-[4px] text-[#0066cc] hover:underline cursor-pointer bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[11px]"
+                            >
+                              <Paperclip size={11} className="text-slate-400" />
+                              <span className="truncate max-w-[120px]">{fname}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-[2px] col-span-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Setup Verification</span>
+                        <div className="flex flex-wrap gap-[4px] mt-0.5">
+                          {(log.qaTest && log.qaTest !== '-'
+                            ? log.qaTest.split(',').map(s => s.trim()).filter(Boolean)
+                            : [log.qaTest || '-']
+                          ).map((fname, fi) => (
+                            <span
+                              key={fi}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewAttachment(fname, log.changeNo, 'L2');
+                              }}
+                              className="inline-flex items-center gap-[4px] text-[#0066cc] hover:underline cursor-pointer bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[11px]"
+                            >
+                              <Paperclip size={11} className="text-slate-400" />
+                              <span className="truncate max-w-[120px]">{fname}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {log.remarks && log.remarks !== '-' && (
+                        <div className="flex flex-col gap-[2px] col-span-2 border-t border-slate-100 pt-2">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Remarks</span>
+                          <p className="text-[12px] text-slate-655 bg-slate-50 border border-slate-150 rounded p-2 mt-0.5 break-words">{log.remarks}</p>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex flex-col gap-[2px] col-span-2">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Setup Verification</span>
-                      <div className="flex flex-wrap gap-[4px] mt-0.5">
-                        {(log.qaTest && log.qaTest !== '-'
-                          ? log.qaTest.split(',').map(s => s.trim()).filter(Boolean)
-                          : [log.qaTest || '-']
-                        ).map((fname, fi) => (
-                          <span
-                            key={fi}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewAttachment(fname, log.changeNo, 'L2');
-                            }}
-                            className="inline-flex items-center gap-[4px] text-[#0066cc] hover:underline cursor-pointer bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[11px]"
-                          >
-                            <Paperclip size={11} className="text-slate-400" />
-                            <span className="truncate max-w-[120px]">{fname}</span>
-                          </span>
-                        ))}
-                      </div>
+                    <div className="flex justify-end border-t border-slate-100 pt-[12px] mt-[4px]">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewL1Details(log.changeNo);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50 transition-all shadow-sm cursor-pointer"
+                      >
+                        <Eye size={12} />
+                        View Details
+                      </button>
                     </div>
-
-                    {log.remarks && log.remarks !== '-' && (
-                      <div className="flex flex-col gap-[2px] col-span-2 border-t border-slate-100 pt-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Remarks</span>
-                        <p className="text-[12px] text-slate-655 bg-slate-50 border border-slate-150 rounded p-2 mt-0.5 break-words">{log.remarks}</p>
-                      </div>
-                    )}
                   </div>
-
-                  <div className="flex justify-end border-t border-slate-100 pt-[12px] mt-[4px]">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleViewL1Details(log.changeNo);
-                      }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50 transition-all shadow-sm cursor-pointer"
-                    >
-                      <Eye size={12} />
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
+            <TablePagination
+              rowsPerPageOptions={[5, 10]}
+              component="div"
+              count={filteredLogs.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={(event, newPage) => setPage(newPage)}
+              onRowsPerPageChange={(event) => {
+                setRowsPerPage(parseInt(event.target.value, 10));
+                setPage(0);
+              }}
+              className="border-t border-slate-100"
+            />
           </div>
-          <TablePagination
-            rowsPerPageOptions={[5, 10]}
-            component="div"
-            count={filteredLogs.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={(event, newPage) => setPage(newPage)}
-            onRowsPerPageChange={(event) => {
-              setRowsPerPage(parseInt(event.target.value, 10));
-              setPage(0);
-            }}
-            className="border-t border-slate-100"
-          />
         </div>
-      </div>
       </div>
       {/* Validation Warning Modal */}
       {validationError && (
@@ -1376,203 +1370,202 @@ export const L2Validation = ({
                 </div>
               ) : (
                 <>
-              
-              {/* Section 1: General Info */}
-              <div className="space-y-[12px]">
-                <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                  <Folder size={14} />
-                  <span>General Information</span>
-                </h5>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px]">
-                  <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
-                    <span className="font-mono font-bold text-slate-800">{selectedL1Details.change_no}</span>
-                  </div>
-                  <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
-                    <span className="font-medium text-slate-700">{selectedL1Details.crDate ? formatDateToDDMMYYYY(selectedL1Details.crDate) : '-'}</span>
-                  </div>
-                  <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Time</span>
-                    <span className="font-medium text-slate-700">{selectedL1Details.requested_time}</span>
-                  </div>
-                  <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
-                    <div className="flex gap-1.5 items-center mt-0.5">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                        selectedL1Details.crStatus !== 'Pending' 
-                          ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
-                          : 'bg-amber-50 border-amber-220 text-amber-700'
-                      }`}>
-                        L1 {selectedL1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}
-                      </span>
+
+                  {/* Section 1: General Info */}
+                  <div className="space-y-[12px]">
+                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                      <Folder size={14} />
+                      <span>General Information</span>
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px]">
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
+                        <span className="font-mono font-bold text-slate-800">{selectedL1Details.change_no}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
+                        <span className="font-medium text-slate-700">{selectedL1Details.crDate ? formatDateToDDMMYYYY(selectedL1Details.crDate) : '-'}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Time</span>
+                        <span className="font-medium text-slate-700">{selectedL1Details.requested_time}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
+                        <div className="flex gap-1.5 items-center mt-0.5">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL1Details.crStatus !== 'Pending'
+                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                              : 'bg-amber-50 border-amber-220 text-amber-700'
+                            }`}>
+                            L1 {selectedL1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-[12px]">
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change</span>
+                        <span className="font-semibold text-slate-855 block break-words">{selectedL1Details.title ? selectedL1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
+                          <span className="font-medium text-slate-700">{selectedL1Details.unit}</span>
+                        </div>
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In</span>
+                          <span className="font-medium text-slate-750">{selectedL1Details.change_in}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                      <div className="space-y-[4px] md:col-span-2">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
+                        <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
+                        {selectedL1Details.crRequester && selectedL1Details.crRequester.toLowerCase() !== selectedL1Details.request_by?.toLowerCase() && (
+                          <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
+                        )}
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
+                        <span className="font-medium text-slate-700">{selectedL1Details.dept}</span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
+                        <span className="font-medium text-slate-700">{selectedL1Details.change_type}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
+                      <div className="space-y-[4px] min-w-0">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
+                        <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_name}</span>
+                      </div>
+                      <div className="space-y-[4px] min-w-0">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line</span>
+                        <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_line}</span>
+                      </div>
+                      <div className="space-y-[4px] col-span-2 md:col-span-1 min-w-0">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No</span>
+                        <span className="font-mono text-slate-700 block break-words break-all">{selectedL1Details.machine_no}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-[12px]">
-                  <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
-                    <span className="font-semibold text-slate-855 block break-words">{selectedL1Details.title ? selectedL1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
-                    <div className="space-y-[4px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
-                      <span className="font-medium text-slate-700">{selectedL1Details.unit}</span>
+                  {/* Section 2: Details & Timeline */}
+                  <div className="space-y-[12px] pt-4 border-t border-slate-100">
+                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                      <FileText size={14} />
+                      <span>Details & Justification</span>
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+                      <div className="space-y-[6px] min-w-0">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Change Description</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
+                          {selectedL1Details.description}
+                        </div>
+                        {selectedL1Details.file_desc && renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
+                      </div>
+
+                      <div className="space-y-[6px] min-w-0">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Area of Improvement / Benefit</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
+                          {selectedL1Details.improvement_area}
+                        </div>
+                        {selectedL1Details.file_improvement && renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no)}
+                      </div>
                     </div>
-                    <div className="space-y-[4px]">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In</span>
-                      <span className="font-medium text-slate-750">{selectedL1Details.change_in}</span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Start</span>
+                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                          <Calendar size={13} className="text-slate-400" />
+                          {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
+                        </span>
+                      </div>
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Close</span>
+                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                          <Calendar size={13} className="text-slate-400" />
+                          {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
-                  <div className="space-y-[4px] md:col-span-2">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
-                    <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
-                    {selectedL1Details.crRequester && selectedL1Details.crRequester.toLowerCase() !== selectedL1Details.request_by?.toLowerCase() && (
-                      <span className="block text-[11px] text-slate-400 mt-0.5 font-mono break-all">{selectedL1Details.crRequester}</span>
-                    )}
-                  </div>
-                  <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
-                    <span className="font-medium text-slate-700">{selectedL1Details.dept}</span>
-                  </div>
-                  <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
-                    <span className="font-medium text-slate-700">{selectedL1Details.change_type}</span>
-                  </div>
-                </div>
+                  {/* Section 3: Traceability & Risk */}
+                  <div className="space-y-[12px] pt-4 border-t border-slate-100">
+                    <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                      <Cpu size={14} />
+                      <span>Traceability, Risk & Approvals</span>
+                    </h5>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
-                  <div className="space-y-[4px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
-                    <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_name}</span>
-                  </div>
-                  <div className="space-y-[4px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Line</span>
-                    <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_line}</span>
-                  </div>
-                  <div className="space-y-[4px] col-span-2 md:col-span-1 min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Machine No</span>
-                    <span className="font-mono text-slate-700 block break-words break-all">{selectedL1Details.machine_no}</span>
-                  </div>
-                </div>
-              </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+                      <div className="space-y-[6px] min-w-0">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Traceability FROM (Before Change)</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
+                          {selectedL1Details.trace_from}
+                        </div>
+                        {selectedL1Details.file_trace_from && renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
+                      </div>
 
-              {/* Section 2: Details & Timeline */}
-              <div className="space-y-[12px] pt-4 border-t border-slate-100">
-                <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                  <FileText size={14} />
-                  <span>Details & Justification</span>
-                </h5>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
-                  <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Change Description</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                      {selectedL1Details.description}
+                      <div className="space-y-[6px] min-w-0">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Traceability TO (After Change)</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
+                          {selectedL1Details.trace_to}
+                        </div>
+                        {selectedL1Details.file_trace_to && renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
+                      </div>
                     </div>
-                    {selectedL1Details.file_desc && renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
-                  </div>
 
-                  <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Area of Improvement / Benefit</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                      {selectedL1Details.improvement_area}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
+                      <div className="space-y-[6px] min-w-0">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Risk Analysis & Mitigations</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
+                          {selectedL1Details.risk_analysis}
+                        </div>
+                        {selectedL1Details.file_risk && renderL1FilePill(selectedL1Details.file_risk, selectedL1Details.change_no)}
+                      </div>
+
+                      <div className="space-y-[6px] min-w-0">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">SOP / WI / Control Plan Update</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
+                          {selectedL1Details.sop_update}
+                        </div>
+                        {selectedL1Details.file_sop && renderL1FilePill(selectedL1Details.file_sop, selectedL1Details.change_no)}
+                      </div>
                     </div>
-                    {selectedL1Details.file_improvement && renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no)}
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
-                  <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Start</span>
-                    <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                      <Calendar size={13} className="text-slate-400" />
-                      {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
-                    </span>
-                  </div>
-                  <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Close</span>
-                    <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                      <Calendar size={13} className="text-slate-400" />
-                      {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-4">
+                      <div className="space-y-[4px]">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Approval</span>
+                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                          <CheckCircle2 size={14} className="text-emerald-500" />
+                          {selectedL1Details.hod_approval}
+                        </span>
+                      </div>
+                      <div className="space-y-[4px]">
 
-              {/* Section 3: Traceability & Risk */}
-              <div className="space-y-[12px] pt-4 border-t border-slate-100">
-                <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                  <Cpu size={14} />
-                  <span>Traceability, Risk & Approvals</span>
-                </h5>
+                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
-                  <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Traceability FROM (Before Change)</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                      {selectedL1Details.trace_from}
+                          <span>{showCustomerApproval ? selectedL1Details.customer_approval : '••••'}</span>
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomerApproval(!showCustomerApproval)}
+                            className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
+                            title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
+                          >
+                            {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
+                          </button>
+                        </span>
+                      </div>
+
                     </div>
-                    {selectedL1Details.file_trace_from && renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
                   </div>
-
-                  <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Traceability TO (After Change)</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                      {selectedL1Details.trace_to}
-                    </div>
-                    {selectedL1Details.file_trace_to && renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
-                  <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Risk Analysis & Mitigations</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                      {selectedL1Details.risk_analysis}
-                    </div>
-                    {selectedL1Details.file_risk && renderL1FilePill(selectedL1Details.file_risk, selectedL1Details.change_no)}
-                  </div>
-
-                  <div className="space-y-[6px] min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">SOP / WI / Control Plan Update</span>
-                    <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                      {selectedL1Details.sop_update}
-                    </div>
-                    {selectedL1Details.file_sop && renderL1FilePill(selectedL1Details.file_sop, selectedL1Details.change_no)}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-4">
-                  <div className="space-y-[4px]">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Approval</span>
-                    <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                      <CheckCircle2 size={14} className="text-emerald-500" />
-                      {selectedL1Details.hod_approval}
-                    </span>
-                  </div>
-                  <div className="space-y-[4px]">
-                  
-                    <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                    
-                      <span>{showCustomerApproval ? selectedL1Details.customer_approval : '••••'}</span>
-                      <button
-                        type="button"
-                        onClick={() => setShowCustomerApproval(!showCustomerApproval)}
-                        className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
-                        title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
-                      >
-                        {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
-                      </button>
-                    </span>
-                  </div>
-                  
-                </div>
-              </div>
-              </>
+                </>
               )}
 
             </div>
@@ -1581,7 +1574,7 @@ export const L2Validation = ({
             <div className="px-[16px] sm:px-[24px] py-[16px] bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span className="hidden sm:inline text-[11px] font-semibold text-slate-400">Nippon Change Management System</span>
               <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
-                <button 
+                <button
                   onClick={handleExportRequestDetailsPDF}
                   disabled={isFetchingL1}
                   className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px] whitespace-nowrap"
@@ -1604,11 +1597,11 @@ export const L2Validation = ({
 
       {/* Attachment Preview Modal (opens in the same page) */}
       {previewFile && (
-        <div 
+        <div
           className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setPreviewFile(null)}
         >
-          <div 
+          <div
             className="bg-white border border-slate-200 rounded-xl shadow-lg w-full max-w-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1619,33 +1612,33 @@ export const L2Validation = ({
                 </span>
                 <span className="font-bold text-slate-800 text-sm">{previewFile}</span>
               </div>
-              <button 
-                onClick={() => setPreviewFile(null)} 
+              <button
+                onClick={() => setPreviewFile(null)}
                 className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50 flex items-center justify-center min-h-[300px]">
               {fileUrls[previewFile] ? (
                 (previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heic|heif|avif)$/) || (fileTypes[previewFile] && fileTypes[previewFile].startsWith('image/'))) ? (
-                  <img 
-                    src={fileUrls[previewFile]} 
-                    alt={previewFile} 
-                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200" 
+                  <img
+                    src={fileUrls[previewFile]}
+                    alt={previewFile}
+                    className="max-w-full max-h-[60vh] object-contain rounded border border-slate-200"
                   />
                 ) : (previewFile.toLowerCase().endsWith('.pdf') || (fileTypes[previewFile] && fileTypes[previewFile] === 'application/pdf')) ? (
-                  <iframe 
-                    src={`${fileUrls[previewFile]}#navpanes=0`} 
-                    title={previewFile} 
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white" 
+                  <iframe
+                    src={`${fileUrls[previewFile]}#navpanes=0`}
+                    title={previewFile}
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white"
                   />
                 ) : (
-                  <iframe 
-                    src={fileUrls[previewFile]} 
-                    title={previewFile} 
-                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700" 
+                  <iframe
+                    src={fileUrls[previewFile]}
+                    title={previewFile}
+                    className="w-full h-[60vh] rounded border border-slate-200 bg-white p-4 font-mono text-xs text-slate-700"
                   />
                 )
               ) : (
@@ -1706,7 +1699,7 @@ export const L2Validation = ({
                 )
               )}
             </div>
-            
+
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
               <button
                 onClick={() => setPreviewFile(null)}

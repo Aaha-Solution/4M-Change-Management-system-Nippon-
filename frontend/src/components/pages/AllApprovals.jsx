@@ -135,11 +135,10 @@ const WorkflowStrip = ({ crStatus, qaApproval }) => {
       {steps.map((s, i) => (
         <div key={s.key} className="flex items-center">
           <div className="flex flex-col items-center relative">
-            <div className={`w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-black border-2 transition-all ${
-              i < activeIdx ? 'bg-emerald-500 border-emerald-500 text-white' :
-              i === activeIdx ? 'bg-white border-white text-[#0066cc] shadow' :
-              'bg-white/20 border-white/30 text-white/50'
-            }`}>
+            <div className={`w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-black border-2 transition-all ${i < activeIdx ? 'bg-emerald-500 border-emerald-500 text-white' :
+                i === activeIdx ? 'bg-white border-white text-[#0066cc] shadow' :
+                  'bg-white/20 border-white/30 text-white/50'
+              }`}>
               {i < activeIdx ? '✓' : (s.key === 'Done' ? '✓' : s.key)}
             </div>
             <span className={`text-[8px] sm:text-[9px] font-bold mt-[2px] whitespace-nowrap ${i === activeIdx ? 'text-white' : i < activeIdx ? 'text-emerald-200' : 'text-white/40'}`}>
@@ -240,7 +239,7 @@ export const AllApprovals = ({
         const dept = actingDept || mapDept(userDept) || 'General';
         res = await getHodApprovalsByDept(dept);
       }
-      
+
       setRequests(res.data || []);
     } catch (err) {
       console.error(err);
@@ -391,7 +390,7 @@ export const AllApprovals = ({
     return (
       <div className="mt-1 flex flex-wrap gap-2">
         {files.map((file, idx) => (
-          <span 
+          <span
             key={idx}
             className="inline-flex items-center gap-[6px] bg-slate-50 hover:bg-slate-105 border border-slate-200 rounded-md py-1 px-2.5 text-[11px] font-medium text-[#0066cc] cursor-pointer max-w-full"
             onClick={() => handleViewAttachment(file, changeNo)}
@@ -447,15 +446,15 @@ export const AllApprovals = ({
         return 'Pending';
       } else {
         const deptKey = actingDept === 'PED' ? 'l3_ped' :
-                        actingDept === 'QAD' ? 'l3_qad' :
-                        actingDept === 'Production' ? 'l3_production' :
-                        actingDept === 'Maintenance' ? 'l3_maintenance' :
-                        actingDept === 'PC & L' ? 'l3_pcl' :
-                        actingDept === 'Materials' ? 'l3_materials' :
-                        actingDept === 'Marketing' ? 'l3_marketing' :
-                        actingDept === 'HR' ? 'l3_hr' :
+          actingDept === 'QAD' ? 'l3_qad' :
+            actingDept === 'Production' ? 'l3_production' :
+              actingDept === 'Maintenance' ? 'l3_maintenance' :
+                actingDept === 'PC & L' ? 'l3_pcl' :
+                  actingDept === 'Materials' ? 'l3_materials' :
+                    actingDept === 'Marketing' ? 'l3_marketing' :
+                      actingDept === 'HR' ? 'l3_hr' :
                         actingDept === 'Safety' ? 'l3_safety' :
-                        actingDept === 'Unit Head' ? 'l3_unitHead' : '';
+                          actingDept === 'Unit Head' ? 'l3_unitHead' : '';
         let L3Status = deptKey ? (r[deptKey] || 'Pending') : 'Pending';
         if (L3Status === 'Accepted') L3Status = 'Approved';
         return L3Status;
@@ -622,11 +621,10 @@ export const AllApprovals = ({
                 <button
                   key={f}
                   onClick={() => setStatusFilter(f)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                    statusFilter === f
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${statusFilter === f
                       ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-200'
                       : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                  }`}
+                    }`}
                 >
                   {f}
                 </button>
@@ -648,11 +646,10 @@ export const AllApprovals = ({
                 <button
                   key={sc.key}
                   onClick={() => setScopeFilter(sc.key)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                    scopeFilter === sc.key
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${scopeFilter === sc.key
                       ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-100'
                       : 'bg-white text-slate-650 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                  }`}
+                    }`}
                 >
                   {sc.label}
                 </button>
@@ -728,11 +725,10 @@ export const AllApprovals = ({
                           <td className="px-5 py-3.5 text-center">
                             <button
                               onClick={() => handleOpenModal(req)}
-                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer group-hover:shadow ${
-                                isActionable
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer group-hover:shadow ${isActionable
                                   ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
                                   : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
-                              }`}
+                                }`}
                             >
                               <Eye size={12} />
                               {isActionable ? 'Review & Decide' : 'View'}
@@ -794,11 +790,10 @@ export const AllApprovals = ({
 
                       <button
                         onClick={() => handleOpenModal(req)}
-                        className={`inline-flex items-center gap-1.5 px-4 py-2 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer ${
-                          isActionable
+                        className={`inline-flex items-center gap-1.5 px-4 py-2 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer ${isActionable
                             ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100 shadow'
                             : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
-                        }`}
+                          }`}
                       >
                         <Eye size={12} />
                         {isActionable ? 'Review & Decide' : 'View'}
@@ -880,7 +875,7 @@ export const AllApprovals = ({
                   <strong>L1 HOD Approval</strong> — You are reviewing this change request as <span className="text-[#0066cc] font-black">{actingDept}</span> HOD.
                   {alreadyDecided
                     ? <span className="ml-1 text-slate-500 font-normal">A decision has already been recorded.</span>
-                    :''
+                    : ''
                   }
                 </p>
               </div>
@@ -922,13 +917,12 @@ export const AllApprovals = ({
                             <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                               <div className="flex gap-1.5 items-center mt-0.5">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                  l1Details.hodStatus === 'Rejected'
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${l1Details.hodStatus === 'Rejected'
                                     ? 'bg-rose-50 border-rose-220 text-rose-700'
                                     : (l1Details.hodStatus === 'Approved' || l1Details.crStatus !== 'Pending')
-                                    ? 'bg-emerald-50 border-emerald-220 text-emerald-700' 
-                                    : 'bg-amber-50 border-amber-220 text-amber-700'
-                                }`}>
+                                      ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                                      : 'bg-amber-50 border-amber-220 text-amber-700'
+                                  }`}>
                                   L1 {l1Details.hodStatus === 'Rejected' ? 'Rejected' : ((l1Details.hodStatus === 'Approved' || l1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
                                 </span>
                               </div>
@@ -937,7 +931,7 @@ export const AllApprovals = ({
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-[12px]">
                             <div className="space-y-[4px] min-w-0">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Title / Context</span>
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change</span>
                               <span className="font-semibold text-slate-855 block break-words">{l1Details.title ? l1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}</span>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
@@ -1176,7 +1170,7 @@ export const AllApprovals = ({
                                 </button>
                               </span>
                             </div>
-                          
+
                           </div>
 
                           {l1Details.hodStatus && (
@@ -1268,13 +1262,12 @@ export const AllApprovals = ({
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
                             <div>
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                selectedL2Details.status === 'Accepted'
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL2Details.status === 'Accepted'
                                   ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
                                   : selectedL2Details.status === 'Rejected'
-                                  ? 'bg-rose-50 border-rose-220 text-rose-700'
-                                  : 'bg-amber-50 border-amber-220 text-amber-700'
-                              }`}>
+                                    ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                    : 'bg-amber-50 border-amber-220 text-amber-700'
+                                }`}>
                                 L2 {selectedL2Details.status || 'Pending'}
                               </span>
                             </div>
@@ -1286,7 +1279,7 @@ export const AllApprovals = ({
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
-                           <div className="space-y-[6px]">
+                          <div className="space-y-[6px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">PED Validation Attachment</span>
                             <div className="space-y-2">
                               {!selectedL2Details.weldTest || selectedL2Details.weldTest === '-' ? (
@@ -1299,7 +1292,7 @@ export const AllApprovals = ({
                                     <span className="font-medium text-slate-650 truncate max-w-[200px]" title={file}>
                                       {file}
                                     </span>
-                                    <span 
+                                    <span
                                       className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer select-none"
                                       onClick={() => handleViewAttachment(file, selectedL2Details.changeNo, 'L2')}
                                     >
@@ -1324,7 +1317,7 @@ export const AllApprovals = ({
                                     <span className="font-medium text-slate-650 truncate max-w-[200px]" title={file}>
                                       {file}
                                     </span>
-                                    <span 
+                                    <span
                                       className="text-[11px] font-semibold text-[#0066cc] hover:underline cursor-pointer select-none"
                                       onClick={() => handleViewAttachment(file, selectedL2Details.changeNo, 'L2')}
                                     >
@@ -1399,15 +1392,15 @@ export const AllApprovals = ({
                           const status = propMap[dept.label] || 'Pending';
                           const isAccepted = status === 'Accepted' || status === 'Approved';
                           const isRejected = status === 'Rejected';
-                          const badgeClass = isAccepted 
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
-                            : isRejected 
-                            ? 'bg-rose-50 border-rose-200 text-rose-700' 
-                            : 'bg-amber-50 border-amber-200 text-amber-700';
+                          const badgeClass = isAccepted
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                            : isRejected
+                              ? 'bg-rose-50 border-rose-200 text-rose-700'
+                              : 'bg-amber-50 border-amber-200 text-amber-700';
 
                           return (
-                            <div 
-                              key={index} 
+                            <div
+                              key={index}
                               className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
                             >
                               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
@@ -1463,13 +1456,12 @@ export const AllApprovals = ({
                             <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Status</span>
                               <div>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                                  currentEffLog.status === 'Effectiveness Ok'
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.status === 'Effectiveness Ok'
                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                                     : currentEffLog.status === 'Pending'
                                       ? 'bg-amber-50 border-amber-200 text-amber-700'
                                       : 'bg-rose-50 border-rose-250 text-rose-700'
-                                }`}>
+                                  }`}>
                                   {currentEffLog.status}
                                 </span>
                               </div>
@@ -1477,13 +1469,12 @@ export const AllApprovals = ({
                             <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Approval</span>
                               <div>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                                  currentEffLog.qaApproval === 'Approved'
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.qaApproval === 'Approved'
                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                                     : currentEffLog.qaApproval === 'Pending'
                                       ? 'bg-amber-50 border-amber-200 text-amber-700'
                                       : 'bg-rose-50 border-rose-250 text-rose-700'
-                                }`}>
+                                  }`}>
                                   {currentEffLog.qaApproval}
                                 </span>
                               </div>
@@ -1530,11 +1521,10 @@ export const AllApprovals = ({
               <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
                 {activeTab === 'l1' ? (
                   alreadyDecided ? (
-                    <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${
-                      selectedReq.hodStatus === 'Approved' 
-                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
+                    <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${selectedReq.hodStatus === 'Approved'
+                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
                         : 'text-rose-700 bg-rose-50 border-rose-200'
-                    }`}>
+                      }`}>
                       {selectedReq.hodStatus === 'Approved' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
                       {(() => {
                         const showAsSelf = !isAdmin && isHOD && userEmail && selectedReq.hodEmail && userEmail.toLowerCase() === selectedReq.hodEmail.toLowerCase();
@@ -1588,13 +1578,12 @@ export const AllApprovals = ({
                   )
                 ) : activeTab === 'l2' ? (
                   selectedL2Details ? (
-                    <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${
-                      selectedL2Details.status === 'Accepted'
+                    <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${selectedL2Details.status === 'Accepted'
                         ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
                         : selectedL2Details.status === 'Rejected'
-                        ? 'text-rose-700 bg-rose-50 border-rose-200'
-                        : 'text-amber-700 bg-amber-50 border-amber-200'
-                    }`}>
+                          ? 'text-rose-700 bg-rose-50 border-rose-200'
+                          : 'text-amber-700 bg-amber-50 border-amber-200'
+                      }`}>
                       {selectedL2Details.status === 'Accepted' ? (
                         <CheckCircle2 size={14} />
                       ) : selectedL2Details.status === 'Rejected' ? (
