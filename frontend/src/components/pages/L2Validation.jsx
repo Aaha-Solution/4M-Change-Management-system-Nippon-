@@ -125,18 +125,6 @@ export const L2Validation = ({
           setFormRequester(targetChange.requestBy || targetChange.requester || '');
         }
         if (clearAutoOpen) clearAutoOpen();
-      } else if (!formChangeNo) {
-        const validatedNos = new Set(
-          (validationLogs || [])
-            .filter(log => log.weldTest && log.weldTest !== '-')
-            .map(log => log.changeNo?.toLowerCase().trim())
-        );
-        const firstPending = approvedChanges.find(c => !validatedNos.has(c.id.toLowerCase().trim())) || approvedChanges[0];
-        if (firstPending) {
-          setFormChangeNo(firstPending.id);
-          setFormDate(formatDateToDDMMYYYY(firstPending.date));
-          setFormRequester(firstPending.requestBy || firstPending.requester || '');
-        }
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
