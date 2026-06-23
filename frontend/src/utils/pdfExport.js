@@ -586,7 +586,22 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
     addLogoToDoc(doc);
 
     // 14 columns to fit A4 landscape (842pt width)
-    const headers = [['SL. NO.', '4M CHANGE NO', 'REQUESTED DATE', 'CHANGE REQUEST BY', 'PED', 'QAD', 'PRODUCTION', 'MAINTENANCE', 'PC & L', 'MATERIALS', 'MARKETING', 'HR', 'SAFETY', 'UNIT HEAD']];
+    const headers = [[
+      { content: 'SL.\nNO.', styles: { halign: 'center' } },
+      '4M CHANGE NO',
+      'REQUESTED DATE',
+      'CHANGE REQUEST BY',
+      'PED',
+      'QAD',
+      'PRODUCTION',
+      'MAINTENANCE',
+      'PC & L',
+      'MATERIALS',
+      'MARKETING',
+      'HR',
+      'SAFETY',
+      'UNIT HEAD'
+    ]];
 
     const tableData = filteredLogs.map((item, idx) => [
       idx + 1,
@@ -625,29 +640,33 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       headStyles: {
         fillColor: [0, 102, 204],
         textColor: [255, 255, 255],
-        fontSize: 7.2,
+        fontSize: 6.5,
         fontStyle: 'bold',
-        halign: 'left'
+        halign: 'center',
+        valign: 'middle',
+        cellPadding: { top: 4, right: 3, bottom: 4, left: 3 }
       },
       bodyStyles: {
         fontSize: 7,
-        textColor: [51, 65, 85]
+        textColor: [51, 65, 85],
+        halign: 'center',
+        cellPadding: { top: 3, right: 3, bottom: 3, left: 3 }
       },
       columnStyles: {
-        0: { cellWidth: 30 },
-        1: { cellWidth: 65, fontStyle: 'bold' },
-        2: { cellWidth: 60 },
-        3: { cellWidth: 85 },
-        4: { cellWidth: 52 }, // PED
-        5: { cellWidth: 52 }, // QAD
-        6: { cellWidth: 52 }, // PRODUCTION
-        7: { cellWidth: 52 }, // MAINTENANCE
-        8: { cellWidth: 52 }, // PC & L
-        9: { cellWidth: 52 }, // MATERIALS
-        10: { cellWidth: 52 }, // MARKETING
-        11: { cellWidth: 52 }, // HR
-        12: { cellWidth: 52 }, // SAFETY
-        13: { cellWidth: 52 }  // UNIT HEAD
+        0: { cellWidth: 25, halign: 'center' },         // SL. NO.
+        1: { cellWidth: 62, fontStyle: 'bold', halign: 'left' },  // 4M CHANGE NO
+        2: { cellWidth: 58, halign: 'center' },          // REQUESTED DATE
+        3: { cellWidth: 70, halign: 'left' },            // CHANGE REQUEST BY
+        4: { cellWidth: 52, halign: 'center' },          // PED
+        5: { cellWidth: 45, halign: 'center' },          // QAD
+        6: { cellWidth: 62, halign: 'center' },          // PRODUCTION
+        7: { cellWidth: 65, halign: 'center' },          // MAINTENANCE
+        8: { cellWidth: 45, halign: 'center' },          // PC & L
+        9: { cellWidth: 57, halign: 'center' },          // MATERIALS
+        10: { cellWidth: 57, halign: 'center' },         // MARKETING
+        11: { cellWidth: 35, halign: 'center' },         // HR
+        12: { cellWidth: 48, halign: 'center' },         // SAFETY
+        13: { cellWidth: 62, halign: 'center' }          // UNIT HEAD
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
