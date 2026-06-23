@@ -1057,17 +1057,33 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
     });
     addLogoToDoc(doc);
 
-    const headers = [['SL. NO.', 'CHANGE NO.', 'MACHINE NO.', 'DEPARTMENT', 'REQUEST DATE', 'STATUS']];
+    const headers = [[
+      { content: 'SL.\nNO.', styles: { halign: 'center' } },
+      '4M CHANGE\nNO',
+      'MACHINE\nNO.',
+      'DEPARTMENT',
+      'PROCESS\nNAME',
+      'REQUESTED\nBY',
+      'REQUEST\nDATE',
+      'HOD\nAPPROVAL',
+      'L2\nSTATUS',
+      'L3\nSTATUS',
+      'OVERALL\nSTATUS'
+    ]];
 
     const tableData = filteredChanges.map((item, idx) => {
       const displayStatus = getRequestDisplayStatus(item);
-
       return [
         idx + 1,
         item.id,
         item.machineNo || '-',
-        item.dept || item.department || 'PRODUCTION',
+        item.dept || item.department || '-',
+        item.processName || '-',
+        item.requester ? item.requester.split('@')[0] : '-',
         item.date ? formatDateToDDMMYYYY(item.date) : '-',
+        item.hodStatus || 'Pending',
+        item.l2Status || 'Pending',
+        item.isL3Complete ? 'Completed' : item.hasL3Rejection ? 'Rejected' : 'Pending',
         displayStatus
       ];
     });
@@ -1076,7 +1092,7 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
     doc.setTextColor(0, 102, 204); // #0066cc
-    doc.text('4M Change Management System - Dashboard Overview Log', 40, 45);
+    doc.text('4M Change Management System - Dashboard Overview', 40, 45);
 
     // Metadata details
     doc.setFont('helvetica', 'normal');
@@ -1088,12 +1104,12 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
     if (month !== 'All') filterParts.push(`Month: "${month}"`);
     if (fromDate) filterParts.push(`From: "${fromDate}"`);
     if (toDate) filterParts.push(`To: "${toDate}"`);
-    if (person !== 'All') filterParts.push(`Person: "${person.split('@')[0]}"`);
+    if (person !== 'All') filterParts.push(`Requested By: "${person.split('@')[0]}"`);
     if (process !== 'All') filterParts.push(`Process: "${process}"`);
     if (machine !== 'All') filterParts.push(`Machine: "${machine}"`);
     if (status !== 'All') filterParts.push(`Status: "${status}"`);
 
-    const filterText = filterParts.length > 0 
+    const filterText = filterParts.length > 0
       ? `Applied Filters: ${filterParts.join('  |  ')}`
       : 'Report Scope: All Change Requests (No filters applied)';
 
@@ -1108,21 +1124,29 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
       headStyles: {
         fillColor: [0, 102, 204],
         textColor: [255, 255, 255],
-        fontSize: 9,
+        fontSize: 7.5,
         fontStyle: 'bold',
-        halign: 'left'
+        halign: 'center',
+        valign: 'middle',
+        cellPadding: { top: 4, right: 3, bottom: 4, left: 3 }
       },
       bodyStyles: {
-        fontSize: 9,
-        textColor: [51, 65, 85] // Slate-700
+        fontSize: 7.5,
+        textColor: [51, 65, 85],
+        cellPadding: { top: 3, right: 3, bottom: 3, left: 3 }
       },
       columnStyles: {
-        0: { cellWidth: 60 },  // SL. NO.
-        1: { cellWidth: 130, fontStyle: 'bold' },  // CHANGE NO.
-        2: { cellWidth: 120 }, // MACHINE NO.
-        3: { cellWidth: 160 }, // DEPARTMENT
-        4: { cellWidth: 140 }, // REQUEST DATE
-        5: { cellWidth: 150 }  // STATUS
+        0:  { cellWidth: 25, halign: 'center' },          // SL. NO.
+        1:  { cellWidth: 68, fontStyle: 'bold' },          // 4M CHANGE NO
+        2:  { cellWidth: 62, halign: 'center' },           // MACHINE NO.
+        3:  { cellWidth: 85 },                             // DEPARTMENT
+        4:  { cellWidth: 88 },                             // PROCESS NAME
+        5:  { cellWidth: 80 },                             // REQUESTED BY
+        6:  { cellWidth: 58, halign: 'center' },           // REQUEST DATE
+        7:  { cellWidth: 60, halign: 'center' },           // HOD APPROVAL
+        8:  { cellWidth: 52, halign: 'center' },           // L2 STATUS
+        9:  { cellWidth: 52, halign: 'center' },           // L3 STATUS
+        10: { cellWidth: 82, halign: 'center' }            // OVERALL STATUS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
@@ -1130,20 +1154,22 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184); // Slate-400
         doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
-        doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL DASHBOARD OVERVIEW LOGS', 40, doc.internal.pageSize.height - 20);
+        doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL DASHBOARD OVERVIEW', 40, doc.internal.pageSize.height - 20);
       },
       didParseCell: (data) => {
-        if (data.column.index === 5 && data.row.section === 'body') {
-          const val = data.cell.text[0];
-          const cleanVal = val ? val.trim().toLowerCase() : '';
-          if (cleanVal.includes('accept') || cleanVal.includes('approve') || cleanVal.includes('completed')) {
+        if (data.row.section !== 'body') return;
+        const val = data.cell.text[0];
+        const cleanVal = val ? val.trim().toLowerCase() : '';
+        // Color-code HOD, L2, L3, Overall status columns (7–10)
+        if (data.column.index >= 7 && data.column.index <= 10) {
+          if (cleanVal.includes('approve') || cleanVal.includes('accept') || cleanVal.includes('completed') || cleanVal.includes('complete')) {
             data.cell.styles.textColor = [16, 124, 65]; // Green
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('reject')) {
             data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('pending')) {
-            data.cell.styles.textColor = [217, 119, 6]; // Yellow
+            data.cell.styles.textColor = [217, 119, 6]; // Amber
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('close')) {
             data.cell.styles.textColor = [37, 99, 235]; // Blue
