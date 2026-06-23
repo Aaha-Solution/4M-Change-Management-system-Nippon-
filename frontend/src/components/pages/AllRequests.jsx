@@ -1900,7 +1900,7 @@ export const AllRequests = ({
           <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
           <select 
             className={`w-full px-[8px] py-[6px] border rounded-[4px] bg-white outline-none text-[11px] transition-all duration-200 ${
-              selectedStatus === 'Approved' ? 'text-emerald-600 border-emerald-300 bg-emerald-50/10 font-bold' :
+              selectedStatus === 'Approved' || selectedStatus === 'L3 Approved' ? 'text-emerald-600 border-emerald-300 bg-emerald-50/10 font-bold' :
               selectedStatus === 'Rejected' ? 'text-rose-600 border-rose-300 bg-rose-50/10 font-bold' :
               selectedStatus === 'Closed' ? 'text-blue-600 border-blue-300 bg-blue-50/10 font-bold' :
               selectedStatus.startsWith('Pending') ? 'text-amber-600 border-amber-300 bg-amber-50/10 font-bold' :
@@ -1910,7 +1910,7 @@ export const AllRequests = ({
             onChange={(e) => setSelectedStatus(e.target.value)}
           >
             {filterStatuses.map(s => {
-              const isAppr = s === 'Approved';
+              const isAppr = s === 'Approved' || s === 'L3 Approved';
               const isRej = s === 'Rejected';
               const isClosed = s === 'Closed';
               const isPend = s.startsWith('Pending') || s === 'Pending';
@@ -2020,7 +2020,7 @@ export const AllRequests = ({
                     <td className="p-[16px]">
                       <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
                         r.status?.startsWith('Pending') ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                        r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
+                        r.status === 'Approved' || r.status === 'L3 Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
                         r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
                         r.status === 'Closed' ? 'bg-blue-50 border-blue-200 text-blue-700' :
                         'bg-teal-50 border-teal-200 text-teal-700'

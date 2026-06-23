@@ -28,7 +28,7 @@ export const getRequestDisplayStatus = (c) => {
     if (c.hasL3Rejection === 1 || c.hasL3Rejection === true) {
       return 'Rejected';
     }
-    return 'Approved';
+    return 'L3 Approved';
   }
 
   // 4. Fallback for Completed change request

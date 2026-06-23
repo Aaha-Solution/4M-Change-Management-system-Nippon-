@@ -518,7 +518,7 @@ export const DashboardOverview = ({
       let matchesStatus = true;
       if (statusVal !== 'All') {
         const dispStatus = getRequestDisplayStatus(c);
-        if (statusVal === 'Approved') matchesStatus = dispStatus === 'Approved';
+        if (statusVal === 'Approved' || statusVal === 'L3 Approved') matchesStatus = dispStatus === 'Approved' || dispStatus === 'L3 Approved';
         else if (statusVal === 'Closed') matchesStatus = dispStatus === 'Closed';
         else if (statusVal === 'Rejected') matchesStatus = dispStatus === 'Rejected';
         else if (statusVal === 'Pending') matchesStatus = dispStatus.startsWith('Pending');
@@ -1122,7 +1122,7 @@ export const DashboardOverview = ({
         <label className="block font-bold text-slate-400 uppercase tracking-wider">By Status</label>
         <select
           className={`w-full px-[6px] py-[4px] border rounded-[4px] outline-none transition-all duration-200 ${
-            statusVal === 'Approved' ? 'text-emerald-600 border-emerald-350 bg-emerald-50/10 font-bold' :
+            statusVal === 'Approved' || statusVal === 'L3 Approved' ? 'text-emerald-600 border-emerald-355 bg-emerald-50/10 font-bold' :
             statusVal === 'Rejected' ? 'text-rose-600 border-rose-350 bg-rose-50/10 font-bold' :
             statusVal === 'Closed' ? 'text-blue-600 border-blue-350 bg-blue-50/10 font-bold' :
             statusVal === 'Pending' ? 'text-amber-600 border-amber-350 bg-amber-50/10 font-bold' :
@@ -1132,7 +1132,7 @@ export const DashboardOverview = ({
           onChange={(e) => setStatusVal(e.target.value)}
         >
           <option value="All" className="text-slate-500 bg-white font-medium" style={{ color: '#64748b' }}>All Statuses</option>
-          <option value="Approved" className="text-emerald-600 bg-white font-bold" style={{ color: '#059669', fontWeight: 'bold' }}>Approved</option>
+          <option value="L3 Approved" className="text-emerald-600 bg-white font-bold" style={{ color: '#059669', fontWeight: 'bold' }}>L3 Approved</option>
           <option value="Rejected" className="text-rose-600 bg-white font-bold" style={{ color: '#e11d48', fontWeight: 'bold' }}>Rejected</option>
           <option value="Closed" className="text-blue-600 bg-white font-bold" style={{ color: '#2563eb', fontWeight: 'bold' }}>Closed</option>
           <option value="Pending" className="text-amber-600 bg-white font-bold" style={{ color: '#d97706', fontWeight: 'bold' }}>Pending</option>
@@ -1736,7 +1736,7 @@ export const DashboardOverview = ({
           if (d && !isNaN(d.getTime())) {
             const monthIdx = d.getMonth();
             const dispStatus = getRequestDisplayStatus(c);
-            if (dispStatus === 'Approved') {
+            if (dispStatus === 'Approved' || dispStatus === 'L3 Approved') {
               dataMap[monthIdx].appr++;
             } else if (dispStatus === 'Closed') {
               dataMap[monthIdx].closed++;
@@ -1854,7 +1854,7 @@ export const DashboardOverview = ({
 
         if (idx !== -1) {
           const dispStatus = getRequestDisplayStatus(c);
-          if (dispStatus === 'Approved') {
+          if (dispStatus === 'Approved' || dispStatus === 'L3 Approved') {
             dataMap[idx].appr++;
           } else if (dispStatus === 'Closed') {
             dataMap[idx].closed++;
@@ -3656,7 +3656,7 @@ export const DashboardOverview = ({
           <div className="absolute top-0 left-0 w-full h-[3px] bg-emerald-500" />
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Approved</h4>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">L3 Approved</h4>
               <div className="text-[32px] font-bold text-emerald-600 mt-2 font-heading tracking-tight">
                 {isFetchingChanges || isFetchingCounts ? <Loader2 className="animate-spin text-slate-400" size={24} /> : approvedCount}
               </div>
@@ -3958,7 +3958,7 @@ export const DashboardOverview = ({
                   <div className="flex items-center gap-[12px]">
                     <div className="flex items-center gap-[4px]">
                       <span className="w-[8px] h-[8px] rounded-full bg-[#059669]" />
-                      <span>Approved</span>
+                      <span>L3 Approved</span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <span className="w-[8px] h-[8px] rounded-full bg-[#2563eb]" />
@@ -4112,7 +4112,7 @@ export const DashboardOverview = ({
                       <td className="p-[16px]">
                         <span className={`inline-flex items-center gap-[4px] px-[10px] py-[2px] rounded-full text-[11px] font-semibold border ${
                           r.status?.startsWith('Pending') ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                          r.status === 'Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
+                          r.status === 'Approved' || r.status === 'L3 Approved' ? 'bg-emerald-50 border-emerald-250 text-emerald-700' :
                           r.status === 'Rejected' ? 'bg-rose-50 border-rose-250 text-rose-700' :
                           r.status === 'Closed' ? 'bg-blue-50 border-blue-200 text-blue-700' :
                           'bg-teal-50 border-teal-200 text-teal-700'
