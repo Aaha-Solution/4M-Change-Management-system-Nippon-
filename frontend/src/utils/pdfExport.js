@@ -233,7 +233,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(148, 163, 184); // Slate-400
-    doc.text(`Generated on: ${formatDateToDDMMYYYY(getSyncedDate())}`, doc.internal.pageSize.width - 230, 45);
+    doc.text(`Generated on: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
 
     // Section 1: General Info
     const generalInfoData = [
@@ -267,7 +267,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     ];
 
     autoTable(doc, {
-      startY: 65,
+      startY: 75,
       head: [[{ content: '1. GENERAL INFORMATION', colSpan: 4 }]],
       body: generalInfoData,
       theme: 'grid',
