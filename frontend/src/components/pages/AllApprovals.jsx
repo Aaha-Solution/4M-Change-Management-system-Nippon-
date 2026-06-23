@@ -168,7 +168,7 @@ export const AllApprovals = ({
   const [requests, setRequests] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [actingDept, setActingDept] = useState('');
+  const [actingDept, setActingDept] = useState(() => mapDept(userDept) || '');
 
   // Modal
   const [selectedReq, setSelectedReq] = useState(null);
@@ -241,31 +241,7 @@ export const AllApprovals = ({
         res = await getHodApprovalsByDept(dept);
       }
       
-      // Fetch L3 approvals in parallel to merge their status values
-      const l3Res = await getL3Approvals().catch(() => ({ data: [] }));
-      const l3Data = l3Res.data || [];
-
-      const merged = (res.data || []).map(r => {
-        const matchedL3 = l3Data.find(l => l.changeNo === r.changeNo);
-        if (matchedL3) {
-          return {
-            ...r,
-            l3_ped: matchedL3.ped,
-            l3_qad: matchedL3.qad,
-            l3_production: matchedL3.production,
-            l3_maintenance: matchedL3.maintenance,
-            l3_pcl: matchedL3.pcl,
-            l3_materials: matchedL3.materials,
-            l3_marketing: matchedL3.marketing,
-            l3_hr: matchedL3.hr,
-            l3_safety: matchedL3.safety,
-            l3_unitHead: matchedL3.unitHead,
-          };
-        }
-        return r;
-      });
-
-      setRequests(merged);
+      setRequests(res.data || []);
     } catch (err) {
       console.error(err);
       if (setToastMsg) setToastMsg({ text: 'Error loading HOD approval requests.', isError: true });

@@ -582,6 +582,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 setToastMsg={setToastMsg}
                 onLocalSignOut={handleLocalSignOut}
                 fetchChanges={fetchChanges}
+                systemUsers={usersList}
               />
             )}
 

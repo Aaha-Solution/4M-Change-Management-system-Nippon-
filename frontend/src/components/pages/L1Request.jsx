@@ -9,7 +9,7 @@ import {
   RefreshCw,
   RotateCcw
 } from 'lucide-react';
-import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo, getUsers, getDepartments, getServerTime } from '../../api/apiRoutes';
+import { createL1Request, getProcesses, addProcess, deleteProcess, getMachines, addMachine, deleteMachine, getNextChangeNo, getDepartments, getServerTime } from '../../api/apiRoutes';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
 import { formatDateToDDMMYYYY, parseDDMMYYYYToDate } from '../../utils/dateUtils';
 import { useWebSocket } from '../../hooks/useWebSocket';
@@ -22,7 +22,8 @@ export const L1Request = ({
   setChanges,
   logAction,
   setToastMsg,
-  fetchChanges
+  fetchChanges,
+  systemUsers = []
 }) => {
   const isAdmin = userRole && userRole.toLowerCase().includes('admin');
   const [isDraftInitialized, setIsDraftInitialized] = useState(false);
@@ -39,7 +40,6 @@ export const L1Request = ({
 
   const [dbProcesses, setDbProcesses] = useState([]);
   const [dbMachines, setDbMachines] = useState([]);
-  const [systemUsers, setSystemUsers] = useState([]);
   const [dbDepartments, setDbDepartments] = useState([]);
 
   // Users, processes, machines, and departments are retrieved solely from the database.
@@ -67,15 +67,13 @@ export const L1Request = ({
 
   async function fetchOptions() {
     try {
-      const [pRes, mRes, uRes, dRes] = await Promise.all([
+      const [pRes, mRes, dRes] = await Promise.all([
         getProcesses(),
         getMachines(),
-        getUsers(),
         getDepartments()
       ]);
       setDbProcesses(pRes.data);
       setDbMachines(mRes.data);
-      setSystemUsers(uRes.data || []);
       setDbDepartments(dRes.data || []);
     } catch (e) {
       console.error('Error fetching options:', e);
