@@ -158,8 +158,8 @@ export const addL3ApprovalLog = async (logData) => {
     const raisedDept = crRows.length > 0 ? crRows[0].raisedDept : '';
     const requesterEmail = crRows.length > 0 ? crRows[0].requesterEmail : '';
     const title = crRows.length > 0 ? crRows[0].title : '';
-    const date = crRows.length > 0 ? crRows[0].date : new Date().toISOString().slice(0, 10);
-    const dateStart = crRows.length > 0 && crRows[0].dateStart ? crRows[0].dateStart : date;
+    const dbDate = crRows.length > 0 ? crRows[0].date : new Date().toISOString().slice(0, 10);
+    const dateStart = crRows.length > 0 && crRows[0].dateStart ? crRows[0].dateStart : dbDate;
 
 
 
@@ -226,7 +226,7 @@ export const addL3ApprovalLog = async (logData) => {
           `INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval)
            VALUES (?, ?, ?, ?, ?, '', '', '', 'Pending', 'Pending')
            ON DUPLICATE KEY UPDATE change_no = change_no`,
-          [effId, changeNo, date, title, dateStart]
+          [effId, changeNo, dbDate, title, dateStart]
         );
       }
 
