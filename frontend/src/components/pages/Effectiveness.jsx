@@ -9,7 +9,9 @@ import {
   getL1Attachment,
   getL2Details,
   getL2Attachment,
-  getL3Approvals
+  getL3Approvals,
+  getEffectivenessLogs,
+  getEffectivenessCounts
 } from '../../api/apiRoutes';
 import { formatDateToDDMMYY, formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { exportEffectivenessLogsPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
@@ -96,9 +98,37 @@ export const Effectiveness = ({
     }
   }, [effectivenessLogs, selectedLog]);
 
+  const [tabCounts, setTabCounts] = useState({ ongoing: 0, closed: 0, rejected: 0 });
+  const [isFetchingLogs, setIsFetchingLogs] = useState(false);
+
+  const fetchLogs = async () => {
+    setIsFetchingLogs(true);
+    try {
+      const [logsRes, countsRes] = await Promise.all([
+        getEffectivenessLogs(activeMainTab),
+        getEffectivenessCounts()
+      ]);
+      setEffectivenessLogs(logsRes.data);
+      setTabCounts(countsRes.data);
+    } catch (err) {
+      console.error('Error fetching effectiveness logs:', err);
+      if (setToastMsg) setToastMsg('Error loading effectiveness logs.');
+    } finally {
+      setIsFetchingLogs(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeMainTab]);
+
   // Hook WebSocket listener for real-time effectiveness monitoring
   useWebSocket((data) => {
     console.log('📩 Received WebSocket message in Effectiveness:', data);
+    if (data.type === 'REFRESH_EFFECTIVENESS' || data.type === 'REFRESH_CHANGES') {
+      fetchLogs();
+    }
   });
 
   const fileToBase64 = (file) => {
@@ -344,9 +374,9 @@ export const Effectiveness = ({
       };
       try {
         const response = await updateEffectivenessLog(savedLog.id, logData, uploadedFilesList);
-        setEffectivenessLogs(prev => prev.map(log => log.id === savedLog.id ? response.data.log : log));
         logAction('Effectiveness Log Updated', `Updated monitoring observations for change ${effChangeNo}.`);
         setToastMsg(`Log entry updated for ${effChangeNo}`);
+        fetchLogs();
         if (fetchChanges) fetchChanges();
         handleCancelEditing();
       } catch (err) {
@@ -371,9 +401,9 @@ export const Effectiveness = ({
       };
       try {
         const response = await createEffectivenessLog(logData, uploadedFilesList);
-        setEffectivenessLogs(prev => [response.data.log, ...prev]);
         logAction('Effectiveness Log Created', `Created monitoring observations for change ${effChangeNo}.`);
         setToastMsg(`Log entry added for ${effChangeNo}`);
+        fetchLogs();
         if (fetchChanges) fetchChanges();
         handleCancelEditing();
       } catch (err) {
@@ -430,28 +460,8 @@ export const Effectiveness = ({
 
 
 
-  // Construct table logs combining changes and effectivenessLogs
-  const tableLogs = (changes || [])
-    .filter(change => change.isL3Approved)
-    .map(change => {
-      const savedLog = effectivenessLogs.find(
-        log => log.changeNo?.toLowerCase().trim() === change.id?.toLowerCase().trim()
-      );
-      return {
-        id: savedLog?.id || `EFF-PENDING-${change.id}`,
-        changeNo: change.id,
-        reqDate: change.rawDate || change.date,
-        context: change.title,
-        startDate: change.dateStart || change.rawDate || change.date,
-        monthWise: savedLog?.monthWise || '',
-        remarks: savedLog?.remarks || '',
-        attachment: savedLog?.attachment || '',
-        status: savedLog?.status || 'Pending',
-        qaApproval: savedLog?.qaApproval || 'Pending',
-        qaUpdateCount: savedLog?.qaUpdateCount || 0,
-        isPending: !savedLog
-      };
-    });
+  // Construct table logs directly from the backend effectivenessLogs database response
+  const tableLogs = effectivenessLogs || [];
 
   // Extract unique months for filter from both saved logs and pending change requests
   const uniqueMonthsRaw = Array.from(
@@ -495,15 +505,7 @@ export const Effectiveness = ({
     return matchesSearch && matchesMonth;
   });
 
-  const displayLogs = filteredLogs.filter(log => {
-    if (activeMainTab === 'closed') {
-      return log.qaApproval === 'Approved';
-    } else if (activeMainTab === 'rejected') {
-      return log.qaApproval === 'Rejected';
-    } else {
-      return log.qaApproval !== 'Approved' && log.qaApproval !== 'Rejected';
-    }
-  });
+  const displayLogs = filteredLogs;
 
   const paginatedLogs = displayLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -956,7 +958,7 @@ export const Effectiveness = ({
                   ? 'bg-white text-[#0066cc] font-bold'
                   : 'bg-slate-200 text-slate-600'
                 }`}>
-                {tableLogs.filter(log => log.qaApproval !== 'Approved' && log.qaApproval !== 'Rejected').length}
+                {tabCounts.ongoing}
               </span>
             </button>
             <button
@@ -972,7 +974,7 @@ export const Effectiveness = ({
                   ? 'bg-white text-emerald-600 font-bold'
                   : 'bg-slate-200 text-slate-600'
                 }`}>
-                {tableLogs.filter(log => log.qaApproval === 'Approved').length}
+                {tabCounts.closed}
               </span>
             </button>
             <button
@@ -988,7 +990,7 @@ export const Effectiveness = ({
                   ? 'bg-white text-rose-600 font-bold'
                   : 'bg-slate-200 text-slate-600'
                 }`}>
-                {tableLogs.filter(log => log.qaApproval === 'Rejected').length}
+                {tabCounts.rejected}
               </span>
             </button>
           </div>
@@ -1052,7 +1054,16 @@ export const Effectiveness = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-[11px]">
-                  {displayLogs.length === 0 ? (
+                  {isFetchingLogs ? (
+                    <tr>
+                      <td colSpan={11} className="text-center py-[48px] text-slate-400">
+                        <div className="flex flex-col items-center justify-center gap-[8px]">
+                          <Loader2 className="animate-spin text-[#0066cc]" size={20} />
+                          <span>Fetching effectiveness data...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : displayLogs.length === 0 ? (
                     <tr>
                       <td colSpan={11} className="text-center py-10 text-slate-400">
                         No observations logs recorded.

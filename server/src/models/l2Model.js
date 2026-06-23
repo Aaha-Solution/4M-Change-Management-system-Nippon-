@@ -4,15 +4,35 @@ import { createL2Notifications, sendL2Emails } from './l2NotificationModel.js';
 
 export const getL2ValidationLogs = async () => {
   const [rows] = await pool.query(
-    `SELECT v.change_no as changeNo, v.validation_date as date, 
+    `SELECT c.id as changeNo, 
+            COALESCE(v.validation_date, DATE_FORMAT(c.date, '%Y-%m-%d')) as date, 
             COALESCE(NULLIF(u.name, ''), l1.request_by, v.requester) as requester, 
-            v.weld_test as weldTest, v.qa_test as qaTest, v.status, v.remarks,
-            c.requester as requesterEmail
-     FROM l2_validation_logs v
-     LEFT JOIN l1_requests l1 ON v.change_no = l1.change_no
-     LEFT JOIN change_requests c ON v.change_no = c.id
+            COALESCE(v.weld_test, '-') as weldTest, 
+            COALESCE(v.qa_test, '-') as qaTest, 
+            COALESCE(v.status, 'Pending') as status, 
+            COALESCE(v.remarks, '-') as remarks,
+            c.requester as requesterEmail,
+            CASE WHEN v.status IS NULL THEN 1 ELSE 0 END as isPending
+     FROM change_requests c
+     LEFT JOIN l1_requests l1 ON c.id = l1.change_no
+     LEFT JOIN change_requests cr ON c.id = cr.id
      LEFT JOIN users u ON c.requester = u.email
-     ORDER BY v.created_at DESC, CAST(SUBSTRING_INDEX(v.change_no, '-', -1) AS UNSIGNED) DESC`
+     LEFT JOIN l2_validation_logs v ON c.id = v.change_no
+     LEFT JOIN (
+        SELECT change_no,
+               COALESCE(
+                 MIN(CASE WHEN status = 'Rejected' THEN 'Rejected' END),
+                 MAX(CASE WHEN status = 'Approved' THEN 'Approved' END),
+                 'Pending'
+               ) as status
+        FROM hod_approvals
+        GROUP BY change_no
+     ) ha ON c.id = ha.change_no
+     LEFT JOIN effectiveness_logs e ON c.id = e.change_no
+     WHERE ha.status = 'Approved'
+       AND (v.status IS NULL OR v.status != 'Accepted')
+       AND (e.qa_approval IS NULL OR e.qa_approval != 'Approved')
+     ORDER BY c.created_at DESC, CAST(SUBSTRING_INDEX(c.id, '-', -1) AS UNSIGNED) DESC`
   );
   return rows;
 };
@@ -84,6 +104,15 @@ export const addL2ValidationLog = async (logData, attachments) => {
         `INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) 
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [changeNo, date, requester, weldTest || '', qaTest || '', status || 'Pending', remarks || '']
+      );
+    }
+
+    if (status === 'Accepted') {
+      await connection.query(
+        `INSERT INTO l3_approvals (change_no, date, requester, ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unit_head)
+         VALUES (?, ?, ?, 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending')
+         ON DUPLICATE KEY UPDATE change_no = change_no`,
+        [changeNo, date, requester]
       );
     }
 

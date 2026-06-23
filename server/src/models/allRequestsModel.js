@@ -100,6 +100,19 @@ export const updateChangeDetails = async (changeNo, level, updateData, attachmen
       if (cleanedData.status) {
         const crStatus = cleanedData.status === 'Accepted' ? 'Approved' : 'Evaluating';
         await connection.query('UPDATE change_requests SET status = ? WHERE id = ?', [crStatus, changeNo]);
+
+        if (cleanedData.status === 'Accepted') {
+          const [crRows] = await connection.query('SELECT requester, DATE_FORMAT(date, "%Y-%m-%d") as date FROM change_requests WHERE id = ?', [changeNo]);
+          const requester = crRows.length > 0 ? crRows[0].requester : 'Admin';
+          const date = crRows.length > 0 ? crRows[0].date : new Date().toISOString().slice(0, 10);
+          
+          await connection.query(
+            `INSERT INTO l3_approvals (change_no, date, requester, ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unit_head)
+             VALUES (?, ?, ?, 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending', 'Pending')
+             ON DUPLICATE KEY UPDATE change_no = change_no`,
+            [changeNo, date, requester]
+          );
+        }
       }
     } else if (level === 'l3') {
       // Map L3 fields to database columns
@@ -224,6 +237,39 @@ export const updateChangeDetails = async (changeNo, level, updateData, attachmen
           
         const crStatus = isAllL3Decided ? 'Completed' : 'Approved';
         await connection.query('UPDATE change_requests SET status = ? WHERE id = ?', [crStatus, changeNo]);
+
+        const isAllL3Approved = 
+          dbL3.ped === 'Approved' &&
+          dbL3.qad === 'Approved' &&
+          dbL3.production === 'Approved' &&
+          dbL3.maintenance === 'Approved' &&
+          dbL3.pcl === 'Approved' &&
+          dbL3.materials === 'Approved' &&
+          dbL3.marketing === 'Approved' &&
+          dbL3.hr === 'Approved' &&
+          dbL3.safety === 'Approved' &&
+          dbL3.unitHead === 'Approved';
+
+        if (isAllL3Approved) {
+          const [crRows] = await connection.query(
+            `SELECT c.title, DATE_FORMAT(c.date, '%Y-%m-%d') as date, DATE_FORMAT(l1.date_start, '%Y-%m-%d') as dateStart
+             FROM change_requests c
+             LEFT JOIN l1_requests l1 ON c.id = l1.change_no
+             WHERE c.id = ?`,
+            [changeNo]
+          );
+          const title = crRows.length > 0 ? crRows[0].title : '';
+          const date = crRows.length > 0 ? crRows[0].date : new Date().toISOString().slice(0, 10);
+          const dateStart = crRows.length > 0 && crRows[0].dateStart ? crRows[0].dateStart : date;
+          const effId = `EFF-${Date.now().toString().substring(7)}`;
+
+          await connection.query(
+            `INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval)
+             VALUES (?, ?, ?, ?, ?, '', '', '', 'Pending', 'Pending')
+             ON DUPLICATE KEY UPDATE change_no = change_no`,
+            [effId, changeNo, date, title, dateStart]
+          );
+        }
       }
     }
     

@@ -1,7 +1,11 @@
 import axiosInstance from './axiosInstance';
 
-export const getEffectivenessLogs = () => {
-  return axiosInstance.get('/effectiveness');
+export const getEffectivenessLogs = (tab) => {
+  return axiosInstance.get('/effectiveness', { params: { tab } });
+};
+
+export const getEffectivenessCounts = () => {
+  return axiosInstance.get('/effectiveness/counts');
 };
 
 export const createEffectivenessLog = (logData, attachments) => {

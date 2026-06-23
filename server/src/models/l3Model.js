@@ -35,6 +35,7 @@ export const getL3Approvals = async () => {
      INNER JOIN l2_validation_logs v ON c.id = v.change_no AND v.status = 'Accepted'
      LEFT JOIN l3_approvals l ON c.id = l.change_no
      LEFT JOIN effectiveness_logs e ON c.id = e.change_no
+     WHERE (e.qa_approval IS NULL OR (e.qa_approval != 'Approved' AND e.qa_approval != 'Rejected'))
      ORDER BY c.created_at DESC, CAST(SUBSTRING_INDEX(c.id, '-', -1) AS UNSIGNED) DESC`
   );
   return rows;
@@ -144,9 +145,10 @@ export const addL3ApprovalLog = async (logData) => {
       ]
     );
 
-    // Fetch raisedDept and requesterEmail
+    // Fetch raisedDept, requesterEmail, title, date, date_start
     const [crRows] = await connection.query(
-      `SELECT COALESCE(l1.dept, u.department) as raisedDept, c.requester as requesterEmail
+      `SELECT COALESCE(l1.dept, u.department) as raisedDept, c.requester as requesterEmail, c.title, 
+              DATE_FORMAT(c.date, '%Y-%m-%d') as date, DATE_FORMAT(l1.date_start, '%Y-%m-%d') as dateStart
        FROM change_requests c
        LEFT JOIN l1_requests l1 ON c.id = l1.change_no
        LEFT JOIN users u ON c.requester = u.email
@@ -155,6 +157,9 @@ export const addL3ApprovalLog = async (logData) => {
     );
     const raisedDept = crRows.length > 0 ? crRows[0].raisedDept : '';
     const requesterEmail = crRows.length > 0 ? crRows[0].requesterEmail : '';
+    const title = crRows.length > 0 ? crRows[0].title : '';
+    const date = crRows.length > 0 ? crRows[0].date : new Date().toISOString().slice(0, 10);
+    const dateStart = crRows.length > 0 && crRows[0].dateStart ? crRows[0].dateStart : date;
 
 
 
@@ -197,11 +202,33 @@ export const addL3ApprovalLog = async (logData) => {
 
     const hasRejection = rejectedDepts.length > 0;
 
+    const isAllL3Approved = 
+      finalPed === 'Approved' &&
+      finalQad === 'Approved' &&
+      finalProduction === 'Approved' &&
+      finalMaintenance === 'Approved' &&
+      finalPcl === 'Approved' &&
+      finalMaterials === 'Approved' &&
+      finalMarketing === 'Approved' &&
+      finalHr === 'Approved' &&
+      finalSafety === 'Approved' &&
+      finalUnitHead === 'Approved';
+
     if (isAllL3Decided) {
       await connection.query(
         `UPDATE change_requests SET status = 'Completed' WHERE id = ?`,
         [changeNo]
       );
+
+      if (isAllL3Approved) {
+        const effId = `EFF-${Date.now().toString().substring(7)}`;
+        await connection.query(
+          `INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval)
+           VALUES (?, ?, ?, ?, ?, '', '', '', 'Pending', 'Pending')
+           ON DUPLICATE KEY UPDATE change_no = change_no`,
+          [effId, changeNo, date, title, dateStart]
+        );
+      }
 
       if (!wasAlreadyAllL3Decided) {
         const [l1Rows] = await connection.query(

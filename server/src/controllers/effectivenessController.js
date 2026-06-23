@@ -20,11 +20,22 @@ const checkCanUpdate = async (email) => {
 
 export const getLogs = async (req, res) => {
   try {
-    const list = await effectivenessModel.getLogs();
+    const { tab } = req.query;
+    const list = await effectivenessModel.getLogs(tab);
     res.status(200).json(list);
   } catch (error) {
     console.error('Error in getLogs:', error);
     res.status(500).json({ error: 'Failed to fetch effectiveness logs' });
+  }
+};
+
+export const getCounts = async (req, res) => {
+  try {
+    const counts = await effectivenessModel.getCounts();
+    res.status(200).json(counts);
+  } catch (error) {
+    console.error('Error in getCounts:', error);
+    res.status(500).json({ error: 'Failed to fetch effectiveness counts' });
   }
 };
 

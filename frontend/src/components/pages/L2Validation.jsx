@@ -111,14 +111,10 @@ export const L2Validation = ({
   });
 
   useEffect(() => {
-    if (changes && changes.length > 0) {
-      const acceptedL2Nos = new Set(
-        (validationLogs || [])
-          .filter(log => log.status === 'Accepted')
-          .map(log => log.changeNo?.toLowerCase().trim())
-      );
+    if (changes && changes.length > 0 && validationLogs) {
+      const activeL2Nos = new Set((validationLogs || []).map(log => log.changeNo?.toLowerCase().trim()));
       const approvedChanges = changes.filter(
-        c => c.hodStatus === 'Approved' && c.qaApproval !== 'Approved' && !acceptedL2Nos.has(c.id?.toLowerCase().trim())
+        c => activeL2Nos.has(c.id?.toLowerCase().trim())
       );
       
       if (autoOpenChangeNo) {
@@ -130,7 +126,11 @@ export const L2Validation = ({
         }
         if (clearAutoOpen) clearAutoOpen();
       } else if (!formChangeNo) {
-        const validatedNos = new Set(validationLogs.map(log => log.changeNo?.toLowerCase().trim()));
+        const validatedNos = new Set(
+          (validationLogs || [])
+            .filter(log => log.weldTest && log.weldTest !== '-')
+            .map(log => log.changeNo?.toLowerCase().trim())
+        );
         const firstPending = approvedChanges.find(c => !validatedNos.has(c.id.toLowerCase().trim())) || approvedChanges[0];
         if (firstPending) {
           setFormChangeNo(firstPending.id);
@@ -140,7 +140,7 @@ export const L2Validation = ({
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [changes, autoOpenChangeNo]);
+  }, [changes, validationLogs, autoOpenChangeNo]);
 
   // Sync form inputs with saved validation logs when formChangeNo or validationLogs changes
   useEffect(() => {
@@ -399,28 +399,12 @@ export const L2Validation = ({
     );
   };
 
-  const isAlreadyValidated = validationLogs.some(
-    log => log.changeNo?.toLowerCase().trim() === formChangeNo?.toLowerCase().trim()
+  const isAlreadyValidated = (validationLogs || []).some(
+    log => log.changeNo?.toLowerCase().trim() === formChangeNo?.toLowerCase().trim() && !log.isPending
   );
 
-  // Construct L2 table rows by combining changes and validationLogs
-  const tableLogs = (changes || [])
-    .filter(change => change.hodStatus === 'Approved' && change.qaApproval !== 'Approved')
-    .map(change => {
-    const savedLog = validationLogs.find(log => log.changeNo?.toLowerCase().trim() === change.id?.toLowerCase().trim());
-    return {
-      changeNo: change.id,
-      date: change.date,
-      requester: change.requestBy || change.requester || savedLog?.requester || 'Unknown',
-      requesterEmail: change.requesterEmail || savedLog?.requesterEmail || '',
-      weldTest: savedLog?.weldTest || '-',
-      qaTest: savedLog?.qaTest || '-',
-      status: savedLog?.status || 'Pending',
-      remarks: savedLog?.remarks || '-',
-      isPending: !savedLog
-    };
-  })
-  .filter(log => log.status !== 'Accepted');
+  // Construct L2 table rows directly from the backend validationLogs database response
+  const tableLogs = validationLogs || [];
 
   const matchedChange = changes?.find(c => c.id.toLowerCase().trim() === formChangeNo.toLowerCase().trim());
   const isRaisedByUser = matchedChange && userEmail && 
