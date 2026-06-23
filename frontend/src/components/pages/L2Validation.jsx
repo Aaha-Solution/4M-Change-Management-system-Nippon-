@@ -83,8 +83,8 @@ export const L2Validation = ({
     }
   }, [selectedL1Details]);
 
-  const fetchLogs = async () => {
-    setIsFetchingLogs(true);
+  const fetchLogs = async (silent = false) => {
+    if (!silent) setIsFetchingLogs(true);
     try {
       const response = await getL2ValidationLogs();
       setValidationLogs(response.data);
@@ -92,7 +92,7 @@ export const L2Validation = ({
       console.error(err);
       if (setToastMsg) setToastMsg('Error loading L2 validation logs from backend.');
     } finally {
-      setIsFetchingLogs(false);
+      if (!silent) setIsFetchingLogs(false);
     }
   };
 
@@ -103,9 +103,9 @@ export const L2Validation = ({
 
   useWebSocket((data) => {
     if (data.type === 'REFRESH_CHANGES') {
-      fetchLogs();
+      fetchLogs(true);
       if (selectedL1Details) {
-        handleViewL1Details(selectedL1Details.change_no);
+        handleViewL1Details(selectedL1Details.change_no, true);
       }
     }
   });
@@ -275,32 +275,34 @@ export const L2Validation = ({
 
 
 
-  async function handleViewL1Details(changeNo) {
-    // Open modal immediately with skeleton data to avoid blinking/flicker
-    setSelectedL1Details({
-      change_no: changeNo,
-      title: 'Loading details...',
-      unit: '',
-      requested_time: '',
-      dept: '',
-      request_by: '',
-      process_name: '',
-      process_line: '',
-      machine_no: '',
-      description: '',
-      improvement_area: '',
-      change_type: '',
-      trace_from: '',
-      trace_to: '',
-      risk_analysis: '',
-      sop_update: '',
-      hod_approval: '',
-      customer_approval: '',
-      effectiveness_monitoring: ''
-    });
-    setSelectedL2Details(null);
-    setSelectedLog(null);
-    setIsFetchingL1(true);
+  async function handleViewL1Details(changeNo, silent = false) {
+    if (!silent) {
+      // Open modal immediately with skeleton data to avoid blinking/flicker
+      setSelectedL1Details({
+        change_no: changeNo,
+        title: 'Loading details...',
+        unit: '',
+        requested_time: '',
+        dept: '',
+        request_by: '',
+        process_name: '',
+        process_line: '',
+        machine_no: '',
+        description: '',
+        improvement_area: '',
+        change_type: '',
+        trace_from: '',
+        trace_to: '',
+        risk_analysis: '',
+        sop_update: '',
+        hod_approval: '',
+        customer_approval: '',
+        effectiveness_monitoring: ''
+      });
+      setSelectedL2Details(null);
+      setSelectedLog(null);
+      setIsFetchingL1(true);
+    }
 
     try {
       const [l1Res, l2Res, l3Res] = await Promise.all([
@@ -344,7 +346,7 @@ export const L2Validation = ({
       console.error(err);
       if (setToastMsg) setToastMsg('Error loading change request details.');
     } finally {
-      setIsFetchingL1(false);
+      if (!silent) setIsFetchingL1(false);
     }
   }
 

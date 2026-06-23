@@ -218,14 +218,16 @@ export const L3RequestTracker = ({
 
 
 
-  const handleViewDetails = async (log) => {
-    // Open modal immediately with skeleton data to avoid blinking/flicker
-    setSelectedLog(log);
-    setSelectedL1Details(null);
-    setSelectedL2Details(null);
-    setSelectedEffDetails(null);
-    setIsFetchingDetails(true);
-    setActiveTab('l1');
+  const handleViewDetails = async (log, silent = false) => {
+    if (!silent) {
+      // Open modal immediately with skeleton data to avoid blinking/flicker
+      setSelectedLog(log);
+      setSelectedL1Details(null);
+      setSelectedL2Details(null);
+      setSelectedEffDetails(null);
+      setIsFetchingDetails(true);
+      setActiveTab('l1');
+    }
 
     try {
       const [l1Res, l2Res, effRes] = await Promise.all([
@@ -244,7 +246,7 @@ export const L3RequestTracker = ({
       console.error(err);
       if (setToastMsg) setToastMsg('Error loading L1 change request details.');
     } finally {
-      setIsFetchingDetails(false);
+      if (!silent) setIsFetchingDetails(false);
     }
   };
 
@@ -254,8 +256,8 @@ export const L3RequestTracker = ({
   }, [searchQuery, statusFilter]);
 
   // Fetch L3 logs from database
-  const fetchLogs = async () => {
-    setIsFetchingLogs(true);
+  const fetchLogs = async (silent = false) => {
+    if (!silent) setIsFetchingLogs(true);
     try {
       const response = await getL3Approvals();
       setApprovalLogs(response.data);
@@ -263,7 +265,7 @@ export const L3RequestTracker = ({
       console.error(err);
       if (setToastMsg) setToastMsg('Error loading L3 approvals from database.');
     } finally {
-      setIsFetchingLogs(false);
+      if (!silent) setIsFetchingLogs(false);
     }
   };
 
@@ -274,9 +276,9 @@ export const L3RequestTracker = ({
 
   useWebSocket((data) => {
     if (data.type === 'REFRESH_CHANGES') {
-      fetchLogs();
+      fetchLogs(true);
       if (selectedLog) {
-        handleViewDetails(selectedLog);
+        handleViewDetails(selectedLog, true);
       }
     }
   });

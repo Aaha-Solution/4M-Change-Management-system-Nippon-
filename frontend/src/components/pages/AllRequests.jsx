@@ -197,7 +197,7 @@ export const AllRequests = ({
         rawDate: selectedLog.date,
         status: selectedLog.status,
         hodStatus: selectedLog.hodStatus
-      });
+      }, true); // silent = true
     } else if (data.type === 'REFRESH_USERS') {
       fetchOptions();
     }
@@ -339,31 +339,33 @@ export const AllRequests = ({
   const paginatedData = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   // Load details handler
-  async function handleViewDetails(request) {
-    // Open modal immediately with skeleton data to avoid blinking/flicker
-    setSelectedLog({
-      changeNo: request.id,
-      requester: request.requester,
-      requesterEmail: request.requesterEmail, 
-      date: request.rawDate,
-      status: request.status,
-      hodStatus: request.hodStatus,
-      ped: 'Pending',
-      qad: 'Pending',
-      production: 'Pending',
-      maintenance: 'Pending',
-      pcl: 'Pending',
-      materials: 'Pending',
-      marketing: 'Pending',
-      hr: 'Pending',
-      safety: 'Pending',
-      unitHead: 'Pending'                                                                                                                                          
-    });
-    setSelectedL1Details(null);
-    setSelectedL2Details(null);
-    setSelectedEffDetails(null);
-    setIsFetchingDetails(true);
-    setActiveTab('l1');
+  async function handleViewDetails(request, silent = false) {
+    if (!silent) {
+      // Open modal immediately with skeleton data to avoid blinking/flicker
+      setSelectedLog({
+        changeNo: request.id,
+        requester: request.requester,
+        requesterEmail: request.requesterEmail, 
+        date: request.rawDate,
+        status: request.status,
+        hodStatus: request.hodStatus,
+        ped: 'Pending',
+        qad: 'Pending',
+        production: 'Pending',
+        maintenance: 'Pending',
+        pcl: 'Pending',
+        materials: 'Pending',
+        marketing: 'Pending',
+        hr: 'Pending',
+        safety: 'Pending',
+        unitHead: 'Pending'                                                                                                                                          
+      });
+      setSelectedL1Details(null);
+      setSelectedL2Details(null);
+      setSelectedEffDetails(null);
+      setIsFetchingDetails(true);
+      setActiveTab('l1');
+    }
 
     try {
       const [l1Res, l2Res, l3Res, effRes] = await Promise.all([
@@ -379,8 +381,11 @@ export const AllRequests = ({
         l => l.changeNo?.toLowerCase().trim() === request.id?.toLowerCase().trim()
       );
       setSelectedEffDetails(matchedEff || null);
-      setEditL1Data(l1Res.data || {});
-      setEditL2Data(l2Res.data || {});
+      
+      if (!silent) {
+        setEditL1Data(l1Res.data || {});
+        setEditL2Data(l2Res.data || {});
+      }
 
       const matchedL3 = l3Res.data?.find(log => log.changeNo === request.id);
       const newLogData = matchedL3 ? { ...matchedL3, status: request.status || matchedL3.status, hodStatus: request.hodStatus, requesterEmail: request.requesterEmail } : {
@@ -402,11 +407,14 @@ export const AllRequests = ({
         unitHead: 'Pending'
       };
       setSelectedLog(newLogData);
-      setEditL3Data(newLogData || {});
+      
+      if (!silent) {
+        setEditL3Data(newLogData || {});
+      }
     } catch (err) {
       console.error('Error fetching request details:', err);
     } finally {
-      setIsFetchingDetails(false);
+      if (!silent) setIsFetchingDetails(false);
     }
   }
 

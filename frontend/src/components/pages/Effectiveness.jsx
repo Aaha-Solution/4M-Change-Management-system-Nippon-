@@ -139,8 +139,8 @@ export const Effectiveness = ({
   const [tabCounts, setTabCounts] = useState({ ongoing: 0, closed: 0, rejected: 0 });
   const [isFetchingLogs, setIsFetchingLogs] = useState(false);
 
-  const fetchLogs = async () => {
-    setIsFetchingLogs(true);
+  const fetchLogs = async (silent = false) => {
+    if (!silent) setIsFetchingLogs(true);
     try {
       const [logsRes, countsRes] = await Promise.all([
         getEffectivenessLogs(activeMainTab),
@@ -152,7 +152,7 @@ export const Effectiveness = ({
       console.error('Error fetching effectiveness logs:', err);
       if (setToastMsg) setToastMsg('Error loading effectiveness logs.');
     } finally {
-      setIsFetchingLogs(false);
+      if (!silent) setIsFetchingLogs(false);
     }
   };
 
@@ -165,7 +165,10 @@ export const Effectiveness = ({
   useWebSocket((data) => {
     console.log('📩 Received WebSocket message in Effectiveness:', data);
     if (data.type === 'REFRESH_EFFECTIVENESS' || data.type === 'REFRESH_CHANGES') {
-      fetchLogs();
+      fetchLogs(true);
+      if (selectedLog) {
+        handleViewDetails(selectedLog.changeNo, true);
+      }
     }
   });
 
@@ -236,24 +239,26 @@ export const Effectiveness = ({
     );
   };
 
-  const handleViewDetails = async (changeNo) => {
-    setSelectedLog({
-      changeNo: changeNo,
-      ped: 'Pending',
-      qad: 'Pending',
-      production: 'Pending',
-      maintenance: 'Pending',
-      pcl: 'Pending',
-      materials: 'Pending',
-      marketing: 'Pending',
-      hr: 'Pending',
-      safety: 'Pending',
-      unitHead: 'Pending'
-    });
-    setSelectedL1Details(null);
-    setSelectedL2Details(null);
-    setIsFetchingDetails(true);
-    setActiveTab('l1');
+  const handleViewDetails = async (changeNo, silent = false) => {
+    if (!silent) {
+      setSelectedLog({
+        changeNo: changeNo,
+        ped: 'Pending',
+        qad: 'Pending',
+        production: 'Pending',
+        maintenance: 'Pending',
+        pcl: 'Pending',
+        materials: 'Pending',
+        marketing: 'Pending',
+        hr: 'Pending',
+        safety: 'Pending',
+        unitHead: 'Pending'
+      });
+      setSelectedL1Details(null);
+      setSelectedL2Details(null);
+      setIsFetchingDetails(true);
+      setActiveTab('l1');
+    }
 
     try {
       const [l1Res, l2Res, l3Res] = await Promise.all([
@@ -283,7 +288,7 @@ export const Effectiveness = ({
     } catch (err) {
       console.error('Error fetching request details:', err);
     } finally {
-      setIsFetchingDetails(false);
+      if (!silent) setIsFetchingDetails(false);
     }
   };
 

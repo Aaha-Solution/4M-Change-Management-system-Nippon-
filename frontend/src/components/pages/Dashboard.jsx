@@ -121,8 +121,8 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
   };
 
   // Fetch changes from the backend
-  const fetchChanges = async () => {
-    setIsFetchingChanges(true);
+  const fetchChanges = async (silent = false) => {
+    if (!silent) setIsFetchingChanges(true);
     try {
       const response = await getDashboardChanges();
       setChanges(response.data);
@@ -134,7 +134,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
         setToastMsg({ text: 'Failed to load changes from backend.', isError: true });
       }
     } finally {
-      setIsFetchingChanges(false);
+      if (!silent) setIsFetchingChanges(false);
     }
   };
 
@@ -206,12 +206,12 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
   useWebSocket((data) => {
     console.log('📩 Received WebSocket message in Dashboard:', data);
     if (data.type === 'REFRESH_CHANGES') {
-      fetchChanges();
+      fetchChanges(true);
     } else if (data.type === 'REFRESH_NOTIFICATIONS') {
       fetchNotifications();
     } else if (data.type === 'REFRESH_EFFECTIVENESS') {
       fetchEffectiveness();
-      fetchChanges();
+      fetchChanges(true);
     } else if (data.type === 'REFRESH_USERS') {
       fetchUserDept();
     }

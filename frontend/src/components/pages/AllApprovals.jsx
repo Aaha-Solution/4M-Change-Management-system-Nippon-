@@ -230,8 +230,8 @@ export const AllApprovals = ({
     }
   }, [userDept]);
 
-  const fetchRequests = async () => {
-    setIsFetching(true);
+  const fetchRequests = async (silent = false) => {
+    if (!silent) setIsFetching(true);
     try {
       let res;
       if (isAdmin) {
@@ -246,7 +246,7 @@ export const AllApprovals = ({
       console.error(err);
       if (setToastMsg) setToastMsg({ text: 'Error loading HOD approval requests.', isError: true });
     } finally {
-      setIsFetching(false);
+      if (!silent) setIsFetching(false);
     }
   };
 
@@ -257,35 +257,40 @@ export const AllApprovals = ({
 
   useWebSocket((data) => {
     if (data.type === 'REFRESH_CHANGES') {
-      fetchRequests();
+      fetchRequests(true);
+      if (selectedReq) {
+        handleOpenModal(selectedReq, true);
+      }
     }
   });
 
-  const handleOpenModal = async (req) => {
-    setSelectedReq(req);
-    setRemarks(req.hodRemarks || '');
-    setL1Details(null);
-    setSelectedL2Details(null);
-    setSelectedEffDetails(null);
-    setSelectedLog({
-      changeNo: req.changeNo,
-      requester: req.requestBy || req.requesterEmail,
-      date: req.date,
-      status: req.crStatus,
-      hodStatus: req.hodStatus,
-      ped: 'Pending',
-      qad: 'Pending',
-      production: 'Pending',
-      maintenance: 'Pending',
-      pcl: 'Pending',
-      materials: 'Pending',
-      marketing: 'Pending',
-      hr: 'Pending',
-      safety: 'Pending',
-      unitHead: 'Pending'
-    });
-    setIsFetchingDetails(true);
-    setActiveTab('l1');
+  const handleOpenModal = async (req, silent = false) => {
+    if (!silent) {
+      setSelectedReq(req);
+      setRemarks(req.hodRemarks || '');
+      setL1Details(null);
+      setSelectedL2Details(null);
+      setSelectedEffDetails(null);
+      setSelectedLog({
+        changeNo: req.changeNo,
+        requester: req.requestBy || req.requesterEmail,
+        date: req.date,
+        status: req.crStatus,
+        hodStatus: req.hodStatus,
+        ped: 'Pending',
+        qad: 'Pending',
+        production: 'Pending',
+        maintenance: 'Pending',
+        pcl: 'Pending',
+        materials: 'Pending',
+        marketing: 'Pending',
+        hr: 'Pending',
+        safety: 'Pending',
+        unitHead: 'Pending'
+      });
+      setIsFetchingDetails(true);
+      setActiveTab('l1');
+    }
     try {
       const [l1Res, l2Res, l3Res, effRes] = await Promise.all([
         getL1Details(req.changeNo),
@@ -321,9 +326,19 @@ export const AllApprovals = ({
     } catch (err) {
       console.error('Error fetching L1/L2/L3/Eff details:', err);
     } finally {
-      setIsFetchingDetails(false);
+      if (!silent) setIsFetchingDetails(false);
     }
   };
+
+  // Keep selectedReq in sync when requests updates in the background
+  useEffect(() => {
+    if (selectedReq) {
+      const updatedReq = requests.find(r => r.changeNo === selectedReq.changeNo);
+      if (updatedReq) {
+        setSelectedReq(updatedReq);
+      }
+    }
+  }, [requests, selectedReq]);
 
   // Auto-open from notification click
   useEffect(() => {
