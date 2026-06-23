@@ -350,7 +350,9 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                           targetTab = 'approvals';
                         } else if (idStr.startsWith('L2-')) {
                           targetTab = 'approvals';
-                        } else if (idStr.startsWith('L1-') || idStr.startsWith('HOD-DECISION-') || idStr.startsWith('EFF-')) {
+                        } else if (idStr.startsWith('EFF-')) {
+                          targetTab = 'effectiveness';
+                        } else if (idStr.startsWith('L1-') || idStr.startsWith('HOD-DECISION-')) {
                           targetTab = (isHOD || isAdmin || isQA) ? 'all-approvals' : 'all-requests';
                         } else {
                           // Fallback to substring matching if ID prefix is generic
@@ -363,7 +365,9 @@ export const Notifications = ({ setToastMsg, notifications, setNotifications, fe
                             targetTab = 'l3';
                           } else if (isL2) {
                             targetTab = 'approvals';
-                          } else if (isL1 || isEff) {
+                          } else if (isEff) {
+                            targetTab = 'effectiveness';
+                          } else if (isL1) {
                             targetTab = (isHOD || isAdmin || isQA) ? 'all-approvals' : 'all-requests';
                           }
                         }

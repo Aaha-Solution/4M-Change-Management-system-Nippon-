@@ -37,7 +37,9 @@ export const Effectiveness = ({
   setToastMsg,
   userRole,
   userDept,
-  fetchChanges
+  fetchChanges,
+  autoOpenChangeNo = null,
+  clearAutoOpen = () => {}
 }) => {
   const isAdmin = userRole && (
     userRole.toLowerCase() === 'admin' ||
@@ -67,6 +69,7 @@ export const Effectiveness = ({
   const [previewFile, setPreviewFile] = useState(null);
   const [uploadedFilesList, setUploadedFilesList] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [pendingAutoSelectChangeNo, setPendingAutoSelectChangeNo] = useState(null);
 
   useEffect(() => {
     if (effChangeNo) {
@@ -97,6 +100,41 @@ export const Effectiveness = ({
       }
     }
   }, [effectivenessLogs, selectedLog]);
+
+  // Listen to autoOpenChangeNo from Dashboard redirect
+  useEffect(() => {
+    if (autoOpenChangeNo) {
+      const findAndSelectLog = async () => {
+        try {
+          const res = await getEffectivenessLogs(); // fetches all logs
+          const matchingLog = res.data?.find(
+            log => log.changeNo?.toLowerCase().trim() === autoOpenChangeNo.toLowerCase().trim()
+          );
+          if (matchingLog) {
+            let targetTab = 'ongoing';
+            if (matchingLog.qaApproval === 'Approved') {
+              targetTab = 'closed';
+            } else if (matchingLog.qaApproval === 'Rejected') {
+              targetTab = 'rejected';
+            }
+
+            // Set pending selection so that it will be triggered once the tab logs load
+            setPendingAutoSelectChangeNo(matchingLog.changeNo);
+
+            if (activeMainTab !== targetTab) {
+              setActiveMainTab(targetTab);
+            }
+          }
+          if (clearAutoOpen) {
+            clearAutoOpen();
+          }
+        } catch (err) {
+          console.error('Error auto-opening effectiveness log:', err);
+        }
+      };
+      findAndSelectLog();
+    }
+  }, [autoOpenChangeNo]);
 
   const [tabCounts, setTabCounts] = useState({ ongoing: 0, closed: 0, rejected: 0 });
   const [isFetchingLogs, setIsFetchingLogs] = useState(false);
@@ -506,6 +544,29 @@ export const Effectiveness = ({
   });
 
   const displayLogs = filteredLogs;
+
+  // Listen to effectivenessLogs changes and select the pending change request
+  useEffect(() => {
+    if (pendingAutoSelectChangeNo && effectivenessLogs.length > 0) {
+      const hasMatch = effectivenessLogs.some(
+        log => log.changeNo?.toLowerCase().trim() === pendingAutoSelectChangeNo.toLowerCase().trim()
+      );
+      if (hasMatch) {
+        handleSelectChangeNo(pendingAutoSelectChangeNo);
+
+        // Calculate page index of the matching log
+        const index = displayLogs.findIndex(
+          log => log.changeNo?.toLowerCase().trim() === pendingAutoSelectChangeNo.toLowerCase().trim()
+        );
+        if (index !== -1) {
+          const targetPage = Math.floor(index / rowsPerPage);
+          setPage(targetPage);
+        }
+
+        setPendingAutoSelectChangeNo(null);
+      }
+    }
+  }, [effectivenessLogs, pendingAutoSelectChangeNo, rowsPerPage, displayLogs]);
 
   const paginatedLogs = displayLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 

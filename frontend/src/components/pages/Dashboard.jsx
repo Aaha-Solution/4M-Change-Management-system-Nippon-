@@ -624,6 +624,8 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 userRole={userRole}
                 userDept={userDept}
                 fetchChanges={fetchChanges}
+                autoOpenChangeNo={autoOpenChangeNo}
+                clearAutoOpen={() => setAutoOpenChangeNo(null)}
               />
             )}
 
