@@ -13,7 +13,7 @@ import {
   getEffectivenessLogs,
   getEffectivenessCounts
 } from '../../api/apiRoutes';
-import { formatDateToDDMMYY, formatDateToDDMMYYYY } from '../../utils/dateUtils';
+import { formatDateToDDMMYY, formatDateToDDMMYYYY, parseDDMMYYYYToDate } from '../../utils/dateUtils';
 import { exportEffectivenessLogsPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
 import { useWebSocket } from '../../hooks/useWebSocket';
@@ -295,6 +295,8 @@ export const Effectiveness = ({
   // Search & Filter States
   const [effSearch, setEffSearch] = useState('');
   const [effFilterMonth, setEffFilterMonth] = useState('All');
+  const [effFromDate, setEffFromDate] = useState('');
+  const [effToDate, setEffToDate] = useState('');
 
   // Pagination State
   const [page, setPage] = useState(0);
@@ -303,7 +305,7 @@ export const Effectiveness = ({
   // Reset page when filters change
   useEffect(() => {
     setPage(0);
-  }, [effSearch, effFilterMonth]);
+  }, [effSearch, effFilterMonth, effFromDate, effToDate]);
 
   // Format month names (e.g. "2026-05" -> "May-26" or "12/06/2026" -> "Jun-26")
   const formatMonthWise = (val) => {
@@ -475,6 +477,8 @@ export const Effectiveness = ({
     // Reset filters when switching tabs to avoid confusing empty states
     setEffSearch('');
     setEffFilterMonth('All');
+    setEffFromDate('');
+    setEffToDate('');
     setPage(0);
   };
 
@@ -545,7 +549,22 @@ export const Effectiveness = ({
         matchesMonth = logMonth === effFilterMonth;
       }
     }
-    return matchesSearch && matchesMonth;
+
+    let matchesFromDate = true;
+    let matchesToDate = true;
+    if (effFromDate && effToDate) {
+      const fD = parseDDMMYYYYToDate(effFromDate);
+      const tD = parseDDMMYYYYToDate(effToDate);
+      if (fD && tD) {
+        fD.setHours(0, 0, 0, 0);
+        tD.setHours(23, 59, 59, 999);
+        const itemD = parseDDMMYYYYToDate(log.reqDate);
+        matchesFromDate = itemD && itemD >= fD;
+        matchesToDate = itemD && itemD <= tD;
+      }
+    }
+
+    return matchesSearch && matchesMonth && matchesFromDate && matchesToDate;
   });
 
   const displayLogs = filteredLogs;
@@ -587,6 +606,8 @@ export const Effectiveness = ({
     exportEffectivenessLogsPDF(logsToExport, {
       searchQuery: effSearch,
       monthFilter: effFilterMonth,
+      fromDate: effFromDate,
+      toDate: effToDate,
       tabLabel
     }, setToastMsg);
   };
@@ -1074,11 +1095,75 @@ export const Effectiveness = ({
               />
             </div>
 
+            <div className="flex-1 min-w-[120px] max-w-[150px] relative">
+              <CustomDatePicker 
+                value={effFromDate}
+                onChange={(val) => {
+                  if (val && effToDate) {
+                    const [fd, fm, fy] = val.split('/');
+                    const [td, tm, ty] = effToDate.split('/');
+                    const fDate = new Date(fy, fm - 1, fd);
+                    const tDate = new Date(ty, tm - 1, td);
+                    if (fDate > tDate) {
+                       setToastMsg({ text: "From Date cannot be later than To Date", isError: true });
+                       return;
+                     }
+                  }
+                  setEffFromDate(val);
+                }}
+                readOnly={true}
+                placeholder="From Date"
+                inputClassName="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none focus:border-[#0066cc] placeholder-slate-400 text-slate-600 pr-8"
+                buttonClassName="right-2 top-1/2 -translate-y-1/2 scale-90"
+              />
+            </div>
 
+            <div className="flex-1 min-w-[120px] max-w-[150px] relative" onClickCapture={(e) => {
+                if (!effFromDate) {
+                  e.stopPropagation();
+                  setToastMsg("Please select 'From Date' before selecting 'To Date'.");
+                }
+              }}>
+              <CustomDatePicker 
+                value={effToDate}
+                onChange={(val) => {
+                  if (val && effFromDate) {
+                     const [fd, fm, fy] = effFromDate.split('/');
+                     const [td, tm, ty] = val.split('/');
+                     const fDate = new Date(fy, fm - 1, fd);
+                     const tDate = new Date(ty, tm - 1, td);
+                     if (tDate < fDate) {
+                       setToastMsg({ text: "To Date cannot be earlier than From Date", isError: true });
+                       return;
+                     }
+                  }
+                  setEffToDate(val);
+                }}
+                readOnly={true}
+                placeholder="To Date"
+                inputClassName={`w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none focus:border-[#0066cc] placeholder-slate-400 text-slate-600 pr-8 ${!effFromDate ? 'opacity-70 cursor-not-allowed bg-slate-50' : ''}`}
+                buttonClassName="right-2 top-1/2 -translate-y-1/2 scale-90"
+                disabled={!effFromDate}
+              />
+            </div>
+
+            {(effSearch || effFilterMonth !== 'All' || effFromDate || effToDate) && (
+              <button 
+                onClick={() => {
+                  setEffSearch('');
+                  setEffFilterMonth('All');
+                  setEffFromDate('');
+                  setEffToDate('');
+                }}
+                className="text-[10px] font-bold text-rose-500 hover:text-rose-700 transition-colors cursor-pointer uppercase tracking-wider px-2"
+              >
+                Reset
+              </button>
+            )}
 
             <div>
               <select
-                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none min-w-[150px] focus:border-[#0066cc]"
+                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none min-w-[120px] focus:border-[#0066cc]"
                 value={effFilterMonth}
                 onChange={(e) => setEffFilterMonth(e.target.value)}
               >

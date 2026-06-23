@@ -1207,7 +1207,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       return;
     }
 
-    const { searchQuery = '', monthFilter = 'All', tabLabel = 'Ongoing Monitoring' } = filtersInfo;
+    const { searchQuery = '', monthFilter = 'All', fromDate = '', toDate = '', tabLabel = 'Ongoing Monitoring' } = filtersInfo;
 
     const doc = new jsPDF({
       orientation: 'landscape',
@@ -1289,6 +1289,8 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
     const filterParts = [];
     if (searchQuery) filterParts.push(`Keyword Search: "${searchQuery}"`);
     if (monthFilter !== 'All') filterParts.push(`Month: "${monthFilter}"`);
+    if (fromDate) filterParts.push(`From: "${fromDate}"`);
+    if (toDate) filterParts.push(`To: "${toDate}"`);
 
     const filterText = filterParts.length > 0
       ? `Applied Filters: ${filterParts.join('  |  ')}`
