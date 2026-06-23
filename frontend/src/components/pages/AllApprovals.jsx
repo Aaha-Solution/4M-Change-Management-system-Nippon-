@@ -493,7 +493,7 @@ export const AllApprovals = ({
     const stageInfo = workflowStageConfig(r.crStatus);
     const matchStage = stageFilter === 'All' || stageInfo.level === stageFilter;
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
-    const matchScope = scopeFilter === 'All' || isL3Stage || mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept);
+    const matchScope = scopeFilter === 'All' || mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept);
     return matchSearch && matchStatus && matchStage && matchScope;
   });
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -511,7 +511,7 @@ export const AllApprovals = ({
     const stageInfo = workflowStageConfig(r.crStatus);
     if (stageFilter !== 'All' && stageInfo.level !== stageFilter) return false;
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
-    const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
+    const isMyDept = isAdmin || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
     return (r.hodStatus || 'Pending') === 'Pending';
   }).length;
@@ -520,7 +520,7 @@ export const AllApprovals = ({
     const stageInfo = workflowStageConfig(r.crStatus);
     if (stageFilter !== 'All' && stageInfo.level !== stageFilter) return false;
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
-    const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
+    const isMyDept = isAdmin || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
     return r.hodStatus === 'Approved';
   }).length;
@@ -529,7 +529,7 @@ export const AllApprovals = ({
     const stageInfo = workflowStageConfig(r.crStatus);
     if (stageFilter !== 'All' && stageInfo.level !== stageFilter) return false;
     const isL3Stage = r.crStatus?.toLowerCase() === 'approved';
-    const isMyDept = isAdmin || isL3Stage || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
+    const isMyDept = isAdmin || ((isHOD || isQA) && (mapDept(r.dept) === actingDept || isDeptInRequired(r.hodApprovalNote, r.dept, actingDept)));
     if (scopeFilter !== 'All' && !isMyDept) return false;
     return r.hodStatus === 'Rejected';
   }).length;
@@ -585,9 +585,9 @@ export const AllApprovals = ({
       {/* ─── Summary Cards ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px]">
         {[
-          { label: 'Awaiting Your Decision', value: pendingCount, icon: <Clock size={18} />, gradient: 'from-amber-500 to-orange-500', border: 'border-amber-100', text: 'text-amber-700', sublabel: 'L1 HOD Review Pending' },
-          { label: 'Approved by You', value: approvedCount, icon: <CheckCircle2 size={18} />, gradient: 'from-emerald-500 to-teal-500', border: 'border-emerald-100', text: 'text-emerald-700', sublabel: 'L1 HOD Approved' },
-          { label: 'Rejected by You', value: rejectedCount, icon: <XCircle size={18} />, gradient: 'from-rose-500 to-pink-500', border: 'border-rose-100', text: 'text-rose-700', sublabel: 'L1 HOD Rejected' },
+          { label: 'Awaiting  Decision', value: pendingCount, icon: <Clock size={18} />, gradient: 'from-amber-500 to-orange-500', border: 'border-amber-100', text: 'text-amber-700', sublabel: 'L1 HOD Review Pending' },
+          { label: 'Approved ', value: approvedCount, icon: <CheckCircle2 size={18} />, gradient: 'from-emerald-500 to-teal-500', border: 'border-emerald-100', text: 'text-emerald-700', sublabel: 'L1 HOD Approved' },
+          { label: 'Rejected ', value: rejectedCount, icon: <XCircle size={18} />, gradient: 'from-rose-500 to-pink-500', border: 'border-rose-100', text: 'text-rose-700', sublabel: 'L1 HOD Rejected' },
         ].map((card, i) => (
           <div key={i} className={`relative bg-white border ${card.border} rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group`}>
             <div className={`absolute top-0 right-0 w-20 h-20 rounded-full bg-gradient-to-br ${card.gradient} opacity-[0.07] -translate-y-4 translate-x-4 group-hover:opacity-[0.13] transition-opacity`} />
