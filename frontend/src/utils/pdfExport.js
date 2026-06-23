@@ -127,16 +127,16 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
         cellPadding: { top: 3, right: 4, bottom: 3, left: 4 }
       },
       columnStyles: {
-        0:  { cellWidth: 25, halign: 'center' },          // SL. NO.
-        1:  { cellWidth: 70, fontStyle: 'bold' },          // 4M CHANGE NO
-        2:  { cellWidth: 65, halign: 'center' },           // MACHINE NO.
-        3:  { cellWidth: 85 },                             // DEPARTMENT
-        4:  { cellWidth: 90 },                             // PROCESS NAME
-        5:  { cellWidth: 85 },                             // REQUESTED BY
-        6:  { cellWidth: 60, halign: 'center' },           // REQUEST DATE
-        7:  { cellWidth: 62, halign: 'center' },           // HOD APPROVAL
-        8:  { cellWidth: 55, halign: 'center' },           // L2 STATUS
-        9:  { cellWidth: 55, halign: 'center' },           // L3 STATUS
+        0: { cellWidth: 25, halign: 'center' },          // SL. NO.
+        1: { cellWidth: 70, fontStyle: 'bold' },          // 4M CHANGE NO
+        2: { cellWidth: 65, halign: 'center' },           // MACHINE NO.
+        3: { cellWidth: 85 },                             // DEPARTMENT
+        4: { cellWidth: 90 },                             // PROCESS NAME
+        5: { cellWidth: 85 },                             // REQUESTED BY
+        6: { cellWidth: 60, halign: 'center' },           // REQUEST DATE
+        7: { cellWidth: 62, halign: 'center' },           // HOD APPROVAL
+        8: { cellWidth: 55, halign: 'center' },           // L2 STATUS
+        9: { cellWidth: 55, halign: 'center' },           // L3 STATUS
         10: { cellWidth: 90, halign: 'center' }            // OVERALL STATUS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
@@ -310,7 +310,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
           selectedL1Details.trace_to || '-'
         ],
         [
-          { content: 'Risk Analysis & Mitigations:', fontStyle: 'bold' },
+          { content: 'Risk Analysis:', fontStyle: 'bold' },
           selectedL1Details.risk_analysis || '-'
         ],
         [
@@ -522,8 +522,8 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
       item.status === 'Accepted'
         ? 'Approved'
         : item.status === 'Pending'
-        ? (item.weldTest && item.weldTest !== '-' ? 'QA Approval Needed' : 'Pending Requester Validation')
-        : item.status,
+          ? (item.weldTest && item.weldTest !== '-' ? 'QA Approval Needed' : 'Pending Requester Validation')
+          : item.status,
       item.remarks || '-'
     ]);
 
@@ -798,10 +798,10 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
       const crStatus = item.crStatus || '';
       const stageLabel =
         crStatus.toLowerCase() === 'pending' ? 'L1 - HOD Review' :
-        crStatus.toLowerCase() === 'evaluating' ? 'L2 - Validation' :
-        crStatus.toLowerCase() === 'approved' ? 'L3 - Approval' :
-        crStatus.toLowerCase() === 'completed' ? 'Completed' :
-        crStatus || 'Pending';
+          crStatus.toLowerCase() === 'evaluating' ? 'L2 - Validation' :
+            crStatus.toLowerCase() === 'approved' ? 'L3 - Approval' :
+              crStatus.toLowerCase() === 'completed' ? 'Completed' :
+                crStatus || 'Pending';
 
       return [
         idx + 1,
@@ -972,7 +972,7 @@ export const exportUsersListPDF = (filteredUsers, filtersInfo = {}, setToastMsg)
     if (searchQuery) filterParts.push(`Search: "${searchQuery}"`);
     if (roleFilter !== 'All') filterParts.push(`Role: "${roleFilter}"`);
 
-    const filterText = filterParts.length > 0 
+    const filterText = filterParts.length > 0
       ? `Applied Filters: ${filterParts.join('  |  ')}`
       : 'Report Scope: All User Records (No filters applied)';
 
@@ -1143,16 +1143,16 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
         cellPadding: { top: 3, right: 3, bottom: 3, left: 3 }
       },
       columnStyles: {
-        0:  { cellWidth: 25, halign: 'center' },          // SL. NO.
-        1:  { cellWidth: 68, fontStyle: 'bold' },          // 4M CHANGE NO
-        2:  { cellWidth: 62, halign: 'center' },           // MACHINE NO.
-        3:  { cellWidth: 85 },                             // DEPARTMENT
-        4:  { cellWidth: 88 },                             // PROCESS NAME
-        5:  { cellWidth: 80 },                             // REQUESTED BY
-        6:  { cellWidth: 58, halign: 'center' },           // REQUEST DATE
-        7:  { cellWidth: 60, halign: 'center' },           // HOD APPROVAL
-        8:  { cellWidth: 52, halign: 'center' },           // L2 STATUS
-        9:  { cellWidth: 52, halign: 'center' },           // L3 STATUS
+        0: { cellWidth: 25, halign: 'center' },          // SL. NO.
+        1: { cellWidth: 68, fontStyle: 'bold' },          // 4M CHANGE NO
+        2: { cellWidth: 62, halign: 'center' },           // MACHINE NO.
+        3: { cellWidth: 85 },                             // DEPARTMENT
+        4: { cellWidth: 88 },                             // PROCESS NAME
+        5: { cellWidth: 80 },                             // REQUESTED BY
+        6: { cellWidth: 58, halign: 'center' },           // REQUEST DATE
+        7: { cellWidth: 60, halign: 'center' },           // HOD APPROVAL
+        8: { cellWidth: 52, halign: 'center' },           // L2 STATUS
+        9: { cellWidth: 52, halign: 'center' },           // L3 STATUS
         10: { cellWidth: 82, halign: 'center' }            // OVERALL STATUS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },

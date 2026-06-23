@@ -1083,10 +1083,10 @@ export const L2Validation = ({
                           </td>
                           <td className="p-[12px]">
                             <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${log.status === 'Accepted'
-                                ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                                : log.status === 'Pending'
-                                  ? (log.weldTest && log.weldTest !== '-' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-250 text-amber-700')
-                                  : 'bg-rose-50 border-rose-250 text-rose-700'
+                              ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                              : log.status === 'Pending'
+                                ? (log.weldTest && log.weldTest !== '-' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-250 text-amber-700')
+                                : 'bg-rose-50 border-rose-250 text-rose-700'
                               }`}>
                               {log.status === 'Accepted'
                                 ? 'Approved'
@@ -1144,10 +1144,10 @@ export const L2Validation = ({
                         {log.changeNo}
                       </span>
                       <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[10px] font-semibold border ${log.status === 'Accepted'
-                          ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                          : log.status === 'Pending'
-                            ? (log.weldTest && log.weldTest !== '-' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-250 text-amber-700')
-                            : 'bg-rose-50 border-rose-250 text-rose-700'
+                        ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                        : log.status === 'Pending'
+                          ? (log.weldTest && log.weldTest !== '-' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-250 text-amber-700')
+                          : 'bg-rose-50 border-rose-250 text-rose-700'
                         }`}>
                         {log.status === 'Accepted'
                           ? 'Approved'
@@ -1394,8 +1394,8 @@ export const L2Validation = ({
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                         <div className="flex gap-1.5 items-center mt-0.5">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL1Details.crStatus !== 'Pending'
-                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
-                              : 'bg-amber-50 border-amber-220 text-amber-700'
+                            ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                            : 'bg-amber-50 border-amber-220 text-amber-700'
                             }`}>
                             L1 {selectedL1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}
                           </span>
@@ -1523,7 +1523,7 @@ export const L2Validation = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                       <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Risk Analysis & Mitigations</span>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Risk Analysis</span>
                         <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
                           {selectedL1Details.risk_analysis}
                         </div>

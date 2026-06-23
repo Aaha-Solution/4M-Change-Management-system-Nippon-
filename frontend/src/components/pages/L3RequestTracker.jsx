@@ -1143,7 +1143,7 @@ export const L3RequestTracker = ({
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                           <div className="space-y-[6px] min-w-0">
-                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Risk Analysis & Mitigations</span>
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Risk Analysis</span>
                             <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                               {selectedL1Details.risk_analysis}
                             </div>

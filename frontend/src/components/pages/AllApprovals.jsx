@@ -136,8 +136,8 @@ const WorkflowStrip = ({ crStatus, qaApproval }) => {
         <div key={s.key} className="flex items-center">
           <div className="flex flex-col items-center relative">
             <div className={`w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-black border-2 transition-all ${i < activeIdx ? 'bg-emerald-500 border-emerald-500 text-white' :
-                i === activeIdx ? 'bg-white border-white text-[#0066cc] shadow' :
-                  'bg-white/20 border-white/30 text-white/50'
+              i === activeIdx ? 'bg-white border-white text-[#0066cc] shadow' :
+                'bg-white/20 border-white/30 text-white/50'
               }`}>
               {i < activeIdx ? '✓' : (s.key === 'Done' ? '✓' : s.key)}
             </div>
@@ -622,8 +622,8 @@ export const AllApprovals = ({
                   key={f}
                   onClick={() => setStatusFilter(f)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${statusFilter === f
-                      ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-200'
-                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-200'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                 >
                   {f}
@@ -647,8 +647,8 @@ export const AllApprovals = ({
                   key={sc.key}
                   onClick={() => setScopeFilter(sc.key)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${scopeFilter === sc.key
-                      ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-100'
-                      : 'bg-white text-slate-650 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    ? 'bg-[#0066cc] text-white border-[#0066cc] shadow-md shadow-blue-100'
+                    : 'bg-white text-slate-650 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                 >
                   {sc.label}
@@ -726,8 +726,8 @@ export const AllApprovals = ({
                             <button
                               onClick={() => handleOpenModal(req)}
                               className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer group-hover:shadow ${isActionable
-                                  ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
-                                  : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
+                                ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
+                                : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
                                 }`}
                             >
                               <Eye size={12} />
@@ -791,8 +791,8 @@ export const AllApprovals = ({
                       <button
                         onClick={() => handleOpenModal(req)}
                         className={`inline-flex items-center gap-1.5 px-4 py-2 border rounded-lg text-[11px] font-bold transition-all shadow-sm cursor-pointer ${isActionable
-                            ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100 shadow'
-                            : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
+                          ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100 shadow'
+                          : 'bg-white border-slate-200 text-slate-600 hover:border-[#0066cc] hover:text-[#0066cc] hover:bg-blue-50'
                           }`}
                       >
                         <Eye size={12} />
@@ -918,10 +918,10 @@ export const AllApprovals = ({
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                               <div className="flex gap-1.5 items-center mt-0.5">
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${l1Details.hodStatus === 'Rejected'
-                                    ? 'bg-rose-50 border-rose-220 text-rose-700'
-                                    : (l1Details.hodStatus === 'Approved' || l1Details.crStatus !== 'Pending')
-                                      ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
-                                      : 'bg-amber-50 border-amber-220 text-amber-700'
+                                  ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                  : (l1Details.hodStatus === 'Approved' || l1Details.crStatus !== 'Pending')
+                                    ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                                    : 'bg-amber-50 border-amber-220 text-amber-700'
                                   }`}>
                                   L1 {l1Details.hodStatus === 'Rejected' ? 'Rejected' : ((l1Details.hodStatus === 'Approved' || l1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
                                 </span>
@@ -1133,7 +1133,7 @@ export const AllApprovals = ({
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                             <div className="space-y-[6px] min-w-0">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis & Mitigations</span>
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Analysis</span>
                               <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                                 {l1Details.risk_analysis}
                               </div>
@@ -1263,10 +1263,10 @@ export const AllApprovals = ({
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
                             <div>
                               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL2Details.status === 'Accepted'
-                                  ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
-                                  : selectedL2Details.status === 'Rejected'
-                                    ? 'bg-rose-50 border-rose-220 text-rose-700'
-                                    : 'bg-amber-50 border-amber-220 text-amber-700'
+                                ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                                : selectedL2Details.status === 'Rejected'
+                                  ? 'bg-rose-50 border-rose-220 text-rose-700'
+                                  : 'bg-amber-50 border-amber-220 text-amber-700'
                                 }`}>
                                 L2 {selectedL2Details.status || 'Pending'}
                               </span>
@@ -1457,10 +1457,10 @@ export const AllApprovals = ({
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Status</span>
                               <div>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.status === 'Effectiveness Ok'
-                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                    : currentEffLog.status === 'Pending'
-                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                      : 'bg-rose-50 border-rose-250 text-rose-700'
+                                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                  : currentEffLog.status === 'Pending'
+                                    ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                    : 'bg-rose-50 border-rose-250 text-rose-700'
                                   }`}>
                                   {currentEffLog.status}
                                 </span>
@@ -1470,10 +1470,10 @@ export const AllApprovals = ({
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Approval</span>
                               <div>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.qaApproval === 'Approved'
-                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                    : currentEffLog.qaApproval === 'Pending'
-                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                      : 'bg-rose-50 border-rose-250 text-rose-700'
+                                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                  : currentEffLog.qaApproval === 'Pending'
+                                    ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                    : 'bg-rose-50 border-rose-250 text-rose-700'
                                   }`}>
                                   {currentEffLog.qaApproval}
                                 </span>
@@ -1522,8 +1522,8 @@ export const AllApprovals = ({
                 {activeTab === 'l1' ? (
                   alreadyDecided ? (
                     <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${selectedReq.hodStatus === 'Approved'
-                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                        : 'text-rose-700 bg-rose-50 border-rose-200'
+                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      : 'text-rose-700 bg-rose-50 border-rose-200'
                       }`}>
                       {selectedReq.hodStatus === 'Approved' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
                       {(() => {
@@ -1579,10 +1579,10 @@ export const AllApprovals = ({
                 ) : activeTab === 'l2' ? (
                   selectedL2Details ? (
                     <span className={`inline-flex items-center gap-2 text-[12px] font-bold px-3 py-1.5 rounded-xl border ${selectedL2Details.status === 'Accepted'
-                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                        : selectedL2Details.status === 'Rejected'
-                          ? 'text-rose-700 bg-rose-50 border-rose-200'
-                          : 'text-amber-700 bg-amber-50 border-amber-200'
+                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      : selectedL2Details.status === 'Rejected'
+                        ? 'text-rose-700 bg-rose-50 border-rose-200'
+                        : 'text-amber-700 bg-amber-50 border-amber-200'
                       }`}>
                       {selectedL2Details.status === 'Accepted' ? (
                         <CheckCircle2 size={14} />
