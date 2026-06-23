@@ -293,6 +293,16 @@ export const L3RequestTracker = ({
     }
   }, [approvalLogs, selectedLog]);
 
+  // Clear L3 approvals sidebar form when the request is fully approved or removed from list
+  useEffect(() => {
+    if (selectedChangeId) {
+      const exists = approvalLogs.some(l => l.changeNo === selectedChangeId);
+      if (!exists) {
+        handleCancelEdit();
+      }
+    }
+  }, [approvalLogs, selectedChangeId]);
+
   useEffect(() => {
     if (autoOpenChangeNo && approvalLogs.length > 0) {
       const log = approvalLogs.find(l => l.changeNo === autoOpenChangeNo);
