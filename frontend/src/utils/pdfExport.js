@@ -85,9 +85,9 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
     if (selectedProcess !== 'All') filterParts.push(`Process: "${selectedProcess}"`);
     if (selectedMachine !== 'All') filterParts.push(`Machine: "${selectedMachine}"`);
 
-    const filterText = filterParts.length > 0 
-      ? `Active Filters -> ${filterParts.join(', ')}`
-      : 'Active Filters -> None';
+    const filterText = filterParts.length > 0
+      ? `Applied Filters: ${filterParts.join('  |  ')}`
+      : 'Report Scope: All Records (No filters applied)';
 
     doc.text(filterText, 40, 75);
 
@@ -501,7 +501,13 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
     doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
-    doc.text(`Active Filters -> Search: "${searchQuery || 'None'}", Decision: "${decisionFilter}"`, 40, 75);
+    const l2FilterParts = [];
+    if (searchQuery) l2FilterParts.push(`Keyword Search: "${searchQuery}"`);
+    if (decisionFilter && decisionFilter !== 'All') l2FilterParts.push(`Validation Decision: "${decisionFilter}"`);
+    const l2FilterText = l2FilterParts.length > 0
+      ? `Applied Filters: ${l2FilterParts.join('  |  ')}`
+      : 'Report Scope: All Validation Records (No filters applied)';
+    doc.text(l2FilterText, 40, 75);
 
     autoTable(doc, {
       startY: 90,
@@ -630,7 +636,13 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
     doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
-    doc.text(`Active Filters -> Search: "${searchQuery || 'None'}", Status: "${statusFilter}"`, 40, 75);
+    const l3FilterParts = [];
+    if (searchQuery) l3FilterParts.push(`Keyword Search: "${searchQuery}"`);
+    if (statusFilter && statusFilter !== 'All') l3FilterParts.push(`Approval Status: "${statusFilter}"`);
+    const l3FilterText = l3FilterParts.length > 0
+      ? `Applied Filters: ${l3FilterParts.join('  |  ')}`
+      : 'Report Scope: All Approval Records (No filters applied)';
+    doc.text(l3FilterText, 40, 75);
 
     autoTable(doc, {
       startY: 90,
@@ -758,9 +770,9 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
     if (statusFilter !== 'All') filterParts.push(`Status: "${statusFilter}"`);
     if (actingDept) filterParts.push(`Department: "${actingDept}"`);
 
-    const filterText = filterParts.length > 0 
-      ? `Active Filters -> ${filterParts.join(', ')}`
-      : 'Active Filters -> None';
+    const filterText = filterParts.length > 0
+      ? `Applied Filters: ${filterParts.join('  |  ')}`
+      : 'Report Scope: All HOD Approval Records (No filters applied)';
 
     doc.text(filterText, 40, 75);
 
@@ -878,8 +890,8 @@ export const exportUsersListPDF = (filteredUsers, filtersInfo = {}, setToastMsg)
     if (roleFilter !== 'All') filterParts.push(`Role: "${roleFilter}"`);
 
     const filterText = filterParts.length > 0 
-      ? `Active Filters -> ${filterParts.join(', ')}`
-      : 'Active Filters -> None';
+      ? `Applied Filters: ${filterParts.join('  |  ')}`
+      : 'Report Scope: All User Records (No filters applied)';
 
     doc.text(filterText, 40, 75);
 
@@ -1006,8 +1018,8 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
     if (status !== 'All') filterParts.push(`Status: "${status}"`);
 
     const filterText = filterParts.length > 0 
-      ? `Active Filters -> ${filterParts.join(', ')}`
-      : 'Active Filters -> None';
+      ? `Applied Filters: ${filterParts.join('  |  ')}`
+      : 'Report Scope: All Change Requests (No filters applied)';
 
     doc.text(filterText, 40, 75);
 
@@ -1160,9 +1172,9 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
     if (statusFilter !== 'All') filterParts.push(`Status: "${statusFilter}"`);
     if (monthFilter !== 'All') filterParts.push(`Month: "${monthFilter}"`);
 
-    const filterText = filterParts.length > 0 
-      ? `Active Filters -> ${filterParts.join(', ')}`
-      : 'Active Filters -> None';
+    const filterText = filterParts.length > 0
+      ? `Applied Filters: ${filterParts.join('  |  ')}`
+      : 'Report Scope: All Effectiveness Records (No filters applied)';
 
     doc.text(filterText, 40, 75);
 
@@ -1259,9 +1271,9 @@ const getFilterSummaryText = (filtersInfo) => {
   if (machine !== 'All') filterParts.push(`Machine: "${machine}"`);
   if (status !== 'All') filterParts.push(`Status: "${status}"`);
 
-  return filterParts.length > 0 
-    ? `Active Filters -> ${filterParts.join(', ')}`
-    : 'Active Filters -> None';
+  return filterParts.length > 0
+    ? `Applied Filters: ${filterParts.join('  |  ')}`
+    : 'Report Scope: All Records (No filters applied)';
 };
 
 /**
@@ -2013,8 +2025,8 @@ export const exportImprovementBenefitsPDF = (costSavingRows, productivityRows, q
     if (month !== 'All') filterParts.push(`Month: "${month}"`);
     if (search) filterParts.push(`Search: "${search}"`);
     const filterText = filterParts.length > 0
-      ? `Active Filters -> ${filterParts.join(', ')}`
-      : 'Active Filters -> None';
+      ? `Applied Filters: ${filterParts.join('  |  ')}`
+      : 'Report Scope: All Improvement Benefit Records (No filters applied)';
     doc.text(filterText, 40, 72);
 
     let startY = 90;
