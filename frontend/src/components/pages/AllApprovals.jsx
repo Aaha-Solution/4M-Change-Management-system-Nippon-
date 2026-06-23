@@ -36,7 +36,6 @@ import {
   getL2Details,
   getL2Attachment,
   getL3Approvals,
-  getUsers,
   getEffectivenessLogs,
   getEffectivenessAttachment
 } from '../../api/apiRoutes';
@@ -226,23 +225,10 @@ export const AllApprovals = ({
 
   // Resolve acting department from DB user record
   useEffect(() => {
-    const resolve = async () => {
-      if (!userEmail) return;
-      try {
-        const res = await getUsers();
-        const me = (res.data || []).find(u => u.email.toLowerCase() === userEmail.toLowerCase());
-        if (me && me.department) {
-          setActingDept(mapDept(me.department));
-        } else if (userDept) {
-          setActingDept(mapDept(userDept));
-        }
-      } catch (err) {
-        console.error('Error resolving dept:', err);
-        if (userDept) setActingDept(mapDept(userDept));
-      }
-    };
-    resolve();
-  }, [userEmail, userDept]);
+    if (userDept) {
+      setActingDept(mapDept(userDept));
+    }
+  }, [userDept]);
 
   const fetchRequests = async () => {
     setIsFetching(true);

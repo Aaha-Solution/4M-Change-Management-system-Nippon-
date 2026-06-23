@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Search, Eye, EyeOff, X, Loader2, AlertTriangle, Paperclip, Folder, Cpu, Clock, CheckCircle2, FileText, Calendar, Download, XCircle } from 'lucide-react';
 import TablePagination from '@mui/material/TablePagination';
-import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getUsers, getEffectivenessLogs, getEffectivenessAttachment } from '../../api/apiRoutes';
+import { getL3Approvals, createL3Approval, getL1Details, getL1Attachment, getL2Details, getL2Attachment, getEffectivenessLogs, getEffectivenessAttachment } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { exportL3ApprovalsPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 import { useWebSocket } from '../../hooks/useWebSocket';
@@ -9,6 +9,7 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 export const L3RequestTracker = ({
   userEmail,
   userRole,
+  userDept,
   logAction,
   setToastMsg,
   fetchChanges,
@@ -79,37 +80,25 @@ export const L3RequestTracker = ({
 
   // Map logged-in user email/role to initial acting department
   useEffect(() => {
-    const resolveUserDept = async () => {
-      if (!userEmail) return;
-      try {
-        const response = await getUsers();
-        const usersList = response.data || [];
-        const currentUser = usersList.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
-        if (currentUser && currentUser.department) {
-          const mapped = mapDbDeptToL3Dept(currentUser.department);
-          setActingDept(mapped);
-        } else {
-          // Fallback to legacy hardcoded check if user not found in DB
-          const email = userEmail.toLowerCase();
-          if (email.includes('ravi.qa')) {
-            setActingDept('QAD');
-          } else if (email.includes('kumar.s')) {
-            setActingDept('Production');
-          } else if (email.includes('ped')) {
-            setActingDept('PED');
-          } else if (email.includes('manager')) {
-            setActingDept('Production');
-          } else {
-            setActingDept('QAD');
-          }
-        }
-      } catch (err) {
-        console.error('Error resolving user department for L3:', err);
+    if (userDept) {
+      const mapped = mapDbDeptToL3Dept(userDept);
+      setActingDept(mapped);
+    } else if (userEmail) {
+      // Fallback to legacy hardcoded check if userDept is not yet resolved/available
+      const email = userEmail.toLowerCase();
+      if (email.includes('ravi.qa')) {
+        setActingDept('QAD');
+      } else if (email.includes('kumar.s')) {
+        setActingDept('Production');
+      } else if (email.includes('ped')) {
+        setActingDept('PED');
+      } else if (email.includes('manager')) {
+        setActingDept('Production');
+      } else {
+        setActingDept('QAD');
       }
-    };
-
-    resolveUserDept();
-  }, [userEmail]);
+    }
+  }, [userEmail, userDept]);
 
   // Dynamic form status prefill based on selected change request and acting department
   useEffect(() => {
