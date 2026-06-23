@@ -221,7 +221,6 @@ export const Effectiveness = ({
 
   // Search & Filter States
   const [effSearch, setEffSearch] = useState('');
-  const [effFilterStatus, setEffFilterStatus] = useState('All');
   const [effFilterMonth, setEffFilterMonth] = useState('All');
 
   // Pagination State
@@ -231,7 +230,7 @@ export const Effectiveness = ({
   // Reset page when filters change
   useEffect(() => {
     setPage(0);
-  }, [effSearch, effFilterStatus, effFilterMonth]);
+  }, [effSearch, effFilterMonth]);
 
   // Format month names (e.g. "2026-05" -> "May-26" or "12/06/2026" -> "Jun-26")
   const formatMonthWise = (val) => {
@@ -402,7 +401,6 @@ export const Effectiveness = ({
     handleCancelEditing();
     // Reset filters when switching tabs to avoid confusing empty states
     setEffSearch('');
-    setEffFilterStatus('All');
     setEffFilterMonth('All');
     setPage(0);
   };
@@ -485,15 +483,6 @@ export const Effectiveness = ({
       (log.context || '').toLowerCase().includes(query) ||
       (log.remarks || '').toLowerCase().includes(query);
 
-    let matchesStatus = true;
-    if (effFilterStatus !== 'All') {
-      if (effFilterStatus === 'Pending') {
-        matchesStatus = log.isPending || log.status === 'Pending';
-      } else {
-        matchesStatus = log.status === effFilterStatus;
-      }
-    }
-
     let matchesMonth = true;
     if (effFilterMonth !== 'All') {
       if (effFilterMonth === 'Pending') {
@@ -503,7 +492,7 @@ export const Effectiveness = ({
         matchesMonth = logMonth === effFilterMonth;
       }
     }
-    return matchesSearch && matchesStatus && matchesMonth;
+    return matchesSearch && matchesMonth;
   });
 
   const displayLogs = filteredLogs.filter(log => {
@@ -529,7 +518,6 @@ export const Effectiveness = ({
     const tabLabel = activeMainTab === 'closed' ? 'Closed Requests' : activeMainTab === 'rejected' ? 'Rejected Requests' : 'Ongoing Monitoring';
     exportEffectivenessLogsPDF(logsToExport, {
       searchQuery: effSearch,
-      statusFilter: effFilterStatus,
       monthFilter: effFilterMonth,
       tabLabel
     }, setToastMsg);
@@ -1018,18 +1006,7 @@ export const Effectiveness = ({
               />
             </div>
 
-            <div>
-              <select
-                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none min-w-[150px] focus:border-[#0066cc]"
-                value={effFilterStatus}
-                onChange={(e) => setEffFilterStatus(e.target.value)}
-              >
-                <option value="All">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Effectiveness Ok">Effectiveness Ok</option>
-                <option value="Effectiveness Not Ok">Effectiveness Not Ok</option>
-              </select>
-            </div>
+
 
             <div>
               <select

@@ -1200,7 +1200,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       return;
     }
 
-    const { searchQuery = '', statusFilter = 'All', monthFilter = 'All', tabLabel = 'Ongoing Monitoring' } = filtersInfo;
+    const { searchQuery = '', monthFilter = 'All', tabLabel = 'Ongoing Monitoring' } = filtersInfo;
 
     const doc = new jsPDF({
       orientation: 'landscape',
@@ -1280,8 +1280,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
     doc.text(`Exported Date: ${formatDateToDDMMYYYY(getSyncedDate())}   |   View: ${tabLabel}`, 40, 60);
 
     const filterParts = [];
-    if (searchQuery) filterParts.push(`Search: "${searchQuery}"`);
-    if (statusFilter !== 'All') filterParts.push(`Status: "${statusFilter}"`);
+    if (searchQuery) filterParts.push(`Keyword Search: "${searchQuery}"`);
     if (monthFilter !== 'All') filterParts.push(`Month: "${monthFilter}"`);
 
     const filterText = filterParts.length > 0
