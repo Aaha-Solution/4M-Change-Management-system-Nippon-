@@ -1721,16 +1721,14 @@ export const exportCategoryAnalyticsPDF = (filteredChanges, filtersInfo = {}, se
 
     filteredChanges.forEach(c => {
       const catStr = (c.changeIn || c.title || c.id || '').trim().toLowerCase();
-      let mapped;
-      if (catStr.includes('man') || catStr.includes('train')) mapped = 'Man';
-      else if (catStr.includes('mac') || catStr.includes('machin') || catStr.includes('weld')) mapped = 'Mac';
-      else if (catStr.includes('met') || catStr.includes('calib') || catStr.includes('sso') || catStr.includes('db') || catStr.includes('api') || catStr.includes('vulner')) mapped = 'Met';
-      else if (catStr.includes('mat') || catStr.includes('spec') || catStr.includes('cool')) mapped = 'Mat';
-      else if (catStr.includes('mea') || catStr.includes('gauge') || catStr.includes('check') || catStr.includes('repeat')) mapped = 'Mea';
-      else if (catStr.includes('mot') || catStr.includes('nature') || catStr.includes('env')) mapped = 'Mot';
-      else mapped = 'Met';
-
-      counts[mapped]++;
+      let matchedAny = false;
+      if (catStr.includes('man') || catStr.includes('train')) { counts['Man']++; matchedAny = true; }
+      if (catStr.includes('mac') || catStr.includes('machin') || catStr.includes('weld')) { counts['Mac']++; matchedAny = true; }
+      if (catStr.includes('met') || catStr.includes('calib') || catStr.includes('sso') || catStr.includes('db') || catStr.includes('api') || catStr.includes('vulner')) { counts['Met']++; matchedAny = true; }
+      if (catStr.includes('mat') || catStr.includes('spec') || catStr.includes('cool')) { counts['Mat']++; matchedAny = true; }
+      if (catStr.includes('mea') || catStr.includes('gauge') || catStr.includes('check') || catStr.includes('repeat')) { counts['Mea']++; matchedAny = true; }
+      if (catStr.includes('mot') || catStr.includes('nature') || catStr.includes('env')) { counts['Mot']++; matchedAny = true; }
+      if (!matchedAny) counts['Met']++; // fallback
     });
 
     const total = Object.values(counts).reduce((a, b) => a + b, 0);
