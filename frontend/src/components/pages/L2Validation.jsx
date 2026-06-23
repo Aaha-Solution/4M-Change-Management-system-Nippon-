@@ -442,7 +442,7 @@ export const L2Validation = ({
     // If Rejected, locked for Quality/Admin, and locked for requester unless they selected a new file to reset
     (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0)) ||
     // If Pending, locked for standard requester since they already uploaded the PED file
-    (matchedL2 && matchedL2.status === 'Pending' && isRaisedByUser && !isQualityOrAdmin)
+    (matchedL2 && matchedL2.status === 'Pending' && isRaisedByUser && !isQualityOrAdmin && hasPedUploaded)
   )));
 
   // Filter logic
@@ -943,7 +943,7 @@ export const L2Validation = ({
                 <Save size={14} />
                 <span>Reset & Resubmit Validation</span>
               </>
-            ) : (matchedL2 && matchedL2.status === 'Pending' && isRaisedByUser && !isQualityOrAdmin) ? (
+            ) : (matchedL2 && matchedL2.status === 'Pending' && isRaisedByUser && !isQualityOrAdmin && hasPedUploaded) ? (
               <span>Awaiting QA Review</span>
             ) : isAlreadyValidated ? (
               <>

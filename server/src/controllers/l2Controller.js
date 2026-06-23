@@ -114,7 +114,8 @@ export const createL2ValidationLog = async (req, res) => {
       }
       
       if (current.status === 'Pending' && !isQualityOrAdmin) {
-        if (attachments && attachments.some(a => a.fieldName === 'weld_test')) {
+        const hasPedFile = current.weld_test && current.weld_test !== '-';
+        if (hasPedFile && attachments && attachments.some(a => a.fieldName === 'weld_test')) {
           return res.status(403).json({ error: 'Access Denied: L2 Requester Validation attachment is already uploaded and awaiting QA review.' });
         }
       }
