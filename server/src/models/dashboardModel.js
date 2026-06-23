@@ -132,3 +132,109 @@ export const getDashboardChanges = async () => {
   );
   return rows;
 };
+
+export const getDashboardCounts = async () => {
+  const [rows] = await pool.query(
+    `SELECT c.status,
+            v.status as l2Status,
+            ha.status as hodStatus,
+            CASE WHEN (
+                      l3.ped = 'Rejected' OR
+                      l3.qad = 'Rejected' OR
+                      l3.production = 'Rejected' OR
+                      l3.maintenance = 'Rejected' OR
+                      l3.pcl = 'Rejected' OR
+                      l3.materials = 'Rejected' OR
+                      l3.marketing = 'Rejected' OR
+                      l3.hr = 'Rejected' OR
+                      l3.safety = 'Rejected' OR
+                      l3.unit_head = 'Rejected'
+                    ) THEN 1 ELSE 0 END as hasL3Rejection,
+            CASE WHEN l3.change_no IS NULL THEN 0
+                 WHEN (
+                      l3.ped = 'Pending' OR
+                      l3.qad = 'Pending' OR
+                      l3.production = 'Pending' OR
+                      l3.maintenance = 'Pending' OR
+                      l3.pcl = 'Pending' OR
+                      l3.materials = 'Pending' OR
+                      l3.marketing = 'Pending' OR
+                      l3.hr = 'Pending' OR
+                      l3.safety = 'Pending' OR
+                      l3.unit_head = 'Pending'
+                    ) THEN 0 ELSE 1 END as isL3Complete,
+            e.qa_approval as qaApproval
+     FROM change_requests c
+     LEFT JOIN l1_requests l1 ON c.id = l1.change_no
+     LEFT JOIN users u ON c.requester = u.email
+     LEFT JOIN l2_validation_logs v ON c.id = v.change_no
+     LEFT JOIN l3_approvals l3 ON c.id = l3.change_no
+     LEFT JOIN effectiveness_logs e ON c.id = e.change_no
+     LEFT JOIN (
+        SELECT change_no,
+               COALESCE(
+                 MIN(CASE WHEN status = 'Rejected' THEN 'Rejected' END),
+                 MAX(CASE WHEN status = 'Approved' THEN 'Approved' END),
+                 'Pending'
+               ) as status
+        FROM hod_approvals
+        GROUP BY change_no
+       ) ha ON c.id = ha.change_no`
+  );
+
+  let approved = 0;
+  let closed = 0;
+  let rejected = 0;
+  let pending = 0;
+
+  for (const row of rows) {
+    const hodStatus = row.hodStatus;
+    const l2Status = row.l2Status;
+    const qaApproval = row.qaApproval;
+    const isL3Complete = row.isL3Complete;
+    const hasL3Rejection = row.hasL3Rejection;
+    const status = row.status;
+
+    let dispStatus = 'Pending L1 HOD';
+
+    if (hodStatus === 'Rejected' || l2Status === 'Rejected') {
+      dispStatus = 'Rejected';
+    } else if (qaApproval === 'Approved') {
+      dispStatus = 'Closed';
+    } else if (qaApproval === 'Rejected') {
+      dispStatus = 'Rejected';
+    } else if (isL3Complete === 1 || isL3Complete === true) {
+      if (hasL3Rejection === 1 || hasL3Rejection === true) {
+        dispStatus = 'Rejected';
+      } else {
+        dispStatus = 'Approved';
+      }
+    } else if (status === 'Completed') {
+      dispStatus = 'Closed';
+    } else if (status === 'Approved' || (hodStatus === 'Approved' && l2Status === 'Accepted')) {
+      dispStatus = 'Pending L3';
+    } else if (hodStatus === 'Approved') {
+      dispStatus = 'Pending L2';
+    } else {
+      dispStatus = 'Pending L1 HOD';
+    }
+
+    if (dispStatus === 'Approved') {
+      approved++;
+    } else if (dispStatus === 'Closed') {
+      closed++;
+    } else if (dispStatus === 'Rejected') {
+      rejected++;
+    } else if (dispStatus.startsWith('Pending')) {
+      pending++;
+    }
+  }
+
+  return {
+    total: rows.length,
+    approved,
+    closed,
+    rejected,
+    pending
+  };
+};

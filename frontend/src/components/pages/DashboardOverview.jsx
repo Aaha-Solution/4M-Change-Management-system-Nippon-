@@ -42,7 +42,8 @@ import {
   updateChangeDetails,
   getEffectivenessLogs,
   getEffectivenessAttachment,
-  getDepartments
+  getDepartments,
+  getDashboardCounts
 } from '../../api/apiRoutes';
 import {
   exportDashboardRequestsPDF,
@@ -215,6 +216,31 @@ export const DashboardOverview = ({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  const [dashboardCounts, setDashboardCounts] = useState({
+    total: 0,
+    approved: 0,
+    closed: 0,
+    rejected: 0,
+    pending: 0
+  });
+  const [isFetchingCounts, setIsFetchingCounts] = useState(false);
+
+  const fetchCounts = async () => {
+    setIsFetchingCounts(true);
+    try {
+      const response = await getDashboardCounts();
+      setDashboardCounts(response.data);
+    } catch (err) {
+      console.error('Error fetching dashboard counts:', err);
+    } finally {
+      setIsFetchingCounts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCounts();
+  }, [changes]);
+
   // Department Filters
   const [deptFilterMonth, setDeptFilterMonth] = useState('All');
   const [deptFilterFromDate, setDeptFilterFromDate] = useState('');
@@ -372,14 +398,17 @@ export const DashboardOverview = ({
   }, []);
 
   useWebSocket((data) => {
-    if (data.type === 'REFRESH_CHANGES' && selectedLog) {
-      handleViewDetails({
-        id: selectedLog.changeNo,
-        requester: selectedLog.requester,
-        rawDate: selectedLog.date,
-        status: selectedLog.status,
-        hodStatus: selectedLog.hodStatus
-      });
+    if (data.type === 'REFRESH_CHANGES') {
+      fetchCounts();
+      if (selectedLog) {
+        handleViewDetails({
+          id: selectedLog.changeNo,
+          requester: selectedLog.requester,
+          rawDate: selectedLog.date,
+          status: selectedLog.status,
+          hodStatus: selectedLog.hodStatus
+        });
+      }
     } else if (data.type === 'REFRESH_USERS') {
       fetchOptions();
     }
@@ -561,20 +590,11 @@ export const DashboardOverview = ({
     };
   });
 
-  const totalCount = changes.length;
-  const approvedCount = changes.filter(c => {
-    const status = getRequestDisplayStatus(c);
-    return status === 'Approved';
-  }).length;
-  const closedCount = changes.filter(c => {
-    const status = getRequestDisplayStatus(c);
-    return status === 'Closed';
-  }).length;
-  const rejectedCount = changes.filter(c => {
-    const status = getRequestDisplayStatus(c);
-    return status === 'Rejected';
-  }).length;
-  const pendingCount = totalCount - approvedCount - closedCount - rejectedCount;
+  const totalCount = dashboardCounts.total;
+  const approvedCount = dashboardCounts.approved;
+  const closedCount = dashboardCounts.closed;
+  const rejectedCount = dashboardCounts.rejected;
+  const pendingCount = dashboardCounts.pending;
 
   const allTableRows = formattedDbChanges;
   const paginatedTableRows = allTableRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -3614,7 +3634,7 @@ export const DashboardOverview = ({
             <div>
               <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Total Requests</h4>
               <div className="text-[32px] font-bold text-slate-900 mt-2 font-heading tracking-tight">
-                {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : totalCount}
+                {isFetchingChanges || isFetchingCounts ? <Loader2 className="animate-spin text-slate-400" size={24} /> : totalCount}
               </div>
             </div>
             <div className="p-2.5 bg-[#e6f0fa] text-[#0066cc] rounded-lg group-hover:scale-110 transition-transform duration-300">
@@ -3630,7 +3650,7 @@ export const DashboardOverview = ({
             <div>
               <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Approved</h4>
               <div className="text-[32px] font-bold text-emerald-600 mt-2 font-heading tracking-tight">
-                {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : approvedCount}
+                {isFetchingChanges || isFetchingCounts ? <Loader2 className="animate-spin text-slate-400" size={24} /> : approvedCount}
               </div>
             </div>
             <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg group-hover:scale-110 transition-transform duration-300">
@@ -3646,7 +3666,7 @@ export const DashboardOverview = ({
             <div>
               <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Pending Approval</h4>
               <div className="text-[32px] font-bold text-amber-600 mt-2 font-heading tracking-tight">
-                {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : pendingCount}
+                {isFetchingChanges || isFetchingCounts ? <Loader2 className="animate-spin text-slate-400" size={24} /> : pendingCount}
               </div>
             </div>
             <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg group-hover:scale-110 transition-transform duration-300">
@@ -3662,7 +3682,7 @@ export const DashboardOverview = ({
             <div>
               <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Rejected</h4>
               <div className="text-[32px] font-bold text-rose-600 mt-2 font-heading tracking-tight">
-                {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : rejectedCount}
+                {isFetchingChanges || isFetchingCounts ? <Loader2 className="animate-spin text-slate-400" size={24} /> : rejectedCount}
               </div>
             </div>
             <div className="p-2.5 bg-rose-50 text-rose-600 rounded-lg group-hover:scale-110 transition-transform duration-300">
@@ -3678,7 +3698,7 @@ export const DashboardOverview = ({
             <div>
               <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Closed</h4>
               <div className="text-[32px] font-bold text-indigo-600 mt-2 font-heading tracking-tight">
-                {isFetchingChanges ? <Loader2 className="animate-spin text-slate-400" size={24} /> : closedCount}
+                {isFetchingChanges || isFetchingCounts ? <Loader2 className="animate-spin text-slate-400" size={24} /> : closedCount}
               </div>
             </div>
             <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg group-hover:scale-110 transition-transform duration-300">
