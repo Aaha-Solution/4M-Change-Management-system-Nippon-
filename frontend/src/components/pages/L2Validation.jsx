@@ -1371,13 +1371,13 @@ export const L2Validation = ({
               ) : (
                 <>
 
-                  {/* Section 1: General Info */}
+                  {/* General Info */}
                   <div className="space-y-[12px]">
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                       <Folder size={14} />
                       <span>General Information</span>
                     </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px]">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change No</span>
                         <span className="font-mono font-bold text-slate-800">{selectedL1Details.change_no}</span>
@@ -1393,11 +1393,13 @@ export const L2Validation = ({
                       <div className="space-y-[4px]">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</span>
                         <div className="flex gap-1.5 items-center mt-0.5">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL1Details.crStatus !== 'Pending'
-                            ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
-                            : 'bg-amber-50 border-amber-220 text-amber-700'
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${selectedL1Details.hodStatus === 'Rejected'
+                            ? 'bg-rose-50 border-rose-220 text-rose-700'
+                            : (selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending')
+                              ? 'bg-emerald-50 border-emerald-220 text-emerald-700'
+                              : 'bg-amber-50 border-amber-220 text-amber-700'
                             }`}>
-                            L1 {selectedL1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}
+                            L1 {selectedL1Details.hodStatus === 'Rejected' ? 'Rejected' : ((selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending') ? 'Approved' : 'Pending')}
                           </span>
                         </div>
                       </div>
@@ -1414,8 +1416,8 @@ export const L2Validation = ({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
-                      <div className="space-y-[4px] md:col-span-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                      <div className="space-y-[4px] min-w-0">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                         <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
                         {selectedL1Details.crRequester && selectedL1Details.crRequester.toLowerCase() !== selectedL1Details.request_by?.toLowerCase() && (
@@ -1426,13 +1428,9 @@ export const L2Validation = ({
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
                         <span className="font-medium text-slate-700">{selectedL1Details.dept}</span>
                       </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
-                        <span className="font-medium text-slate-700">{selectedL1Details.change_type}</span>
-                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px] mt-[12px]">
                       <div className="space-y-[4px] min-w-0">
                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Process Name</span>
                         <span className="font-medium text-slate-700 block break-words break-all">{selectedL1Details.process_name}</span>
@@ -1448,11 +1446,11 @@ export const L2Validation = ({
                     </div>
                   </div>
 
-                  {/* Section 2: Details & Timeline */}
+                  {/* Change Description */}
                   <div className="space-y-[12px] pt-4 border-t border-slate-100">
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
                       <FileText size={14} />
-                      <span>Details & Justification</span>
+                      <span>Change Description</span>
                     </h5>
                     <div className="grid grid-cols-1 gap-[16px]">
                       <div className="space-y-[6px] min-w-0">
@@ -1461,111 +1459,254 @@ export const L2Validation = ({
                           {selectedL1Details.title ? selectedL1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}
                         </div>
                       </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
                       <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Change Description</span>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Detailed Change Description</span>
                         <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
                           {selectedL1Details.description}
                         </div>
-                        {selectedL1Details.file_desc && renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
-                      </div>
-
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Area of Improvement / Benefit</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                          {selectedL1Details.improvement_area}
-                        </div>
-                        {selectedL1Details.file_improvement && renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no)}
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Start</span>
-                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                          <Calendar size={13} className="text-slate-400" />
-                          {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
-                        </span>
+                    {selectedL1Details.file_desc && (
+                      <div className="space-y-[4px] mt-2">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files</span>
+                        {renderL1FilePill(selectedL1Details.file_desc, selectedL1Details.change_no)}
                       </div>
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Date Close</span>
-                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                          <Calendar size={13} className="text-slate-400" />
-                          {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
-                        </span>
-                      </div>
-                    </div>
+                    )}
                   </div>
 
-                  {/* Section 3: Traceability & Risk */}
+                  {/* Implementation Timeline */}
                   <div className="space-y-[12px] pt-4 border-t border-slate-100">
                     <h5 className="text-[12px] font-bold text-[#0066cc] uppercase tracking-wider border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-                      <Cpu size={14} />
-                      <span>Traceability, Risk & Approvals</span>
+                      <Calendar size={14} />
+                      <span>Implementation Timeline</span>
                     </h5>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Traceability FROM (Before Change)</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                          {selectedL1Details.trace_from}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+                      <div className="space-y-[12px]">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Improvement Area</span>
+                          <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.improvement_area || '-'}</span>
                         </div>
-                        {selectedL1Details.file_trace_from && renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files (Improvement)</span>
+                          {selectedL1Details.file_improvement ? renderL1FilePill(selectedL1Details.file_improvement, selectedL1Details.change_no) : <span className="text-slate-500 font-medium text-xs">-</span>}
+                        </div>
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Permanent / Temporary Change</span>
+                          <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.change_type || '-'}</span>
+                        </div>
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Implement / Change Date Start</span>
+                          <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                            <Calendar size={13} className="text-slate-400" />
+                            {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes)</span>
+                          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
+                            {selectedL1Details.trace_from || '-'}
+                          </div>
+                          {selectedL1Details.file_trace_from && (
+                            <div className="mt-2 space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files (Traceability From)</span>
+                              {renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Traceability TO (After Change)</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                          {selectedL1Details.trace_to}
+                      <div className="space-y-[12px]">
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close</span>
+                          <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
+                            <Calendar size={13} className="text-slate-400" />
+                            {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
+                          </span>
                         </div>
-                        {selectedL1Details.file_trace_to && renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (To Changes)</span>
+                          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
+                            {selectedL1Details.trace_to || '-'}
+                          </div>
+                          {selectedL1Details.file_trace_to && (
+                            <div className="mt-2 space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files (Traceability To)</span>
+                              {renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-4">
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Risk Analysis</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                          {selectedL1Details.risk_analysis}
-                        </div>
-                        {selectedL1Details.file_risk && renderL1FilePill(selectedL1Details.file_risk, selectedL1Details.change_no)}
-                      </div>
+                    {/* TABLE VIEW FOR IMPROVEMENT DATA */}
+                    {(() => {
+                      if (!selectedL1Details.improvement_table_data) return null;
+                      let tableData;
+                      try {
+                        tableData = JSON.parse(selectedL1Details.improvement_table_data);
+                      } catch {
+                        return null;
+                      }
+                      if (!Array.isArray(tableData) || tableData.length === 0) return null;
 
-                      <div className="space-y-[6px] min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">SOP / WI / Control Plan Update</span>
-                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words whitespace-pre-wrap">
-                          {selectedL1Details.sop_update}
+                      const area = (selectedL1Details.improvement_area || '').toLowerCase();
+                      const hasCost = area === 'cost';
+                      const hasProductivity = area === 'productivity';
+                      const hasQuality = area === 'quality';
+
+                      if (!hasCost && !hasProductivity && !hasQuality) return null;
+
+                      return (
+                        <div className="mt-3 border border-slate-200 rounded-[8px] overflow-hidden bg-white max-w-md">
+                          <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 text-[10px] font-bold text-slate-650 uppercase tracking-wider">
+                            {hasCost ? 'Cost Saving Data' : hasProductivity ? 'Productivity Improvement Data' : 'Quality Improvement Data'}
+                          </div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse text-[11px]">
+                              <thead>
+                                <tr className="bg-slate-100/50 border-b border-slate-200 text-slate-500 font-semibold">
+                                  <th className="p-2 w-[50px]">Sl No</th>
+                                  <th className="p-2">4M #</th>
+                                  <th className="p-2">Date</th>
+                                  {hasCost && (
+                                    <>
+                                      <th className="p-2">Save/Month</th>
+                                      <th className="p-2">Save/Annum</th>
+                                      <th className="p-2">ROI</th>
+                                    </>
+                                  )}
+                                  {hasProductivity && (
+                                    <>
+                                      <th className="p-2">Current</th>
+                                      <th className="p-2">Improved</th>
+                                    </>
+                                  )}
+                                  {hasQuality && (
+                                    <>
+                                      <th className="p-2">Current PPM</th>
+                                      <th className="p-2">Reduced PPM</th>
+                                    </>
+                                  )}
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                {tableData.map((row, idx) => (
+                                  <tr key={idx} className="hover:bg-slate-50/50 text-slate-700">
+                                    <td className="p-2 font-bold text-slate-400">{idx + 1}</td>
+                                    <td className="p-2 font-mono font-medium">{row.changeNo}</td>
+                                    <td className="p-2">{row.date || '-'}</td>
+                                    {hasCost && (
+                                      <>
+                                        <td className="p-2 font-semibold">Rs. {row.monthlySave || '0'}</td>
+                                        <td className="p-2 font-semibold">Rs. {row.annualSave || '0'}</td>
+                                        <td className="p-2">{row.roi || '-'}</td>
+                                      </>
+                                    )}
+                                    {hasProductivity && (
+                                      <>
+                                        <td className="p-2">{row.currentProd || '0'} nos</td>
+                                        <td className="p-2 font-semibold">{row.improvedProd || '0'} nos</td>
+                                      </>
+                                    )}
+                                    {hasQuality && (
+                                      <>
+                                        <td className="p-2">{row.currentPpm || '0'}</td>
+                                        <td className="p-2 font-semibold">{row.reducedPpm || '0'}</td>
+                                      </>
+                                    )}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                        {selectedL1Details.file_sop && renderL1FilePill(selectedL1Details.file_sop, selectedL1Details.change_no)}
+                      );
+                    })()}
+                  </div>
+
+                  {/* Risk Analysis Card */}
+                  <div className="space-y-[16px] pt-4 border-t border-slate-100">
+                    <h5 className="text-[13px] font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+                      <span>Risk Analysis</span>
+                    </h5>
+
+                    <div className="space-y-[4px] min-w-0">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider font-sans">Risk Analysis </span>
+                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-[12px] font-medium">
+                        {selectedL1Details.risk_analysis || '-'}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[16px] mt-4">
-                      <div className="space-y-[4px]">
-                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD Approval</span>
-                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                          <CheckCircle2 size={14} className="text-emerald-500" />
-                          {selectedL1Details.hod_approval}
-                        </span>
-                      </div>
-                      <div className="space-y-[4px]">
-
-                        <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-
-                          <span>{showCustomerApproval ? selectedL1Details.customer_approval : '••••'}</span>
-                          <button
-                            type="button"
-                            onClick={() => setShowCustomerApproval(!showCustomerApproval)}
-                            className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
-                            title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
-                          >
-                            {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
-                          </button>
-                        </span>
-                      </div>
-
+                    <div className="space-y-[4px] min-w-0">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider font-sans">Supporting Files (Risk Analysis)</span>
+                      {selectedL1Details.file_risk && selectedL1Details.file_risk !== '-' ? (
+                        renderL1FilePill(selectedL1Details.file_risk, selectedL1Details.change_no)
+                      ) : (
+                        <span className="text-[12px] text-slate-400 italic">No file attached</span>
+                      )}
                     </div>
+
+                    <div className="space-y-[4px] min-w-0">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider font-sans">Update in SOP / WI / Control Plan / FMEA</span>
+                      <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-[12px] font-medium">
+                        {selectedL1Details.sop_update || '-'}
+                      </div>
+                    </div>
+
+                    <div className="space-y-[4px] min-w-0">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider font-sans">Supporting Files (SOP, WI, Control Plan, FMEA)</span>
+                      {selectedL1Details.file_sop && selectedL1Details.file_sop !== '-' ? (
+                        renderL1FilePill(selectedL1Details.file_sop, selectedL1Details.change_no)
+                      ) : (
+                        <span className="text-[12px] text-slate-400 italic">No file attached</span>
+                      )}
+                    </div>
+
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">User Dept HOD Approval</span>
+                      {selectedL1Details.hod_approval ? (
+                        <div className="pt-1">
+                          <span className="inline-flex items-center gap-[6px] px-[10px] py-[6px] border border-[#0066cc] bg-[#0066cc]/5 text-[#0066cc] rounded-[6px] text-[10px] font-bold shadow-sm select-none">
+                            <span className="w-[12px] h-[12px] rounded-full border border-[#0066cc] flex items-center justify-center">
+                              <span className="w-[6px] h-[6px] rounded-full bg-[#0066cc]" />
+                            </span>
+                            <span>{selectedL1Details.hod_approval}</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[12px] text-slate-400 italic">No department selected</span>
+                      )}
+                    </div>
+
+                    <div className="space-y-[4px]">
+                      <span className="block text-[10px] font-bold text-slate-550 uppercase tracking-wider">Customer Approval Required / Clearence Details</span>
+                      <span className="font-semibold text-slate-755 flex items-center gap-1.5 mt-0.5 text-[12px]">
+                        <span>{showCustomerApproval ? (selectedL1Details.customer_approval || '-') : '••••'}</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowCustomerApproval(!showCustomerApproval)}
+                          className="p-0.5 hover:bg-slate-200/60 rounded text-slate-400 hover:text-[#0066cc] transition-colors cursor-pointer ml-1 inline-flex items-center justify-center"
+                          title={showCustomerApproval ? "Hide Customer Approval" : "Show Customer Approval"}
+                        >
+                          {showCustomerApproval ? <EyeOff size={13} /> : <Eye size={13} />}
+                        </button>
+                      </span>
+                    </div>
+
+                    {selectedL1Details.hodStatus && (
+                      <div className="space-y-[4px] mt-4 border-t border-slate-100 pt-4">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD {selectedL1Details.hodStatus} Remarks / Comments ({selectedL1Details.hodDept || 'HOD'})</span>
+                        <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words text-[12px]">
+                          {selectedL1Details.hodRemarks || 'No remarks provided.'}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
