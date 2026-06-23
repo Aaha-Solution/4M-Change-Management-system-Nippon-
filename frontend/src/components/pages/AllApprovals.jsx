@@ -1176,13 +1176,7 @@ export const AllApprovals = ({
                                 </button>
                               </span>
                             </div>
-                            <div className="space-y-[6px] md:col-span-1 min-w-0">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Monitoring</span>
-                              <div className="font-semibold text-slate-750 leading-relaxed break-words">
-                                {l1Details.effectiveness_monitoring}
-                              </div>
-                              {l1Details.file_effectiveness && renderL1FilePill(l1Details.file_effectiveness, l1Details.change_no)}
-                            </div>
+                          
                           </div>
 
                           {l1Details.hodStatus && (

@@ -1569,13 +1569,7 @@ export const L2Validation = ({
                       </button>
                     </span>
                   </div>
-                  <div className="space-y-[6px] md:col-span-1 min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Monitoring</span>
-                    <div className="font-semibold text-slate-750 leading-relaxed break-words">
-                      {selectedL1Details.effectiveness_monitoring}
-                    </div>
-                    {selectedL1Details.file_effectiveness && renderL1FilePill(selectedL1Details.file_effectiveness, selectedL1Details.change_no)}
-                  </div>
+                  
                 </div>
               </div>
               </>
