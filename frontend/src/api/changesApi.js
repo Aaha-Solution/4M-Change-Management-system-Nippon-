@@ -56,6 +56,10 @@ export const getL3Approvals = () => {
   return axiosInstance.get('/changes/l3');
 };
 
+export const getL3Details = (changeNo) => {
+  return axiosInstance.get(`/changes/l3/${encodeURIComponent(changeNo)}`);
+};
+
 export const createL3Approval = (logData) => {
   return axiosInstance.post('/changes/l3', { logData }, {
     headers: {

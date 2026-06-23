@@ -42,6 +42,17 @@ export const getL3Approvals = async (req, res) => {
   }
 };
 
+export const getL3Details = async (req, res) => {
+  try {
+    const { changeNo } = req.params;
+    const details = await l3Model.getL3DetailsByChangeNo(changeNo);
+    res.status(200).json(details || {});
+  } catch (error) {
+    console.error('Error in getL3Details:', error);
+    res.status(500).json({ error: 'Failed to fetch L3 details' });
+  }
+};
+
 export const createL3Approval = async (req, res) => {
   const lengthError = validateLimits(req.body);
   if (lengthError) {

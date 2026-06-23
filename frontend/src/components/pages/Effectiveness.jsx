@@ -9,7 +9,7 @@ import {
   getL1Attachment,
   getL2Details,
   getL2Attachment,
-  getL3Approvals,
+  getL3Details,
   getEffectivenessLogs,
   getEffectivenessCounts
 } from '../../api/apiRoutes';
@@ -264,13 +264,13 @@ export const Effectiveness = ({
       const [l1Res, l2Res, l3Res] = await Promise.all([
         getL1Details(changeNo),
         getL2Details(changeNo).catch(() => ({ data: null })),
-        getL3Approvals().catch(() => ({ data: [] }))
+        getL3Details(changeNo).catch(() => ({ data: null }))
       ]);
 
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
 
-      const matchedL3 = l3Res.data?.find(item => item.changeNo === changeNo);
+      const matchedL3 = l3Res.data;
       const newLogData = matchedL3 ? matchedL3 : {
         changeNo: changeNo,
         ped: 'Pending',
@@ -1258,7 +1258,7 @@ export const Effectiveness = ({
                             <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${log.status === 'Effectiveness Ok'
                               ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
                               : log.status === 'Pending'
-                                ? 'bg-slate-50 border-slate-200 text-slate-500'
+                                ? 'bg-amber-50 border-amber-200 text-amber-700'
                                 : 'bg-rose-50 border-rose-250 text-rose-700'
                               }`}>
                               {log.status}
@@ -1269,7 +1269,7 @@ export const Effectiveness = ({
                             <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${log.qaApproval === 'Approved'
                               ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
                               : log.qaApproval === 'Pending'
-                                ? 'bg-slate-50 border-slate-200 text-slate-500'
+                                ? 'bg-amber-50 border-amber-200 text-amber-700'
                                 : 'bg-rose-50 border-rose-250 text-rose-700'
                               }`}>
                               {log.qaApproval}
@@ -1951,7 +1951,9 @@ export const Effectiveness = ({
                               <div>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.status === 'Effectiveness Ok'
                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                    : 'bg-rose-50 border-rose-250 text-rose-700'
+                                    : currentEffLog.status === 'Pending'
+                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                      : 'bg-rose-50 border-rose-250 text-rose-700'
                                   }`}>
                                   {currentEffLog.status}
                                 </span>
@@ -1962,7 +1964,9 @@ export const Effectiveness = ({
                               <div>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.qaApproval === 'Approved'
                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                    : 'bg-rose-50 border-rose-200 text-rose-700'
+                                    : currentEffLog.qaApproval === 'Pending'
+                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                      : 'bg-rose-50 border-rose-250 text-rose-700'
                                   }`}>
                                   {currentEffLog.qaApproval}
                                 </span>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Save, Search, Eye, EyeOff, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText, Download } from 'lucide-react';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import TablePagination from '@mui/material/TablePagination';
-import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment, getL2Details, getL3Approvals } from '../../api/apiRoutes';
+import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment, getL2Details, getL3Details } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { exportL2ValidationLogsPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 
@@ -304,7 +304,7 @@ export const L2Validation = ({
       const [l1Res, l2Res, l3Res] = await Promise.all([
         getL1Details(changeNo),
         getL2Details(changeNo).catch(() => ({ data: null })),
-        getL3Approvals().catch(() => ({ data: [] }))
+        getL3Details(changeNo).catch(() => ({ data: null }))
       ]);
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
@@ -316,14 +316,14 @@ export const L2Validation = ({
         return;
       }
 
-      const activeL3 = l3Res.data?.find(a => a.changeNo === changeNo);
+      const matchedL3 = l3Res.data;
       
       const newLogData = {
         changeNo: changeNo,
         date: matchedChange ? formatDateToDDMMYYYY(matchedChange.date) : '-',
         requester: matchedChange ? (matchedChange.requestBy || matchedChange.requester || '-') : '-',
-        status: activeL3 ? activeL3.status : 'Pending',
-        remarks: activeL3 ? activeL3.remarks : '-',
+        status: matchedL3 ? matchedL3.status : 'Pending',
+        remarks: matchedL3 ? matchedL3.remarks : '-',
         weldTest: '-',
         qaTest: '-',
         ped: 'Pending',

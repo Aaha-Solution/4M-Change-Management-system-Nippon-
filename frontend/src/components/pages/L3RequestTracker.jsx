@@ -1424,7 +1424,9 @@ export const L3RequestTracker = ({
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                               currentEffLog.status === 'Effectiveness Ok'
                                 ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                : 'bg-rose-50 border-rose-255 text-rose-700'
+                                : currentEffLog.status === 'Pending'
+                                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                  : 'bg-rose-50 border-rose-255 text-rose-700'
                             }`}>
                               {currentEffLog.status}
                             </span>
@@ -1436,7 +1438,9 @@ export const L3RequestTracker = ({
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                               currentEffLog.qaApproval === 'Approved'
                                 ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                : 'bg-rose-50 border-rose-200 text-rose-700'
+                                : currentEffLog.qaApproval === 'Pending'
+                                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                  : 'bg-rose-50 border-rose-200 text-rose-700'
                             }`}>
                               {currentEffLog.qaApproval}
                             </span>

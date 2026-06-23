@@ -35,7 +35,7 @@ import {
   getL1Attachment,
   getL2Details,
   getL2Attachment,
-  getL3Approvals,
+  getL3Details,
   getEffectivenessLogs,
   getEffectivenessAttachment
 } from '../../api/apiRoutes';
@@ -295,7 +295,7 @@ export const AllApprovals = ({
       const [l1Res, l2Res, l3Res, effRes] = await Promise.all([
         getL1Details(req.changeNo),
         getL2Details(req.changeNo).catch(() => ({ data: null })),
-        getL3Approvals().catch(() => ({ data: [] })),
+        getL3Details(req.changeNo).catch(() => ({ data: null })),
         getEffectivenessLogs().catch(() => ({ data: [] }))
       ]);
       setL1Details(l1Res.data);
@@ -305,7 +305,7 @@ export const AllApprovals = ({
       );
       setSelectedEffDetails(matchedEff || null);
 
-      const matchedL3 = l3Res.data?.find(log => log.changeNo === req.changeNo);
+      const matchedL3 = l3Res.data;
       const newLogData = matchedL3 ? { ...matchedL3, hodStatus: req.hodStatus } : {
         changeNo: req.changeNo,
         requester: req.requestBy || req.requesterEmail,
@@ -1466,7 +1466,9 @@ export const AllApprovals = ({
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                                   currentEffLog.status === 'Effectiveness Ok'
                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                    : 'bg-rose-50 border-rose-250 text-rose-700'
+                                    : currentEffLog.status === 'Pending'
+                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                      : 'bg-rose-50 border-rose-250 text-rose-700'
                                 }`}>
                                   {currentEffLog.status}
                                 </span>
@@ -1478,7 +1480,9 @@ export const AllApprovals = ({
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                                   currentEffLog.qaApproval === 'Approved'
                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                    : 'bg-rose-50 border-rose-200 text-rose-700'
+                                    : currentEffLog.qaApproval === 'Pending'
+                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                      : 'bg-rose-50 border-rose-250 text-rose-700'
                                 }`}>
                                   {currentEffLog.qaApproval}
                                 </span>

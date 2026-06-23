@@ -6,7 +6,7 @@ import { formatDateToDDMMYY, parseDDMMYYYYToDate, formatDateToDDMMYYYY } from '.
 import { getRequestDisplayStatus } from '../../utils/statusUtils';
 // import { getSyncedDate } from '../../utils/timeSync';
 import { CustomDatePicker } from '../ui/CustomDatePicker';
-import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Approvals, updateChangeDetails, getProcesses, getMachines, getEffectivenessLogs, getEffectivenessAttachment, getDepartments } from '../../api/apiRoutes';
+import { getL1Details, getL1Attachment, getL2Details, getL2Attachment, getL3Details, updateChangeDetails, getProcesses, getMachines, getEffectivenessLogs, getEffectivenessAttachment, getDepartments } from '../../api/apiRoutes';
 import { exportRequestsListPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 
 const convertDDMMYYYYToYYYYMMDD = (val) => {
@@ -371,7 +371,7 @@ export const AllRequests = ({
       const [l1Res, l2Res, l3Res, effRes] = await Promise.all([
         getL1Details(request.id),
         getL2Details(request.id).catch(() => ({ data: null })),
-        getL3Approvals().catch(() => ({ data: [] })),
+        getL3Details(request.id).catch(() => ({ data: null })),
         getEffectivenessLogs().catch(() => ({ data: [] }))
       ]);
 
@@ -387,7 +387,7 @@ export const AllRequests = ({
         setEditL2Data(l2Res.data || {});
       }
 
-      const matchedL3 = l3Res.data?.find(log => log.changeNo === request.id);
+      const matchedL3 = l3Res.data;
       const newLogData = matchedL3 ? { ...matchedL3, status: request.status || matchedL3.status, hodStatus: request.hodStatus, requesterEmail: request.requesterEmail } : {
         changeNo: request.id,
         requester: request.requester,
@@ -2767,7 +2767,9 @@ export const AllRequests = ({
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                               currentEffLog.status === 'Effectiveness Ok'
                                 ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                : 'bg-rose-50 border-rose-250 text-rose-700'
+                                : currentEffLog.status === 'Pending'
+                                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                  : 'bg-rose-50 border-rose-250 text-rose-700'
                             }`}>
                               {currentEffLog.status}
                             </span>
@@ -2779,7 +2781,9 @@ export const AllRequests = ({
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                               currentEffLog.qaApproval === 'Approved'
                                 ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                : 'bg-rose-50 border-rose-200 text-rose-700'
+                                : currentEffLog.qaApproval === 'Pending'
+                                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                  : 'bg-rose-50 border-rose-200 text-rose-700'
                             }`}>
                               {currentEffLog.qaApproval}
                             </span>

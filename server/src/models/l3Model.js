@@ -41,6 +41,16 @@ export const getL3Approvals = async () => {
   return rows;
 };
 
+export const getL3DetailsByChangeNo = async (changeNo) => {
+  const [rows] = await pool.query(
+    `SELECT change_no as changeNo, ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead, date, requester
+     FROM l3_approvals
+     WHERE change_no = ?`,
+    [changeNo]
+  );
+  return rows[0] || null;
+};
+
 export const addL3ApprovalLog = async (logData) => {
   const {
     changeNo, date, requester,
