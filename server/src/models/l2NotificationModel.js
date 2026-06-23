@@ -195,7 +195,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
     if (isAccepted) {
       // 4. Insert Action Required notification for L3 HOD and Admin review
       const l3ActionTitle = `L3 Approval Required – ${changeNo}`;
-      const l3ActionDetails = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} is awaiting your department's review and sign-off at L3 (Status: Awaiting L3 HOD Decisions).`;
+      const l3ActionDetails = `Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} is awaiting department review and sign-off at L3 (Status: Awaiting L3 HOD Decisions).`;
       const l3ActionColor = 'orange';
 
       for (const email of targetEmailsForL3Action) {
@@ -242,7 +242,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
     if (notifDept) {
       const requesterNotifId = `L2-REQUESTER-CONFIRM-${changeNo}-${Date.now()}`;
       const requesterNotifTitle = `L2 Validation Submitted – ${changeNo}`;
-      const requesterNotifDetails = `Your L2 Requester Validation attachment for Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been submitted successfully (Status: Pending L2 QA Review). The next process is L2 QA Validation (QAD Department setup verification review).`;
+      const requesterNotifDetails = `L2 Requester Validation attachment for Change Request ${changeNo} ("${crTitle}")${changeIn ? ` (${changeIn})` : ''} has been submitted successfully (Status: Pending L2 QA Review). The next process is L2 QA Validation (QAD Department setup verification review).`;
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
@@ -294,13 +294,13 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
             <div style="padding: 24px;">
               <h2 style="margin-top: 0; color: #1e293b; font-size: 18px; font-weight: 600;">Hello ${reqName},</h2>
               <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-                Your <strong>L2 Requester Validation attachment</strong> has been submitted successfully and the status is now <strong>Pending QA Review</strong>.
+                L2 Requester Validation attachment has been submitted successfully and the status is now <strong>Pending QA Review</strong>.
               </p>
               <div style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
                 <div style="font-size: 12px; text-transform: uppercase; color: #0284c7; font-weight: 600; letter-spacing: 0.5px;">Submission Status</div>
                 <div style="font-size: 16px; font-weight: 700; color: #0369a1; margin-top: 4px;">Pending QA Review</div>
                 <p style="margin: 6px 0 0 0; font-size: 13px; color: #0369a1; line-height: 1.4;">
-                  The next process is <strong>L2 QA Validation (QAD Department setup verification review)</strong>. The QA department will now review and verify your setup. You will be notified once a decision is made.
+                  The next process is <strong>L2 QA Validation (QAD Department setup verification review)</strong>. The QA department will now review and verify the setup. You will be notified once a decision is made.
                 </p>
               </div>
               <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; margin-bottom: 12px;">Submission Details</h3>
@@ -352,7 +352,7 @@ export const sendL2Emails = async (changeNo, status, logData, l1Dept, requestBy,
       const badgeTextColor = status === 'Accepted' ? '#15803d' : (status === 'Rejected' ? '#991b1b' : '#1e40af');
 
       let emailSubject = `[4M-CMS] Action Required: L3 Review for ${changeNo}`;
-      let emailIntro = `A change request has been evaluated at <strong>L2 Validation</strong> and is now pending your department's review at <strong>L3</strong>.`;
+      let emailIntro = `A change request has been evaluated at <strong>L2 Validation</strong> and is now pending department review at <strong>L3</strong>.`;
       let headerSubtitle = 'L2 Validation Alert';
 
       if (status === 'Pending') {

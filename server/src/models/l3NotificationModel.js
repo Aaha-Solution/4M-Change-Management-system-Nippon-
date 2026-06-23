@@ -344,7 +344,7 @@ export const createL3RejectionNotifications = async (connection, changeNo, chang
   }
 
   const actionTitle = `L3 Rejected – ${changeNo}`;
-  const actionDetails = `Your Change Request ${changeNo} has been rejected during the L3 Multi-Department HOD review (Status: L3 Rejected). Rejected by: ${rejectedDeptsStr}.`;
+  const actionDetails = `Change Request ${changeNo} has been rejected during the L3 Multi-Department HOD review (Status: L3 Rejected). Rejected by: ${rejectedDeptsStr}.`;
 
   for (const email of targetEmailsForL3Action) {
     const actionNotifId = `L3-REJECT-ACTION-${changeNo}-${email.replace(/[@.]/g, '_')}-${Date.now()}`;
