@@ -50,6 +50,9 @@ export const L3RequestTracker = ({
   const [formRequester, setFormRequester] = useState('');
   const [formStatus, setFormStatus] = useState('');
 
+  // Inline field validation errors
+  const [fieldErrors, setFieldErrors] = useState({});
+
   // Acting Department mapping
   const [actingDept, setActingDept] = useState('QAD');
 
@@ -125,6 +128,7 @@ export const L3RequestTracker = ({
   // Click row to select it
   const handleSelectRow = (log) => {
     setValidationError('');
+    setFieldErrors({});
     setSelectedChangeId(log.changeNo);
     setFormChangeNo(log.changeNo);
     setFormDate(formatDateToDDMMYYYY(log.date));
@@ -145,6 +149,7 @@ export const L3RequestTracker = ({
     setFormDate('');
     setFormRequester('');
     setFormStatus('');
+    setFieldErrors({});
   };
 
   const handleSaveApproval = async (e) => {
@@ -156,9 +161,11 @@ export const L3RequestTracker = ({
     }
 
     if (!formStatus || formStatus === 'Pending') {
-      setToastMsg('Please choose an approval status.');
+      setFieldErrors({ status: 'Please choose an approval status.' });
       return;
     }
+
+    setFieldErrors({});
 
     // Find the log in state
     const currentLog = approvalLogs.find(log => log.changeNo === formChangeNo);
@@ -205,6 +212,7 @@ export const L3RequestTracker = ({
       if (fetchChanges) {
         await fetchChanges();
       }
+      handleCancelEdit();
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Error saving L3 approval log to database.';
@@ -576,13 +584,26 @@ export const L3RequestTracker = ({
             <select 
               value={formStatus} 
               disabled={!selectedChangeId || showAsValidated || !isL2Accepted || !canEdit || isChangeClosed}
-              onChange={(e) => setFormStatus(e.target.value)}
-              className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] cursor-pointer"
+              onChange={(e) => {
+                setFormStatus(e.target.value);
+                if (e.target.value && e.target.value !== 'Pending') {
+                  setFieldErrors(prev => ({ ...prev, status: '' }));
+                }
+              }}
+              className={`w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none cursor-pointer ${
+                fieldErrors.status ? 'border-rose-400' : 'border-slate-200 focus:border-[#0066cc]'
+              }`}
             >
               <option value="">Select Status</option>
               <option value="Approved">Approved</option>
               <option value="Rejected">Rejected</option>
             </select>
+            {fieldErrors.status && (
+              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
+                <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
+                {fieldErrors.status}
+              </p>
+            )}
           </div>
 
           {/* Submit / Cancel row */}

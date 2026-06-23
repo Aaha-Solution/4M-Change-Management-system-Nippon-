@@ -125,18 +125,6 @@ export const L2Validation = ({
           setFormRequester(targetChange.requestBy || targetChange.requester || '');
         }
         if (clearAutoOpen) clearAutoOpen();
-      } else if (!formChangeNo) {
-        const validatedNos = new Set(
-          (validationLogs || [])
-            .filter(log => log.weldTest && log.weldTest !== '-')
-            .map(log => log.changeNo?.toLowerCase().trim())
-        );
-        const firstPending = approvedChanges.find(c => !validatedNos.has(c.id.toLowerCase().trim())) || approvedChanges[0];
-        if (firstPending) {
-          setFormChangeNo(firstPending.id);
-          setFormDate(formatDateToDDMMYYYY(firstPending.date));
-          setFormRequester(firstPending.requestBy || firstPending.requester || '');
-        }
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1581,13 +1569,7 @@ export const L2Validation = ({
                       </button>
                     </span>
                   </div>
-                  <div className="space-y-[6px] md:col-span-1 min-w-0">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Effectiveness Monitoring</span>
-                    <div className="font-semibold text-slate-750 leading-relaxed break-words">
-                      {selectedL1Details.effectiveness_monitoring}
-                    </div>
-                    {selectedL1Details.file_effectiveness && renderL1FilePill(selectedL1Details.file_effectiveness, selectedL1Details.change_no)}
-                  </div>
+                  
                 </div>
               </div>
               </>

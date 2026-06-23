@@ -880,7 +880,7 @@ export const AllApprovals = ({
                   <strong>L1 HOD Approval</strong> — You are reviewing this change request as <span className="text-[#0066cc] font-black">{actingDept}</span> HOD.
                   {alreadyDecided
                     ? <span className="ml-1 text-slate-500 font-normal">A decision has already been recorded.</span>
-                    : <span className="ml-1 text-amber-700 font-normal">Your decision will advance or halt this change request.</span>
+                    :''
                   }
                 </p>
               </div>
@@ -1164,9 +1164,7 @@ export const AllApprovals = ({
                               </span>
                             </div>
                             <div className="space-y-[4px]">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required</span>
                               <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
-                                <Clock size={14} className="text-slate-400" />
                                 <span>{showCustomerApproval ? l1Details.customer_approval : '••••'}</span>
                                 <button
                                   type="button"
@@ -1178,13 +1176,7 @@ export const AllApprovals = ({
                                 </button>
                               </span>
                             </div>
-                            <div className="space-y-[6px] md:col-span-1 min-w-0">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Effectiveness Monitoring</span>
-                              <div className="font-semibold text-slate-750 leading-relaxed break-words">
-                                {l1Details.effectiveness_monitoring}
-                              </div>
-                              {l1Details.file_effectiveness && renderL1FilePill(l1Details.file_effectiveness, l1Details.change_no)}
-                            </div>
+                          
                           </div>
 
                           {l1Details.hodStatus && (
