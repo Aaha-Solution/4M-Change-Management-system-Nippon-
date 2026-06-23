@@ -261,9 +261,17 @@ export const L2Validation = ({
 
       await fetchLogs();
 
-      // Clear file upload states
+      // Reset form fields after successful submission
+      setFormChangeNo('');
+      setFormDate('');
+      setFormRequester('');
+      setFormStatus('');
+      setFormRemarks('');
+      setExistingPedFiles([]);
+      setExistingQaFiles([]);
       setPedFiles([]);
       setQaFiles([]);
+      setFieldErrors({});
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Error saving L2 validation log to database.';
