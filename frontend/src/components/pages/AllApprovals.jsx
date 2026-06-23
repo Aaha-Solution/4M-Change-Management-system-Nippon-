@@ -929,20 +929,14 @@ export const AllApprovals = ({
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] mt-[12px]">
-                            <div className="space-y-[4px] min-w-0">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change</span>
-                              <span className="font-semibold text-slate-855 block break-words">{l1Details.title ? l1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}</span>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
+                              <span className="font-medium text-slate-700">{l1Details.unit}</span>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
-                              <div className="space-y-[4px]">
-                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit</span>
-                                <span className="font-medium text-slate-700">{l1Details.unit}</span>
-                              </div>
-                              <div className="space-y-[4px]">
-                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In</span>
-                                <span className="font-medium text-slate-750">{l1Details.change_in}</span>
-                              </div>
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change In</span>
+                              <span className="font-medium text-slate-750">{l1Details.change_in}</span>
                             </div>
                           </div>
 
@@ -986,7 +980,13 @@ export const AllApprovals = ({
                             <FileText size={14} />
                             <span>Details & Justification</span>
                           </h5>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px]">
+                          <div className="grid grid-cols-1 gap-[16px]">
+                            <div className="space-y-[6px] min-w-0">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Context of Change</span>
+                              <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[40px] leading-relaxed break-words whitespace-pre-wrap">
+                                {l1Details.title ? l1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : ''}
+                              </div>
+                            </div>
                             <div className="space-y-[6px] min-w-0">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Description</span>
                               <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
