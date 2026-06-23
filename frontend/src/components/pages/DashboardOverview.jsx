@@ -238,7 +238,7 @@ export const DashboardOverview = ({
   };
 
   useEffect(() => {
-    fetchCounts();
+    fetchCounts(true);
   }, [changes]);
 
   // Department Filters
