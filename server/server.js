@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
+dotenv.config();
+
 import http from 'http';
 import app from './app.js';
 import { initWebSocket } from './src/config/websocket.js';
-
-dotenv.config();
 
 const PORT = process.env.PORT || 5001;
 
