@@ -35,7 +35,7 @@ export const getL3Approvals = async () => {
      INNER JOIN l2_validation_logs v ON c.id = v.change_no AND v.status = 'Accepted'
      LEFT JOIN l3_approvals l ON c.id = l.change_no
      LEFT JOIN effectiveness_logs e ON c.id = e.change_no
-     WHERE (e.qa_approval IS NULL OR (e.qa_approval != 'Approved' AND e.qa_approval != 'Rejected'))
+     WHERE e.id IS NULL
      ORDER BY c.created_at DESC, CAST(SUBSTRING_INDEX(c.id, '-', -1) AS UNSIGNED) DESC`
   );
   return rows;
@@ -221,12 +221,22 @@ export const addL3ApprovalLog = async (logData) => {
       );
 
       if (isAllL3Approved) {
-        const effId = `EFF-${Date.now().toString().substring(7)}`;
+        const [existingEff] = await connection.query(
+          `SELECT id FROM effectiveness_logs WHERE change_no = ?`,
+          [changeNo]
+        );
+        if (existingEff.length === 0) {
+          const effId = `EFF-${Date.now().toString().substring(7)}`;
+          await connection.query(
+            `INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval)
+             VALUES (?, ?, ?, ?, ?, '', '', '', 'Pending', 'Pending')`,
+            [effId, changeNo, dbDate, title, dateStart]
+          );
+        }
+      } else {
         await connection.query(
-          `INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval)
-           VALUES (?, ?, ?, ?, ?, '', '', '', 'Pending', 'Pending')
-           ON DUPLICATE KEY UPDATE change_no = change_no`,
-          [effId, changeNo, dbDate, title, dateStart]
+          `DELETE FROM effectiveness_logs WHERE change_no = ?`,
+          [changeNo]
         );
       }
 

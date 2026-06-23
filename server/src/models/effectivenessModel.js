@@ -149,6 +149,14 @@ export const createLog = async (logData, attachments) => {
     
     const { id, changeNo, reqDate, context, startDate, monthWise, remarks, attachment, status, qaApproval } = logData;
     
+    const [existing] = await connection.query(
+      `SELECT id FROM effectiveness_logs WHERE change_no = ?`,
+      [changeNo]
+    );
+    if (existing.length > 0) {
+      throw new Error(`An effectiveness log already exists for change request ${changeNo}`);
+    }
+
     const formattedReqDate = parseToISODate(reqDate) || reqDate;
     const formattedStartDate = parseToISODate(startDate) || startDate;
     

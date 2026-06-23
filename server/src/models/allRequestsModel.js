@@ -251,23 +251,33 @@ export const updateChangeDetails = async (changeNo, level, updateData, attachmen
           dbL3.unitHead === 'Approved';
 
         if (isAllL3Approved) {
-          const [crRows] = await connection.query(
-            `SELECT c.title, DATE_FORMAT(c.date, '%Y-%m-%d') as date, DATE_FORMAT(l1.date_start, '%Y-%m-%d') as dateStart
-             FROM change_requests c
-             LEFT JOIN l1_requests l1 ON c.id = l1.change_no
-             WHERE c.id = ?`,
+          const [existingEff] = await connection.query(
+            `SELECT id FROM effectiveness_logs WHERE change_no = ?`,
             [changeNo]
           );
-          const title = crRows.length > 0 ? crRows[0].title : '';
-          const date = crRows.length > 0 ? crRows[0].date : new Date().toISOString().slice(0, 10);
-          const dateStart = crRows.length > 0 && crRows[0].dateStart ? crRows[0].dateStart : date;
-          const effId = `EFF-${Date.now().toString().substring(7)}`;
+          if (existingEff.length === 0) {
+            const [crRows] = await connection.query(
+              `SELECT c.title, DATE_FORMAT(c.date, "%Y-%m-%d") as date, DATE_FORMAT(l1.date_start, "%Y-%m-%d") as dateStart
+               FROM change_requests c
+               LEFT JOIN l1_requests l1 ON c.id = l1.change_no
+               WHERE c.id = ?`,
+              [changeNo]
+            );
+            const title = crRows.length > 0 ? crRows[0].title : '';
+            const date = crRows.length > 0 ? crRows[0].date : new Date().toISOString().slice(0, 10);
+            const dateStart = crRows.length > 0 && crRows[0].dateStart ? crRows[0].dateStart : date;
+            const effId = `EFF-${Date.now().toString().substring(7)}`;
 
+            await connection.query(
+              `INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval)
+               VALUES (?, ?, ?, ?, ?, '', '', '', 'Pending', 'Pending')`,
+              [effId, changeNo, date, title, dateStart]
+            );
+          }
+        } else {
           await connection.query(
-            `INSERT INTO effectiveness_logs (id, change_no, req_date, context, start_date, month_wise, remarks, attachment, status, qa_approval)
-             VALUES (?, ?, ?, ?, ?, '', '', '', 'Pending', 'Pending')
-             ON DUPLICATE KEY UPDATE change_no = change_no`,
-            [effId, changeNo, date, title, dateStart]
+            `DELETE FROM effectiveness_logs WHERE change_no = ?`,
+            [changeNo]
           );
         }
       }
