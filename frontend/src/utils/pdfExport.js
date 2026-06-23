@@ -519,7 +519,11 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
       item.requester,
       item.weldTest || '-',
       item.qaTest || '-',
-      item.status === 'Accepted' ? 'Approved' : item.status,
+      item.status === 'Accepted'
+        ? 'Approved'
+        : item.status === 'Pending'
+        ? (item.weldTest && item.weldTest !== '-' ? 'QA Approval Needed' : 'Pending Requester Validation')
+        : item.status,
       item.remarks || '-'
     ]);
 
@@ -587,6 +591,9 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('reject')) {
             data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.fontStyle = 'bold';
+          } else if (cleanVal.includes('need') || cleanVal.includes('qa')) {
+            data.cell.styles.textColor = [79, 70, 229]; // Indigo/Blue
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('pending')) {
             data.cell.styles.textColor = [217, 119, 6]; // Yellow

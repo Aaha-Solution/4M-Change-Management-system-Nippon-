@@ -110,10 +110,16 @@ export const L2Validation = ({
     }
   });
 
-  // Auto-populate logic based on autoOpenChangeNo or first pending request
   useEffect(() => {
     if (changes && changes.length > 0) {
-      const approvedChanges = changes.filter(c => c.hodStatus === 'Approved' && c.qaApproval !== 'Approved');
+      const acceptedL2Nos = new Set(
+        (validationLogs || [])
+          .filter(log => log.status === 'Accepted')
+          .map(log => log.changeNo?.toLowerCase().trim())
+      );
+      const approvedChanges = changes.filter(
+        c => c.hodStatus === 'Approved' && c.qaApproval !== 'Approved' && !acceptedL2Nos.has(c.id?.toLowerCase().trim())
+      );
       
       if (autoOpenChangeNo) {
         const targetChange = approvedChanges.find(c => c.id.toLowerCase().trim() === autoOpenChangeNo.toLowerCase().trim());
@@ -413,7 +419,8 @@ export const L2Validation = ({
       remarks: savedLog?.remarks || '-',
       isPending: !savedLog
     };
-  });
+  })
+  .filter(log => log.status !== 'Accepted');
 
   const matchedChange = changes?.find(c => c.id.toLowerCase().trim() === formChangeNo.toLowerCase().trim());
   const isRaisedByUser = matchedChange && userEmail && 
@@ -460,7 +467,18 @@ export const L2Validation = ({
       (log.remarks && log.remarks.toLowerCase().includes(q)) ||
       log.requester.toLowerCase().includes(q);
 
-    const matchesDecision = decisionFilter === 'All' || log.status === decisionFilter;
+    let matchesDecision = false;
+    if (decisionFilter === 'All') {
+      matchesDecision = true;
+    } else if (decisionFilter === 'Accepted') {
+      matchesDecision = log.status === 'Accepted';
+    } else if (decisionFilter === 'Rejected') {
+      matchesDecision = log.status === 'Rejected';
+    } else if (decisionFilter === 'QA Approval Needed') {
+      matchesDecision = log.status === 'Pending' && log.weldTest && log.weldTest !== '-';
+    } else if (decisionFilter === 'Pending Requester Validation') {
+      matchesDecision = log.status === 'Pending' && (!log.weldTest || log.weldTest === '-');
+    }
 
     return matchesSearch && matchesDecision;
   });
@@ -978,9 +996,9 @@ export const L2Validation = ({
               className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none focus:border-[#0066cc]"
             >
               <option value="All">All Decisions</option>
-              <option value="Accepted">Approved</option>
               <option value="Rejected">Rejected</option>
-              <option value="Pending">Pending</option>
+              <option value="QA Approval Needed">QA Approval Needed</option>
+              <option value="Pending Requester Validation">Pending Requester Validation</option>
             </select>
           </div>
 
@@ -1090,10 +1108,14 @@ export const L2Validation = ({
                               log.status === 'Accepted'
                                 ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
                                 : log.status === 'Pending'
-                                ? 'bg-amber-50 border-amber-250 text-amber-700'
+                                ? (log.weldTest && log.weldTest !== '-' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-250 text-amber-700')
                                 : 'bg-rose-50 border-rose-250 text-rose-700'
                             }`}>
-                            {log.status === 'Accepted' ? 'Approved' : log.status}
+                            {log.status === 'Accepted'
+                              ? 'Approved'
+                              : log.status === 'Pending'
+                              ? (log.weldTest && log.weldTest !== '-' ? 'QA Approval Needed' : 'Pending Requester Validation')
+                              : log.status}
                           </span>
                         </td>
                         <td className="p-[12px] text-slate-500 max-w-[220px] truncate" title={log.remarks}>
@@ -1148,10 +1170,14 @@ export const L2Validation = ({
                         log.status === 'Accepted'
                           ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
                           : log.status === 'Pending'
-                          ? 'bg-amber-50 border-amber-250 text-amber-700'
+                          ? (log.weldTest && log.weldTest !== '-' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-amber-50 border-amber-250 text-amber-700')
                           : 'bg-rose-50 border-rose-250 text-rose-700'
                       }`}>
-                      {log.status === 'Accepted' ? 'Approved' : log.status}
+                      {log.status === 'Accepted'
+                        ? 'Approved'
+                        : log.status === 'Pending'
+                        ? (log.weldTest && log.weldTest !== '-' ? 'QA Approval Needed' : 'Pending Requester Validation')
+                        : log.status}
                     </span>
                   </div>
 
