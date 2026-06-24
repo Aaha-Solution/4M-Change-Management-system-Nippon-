@@ -468,7 +468,28 @@ export const AllRequests = ({
   };
 
   const handleExportRequestDetailsPDF = () => {
-    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, activeTab, setToastMsg, selectedEffDetails);
+    // Mirror the exact same tab visibility conditions used in the modal tab header
+    const showL2 = selectedL1Details?.hodStatus !== 'Rejected';
+    const showL3 = showL2 && selectedL2Details?.status === 'Accepted';
+    const showEff = showL3 && (
+      (selectedLog?.status || '').toLowerCase() === 'completed' ||
+      selectedEffDetails !== null
+    );
+
+    // Determine the export scope based on which tabs are visible
+    let targetTab;
+    if (showEff) {
+      targetTab = 'all';            // 4 tabs visible → export everything
+    } else if (showL3) {
+      targetTab = 'l3';             // 3 tabs visible → export L1 + L2 + L3
+    } else if (showL2) {
+      targetTab = 'l2';             // 2 tabs visible → export L1 + L2 only
+    } else {
+      targetTab = 'l1';             // only L1 tab visible → export L1 only
+    }
+
+    const currentEffLog = showEff ? (selectedEffDetails || null) : null;
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, targetTab, setToastMsg, currentEffLog);
   };
 
   const handleClosePreview = () => {
@@ -2825,7 +2846,7 @@ export const AllRequests = ({
                 onClick={handleExportRequestDetailsPDF}
                 disabled={isFetchingDetails}
                 className="px-[16px] py-[8px] bg-[#0066cc] hover:bg-[#0052a3] text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px] text-[12px] font-semibold transition-colors shadow-sm cursor-pointer flex items-center gap-[6px]"
-                title="Export this request's full details (L1, L2, L3) as PDF"
+                title="Export full details (L1, L2, L3 + Effectiveness if available) as PDF"
               >
                 <Download size={14} />
                 <span>Export PDF</span>
