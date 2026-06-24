@@ -169,9 +169,6 @@ export const getL2Details = async (req, res) => {
   const { changeNo } = req.params;
   try {
     const details = await l2Model.getL2Details(changeNo);
-    if (!details) {
-      return res.status(404).json({ error: 'L2 validation log not found' });
-    }
     res.status(200).json(details);
   } catch (error) {
     console.error('Error in getL2Details:', error);
