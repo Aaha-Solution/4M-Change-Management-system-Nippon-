@@ -221,8 +221,8 @@ export const Effectiveness = ({
     const currentEffLog = effectivenessLogs.find(
       l => l.changeNo?.toLowerCase().trim() === selectedLog?.changeNo?.toLowerCase().trim()
     );
-    // Export full details: L1, L2, L3 always. Conditionally pass effectiveness log.
-    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, 'all', setToastMsg, isL3Complete ? currentEffLog : null);
+    // Export full details: L1, L2, L3 always. Conditionally pass effectiveness log if available.
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, 'all', setToastMsg, currentEffLog || null);
   };
 
   const renderL1FilePill = (filename, changeNo) => {

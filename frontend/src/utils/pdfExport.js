@@ -197,7 +197,7 @@ const formatMonthWise = (val) => {
   }
   if (val.includes('-')) {
     const parts = val.split("-");
-    if (parts.length === 2) {
+    if (parts.length >= 2) {
       const year = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10);
       const date = new Date(year, month - 1, 1);
@@ -264,8 +264,22 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
-    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text(`4M Change Request Detail Report${titleSuffix}`, 40, 45);
+    doc.setTextColor(0, 102, 204); // Blue #0066cc for main title
+    doc.text('4M Change Request Detail Report', 40, 45);
+
+    if (titleSuffix) {
+      const mainTitleWidth = doc.getTextWidth('4M Change Request Detail Report');
+      let suffixColor = [0, 102, 204]; // Blue default
+      if (targetTab === 'l2') {
+        suffixColor = [217, 119, 6]; // Orange
+      } else if (targetTab === 'l3') {
+        suffixColor = [124, 58, 237]; // Purple
+      } else if (targetTab === 'effectiveness') {
+        suffixColor = [16, 124, 65]; // Green
+      }
+      doc.setTextColor(suffixColor[0], suffixColor[1], suffixColor[2]);
+      doc.text(titleSuffix, 40 + mainTitleWidth, 45);
+    }
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
@@ -509,7 +523,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         body: l2Data,
         theme: 'grid',
         headStyles: {
-          fillColor: primaryColor,
+          fillColor: [217, 119, 6], // Orange
           textColor: [255, 255, 255],
           fontSize: 10,
           fontStyle: 'bold'
@@ -553,7 +567,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         ],
         theme: 'grid',
         headStyles: {
-          fillColor: primaryColor,
+          fillColor: [124, 58, 237], // Purple
           textColor: [255, 255, 255],
           fontSize: 10,
           fontStyle: 'bold'
@@ -568,7 +582,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         },
         margin: { left: 40, right: 40 },
         didParseCell: (data) => {
-          if (data.row.index === 0) {
+          if (data.row.section === 'body' && data.row.index === 0) {
             data.cell.styles.fillColor = [226, 232, 240]; // Slate-200
             data.cell.styles.textColor = [15, 23, 42];    // Slate-900
             data.cell.styles.fontStyle = 'bold';
@@ -619,7 +633,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         body: effData,
         theme: 'grid',
         headStyles: {
-          fillColor: primaryColor,
+          fillColor: [16, 124, 65], // Green
           textColor: [255, 255, 255],
           fontSize: 10,
           fontStyle: 'bold'
@@ -636,7 +650,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         },
         margin: { left: 40, right: 40 },
         didParseCell: (data) => {
-          if (data.row.index === 2) {
+          if (data.row.section === 'body' && data.row.index === 2) {
             // Color-code Effectiveness Status & QA Approval
             if (data.column.index === 1 || data.column.index === 3) {
               const val = data.cell.text[0];
@@ -1438,10 +1452,10 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       ];
     });
 
-    // Title & Branding (Blue theme)
+    // Title & Branding (Green theme)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.setTextColor(0, 102, 204); // #0066cc
+    doc.setTextColor(16, 124, 65); // #107c41 (Green)
     doc.text('4M Change Management System - Effectiveness Monitoring Logs', 40, 45);
 
     // Metadata details
@@ -1469,7 +1483,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [0, 102, 204],
+        fillColor: [16, 124, 65], // Green
         textColor: [255, 255, 255],
         fontSize: 7.5,
         fontStyle: 'bold',
