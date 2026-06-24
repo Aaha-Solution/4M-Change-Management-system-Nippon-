@@ -272,34 +272,37 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     doc.setTextColor(148, 163, 184); // Slate-400
     doc.text(`Generated on: ${formatDateToDDMMYYYY(getSyncedDate())}`, 40, 60);
 
-    // Section 1: General Info
+    // Section 1: General Info (11-field layout aligned with the L1 tab General Information)
+    const l1Status = selectedL1Details.hodStatus === 'Rejected'
+      ? 'L1 Rejected'
+      : (selectedL1Details.hodStatus === 'Approved' || selectedL1Details.crStatus !== 'Pending')
+        ? 'L1 Approved'
+        : 'L1 Pending';
+
     const generalInfoData = [
       [
-        { content: 'Change Number:', fontStyle: 'bold' }, selectedL1Details.change_no || '-',
-        { content: 'Status:', fontStyle: 'bold' }, `L1: ${selectedL1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}`,
+        { content: 'Change No', fontStyle: 'bold' }, selectedL1Details.change_no || '-',
+        { content: 'Requested Date', fontStyle: 'bold' }, selectedL1Details.crDate ? formatDateToDDMMYYYY(selectedL1Details.crDate) : '-',
       ],
       [
-        { content: 'Requested By:', fontStyle: 'bold' }, `${selectedL1Details.request_by || '-'} (${selectedL1Details.crRequester || '-'})`,
-        { content: 'Date/Time:', fontStyle: 'bold' }, `${selectedL1Details.crDate ? formatDateToDDMMYYYY(selectedL1Details.crDate) : '-'} ${selectedL1Details.requested_time || ''}`,
+        { content: 'Requested Time', fontStyle: 'bold' }, selectedL1Details.requested_time || '-',
+        { content: 'Status', fontStyle: 'bold' }, l1Status,
       ],
       [
-        { content: 'Department:', fontStyle: 'bold' }, selectedL1Details.dept || '-',
-        { content: 'Change Type:', fontStyle: 'bold' }, selectedL1Details.change_type || '-',
+        { content: 'Unit', fontStyle: 'bold' }, selectedL1Details.unit || '-',
+        { content: 'Change In', fontStyle: 'bold' }, selectedL1Details.change_in || '-',
       ],
       [
-        { content: 'Unit:', fontStyle: 'bold' }, selectedL1Details.unit || '-',
-        { content: 'Change In:', fontStyle: 'bold' }, selectedL1Details.change_in || '-',
+        { content: 'Requested By', fontStyle: 'bold' }, `${selectedL1Details.request_by || '-'}${selectedL1Details.crRequester && selectedL1Details.crRequester.toLowerCase() !== selectedL1Details.request_by?.toLowerCase() ? '\n' + selectedL1Details.crRequester : ''}`,
+        { content: 'Department', fontStyle: 'bold' }, selectedL1Details.dept || '-',
       ],
       [
-        { content: 'Process Name:', fontStyle: 'bold' }, selectedL1Details.process_name || '-',
-        { content: 'Process Line:', fontStyle: 'bold' }, selectedL1Details.process_line || '-',
+        { content: 'Process Name', fontStyle: 'bold' }, selectedL1Details.process_name || '-',
+        { content: 'Process Line', fontStyle: 'bold' }, selectedL1Details.process_line || '-',
       ],
       [
-        { content: 'Machine No:', fontStyle: 'bold' }, selectedL1Details.machine_no || '-',
-        { content: 'Target Date range:', fontStyle: 'bold' }, `${selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'} to ${selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}`,
-      ],
-      [
-        { content: 'Change Title:', fontStyle: 'bold' }, { content: selectedL1Details.title || '-', colSpan: 3 }
+        { content: 'Machine No', fontStyle: 'bold' }, selectedL1Details.machine_no || '-',
+        { content: '', fontStyle: 'bold' }, ''
       ]
     ];
 
@@ -327,42 +330,125 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
       margin: { left: 40, right: 40 }
     });
 
-    // Section 2: Details & Justification
+    // Section 2: Details & Justification (aligned with CHANGE DESCRIPTION, TIMELINE, Risk Analysis in modal)
     if (targetTab === 'l1' || targetTab === 'all') {
       const detailsData = [
         [
-          { content: 'Change Description:', fontStyle: 'bold' },
+          { content: 'Context of Change', fontStyle: 'bold' },
+          selectedL1Details.title ? selectedL1Details.title.replace(/^\[L1 Request - [^\]]*\]\s*/, '') : '-'
+        ],
+        [
+          { content: 'Detailed Change Description', fontStyle: 'bold' },
           selectedL1Details.description || '-'
-        ],
-        [
-          { content: 'Area of Improvement / Benefit:', fontStyle: 'bold' },
-          selectedL1Details.improvement_area || '-'
-        ],
-        [
-          { content: 'Traceability FROM (Before Change):', fontStyle: 'bold' },
-          selectedL1Details.trace_from || '-'
-        ],
-        [
-          { content: 'Traceability TO (After Change):', fontStyle: 'bold' },
-          selectedL1Details.trace_to || '-'
-        ],
-        [
-          { content: 'Risk Analysis:', fontStyle: 'bold' },
-          selectedL1Details.risk_analysis || '-'
-        ],
-        [
-          { content: 'SOP / WI / Control Plan Update:', fontStyle: 'bold' },
-          selectedL1Details.sop_update || '-'
-        ],
-        [
-          { content: 'Effectiveness Monitoring:', fontStyle: 'bold' },
-          selectedL1Details.effectiveness_monitoring || '-'
-        ],
-        [
-          { content: 'Approvals & Cust. Req:', fontStyle: 'bold' },
-          `HOD Approval: ${selectedL1Details.hod_approval || '-'}  |  Customer Approval Required: ${selectedL1Details.customer_approval || '-'}`
         ]
       ];
+
+      if (selectedL1Details.file_desc && selectedL1Details.file_desc !== '-') {
+        detailsData.push([
+          { content: 'Supporting Files', fontStyle: 'bold' },
+          selectedL1Details.file_desc
+        ]);
+      }
+
+      detailsData.push(
+        [
+          { content: 'Change Improvement Area', fontStyle: 'bold' },
+          selectedL1Details.improvement_area || '-'
+        ]
+      );
+
+      if (selectedL1Details.file_improvement && selectedL1Details.file_improvement !== '-') {
+        detailsData.push([
+          { content: 'Supporting Files (Improvement)', fontStyle: 'bold' },
+          selectedL1Details.file_improvement
+        ]);
+      }
+
+      detailsData.push(
+        [
+          { content: 'Permanent / Temporary Change', fontStyle: 'bold' },
+          selectedL1Details.change_type || '-'
+        ],
+        [
+          { content: 'Implement / Change Date Start', fontStyle: 'bold' },
+          selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'
+        ],
+        [
+          { content: 'Part Traceability Details (From Changes)', fontStyle: 'bold' },
+          selectedL1Details.trace_from || '-'
+        ]
+      );
+
+      if (selectedL1Details.file_trace_from && selectedL1Details.file_trace_from !== '-') {
+        detailsData.push([
+          { content: 'Supporting Files (Traceability From)', fontStyle: 'bold' },
+          selectedL1Details.file_trace_from
+        ]);
+      }
+
+      detailsData.push(
+        [
+          { content: 'Change Date Close', fontStyle: 'bold' },
+          selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'
+        ],
+        [
+          { content: 'Part Traceability Details (To Changes)', fontStyle: 'bold' },
+          selectedL1Details.trace_to || '-'
+        ]
+      );
+
+      if (selectedL1Details.file_trace_to && selectedL1Details.file_trace_to !== '-') {
+        detailsData.push([
+          { content: 'Supporting Files (Traceability To)', fontStyle: 'bold' },
+          selectedL1Details.file_trace_to
+        ]);
+      }
+
+      detailsData.push(
+        [
+          { content: 'Risk Analysis', fontStyle: 'bold' },
+          selectedL1Details.risk_analysis || '-'
+        ]
+      );
+
+      if (selectedL1Details.file_risk && selectedL1Details.file_risk !== '-') {
+        detailsData.push([
+          { content: 'Supporting Files (Risk Analysis)', fontStyle: 'bold' },
+          selectedL1Details.file_risk
+        ]);
+      }
+
+      detailsData.push(
+        [
+          { content: 'Update in SOP / WI / Control Plan / FMEA', fontStyle: 'bold' },
+          selectedL1Details.sop_update || '-'
+        ]
+      );
+
+      if (selectedL1Details.file_sop && selectedL1Details.file_sop !== '-') {
+        detailsData.push([
+          { content: 'Supporting Files (SOP, WI, Control Plan, FMEA)', fontStyle: 'bold' },
+          selectedL1Details.file_sop
+        ]);
+      }
+
+      detailsData.push(
+        [
+          { content: 'User Dept HOD Approval', fontStyle: 'bold' },
+          selectedL1Details.hod_approval || '-'
+        ],
+        [
+          { content: 'Customer Approval Required / Clearance Details', fontStyle: 'bold' },
+          selectedL1Details.customer_approval || '-'
+        ]
+      );
+
+      if (selectedL1Details.hodStatus) {
+        detailsData.push([
+          { content: `HOD ${selectedL1Details.hodStatus} Remarks / Comments (${selectedL1Details.hodDept || 'HOD'})`, fontStyle: 'bold' },
+          selectedL1Details.hodRemarks || 'No remarks provided.'
+        ]);
+      }
 
       autoTable(doc, {
         startY: doc.lastAutoTable.finalY + 15,
@@ -387,27 +473,33 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
       });
     }
 
-    // Section 3: Level 2 Validation Details
+    // Section 3: Level 2 Validation Details (aligned with L2 modal tab fields)
     if (targetTab === 'l2' || targetTab === 'all') {
       const l2Data = [];
       if (selectedL2Details) {
+        const l2Status = selectedL2Details.status === 'Accepted'
+          ? 'L2 Approved'
+          : selectedL2Details.status === 'Rejected'
+            ? 'L2 Rejected'
+            : selectedL2Details.status || 'L2 Pending';
+
         l2Data.push(
           [
-            { content: 'Validated By:', fontStyle: 'bold' }, selectedL2Details.requester || '-',
-            { content: 'Validation Date:', fontStyle: 'bold' }, selectedL2Details.date || '-'
+            { content: 'Validation Date', fontStyle: 'bold' }, selectedL2Details.date || '-',
+            { content: 'Validated By', fontStyle: 'bold' }, selectedL2Details.requester || '-'
           ],
           [
-            { content: 'Validation Status:', fontStyle: 'bold' }, `L2: ${selectedL2Details.status === 'Accepted' ? 'Approved' : (selectedL2Details.status || 'Pending')}`,
-            { content: 'PED Test Setup:', fontStyle: 'bold' }, selectedL2Details.weldTest || '-'
+            { content: 'Validation Status', fontStyle: 'bold' }, l2Status,
+            { content: 'PED Validation Attachment', fontStyle: 'bold' }, selectedL2Details.weldTest || '-'
           ],
           [
-            { content: 'QA setup attachment:', fontStyle: 'bold' }, selectedL2Details.qaTest || '-',
-            { content: 'Remarks:', fontStyle: 'bold' }, selectedL2Details.remarks || '-'
+            { content: 'QA Setup Verification Attachment', fontStyle: 'bold' }, selectedL2Details.qaTest || '-',
+            { content: 'Validator Remarks / Comments', fontStyle: 'bold' }, selectedL2Details.remarks || '-'
           ]
         );
       } else {
         l2Data.push([
-          { content: 'Status:', fontStyle: 'bold' }, { content: 'Level 2 Validation details are currently pending or not submitted.', colSpan: 3 }
+          { content: 'Status', fontStyle: 'bold' }, { content: 'Level 2 Validation details are currently pending or not submitted.', colSpan: 3 }
         ]);
       }
 
@@ -436,20 +528,20 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
       });
     }
 
-    // Section 4: Level 3 Approval Matrix
+    // Section 4: Level 3 Approval Matrix (short dept labels from modal)
     if ((targetTab === 'l3' || targetTab === 'all') && selectedLog) {
       const l3Headers = [['DEPARTMENT', 'APPROVAL STATUS']];
       const l3Rows = [
-        ['PED (Process Engineering)', selectedLog.ped || 'Pending'],
+        ['PED', selectedLog.ped || 'Pending'],
         ['QAD', selectedLog.qad || 'Pending'],
         ['Production', selectedLog.production || 'Pending'],
         ['Maintenance', selectedLog.maintenance || 'Pending'],
-        ['PC & L (Prod. Control & Logistics)', selectedLog.pcl || 'Pending'],
-        ['Materials Management', selectedLog.materials || 'Pending'],
-        ['Marketing / Sales', selectedLog.marketing || 'Pending'],
-        ['Human Resources (HR)', selectedLog.hr || 'Pending'],
-        ['Environment, Health & Safety (EHS)', selectedLog.safety || 'Pending'],
-        ['Unit Head / Plant Manager', selectedLog.unitHead || selectedLog.unit_head || 'Pending']
+        ['PC & L', selectedLog.pcl || 'Pending'],
+        ['Materials', selectedLog.materials || 'Pending'],
+        ['Marketing', selectedLog.marketing || 'Pending'],
+        ['HR', selectedLog.hr || 'Pending'],
+        ['Safety', selectedLog.safety || 'Pending'],
+        ['Unit Head', selectedLog.unitHead || selectedLog.unit_head || 'Pending']
       ];
 
       autoTable(doc, {
@@ -498,24 +590,26 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
       });
     }
 
-    // Section 5: Effectiveness Monitoring Details
+    // Section 5: Effectiveness Monitoring Details (aligned with 4. Effectiveness tab)
     if ((targetTab === 'effectiveness' || targetTab === 'all') && effDetails) {
       const effData = [
         [
-          { content: 'Change No:', fontStyle: 'bold' }, effDetails.changeNo || '-',
-          { content: 'Requested Date:', fontStyle: 'bold' }, effDetails.reqDate ? formatDateToDDMMYYYY(effDetails.reqDate) : '-'
+          { content: 'Change No', fontStyle: 'bold' }, effDetails.changeNo || '-',
+          { content: 'Requested Date', fontStyle: 'bold' }, effDetails.reqDate ? formatDateToDDMMYYYY(effDetails.reqDate) : '-'
         ],
         [
-          { content: 'Change Date Start:', fontStyle: 'bold' }, effDetails.startDate ? formatDateToDDMMYYYY(effDetails.startDate) : '-',
-          { content: 'Month Wise:', fontStyle: 'bold' }, effDetails.monthWise ? formatMonthWise(effDetails.monthWise) : '-'
+          { content: 'Change Date Start', fontStyle: 'bold' }, effDetails.startDate ? formatDateToDDMMYYYY(effDetails.startDate) : '-',
+          { content: 'Month Wise', fontStyle: 'bold' }, effDetails.monthWise ? formatMonthWise(effDetails.monthWise) : '-'
         ],
         [
-          { content: 'Effectiveness Status:', fontStyle: 'bold' }, effDetails.status || '-',
-          { content: 'QA Approval:', fontStyle: 'bold' }, effDetails.qaApproval || '-'
+          { content: 'Effectiveness Status', fontStyle: 'bold' }, effDetails.status || '-',
+          { content: 'QA Approval', fontStyle: 'bold' }, effDetails.qaApproval || '-'
         ],
         [
-          { content: 'Attachments:', fontStyle: 'bold' }, effDetails.attachment || '-',
-          { content: 'Remarks / Comments:', fontStyle: 'bold' }, effDetails.remarks || '-'
+          { content: 'Attachments', fontStyle: 'bold' }, { content: effDetails.attachment || '-', colSpan: 3 }
+        ],
+        [
+          { content: 'Remarks / Comments', fontStyle: 'bold' }, { content: effDetails.remarks || '-', colSpan: 3 }
         ]
       ];
 
