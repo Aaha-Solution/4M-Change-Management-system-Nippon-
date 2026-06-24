@@ -834,13 +834,11 @@ export const AllRequests = ({
     if (tab === 'l1') {
 
       const processOptions = Array.from(new Set([
-        ...(dbProcesses.length > 0 ? dbProcesses : []),
-        ...(combinedData.map(i => i.processName).filter(Boolean)),
+        ...dbProcesses,
         ...(data.process_name ? [data.process_name] : [])
       ]));
       const machineOptions = Array.from(new Set([
-        ...(dbMachines.length > 0 ? dbMachines : []),
-        ...(combinedData.map(i => i.machineNo).filter(Boolean)),
+        ...dbMachines,
         ...(data.machine_no ? [data.machine_no] : [])
       ]));
 

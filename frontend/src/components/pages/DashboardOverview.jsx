@@ -2725,13 +2725,11 @@ export const DashboardOverview = ({
     if (tab === 'l1') {
 
       const processOptions = Array.from(new Set([
-        ...(dbProcesses.length > 0 ? dbProcesses : []),
-        ...(changes.map(c => c.processName || c.process_name).filter(Boolean)),
+        ...dbProcesses,
         ...(data.process_name ? [data.process_name] : [])
       ]));
       const machineOptions = Array.from(new Set([
-        ...(dbMachines.length > 0 ? dbMachines : []),
-        ...(changes.map(c => c.machineNo || c.machine_no).filter(Boolean)),
+        ...dbMachines,
         ...(data.machine_no ? [data.machine_no] : [])
       ]));
 

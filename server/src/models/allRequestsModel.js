@@ -58,6 +58,20 @@ export const updateChangeDetails = async (changeNo, level, updateData, attachmen
       if (updateData.priority !== undefined) {
         await connection.query('UPDATE change_requests SET priority = ? WHERE id = ?', [updateData.priority, changeNo]);
       }
+
+      // Auto-populate processes/machines tables if updated values do not exist
+      if (cleanedData.process_name !== undefined && cleanedData.process_name !== null) {
+        const trimmedProcess = String(cleanedData.process_name).trim();
+        if (trimmedProcess) {
+          await connection.query('INSERT IGNORE INTO processes (name) VALUES (?)', [trimmedProcess]);
+        }
+      }
+      if (cleanedData.machine_no !== undefined && cleanedData.machine_no !== null) {
+        const trimmedMachine = String(cleanedData.machine_no).trim();
+        if (trimmedMachine) {
+          await connection.query('INSERT IGNORE INTO machines (name) VALUES (?)', [trimmedMachine]);
+        }
+      }
       
       // Keep only l1_requests table columns in cleanedData
       const l1Columns = [

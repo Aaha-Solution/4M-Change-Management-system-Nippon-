@@ -127,7 +127,24 @@ const pool = mysql.createPool({
     } catch (err) {
       console.warn('⚠️ Error seeding standard processes:', err.message);
     }
- 
+
+    // Ensure all processes/machines raised in previous L1 requests exist in processes/machines tables
+    try {
+      await connection.query(`
+        INSERT IGNORE INTO processes (name)
+        SELECT DISTINCT process_name FROM l1_requests 
+        WHERE process_name IS NOT NULL AND process_name != ''
+      `);
+      await connection.query(`
+        INSERT IGNORE INTO machines (name)
+        SELECT DISTINCT machine_no FROM l1_requests 
+        WHERE machine_no IS NOT NULL AND machine_no != ''
+      `);
+      console.log('✅ Synchronized processes and machines from existing L1 requests.');
+    } catch (err) {
+      console.warn('⚠️ Error synchronizing processes/machines from L1 requests:', err.message);
+    }
+
     connection.release();
   } catch (error) {
     console.error('❌ Error connecting to MySQL database:', error.message);
