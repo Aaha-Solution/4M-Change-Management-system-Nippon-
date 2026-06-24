@@ -704,7 +704,28 @@ export const DashboardOverview = ({
   };
 
   const handleExportRequestDetailsPDF = () => {
-    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, activeTab, setToastMsg, selectedEffDetails);
+    // Mirror the exact same tab visibility conditions used in the modal tab header
+    const showL2 = selectedL1Details?.hodStatus !== 'Rejected';
+    const showL3 = showL2 && selectedL2Details?.status === 'Accepted';
+    const showEff = showL3 && (
+      (selectedLog?.status || '').toLowerCase() === 'completed' ||
+      selectedEffDetails !== null
+    );
+
+    // Determine export scope based on which tabs are visible
+    let targetTab;
+    if (showEff) {
+      targetTab = 'all';        // 4 tabs visible → export everything
+    } else if (showL3) {
+      targetTab = 'l3';         // 3 tabs visible → export L1 + L2 + L3
+    } else if (showL2) {
+      targetTab = 'l2';         // 2 tabs visible → export L1 + L2 only
+    } else {
+      targetTab = 'l1';         // only L1 tab visible → export L1 only
+    }
+
+    const currentEffLog = showEff ? (selectedEffDetails || null) : null;
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, targetTab, setToastMsg, currentEffLog);
   };
 
   const handleClosePreview = () => {
