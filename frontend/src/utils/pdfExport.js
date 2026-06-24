@@ -502,19 +502,19 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     if ((targetTab === 'effectiveness' || targetTab === 'all') && effDetails) {
       const effData = [
         [
-          { content: 'Change Number:', fontStyle: 'bold' }, effDetails.changeNo || '-',
+          { content: 'Change No:', fontStyle: 'bold' }, effDetails.changeNo || '-',
+          { content: 'Requested Date:', fontStyle: 'bold' }, effDetails.reqDate ? formatDateToDDMMYYYY(effDetails.reqDate) : '-'
+        ],
+        [
+          { content: 'Change Date Start:', fontStyle: 'bold' }, effDetails.startDate ? formatDateToDDMMYYYY(effDetails.startDate) : '-',
           { content: 'Month Wise:', fontStyle: 'bold' }, effDetails.monthWise ? formatMonthWise(effDetails.monthWise) : '-'
         ],
         [
-          { content: 'Requested Date:', fontStyle: 'bold' }, effDetails.reqDate ? formatDateToDDMMYYYY(effDetails.reqDate) : '-',
-          { content: 'Change Date Start:', fontStyle: 'bold' }, effDetails.startDate ? formatDateToDDMMYYYY(effDetails.startDate) : '-'
-        ],
-        [
           { content: 'Effectiveness Status:', fontStyle: 'bold' }, effDetails.status || '-',
-          { content: 'QA Approval Decision:', fontStyle: 'bold' }, effDetails.qaApproval || '-'
+          { content: 'QA Approval:', fontStyle: 'bold' }, effDetails.qaApproval || '-'
         ],
         [
-          { content: 'Attachment:', fontStyle: 'bold' }, effDetails.attachment || '-',
+          { content: 'Attachments:', fontStyle: 'bold' }, effDetails.attachment || '-',
           { content: 'Remarks / Comments:', fontStyle: 'bold' }, effDetails.remarks || '-'
         ]
       ];
