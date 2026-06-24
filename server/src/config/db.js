@@ -145,6 +145,20 @@ const pool = mysql.createPool({
       console.warn('⚠️ Error synchronizing processes/machines from L1 requests:', err.message);
     }
 
+    // Migrate existing QA notifications to QAD
+    try {
+      await connection.query("UPDATE notifications SET title = REPLACE(title, 'QA Review', 'QAD Review') WHERE title LIKE '%QA Review%'");
+      await connection.query("UPDATE notifications SET title = REPLACE(title, 'QA Validation', 'QAD Validation') WHERE title LIKE '%QA Validation%'");
+      await connection.query("UPDATE notifications SET title = REPLACE(title, 'Effectiveness QA', 'Effectiveness QAD') WHERE title LIKE '%Effectiveness QA%'");
+      await connection.query("UPDATE notifications SET details = REPLACE(details, 'QA Review', 'QAD Review') WHERE details LIKE '%QA Review%'");
+      await connection.query("UPDATE notifications SET details = REPLACE(details, 'QA Validation', 'QAD Validation') WHERE details LIKE '%QA Validation%'");
+      await connection.query("UPDATE notifications SET details = REPLACE(details, 'by QA.', 'by QAD.') WHERE details LIKE '%by QA.%'");
+      await connection.query("UPDATE notifications SET dept = 'QAD' WHERE (id LIKE 'L2-%' OR id LIKE 'EFF-QA-%') AND dept != 'QAD'");
+      console.log('✅ Migrated existing notifications from QA to QAD.');
+    } catch (err) {
+      console.warn('⚠️ Error migrating QA notifications to QAD:', err.message);
+    }
+
     connection.release();
   } catch (error) {
     console.error('❌ Error connecting to MySQL database:', error.message);

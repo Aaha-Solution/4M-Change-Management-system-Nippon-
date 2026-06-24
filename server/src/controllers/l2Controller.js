@@ -84,7 +84,7 @@ export const createL2ValidationLog = async (req, res) => {
       const hasQaFile = (attachments && attachments.some(a => a.fieldName === 'qa_test')) || 
                         (existingL2.length > 0 && existingL2[0].qa_test && existingL2[0].qa_test !== '-');
       if (!hasQaFile) {
-        return res.status(400).json({ error: 'QA Setup Verification Attachment is required.' });
+        return res.status(400).json({ error: 'QAD Setup Verification Attachment is required.' });
       }
 
       const hasPedFile = (attachments && attachments.some(a => a.fieldName === 'weld_test')) || 
@@ -116,7 +116,7 @@ export const createL2ValidationLog = async (req, res) => {
       if (current.status === 'Pending' && !isQualityOrAdmin) {
         const hasPedFile = current.weld_test && current.weld_test !== '-';
         if (hasPedFile && attachments && attachments.some(a => a.fieldName === 'weld_test')) {
-          return res.status(403).json({ error: 'Access Denied: L2 Requester Validation attachment is already uploaded and awaiting QA review.' });
+          return res.status(403).json({ error: 'Access Denied: L2 Requester Validation attachment is already uploaded and awaiting QAD review.' });
         }
       }
 
@@ -133,7 +133,7 @@ export const createL2ValidationLog = async (req, res) => {
         if ((logData.status && logData.status !== allowedStatus) || 
             (logData.remarks && logData.remarks !== current.remarks) || 
             (attachments && attachments.some(a => a.fieldName === 'qa_test'))) {
-          return res.status(403).json({ error: 'Access Denied: Only QAD department members or Admins are allowed to update L2 validation status, remarks, or QA attachments.' });
+          return res.status(403).json({ error: 'Access Denied: Only QAD department members or Admins are allowed to update L2 validation status, remarks, or QAD attachments.' });
         }
       }
       
@@ -144,12 +144,12 @@ export const createL2ValidationLog = async (req, res) => {
         }
       }
     } else {
-      // For new log inserts, a non-Quality/Admin user cannot set status, remarks, or QA files
+      // For new log inserts, a non-Quality/Admin user cannot set status, remarks, or QAD files
       if (!isQualityOrAdmin) {
         logData.status = 'Pending';
         logData.remarks = '';
         if (attachments && attachments.some(a => a.fieldName === 'qa_test')) {
-          return res.status(403).json({ error: 'Access Denied: Only QAD department members or Admins are allowed to upload QA attachments.' });
+          return res.status(403).json({ error: 'Access Denied: Only QAD department members or Admins are allowed to upload QAD attachments.' });
         }
       }
     }

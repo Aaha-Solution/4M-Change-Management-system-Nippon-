@@ -516,7 +516,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
             { content: 'PED Validation Attachment', fontStyle: 'bold' }, selectedL2Details.weldTest || '-'
           ],
           [
-            { content: 'QA Setup Verification Attachment', fontStyle: 'bold' }, selectedL2Details.qaTest || '-',
+            { content: 'QAD Setup Verification Attachment', fontStyle: 'bold' }, selectedL2Details.qaTest || '-',
             { content: 'Validator Remarks / Comments', fontStyle: 'bold' }, selectedL2Details.remarks || '-'
           ]
         );
@@ -626,7 +626,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         ],
         [
           { content: 'Effectiveness Status', fontStyle: 'bold' }, effDetails.status || '-',
-          { content: 'QA Approval', fontStyle: 'bold' }, effDetails.qaApproval || '-'
+          { content: 'QAD Approval', fontStyle: 'bold' }, effDetails.qaApproval || '-'
         ],
         [
           { content: 'Attachments', fontStyle: 'bold' }, { content: effDetails.attachment || '-', colSpan: 3 }
@@ -660,7 +660,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         margin: { left: 40, right: 40 },
         didParseCell: (data) => {
           if (data.row.section === 'body' && data.row.index === 2) {
-            // Color-code Effectiveness Status & QA Approval
+            // Color-code Effectiveness Status & QAD Approval
             if (data.column.index === 1 || data.column.index === 3) {
               const val = data.cell.text[0];
               const cleanVal = val ? val.trim().toLowerCase() : '';
@@ -741,7 +741,7 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
       item.status === 'Accepted'
         ? 'Approved'
         : item.status === 'Pending'
-          ? (item.weldTest && item.weldTest !== '-' ? 'QA Approval Needed' : 'Pending Requester Validation')
+          ? (item.weldTest && item.weldTest !== '-' ? 'QAD Approval Needed' : 'Pending Requester Validation')
           : item.status,
       item.remarks || '-'
     ]);
@@ -1495,7 +1495,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
         4: { cellWidth: 65, halign: 'center' },    // CHANGE DATE START
         5: { cellWidth: 55, halign: 'center' },    // MONTH WISE
         6: { cellWidth: 110 },                     // EFFECTIVENESS STATUS
-        7: { cellWidth: 72, halign: 'center' },    // QA APPROVAL
+        7: { cellWidth: 72, halign: 'center' },    // QAD APPROVAL
         8: { cellWidth: 118 }                      // REMARKS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
@@ -1504,7 +1504,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184); // Slate-400
         doc.text(`Page ${data.pageNumber} of ${pageCount}`, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
-        doc.text('NIPPON QUALITY ASSURANCE - CONFIDENTIAL EFFECTIVENESS OBSERVATIONS', 40, doc.internal.pageSize.height - 20);
+        doc.text('NIPPON QAD - CONFIDENTIAL EFFECTIVENESS OBSERVATIONS', 40, doc.internal.pageSize.height - 20);
       },
       didParseCell: (data) => {
         // Highlight Status
@@ -1518,7 +1518,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
             data.cell.styles.fontStyle = 'bold';
           }
         }
-        // Highlight QA Approval Decision
+        // Highlight QAD Approval Decision
         if (data.column.index === 7 && data.row.section === 'body') {
           const val = data.cell.text[0];
           if (val === 'Approved') {

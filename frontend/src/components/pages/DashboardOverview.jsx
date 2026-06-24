@@ -3768,7 +3768,7 @@ export const DashboardOverview = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
             {renderFieldInput('PED Validation Attachment', 'weldTest')}
-            {renderFieldInput('QA Setup Verification Attachment', 'qaTest')}
+            {renderFieldInput('QAD Setup Verification Attachment', 'qaTest')}
           </div>
 
           <div className="mt-4 pt-4 border-t border-slate-100">
@@ -4916,7 +4916,7 @@ export const DashboardOverview = ({
                           </div>
 
                           <div className="space-y-[6px]">
-                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QA Setup Verification Attachment</span>
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QAD Setup Verification Attachment</span>
                             <div className="space-y-2">
                               {!selectedL2Details.qaTest || selectedL2Details.qaTest === '-' ? (
                                 <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-550 text-[12px] font-medium">
@@ -5079,7 +5079,7 @@ export const DashboardOverview = ({
                               </div>
                             </div>
                             <div className="space-y-[4px]">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QA Approval</span>
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">QAD Approval</span>
                               <div>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${currentEffLog.qaApproval === 'Approved'
                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
