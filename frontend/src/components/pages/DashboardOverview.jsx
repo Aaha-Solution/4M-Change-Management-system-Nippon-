@@ -3720,7 +3720,7 @@ export const DashboardOverview = ({
           <div className="absolute top-0 left-0 w-full h-[3px] bg-indigo-500" />
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Closed</h4>
+              <h4 className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider font-sans h-[36px] flex items-center">Effective Closed</h4>
               <div className="text-[32px] font-bold text-indigo-600 mt-2 font-heading tracking-tight">
                 {isFetchingChanges || isFetchingCounts ? <Loader2 className="animate-spin text-slate-400" size={24} /> : closedCount}
               </div>
