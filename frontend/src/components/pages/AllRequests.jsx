@@ -2530,7 +2530,6 @@ export const AllRequests = ({
 
                             {/* CUSTOMER APPROVAL REQUIRED */}
                             <div className="space-y-[4px]">
-                              <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Customer Approval Required / Clearence Details</span>
                               <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5 text-[12px]">
 
                                 <span>{showCustomerApproval ? (selectedL1Details.customer_approval || '-') : '••••'}</span>
