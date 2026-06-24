@@ -217,7 +217,12 @@ export const Effectiveness = ({
   };
 
   const handleExportRequestDetailsPDF = () => {
-    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, activeTab, setToastMsg);
+    const isL3Complete = selectedL1Details?.crStatus?.toLowerCase() === 'completed' || selectedLog?.status?.toLowerCase() === 'completed';
+    const currentEffLog = effectivenessLogs.find(
+      l => l.changeNo?.toLowerCase().trim() === selectedLog?.changeNo?.toLowerCase().trim()
+    );
+    // Export full details: L1, L2, L3 always. Conditionally pass effectiveness log.
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, 'all', setToastMsg, isL3Complete ? currentEffLog : null);
   };
 
   const renderL1FilePill = (filename, changeNo) => {

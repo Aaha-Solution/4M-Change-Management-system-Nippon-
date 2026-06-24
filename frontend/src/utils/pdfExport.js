@@ -179,6 +179,38 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
   }
 };
 
+// Month-Wise mapping function shared across exports
+const formatMonthWise = (val) => {
+  if (!val) return "-";
+  if (val.includes('/')) {
+    const parts = val.split('/');
+    if (parts.length === 3) {
+      const month = parseInt(parts[1], 10);
+      const year = parseInt(parts[2], 10);
+      const date = new Date(year, month - 1, 1);
+      if (!isNaN(date.getTime())) {
+        const monthName = date.toLocaleDateString("en-US", { month: "short" });
+        const yearShort = String(year).slice(-2);
+        return `${monthName}-${yearShort}`;
+      }
+    }
+  }
+  if (val.includes('-')) {
+    const parts = val.split("-");
+    if (parts.length === 2) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10);
+      const date = new Date(year, month - 1, 1);
+      if (!isNaN(date.getTime())) {
+        const monthName = date.toLocaleDateString("en-US", { month: "short" });
+        const yearShort = String(year).slice(-2);
+        return `${monthName}-${yearShort}`;
+      }
+    }
+  }
+  return val;
+};
+
 /**
  * Exports a single request's complete L1, L2, L3 details to a portrait A4 PDF.
  * @param {Object} selectedL1Details 
@@ -186,12 +218,14 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
  * @param {Object} selectedLog 
  * @param {Function} setToastMsg 
  */
-export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, selectedLog, activeTab = 'all', setToastMsg) => {
+export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, selectedLog, activeTab = 'all', setToastMsg, selectedEffDetails = null) => {
   let targetTab = activeTab;
   let toastFn = setToastMsg;
+  let effDetails = selectedEffDetails;
   if (typeof targetTab === 'function') {
     toastFn = targetTab;
     targetTab = 'all';
+    effDetails = setToastMsg;
   }
 
   try {
@@ -223,6 +257,9 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     } else if (targetTab === 'l3') {
       titleSuffix = ' - Level 3 Approvals';
       docFilename = `CMS_L3_Approvals_${selectedL1Details.change_no}`;
+    } else if (targetTab === 'effectiveness') {
+      titleSuffix = ' - Effectiveness Details';
+      docFilename = `CMS_Effectiveness_Details_${selectedL1Details.change_no}`;
     }
 
     doc.setFont('helvetica', 'bold');
@@ -455,6 +492,71 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
             } else if (cleanVal.includes('pending')) {
               data.cell.styles.textColor = [217, 119, 6]; // Yellow text
               data.cell.styles.fontStyle = 'bold';
+            }
+          }
+        }
+      });
+    }
+
+    // Section 5: Effectiveness Monitoring Details
+    if ((targetTab === 'effectiveness' || targetTab === 'all') && effDetails) {
+      const effData = [
+        [
+          { content: 'Change Number:', fontStyle: 'bold' }, effDetails.changeNo || '-',
+          { content: 'Month Wise:', fontStyle: 'bold' }, effDetails.monthWise ? formatMonthWise(effDetails.monthWise) : '-'
+        ],
+        [
+          { content: 'Requested Date:', fontStyle: 'bold' }, effDetails.reqDate ? formatDateToDDMMYYYY(effDetails.reqDate) : '-',
+          { content: 'Change Date Start:', fontStyle: 'bold' }, effDetails.startDate ? formatDateToDDMMYYYY(effDetails.startDate) : '-'
+        ],
+        [
+          { content: 'Effectiveness Status:', fontStyle: 'bold' }, effDetails.status || '-',
+          { content: 'QA Approval Decision:', fontStyle: 'bold' }, effDetails.qaApproval || '-'
+        ],
+        [
+          { content: 'Attachment:', fontStyle: 'bold' }, effDetails.attachment || '-',
+          { content: 'Remarks / Comments:', fontStyle: 'bold' }, effDetails.remarks || '-'
+        ]
+      ];
+
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 15,
+        head: [[{ content: '5. EFFECTIVENESS MONITORING DETAILS', colSpan: 4 }]],
+        body: effData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontSize: 10,
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          fontSize: 8.5,
+          textColor: textColor
+        },
+        columnStyles: {
+          0: { cellWidth: 110, fillColor: lightBg, fontStyle: 'bold' },
+          1: { cellWidth: 145 },
+          2: { cellWidth: 115, fillColor: lightBg, fontStyle: 'bold' },
+          3: { cellWidth: 145 }
+        },
+        margin: { left: 40, right: 40 },
+        didParseCell: (data) => {
+          if (data.row.index === 2) {
+            // Color-code Effectiveness Status & QA Approval
+            if (data.column.index === 1 || data.column.index === 3) {
+              const val = data.cell.text[0];
+              const cleanVal = val ? val.trim().toLowerCase() : '';
+              if (cleanVal.includes('ok') || cleanVal.includes('approve')) {
+                data.cell.styles.textColor = [16, 124, 65]; // Green
+                data.cell.styles.fontStyle = 'bold';
+              } else if (cleanVal.includes('not ok') || cleanVal.includes('reject')) {
+                data.cell.styles.textColor = [220, 38, 38]; // Red
+                data.cell.styles.fontStyle = 'bold';
+              } else if (cleanVal.includes('pending')) {
+                data.cell.styles.textColor = [217, 119, 6]; // Amber
+                data.cell.styles.fontStyle = 'bold';
+              }
             }
           }
         }
@@ -1229,38 +1331,6 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
     ]];
 
     const tableData = filteredLogs.map((item, idx) => {
-      // Month-Wise mapping function
-      const formatMonthWise = (val) => {
-        if (!val) return "-";
-        if (val.includes('/')) {
-          const parts = val.split('/');
-          if (parts.length === 3) {
-            const month = parseInt(parts[1], 10);
-            const year = parseInt(parts[2], 10);
-            const date = new Date(year, month - 1, 1);
-            if (!isNaN(date.getTime())) {
-              const monthName = date.toLocaleDateString("en-US", { month: "short" });
-              const yearShort = String(year).slice(-2);
-              return `${monthName}-${yearShort}`;
-            }
-          }
-        }
-        if (val.includes('-')) {
-          const parts = val.split("-");
-          if (parts.length === 2) {
-            const year = parseInt(parts[0], 10);
-            const month = parseInt(parts[1], 10);
-            const date = new Date(year, month - 1, 1);
-            if (!isNaN(date.getTime())) {
-              const monthName = date.toLocaleDateString("en-US", { month: "short" });
-              const yearShort = String(year).slice(-2);
-              return `${monthName}-${yearShort}`;
-            }
-          }
-        }
-        return val;
-      };
-
       return [
         idx + 1,
         item.changeNo,
