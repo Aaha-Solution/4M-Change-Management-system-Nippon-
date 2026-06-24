@@ -940,8 +940,8 @@ export const AllApprovals = ({
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
-                            <div className="space-y-[4px] md:col-span-2 min-w-0">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
+                            <div className="space-y-[4px] min-w-0">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                               <span className="font-semibold text-slate-800 block break-words">{l1Details.request_by}</span>
                               {l1Details.crRequester && l1Details.crRequester.toLowerCase() !== l1Details.request_by?.toLowerCase() && (
@@ -951,10 +951,6 @@ export const AllApprovals = ({
                             <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
                               <span className="font-medium text-slate-700">{l1Details.dept}</span>
-                            </div>
-                            <div className="space-y-[4px]">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
-                              <span className="font-medium text-slate-700">{l1Details.change_type}</span>
                             </div>
                           </div>
 
@@ -1119,7 +1115,12 @@ export const AllApprovals = ({
                               <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                                 {l1Details.trace_from}
                               </div>
-                              {l1Details.file_trace_from && renderL1FilePill(l1Details.file_trace_from, l1Details.change_no)}
+                              {l1Details.file_trace_from && (
+                                <div className="mt-2 space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files (Traceability From)</span>
+                                  {renderL1FilePill(l1Details.file_trace_from, l1Details.change_no)}
+                                </div>
+                              )}
                             </div>
 
                             <div className="space-y-[6px] min-w-0">
@@ -1127,7 +1128,12 @@ export const AllApprovals = ({
                               <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words">
                                 {l1Details.trace_to}
                               </div>
-                              {l1Details.file_trace_to && renderL1FilePill(l1Details.file_trace_to, l1Details.change_no)}
+                              {l1Details.file_trace_to && (
+                                <div className="mt-2 space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files (Traceability To)</span>
+                                  {renderL1FilePill(l1Details.file_trace_to, l1Details.change_no)}
+                                </div>
+                              )}
                             </div>
                           </div>
 
@@ -1158,6 +1164,7 @@ export const AllApprovals = ({
                               </span>
                             </div>
                             <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Customer Approval Required / Clearence Details</span>
                               <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
                                 <span>{showCustomerApproval ? l1Details.customer_approval : '••••'}</span>
                                 <button

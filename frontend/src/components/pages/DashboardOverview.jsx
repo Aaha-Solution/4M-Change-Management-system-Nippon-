@@ -704,7 +704,7 @@ export const DashboardOverview = ({
   };
 
   const handleExportRequestDetailsPDF = () => {
-    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, activeTab, setToastMsg);
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, activeTab, setToastMsg, selectedEffDetails);
   };
 
   const handleClosePreview = () => {
@@ -4324,7 +4324,7 @@ export const DashboardOverview = ({
                             </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] mt-[12px]">
-                              <div className="space-y-[4px] md:col-span-2 min-w-0">
+                              <div className="space-y-[4px] min-w-0">
                                 <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                                 <span className="font-semibold text-slate-800 block break-words">{selectedL1Details.request_by}</span>
                                 {selectedL1Details.crRequester && selectedL1Details.crRequester.toLowerCase() !== selectedL1Details.request_by?.toLowerCase() && (
@@ -4334,10 +4334,6 @@ export const DashboardOverview = ({
                               <div className="space-y-[4px]">
                                 <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
                                 <span className="font-medium text-slate-700">{selectedL1Details.dept}</span>
-                              </div>
-                              <div className="space-y-[4px]">
-                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Type</span>
-                                <span className="font-medium text-slate-700">{selectedL1Details.change_type}</span>
                               </div>
                             </div>
 
@@ -4423,7 +4419,12 @@ export const DashboardOverview = ({
                                   <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
                                     {selectedL1Details.trace_from || '-'}
                                   </div>
-                                  {selectedL1Details.file_trace_from && renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
+                                  {selectedL1Details.file_trace_from && (
+                                    <div className="mt-2 space-y-[4px]">
+                                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files (Traceability From)</span>
+                                      {renderL1FilePill(selectedL1Details.file_trace_from, selectedL1Details.change_no)}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
@@ -4442,7 +4443,12 @@ export const DashboardOverview = ({
                                   <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
                                     {selectedL1Details.trace_to || '-'}
                                   </div>
-                                  {selectedL1Details.file_trace_to && renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
+                                  {selectedL1Details.file_trace_to && (
+                                    <div className="mt-2 space-y-[4px]">
+                                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Supporting Files (Traceability To)</span>
+                                      {renderL1FilePill(selectedL1Details.file_trace_to, selectedL1Details.change_no)}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -4594,6 +4600,7 @@ export const DashboardOverview = ({
 
                             {/* CUSTOMER APPROVAL REQUIRED */}
                             <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Customer Approval Required / Clearence Details</span>
                               <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5 text-[12px]">
                                 <span>{showCustomerApproval ? (selectedL1Details.customer_approval || '-') : '••••'}</span>
                                 <button
