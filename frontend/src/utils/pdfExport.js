@@ -878,10 +878,10 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       item.unitHead || 'Pending'
     ]);
 
-    // Branding & Title
+    // Branding & Title (Purple theme)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.setTextColor(0, 102, 204);
+    doc.setTextColor(124, 58, 237); // #7c3aed (Purple)
     doc.text('4M Change Management System - L3 Approval Tracker Matrix', 40, 45);
 
     doc.setFont('helvetica', 'normal');
@@ -902,7 +902,7 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [0, 102, 204],
+        fillColor: [124, 58, 237], // Purple
         textColor: [255, 255, 255],
         fontSize: 6.5,
         fontStyle: 'bold',

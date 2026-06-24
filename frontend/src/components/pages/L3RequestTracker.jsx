@@ -459,7 +459,9 @@ export const L3RequestTracker = ({
   };
 
   const handleExportRequestDetailsPDF = () => {
-    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, activeTab, setToastMsg);
+    const isL3Complete = selectedL1Details?.crStatus?.toLowerCase() === 'completed' || selectedLog?.status?.toLowerCase() === 'completed';
+    // Export full details: L1, L2, L3 always. Conditionally pass effectiveness log.
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, 'all', setToastMsg, isL3Complete ? selectedEffDetails : null);
   };
 
   const currentChangeLog = selectedChangeId ? approvalLogs.find(log => log.changeNo === selectedChangeId) : null;
