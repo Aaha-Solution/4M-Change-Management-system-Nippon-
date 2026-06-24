@@ -649,7 +649,7 @@ export const DashboardOverview = ({
       }
 
       const matchedL3 = l3Res.data;
-      const newLogData = matchedL3 ? { ...matchedL3, status: request.status || matchedL3.status, hodStatus: request.hodStatus, requesterEmail: request.requesterEmail } : {
+      const newLogData = (matchedL3 && matchedL3.changeNo) ? { ...matchedL3, status: request.status || matchedL3.status, hodStatus: request.hodStatus, requesterEmail: request.requesterEmail } : {
         changeNo: request.id,
         requester: request.requester,
         requesterEmail: request.requesterEmail,

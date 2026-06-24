@@ -141,7 +141,9 @@ export const updateChangeDetails = async (changeNo, level, updateData, attachmen
     const [existing] = await connection.query(`SELECT 1 FROM ${tableName} WHERE change_no = ?`, [changeNo]);
     if (existing.length === 0) {
       let insertData = { change_no: changeNo };
-      if (level === 'l2') {
+      if (level === 'l1') {
+        insertData.requested_time = updateData.requested_time || '00:00:00';
+      } else if (level === 'l2') {
         insertData.validation_date = cleanedData.validation_date || new Date().toISOString().slice(0, 10);
         insertData.requester = cleanedData.requester || 'Admin';
         insertData.status = cleanedData.status || 'Pending';

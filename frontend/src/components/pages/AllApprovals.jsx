@@ -305,7 +305,7 @@ export const AllApprovals = ({
       setSelectedEffDetails(matchedEff || null);
 
       const matchedL3 = l3Res.data;
-      const newLogData = matchedL3 ? { ...matchedL3, hodStatus: req.hodStatus } : {
+      const newLogData = (matchedL3 && matchedL3.changeNo) ? { ...matchedL3, hodStatus: req.hodStatus } : {
         changeNo: req.changeNo,
         requester: req.requestBy || req.requesterEmail,
         date: req.date,

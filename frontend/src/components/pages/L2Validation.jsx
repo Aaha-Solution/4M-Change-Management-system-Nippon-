@@ -317,13 +317,14 @@ export const L2Validation = ({
       }
 
       const matchedL3 = l3Res.data;
+      const isL3Valid = matchedL3 && matchedL3.changeNo;
 
       const newLogData = {
         changeNo: changeNo,
         date: matchedChange ? formatDateToDDMMYYYY(matchedChange.date) : '-',
         requester: matchedChange ? (matchedChange.requestBy || matchedChange.requester || '-') : '-',
-        status: matchedL3 ? matchedL3.status : 'Pending',
-        remarks: matchedL3 ? matchedL3.remarks : '-',
+        status: isL3Valid ? matchedL3.status : 'Pending',
+        remarks: isL3Valid ? matchedL3.remarks : '-',
         weldTest: '-',
         qaTest: '-',
         ped: 'Pending',

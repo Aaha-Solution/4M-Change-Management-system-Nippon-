@@ -271,7 +271,7 @@ export const Effectiveness = ({
       setSelectedL2Details(l2Res.data);
 
       const matchedL3 = l3Res.data;
-      const newLogData = matchedL3 ? matchedL3 : {
+      const newLogData = (matchedL3 && matchedL3.changeNo) ? matchedL3 : {
         changeNo: changeNo,
         ped: 'Pending',
         qad: 'Pending',
