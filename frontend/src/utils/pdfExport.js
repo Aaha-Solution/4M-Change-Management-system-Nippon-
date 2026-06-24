@@ -344,8 +344,9 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
       margin: { left: 40, right: 40 }
     });
 
-    // Section 2: Details & Justification (aligned with CHANGE DESCRIPTION, TIMELINE, Risk Analysis in modal)
-    if (targetTab === 'l1' || targetTab === 'all') {
+    // Section 2: Details & Justification — always included in every export variant
+    // (L1 details are the foundation for all L2/L3/Effectiveness exports)
+    if (selectedL1Details) {
       const detailsData = [
         [
           { content: 'Context of Change', fontStyle: 'bold' },
