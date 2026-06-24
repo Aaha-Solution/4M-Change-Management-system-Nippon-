@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Save, Search, Eye, EyeOff, Paperclip, X, AlertTriangle, Loader2, Calendar, Folder, Cpu, Clock, CheckCircle2, FileText, Download } from 'lucide-react';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import TablePagination from '@mui/material/TablePagination';
-import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment, getL2Details, getL3Details } from '../../api/apiRoutes';
+import { getL2ValidationLogs, createL2ValidationLog, getL1Details, getL1Attachment, getL2Attachment, getL2Details, getL3Details, getEffectivenessLogs } from '../../api/apiRoutes';
 import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { exportL2ValidationLogsPDF, exportRequestDetailsPDF } from '../../utils/pdfExport';
 
@@ -25,6 +25,7 @@ export const L2Validation = ({
   const [selectedL1Details, setSelectedL1Details] = useState(null);
   const [selectedL2Details, setSelectedL2Details] = useState(null);
   const [selectedLog, setSelectedLog] = useState(null);
+  const [selectedEffDetails, setSelectedEffDetails] = useState(null);
   const [isFetchingL1, setIsFetchingL1] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
   const [fileUrls, setFileUrls] = useState({});
@@ -297,17 +298,23 @@ export const L2Validation = ({
       });
       setSelectedL2Details(null);
       setSelectedLog(null);
+      setSelectedEffDetails(null);
       setIsFetchingL1(true);
     }
 
     try {
-      const [l1Res, l2Res, l3Res] = await Promise.all([
+      const [l1Res, l2Res, l3Res, effRes] = await Promise.all([
         getL1Details(changeNo),
         getL2Details(changeNo).catch(() => ({ data: null })),
-        getL3Details(changeNo).catch(() => ({ data: null }))
+        getL3Details(changeNo).catch(() => ({ data: null })),
+        getEffectivenessLogs().catch(() => ({ data: [] }))
       ]);
       setSelectedL1Details(l1Res.data);
       setSelectedL2Details(l2Res.data);
+      const matchedEff = effRes.data?.find(
+        l => l.changeNo?.toLowerCase().trim() === changeNo?.toLowerCase().trim()
+      );
+      setSelectedEffDetails(matchedEff || null);
 
       const matchedChange = changes?.find(c => c.id === changeNo);
 
@@ -348,13 +355,15 @@ export const L2Validation = ({
   }
 
   const handleExportRequestDetailsPDF = () => {
-    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, 'all', setToastMsg);
+    const isL3Complete = selectedL1Details?.crStatus?.toLowerCase() === 'completed' || selectedLog?.status?.toLowerCase() === 'completed';
+    exportRequestDetailsPDF(selectedL1Details, selectedL2Details, selectedLog, 'all', setToastMsg, isL3Complete ? selectedEffDetails : null);
   };
 
   const handleCloseModal = () => {
     setSelectedL1Details(null);
     setSelectedL2Details(null);
     setSelectedLog(null);
+    setSelectedEffDetails(null);
   };
 
   const handleViewAttachment = async (filename, changeNo, type = 'L1') => {

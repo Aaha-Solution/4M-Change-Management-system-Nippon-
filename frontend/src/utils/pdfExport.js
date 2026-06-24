@@ -737,10 +737,10 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
       item.remarks || '-'
     ]);
 
-    // Branding & Title
+    // Branding & Title (Orange theme)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.setTextColor(0, 102, 204);
+    doc.setTextColor(217, 119, 6); // Orange
     doc.text('4M Change Management System - L2 Validation Logs', 40, 45);
 
     doc.setFont('helvetica', 'normal');
@@ -761,7 +761,7 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
       body: tableData,
       theme: 'striped',
       headStyles: {
-        fillColor: [0, 102, 204],
+        fillColor: [217, 119, 6], // Orange
         textColor: [255, 255, 255],
         fontSize: 7.5,
         fontStyle: 'bold',
