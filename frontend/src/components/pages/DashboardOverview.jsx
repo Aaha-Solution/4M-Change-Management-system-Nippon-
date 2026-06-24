@@ -216,6 +216,7 @@ export const DashboardOverview = ({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+
   const [dashboardCounts, setDashboardCounts] = useState({
     total: 0,
     approved: 0,
@@ -287,10 +288,20 @@ export const DashboardOverview = ({
   const [tableFilterProcess, setTableFilterProcess] = useState('All');
   const [tableFilterMachine, setTableFilterMachine] = useState('All');
 
-  // Reset page when table filters change
   useEffect(() => {
     setPage(0);
-  }, [tableFilterMonth, tableFilterFromDate, tableFilterToDate, tableFilterPerson, tableFilterProcess, tableFilterMachine]);
+  }, [
+    activeAnalyticsTab,
+    isGridView,
+    tableFilterMonth, tableFilterFromDate, tableFilterToDate, tableFilterPerson, tableFilterProcess, tableFilterMachine,
+    deptFilterMonth, deptFilterFromDate, deptFilterToDate, deptFilterPerson, deptFilterProcess, deptFilterMachine,
+    procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine,
+    catFilterMonth, catFilterFromDate, catFilterToDate, catFilterPerson, catFilterProcess, catFilterMachine,
+    monthFilterMonth, monthFilterFromDate, monthFilterToDate, monthFilterPerson, monthFilterProcess, monthFilterMachine,
+    apprFilterMonth, apprFilterFromDate, apprFilterToDate, apprFilterStatus,
+    benefitFilterMonth, benefitFilterSearch, benefitFilterType
+  ]);
+
 
   // Helper checks to see if filters are applied
   const isDeptFilterApplied = deptFilterMonth !== 'All' || deptFilterFromDate !== '' || deptFilterToDate !== '' || deptFilterPerson !== 'All' || deptFilterProcess !== 'All' || deptFilterMachine !== 'All';
@@ -564,7 +575,94 @@ export const DashboardOverview = ({
     }
   });
 
-  const filteredChangesForTable = getFilteredData(tableFilterMonth, tableFilterFromDate, tableFilterToDate, tableFilterPerson, tableFilterProcess, tableFilterMachine);
+  const getFilteredBenefitsChanges = () => {
+    return changes.filter(c => {
+      if (!c.improvementTableData) return false;
+      const area = (c.improvementArea || '').toLowerCase();
+      if (benefitFilterType !== 'All' && area !== benefitFilterType.toLowerCase()) return false;
+
+      let matchesMonth = true;
+      if (benefitFilterMonth !== 'All') {
+        try {
+          const rows = typeof c.improvementTableData === 'string'
+            ? JSON.parse(c.improvementTableData)
+            : c.improvementTableData;
+          if (Array.isArray(rows)) {
+            matchesMonth = rows.some(r => {
+              const parts = r.date ? r.date.split('/') : [];
+              if (parts.length === 3) {
+                const monthIdx = parseInt(parts[1], 10) - 1;
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return months[monthIdx] === benefitFilterMonth;
+              }
+              return false;
+            });
+          } else {
+            matchesMonth = false;
+          }
+        } catch {
+          matchesMonth = false;
+        }
+      }
+
+      const matchesSearch = !benefitFilterSearch || 
+        (c.changeNo && c.changeNo.toLowerCase().includes(benefitFilterSearch.toLowerCase())) ||
+        (c.id && c.id.toLowerCase().includes(benefitFilterSearch.toLowerCase()));
+
+      return matchesMonth && matchesSearch;
+    });
+  };
+
+  const getActiveTabFilteredChanges = () => {
+    if (isGridView) {
+      return getFilteredData(tableFilterMonth, tableFilterFromDate, tableFilterToDate, tableFilterPerson, tableFilterProcess, tableFilterMachine);
+    }
+    if (activeAnalyticsTab === 'Department') {
+      return getFilteredData(deptFilterMonth, deptFilterFromDate, deptFilterToDate, deptFilterPerson, deptFilterProcess, deptFilterMachine);
+    }
+    if (activeAnalyticsTab === 'Process') {
+      return getFilteredData(procFilterMonth, procFilterFromDate, procFilterToDate, procFilterPerson, procFilterProcess, procFilterMachine);
+    }
+    if (activeAnalyticsTab === '6M Category') {
+      return getFilteredData(catFilterMonth, catFilterFromDate, catFilterToDate, catFilterPerson, catFilterProcess, catFilterMachine);
+    }
+    if (activeAnalyticsTab === 'Monthly') {
+      return getFilteredData(monthFilterMonth, monthFilterFromDate, monthFilterToDate, monthFilterPerson, monthFilterProcess, monthFilterMachine);
+    }
+    if (activeAnalyticsTab === 'Approval Status') {
+      return getFilteredData(apprFilterMonth, apprFilterFromDate, apprFilterToDate, 'All', 'All', 'All', apprFilterStatus);
+    }
+    if (activeAnalyticsTab === 'Improvement Benefits') {
+      return getFilteredBenefitsChanges();
+    }
+    return changes;
+  };
+
+  const filteredChangesForTable = getActiveTabFilteredChanges();
+
+  const isActiveTabDateRangeIncomplete = () => {
+    if (isGridView) {
+      return isDateRangeIncomplete(tableFilterFromDate, tableFilterToDate);
+    }
+    if (activeAnalyticsTab === 'Department') {
+      return isDateRangeIncomplete(deptFilterFromDate, deptFilterToDate);
+    }
+    if (activeAnalyticsTab === 'Process') {
+      return isDateRangeIncomplete(procFilterFromDate, procFilterToDate);
+    }
+    if (activeAnalyticsTab === '6M Category') {
+      return isDateRangeIncomplete(catFilterFromDate, catFilterToDate);
+    }
+    if (activeAnalyticsTab === 'Monthly') {
+      return isDateRangeIncomplete(monthFilterFromDate, monthFilterToDate);
+    }
+    if (activeAnalyticsTab === 'Approval Status') {
+      return isDateRangeIncomplete(apprFilterFromDate, apprFilterToDate);
+    }
+    return false;
+  };
+
+
 
   const formattedDbChanges = filteredChangesForTable.map((c, idx) => {
     const displayDate = formatDateToDDMMYY(c.rawDate || c.date);
@@ -765,16 +863,82 @@ export const DashboardOverview = ({
   };
 
   const handleExportPDF = () => {
-    exportDashboardRequestsPDF(filteredChangesForTable, {
-      month: tableFilterMonth,
-      fromDate: tableFilterFromDate,
-      toDate: tableFilterToDate,
-      person: tableFilterPerson,
-      process: tableFilterProcess,
-      machine: tableFilterMachine,
-      status: 'All'
-    }, setToastMsg);
+    let exportFilters = {};
+    if (isGridView) {
+      exportFilters = {
+        month: tableFilterMonth,
+        fromDate: tableFilterFromDate,
+        toDate: tableFilterToDate,
+        person: tableFilterPerson,
+        process: tableFilterProcess,
+        machine: tableFilterMachine,
+        status: 'All'
+      };
+    } else if (activeAnalyticsTab === 'Department') {
+      exportFilters = {
+        month: deptFilterMonth,
+        fromDate: deptFilterFromDate,
+        toDate: deptFilterToDate,
+        person: deptFilterPerson,
+        process: deptFilterProcess,
+        machine: deptFilterMachine,
+        status: 'All'
+      };
+    } else if (activeAnalyticsTab === 'Process') {
+      exportFilters = {
+        month: procFilterMonth,
+        fromDate: procFilterFromDate,
+        toDate: procFilterToDate,
+        person: procFilterPerson,
+        process: procFilterProcess,
+        machine: procFilterMachine,
+        status: 'All'
+      };
+    } else if (activeAnalyticsTab === '6M Category') {
+      exportFilters = {
+        month: catFilterMonth,
+        fromDate: catFilterFromDate,
+        toDate: catFilterToDate,
+        person: catFilterPerson,
+        process: catFilterProcess,
+        machine: catFilterMachine,
+        status: 'All'
+      };
+    } else if (activeAnalyticsTab === 'Monthly') {
+      exportFilters = {
+        month: monthFilterMonth,
+        fromDate: monthFilterFromDate,
+        toDate: monthFilterToDate,
+        person: monthFilterPerson,
+        process: monthFilterProcess,
+        machine: monthFilterMachine,
+        status: 'All'
+      };
+    } else if (activeAnalyticsTab === 'Approval Status') {
+      exportFilters = {
+        month: apprFilterMonth,
+        fromDate: apprFilterFromDate,
+        toDate: apprFilterToDate,
+        person: 'All',
+        process: 'All',
+        machine: 'All',
+        status: apprFilterStatus
+      };
+    } else if (activeAnalyticsTab === 'Improvement Benefits') {
+      exportFilters = {
+        month: benefitFilterMonth,
+        fromDate: '',
+        toDate: '',
+        person: 'All',
+        process: 'All',
+        machine: 'All',
+        status: `Benefits: ${benefitFilterType}`
+      };
+    }
+
+    exportDashboardRequestsPDF(filteredChangesForTable, exportFilters, setToastMsg);
   };
+
 
   const handleExportSpecificTab = (tabName) => {
     if (tabName === 'Department') {
@@ -4072,15 +4236,15 @@ export const DashboardOverview = ({
             <Clock size={18} className="text-slate-400" />
           </div>
           <div className="flex items-center gap-[12px] flex-wrap">
-            {isTableFilterApplied && (
+            {(isGridView ? isTableFilterApplied : isTabFilterApplied(activeAnalyticsTab)) ? (
               <button
-                onClick={resetTableFilters}
+                onClick={isGridView ? resetTableFilters : () => resetTabFilters(activeAnalyticsTab)}
                 className="flex items-center gap-1 px-2.5 py-1.5 text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:border-rose-200 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans shadow-sm"
               >
                 <X size={12} />
                 <span>Reset Filters</span>
               </button>
-            )}
+            ) : null}
             <span className="bg-slate-100 border border-slate-200 text-slate-500 rounded-full px-[10px] py-[2px] text-[10px] font-bold select-none">
               Showing {filteredChangesForTable.length} of {changes.length}
             </span>
@@ -4095,14 +4259,30 @@ export const DashboardOverview = ({
           </div>
         </div>
 
-        {renderFilters({
-          monthVal: tableFilterMonth, setMonthVal: setTableFilterMonth,
-          fromDateVal: tableFilterFromDate, setFromDateVal: setTableFilterFromDate,
-          toDateVal: tableFilterToDate, setToDateVal: setTableFilterToDate,
-          personVal: tableFilterPerson, setPersonVal: setTableFilterPerson,
-          processVal: tableFilterProcess, setProcessVal: setTableFilterProcess,
-          machineVal: tableFilterMachine, setMachineVal: setTableFilterMachine
-        })}
+        {isGridView ? (
+          renderFilters({
+            monthVal: tableFilterMonth, setMonthVal: setTableFilterMonth,
+            fromDateVal: tableFilterFromDate, setFromDateVal: setTableFilterFromDate,
+            toDateVal: tableFilterToDate, setToDateVal: setTableFilterToDate,
+            personVal: tableFilterPerson, setPersonVal: setTableFilterPerson,
+            processVal: tableFilterProcess, setProcessVal: setTableFilterProcess,
+            machineVal: tableFilterMachine, setMachineVal: setTableFilterMachine
+          })
+        ) : (
+          <div className="mx-[20px] my-[12px] p-[10px] bg-sky-50/50 border border-sky-100 rounded-lg flex items-center justify-between text-xs text-[#0066cc] font-medium">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#0066cc] animate-pulse" />
+              <span>
+                Table data synchronized with active <strong>{activeAnalyticsTab}</strong> analytics tab filters.
+              </span>
+            </div>
+            {isTabFilterApplied(activeAnalyticsTab) && (
+              <span className="text-[10px] bg-[#0066cc]/10 border border-[#0066cc]/20 rounded-md px-2 py-0.5 font-bold uppercase tracking-wider">
+                Filters Active
+              </span>
+            )}
+          </div>
+        )}
 
 
         <div className="overflow-x-auto">
@@ -4111,7 +4291,8 @@ export const DashboardOverview = ({
               <Loader2 className="animate-spin text-[#0066cc]" size={28} />
               <span className="text-[14px]">Fetching changes...</span>
             </div>
-          ) : isDateRangeIncomplete(tableFilterFromDate, tableFilterToDate) ? (
+          ) : isActiveTabDateRangeIncomplete() ? (
+
             <div className="p-6">
               {renderDateRangePlaceholder()}
             </div>
