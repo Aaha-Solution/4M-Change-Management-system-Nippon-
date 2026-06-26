@@ -12,10 +12,13 @@ const drawFooter = (doc, pageText, confidentialText) => {
   // Confidentiality and Page text in previous slate color
   doc.setTextColor(148, 163, 184);
   
+  // Replace Nippon Quality Assurance with India Nippon Electricals Limited
+  const updatedConfidential = confidentialText ? confidentialText.replace('NIPPON QUALITY ASSURANCE', 'INDIA NIPPON ELECTRICALS LIMITED') : '';
+  
   // 2nd: Confidential text centered in the middle
-  const confidentialWidth = doc.getTextWidth(confidentialText);
+  const confidentialWidth = doc.getTextWidth(updatedConfidential);
   const centerX = (doc.internal.pageSize.width - confidentialWidth) / 2;
-  doc.text(confidentialText, centerX, doc.internal.pageSize.height - 20);
+  doc.text(updatedConfidential, centerX, doc.internal.pageSize.height - 20);
   
   // 3rd: Page text on the right (x = width - 80)
   doc.text(pageText, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);

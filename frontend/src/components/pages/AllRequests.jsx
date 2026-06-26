@@ -3150,7 +3150,7 @@ export const AllRequests = ({
                     <div className="space-y-4 flex-1">
                       <div className="flex justify-between items-start">
                         <div>
-                          <div className="font-bold text-xs uppercase tracking-wider text-slate-400">Nippon Quality Assurance</div>
+                          <div className="font-bold text-xs uppercase tracking-wider text-slate-400">India Nippon Electricals Limited</div>
                           <h3 className="font-extrabold text-base text-slate-900 mt-0.5">Change Request Attachment</h3>
                         </div>
                         <div className="text-[10px] text-slate-400 font-mono text-right">
