@@ -1812,12 +1812,15 @@ export const L2Validation = ({
                           </span>
                         </div>
                       ) : (
-                        <span className="text-[12px] text-slate-400 italic">No department selected</span>
+                          <span className="text-[12px] text-slate-400 italic">No department selected</span>
                       )}
                     </div>
 
                     <div className="space-y-[4px]">
-                      <span className="font-semibold text-slate-755 flex items-center gap-1.5 mt-0.5 text-[12px]">
+                      {showCustomerApproval && (
+                        <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Customer Approval Required</span>
+                      )}
+                      <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5 text-[12px]">
                         <span>{showCustomerApproval ? (selectedL1Details.customer_approval || '-') : '••••'}</span>
                         <button
                           type="button"

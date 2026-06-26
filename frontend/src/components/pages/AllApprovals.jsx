@@ -1221,6 +1221,9 @@ export const AllApprovals = ({
                           </div>
 
                           <div className="space-y-[4px]">
+                            {showCustomerApproval && (
+                              <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Customer Approval Required</span>
+                            )}
                             <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5 text-[12px]">
                               <span>{showCustomerApproval ? (l1Details.customer_approval || '-') : '••••'}</span>
                               <button
