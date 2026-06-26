@@ -803,7 +803,7 @@ export const DashboardOverview = ({
 
   const handleExportRequestDetailsPDF = () => {
     // Mirror the exact same tab visibility conditions used in the modal tab header
-    const showL2 = selectedL1Details?.hodStatus !== 'Rejected';
+    const showL2 = selectedL1Details?.hodStatus !== 'Rejected' && selectedL2Details !== null;
     const showL3 = showL2 && selectedL2Details?.status === 'Accepted';
     const showEff = showL3 && (
       (selectedLog?.status || '').toLowerCase() === 'completed' ||

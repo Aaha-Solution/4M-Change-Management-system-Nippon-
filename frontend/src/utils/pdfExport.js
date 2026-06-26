@@ -516,7 +516,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     }
 
     // Section 3: Level 2 Validation Details (aligned with L2 modal tab fields)
-    if (targetTab === 'l2' || targetTab === 'all') {
+    if (targetTab === 'l2' || targetTab === 'l3' || targetTab === 'all') {
       const l2Data = [];
       if (selectedL2Details) {
         const l2Status = selectedL2Details.status === 'Accepted'
