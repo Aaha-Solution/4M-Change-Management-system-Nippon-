@@ -647,6 +647,7 @@ export const L3RequestTracker = ({
               <option value="">Select Status</option>
               <option value="Approved">Approved</option>
               <option value="Rejected">Rejected</option>
+              <option value="Acknowledge">Acknowledge</option>
             </select>
             {fieldErrors.status && (
               <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
@@ -812,7 +813,7 @@ export const L3RequestTracker = ({
                             { val: log.unitHead, type: 'unitHead' }
                           ].map((cell, cIdx) => {
                             const status = cell.val;
-                            const isAccepted = status === 'Accepted' || status === 'Approved';
+                            const isAccepted = status === 'Accepted' || status === 'Approved' || status === 'Acknowledge';
                             const isRejected = status === 'Rejected';
                             return (
                               <td key={cIdx} className="p-[8px] text-center">
@@ -894,7 +895,7 @@ export const L3RequestTracker = ({
                           { label: 'Unit Head', val: log.unitHead }
                         ].map((dept, dIdx) => {
                           const status = dept.val || 'Pending';
-                          const isAccepted = status === 'Accepted' || status === 'Approved';
+                          const isAccepted = status === 'Accepted' || status === 'Approved' || status === 'Acknowledge';
                           const isRejected = status === 'Rejected';
                           return (
                             <div key={dIdx} className="flex justify-between items-center bg-slate-50 border border-slate-100 rounded px-2 py-1 text-[10px]">
@@ -1523,7 +1524,7 @@ export const L3RequestTracker = ({
                           { label: 'Unit Head', prop: 'unitHead' }
                         ].map((dept, index) => {
                           const status = selectedLog[dept.prop] || 'Pending';
-                          const isAccepted = status === 'Accepted' || status === 'Approved';
+                          const isAccepted = status === 'Accepted' || status === 'Approved' || status === 'Acknowledge';
                           const isRejected = status === 'Rejected';
                           const badgeClass = isAccepted
                             ? 'bg-emerald-50 border-emerald-200 text-emerald-700'

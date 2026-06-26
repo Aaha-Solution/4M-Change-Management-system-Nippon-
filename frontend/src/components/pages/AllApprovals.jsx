@@ -1463,7 +1463,7 @@ export const AllApprovals = ({
                             'Unit Head': selectedLog.unitHead || selectedLog.unit_head
                           };
                           const status = propMap[dept.label] || 'Pending';
-                          const isAccepted = status === 'Accepted' || status === 'Approved';
+                          const isAccepted = status === 'Accepted' || status === 'Approved' || status === 'Acknowledge';
                           const isRejected = status === 'Rejected';
                           const badgeClass = isAccepted
                             ? 'bg-emerald-50 border-emerald-200 text-emerald-700'

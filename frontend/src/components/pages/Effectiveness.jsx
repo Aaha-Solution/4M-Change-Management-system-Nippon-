@@ -1903,7 +1903,7 @@ export const Effectiveness = ({
                           { label: 'Unit Head', prop: 'unitHead' }
                         ].map((dept, index) => {
                           const status = selectedLog[dept.prop] || 'Pending';
-                          const isAccepted = status === 'Accepted' || status === 'Approved';
+                          const isAccepted = status === 'Accepted' || status === 'Approved' || status === 'Acknowledge';
                           const isRejected = status === 'Rejected';
                           const badgeClass = isAccepted
                             ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
