@@ -816,8 +816,10 @@ export const L3RequestTracker = ({
                             const isAccepted = status === 'Accepted' || status === 'Approved' || status === 'Acknowledge';
                             const isRejected = status === 'Rejected';
                             return (
-                              <td key={cIdx} className="p-[8px] text-center">
-                                <span className={`inline-block w-full text-center px-[4px] py-[2px] rounded-[4px] border text-[9px] font-bold ${isAccepted
+                              <td key={cIdx} className="py-[8px] px-[2px] text-center">
+                                <span className={`inline-block w-full text-center py-[2px] rounded-[4px] border font-bold ${
+                                  status === 'Acknowledge' ? 'text-[7.5px] px-[1px]' : 'text-[9px] px-[4px]'
+                                } ${isAccepted
                                     ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
                                     : isRejected
                                       ? 'bg-rose-50 border-rose-250 text-rose-700'
