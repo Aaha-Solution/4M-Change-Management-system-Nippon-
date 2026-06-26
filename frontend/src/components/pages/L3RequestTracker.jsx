@@ -1185,6 +1185,11 @@ export const L3RequestTracker = ({
                             </div>
 
                             <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Opening Quantity</span>
+                              <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.opening_quantity || '-'}</span>
+                            </div>
+
+                            <div className="space-y-[4px]">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes)</span>
                               <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
                                 {selectedL1Details.trace_from || '-'}
@@ -1205,6 +1210,11 @@ export const L3RequestTracker = ({
                                 <Calendar size={13} className="text-slate-400" />
                                 {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : 'N/A'}
                               </span>
+                            </div>
+
+                            <div className="space-y-[4px]">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Closed Quantity</span>
+                              <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.closed_quantity || '-'}</span>
                             </div>
 
                             <div className="space-y-[4px]">

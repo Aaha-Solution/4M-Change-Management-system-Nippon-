@@ -1552,6 +1552,11 @@ export const L2Validation = ({
                             {selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'}
                           </span>
                         </div>
+                        
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Opening Quantity</span>
+                          <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.opening_quantity || '-'}</span>
+                        </div>
 
                         <div className="space-y-[4px]">
                           <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes)</span>
@@ -1574,6 +1579,11 @@ export const L2Validation = ({
                             <Calendar size={13} className="text-slate-400" />
                             {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : 'N/A'}
                           </span>
+                        </div>
+
+                        <div className="space-y-[4px]">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Closed Quantity</span>
+                          <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.closed_quantity || '-'}</span>
                         </div>
 
                         <div className="space-y-[4px]">

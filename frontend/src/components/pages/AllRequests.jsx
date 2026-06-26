@@ -1079,7 +1079,7 @@ export const AllRequests = ({
               <textarea
                 value={data.description || ''}
                 onChange={(e) => setData({ ...data, description: e.target.value })}
-                placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
+                placeholder="Describe the change — what, why, how, and expected outcome "
                 className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[100px]"
               />
               <div className="flex justify-between items-center text-[9px] text-slate-400">
@@ -1291,7 +1291,19 @@ export const AllRequests = ({
                   onChange={(val) => setData({ ...data, date_start: convertDDMMYYYYToYYYYMMDD(val) })}
                   readOnly={true}
                   inputClassName="w-full pl-[12px] pr-[32px] py-[8px] border border-slate-200 bg-slate-50 rounded-[6px] text-[12px] font-medium text-slate-700 outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200"
-                  buttonClassName="right-[12px] top-[10px]"
+                />
+              </div>
+
+              {/* OPENING QUANTITY */}
+              <div className="space-y-[4px] relative">
+                <label className="block text-[10px] font-bold text-slate-655 uppercase tracking-wider">
+                  Opening Quantity
+                </label>
+                <input
+                  type="number"
+                  value={data.opening_quantity || ''}
+                  onChange={(e) => setData({ ...data, opening_quantity: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium"
                 />
               </div>
 
@@ -1304,7 +1316,7 @@ export const AllRequests = ({
                   value={data.trace_from || ''}
                   maxLength={1000}
                   onChange={(e) => setData({ ...data, trace_from: e.target.value })}
-                  placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
+                  placeholder="Describe the change — what, why, how, and expected outcome "
                   className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
                 />
                 <div className="flex justify-between items-center text-[9px] text-slate-400">
@@ -1333,6 +1345,20 @@ export const AllRequests = ({
                 />
               </div>
 
+              {/* CLOSED QUANTITY */}
+              <div className="space-y-[4px] relative">
+                <label className="block text-[10px] font-bold text-slate-655 uppercase tracking-wider">
+                  Closed Quantity
+                </label>
+                <input
+                  type="number"
+                  value={data.closed_quantity || ''}
+                  disabled={data.change_type === 'Temporary' && (!data.date_close || data.date_close === 'N/A')}
+                  onChange={(e) => setData({ ...data, closed_quantity: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 text-slate-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+              </div>
+
               {/* PART TRACEABILITY DETAILS (TO CHANGES) * */}
               <div className="space-y-[4px]">
                 <label className="block text-[10px] font-bold text-slate-655 uppercase tracking-wider">
@@ -1342,7 +1368,7 @@ export const AllRequests = ({
                   value={data.trace_to || ''}
                   maxLength={1000}
                   onChange={(e) => setData({ ...data, trace_to: e.target.value })}
-                  placeholder="Describe the change — what, why, how, and expected outcome (min 20 characters)..."
+                  placeholder="Describe the change — what, why, how, and expected outcome "
                   className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 resize-none font-medium text-slate-700 h-[80px]"
                 />
                 <div className="flex justify-between items-center text-[9px] text-slate-400">
@@ -2377,6 +2403,11 @@ export const AllRequests = ({
                                 </div>
 
                                 <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Opening Quantity</span>
+                                  <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.opening_quantity || '-'}</span>
+                                </div>
+
+                                <div className="space-y-[4px]">
                                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Part Traceability Details (From Changes)</span>
                                   <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-slate-700 min-h-[60px] leading-relaxed break-words text-xs">
                                     {selectedL1Details.trace_from || '-'}
@@ -2398,6 +2429,11 @@ export const AllRequests = ({
                                     <Calendar size={13} className="text-slate-400" />
                                     {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : 'N/A'}
                                   </span>
+                                </div>
+
+                                <div className="space-y-[4px]">
+                                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Closed Quantity</span>
+                                  <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedL1Details.closed_quantity || '-'}</span>
                                 </div>
 
                                 <div className="space-y-[4px]">
