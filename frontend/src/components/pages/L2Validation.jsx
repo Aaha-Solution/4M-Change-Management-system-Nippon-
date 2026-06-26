@@ -15,7 +15,9 @@ export const L2Validation = ({
   fetchChanges,
   fetchNotifications,
   autoOpenChangeNo,
-  clearAutoOpen
+  clearAutoOpen,
+  systemUsers = [],
+  userName = ''
 }) => {
   // Modal states
   const [validationError, setValidationError] = useState('');
@@ -151,6 +153,9 @@ export const L2Validation = ({
       if (savedLog) {
         setFormStatus(savedLog.status || '');
         setFormRemarks(savedLog.remarks === '-' ? '' : savedLog.remarks || '');
+        if (savedLog.requester) {
+          setFormRequester(savedLog.requester);
+        }
         setExistingPedFiles(savedLog.weldTest && savedLog.weldTest !== '-' ? savedLog.weldTest.split(',').map(s => s.trim()).filter(Boolean) : []);
         setExistingQaFiles(savedLog.qaTest && savedLog.qaTest !== '-' ? savedLog.qaTest.split(',').map(s => s.trim()).filter(Boolean) : []);
       } else {
@@ -194,7 +199,11 @@ export const L2Validation = ({
       }
     }
 
-    if (!formDate.trim() || !formRequester.trim()) {
+    if (!formRequester.trim()) {
+      errors.requester = 'Please select a validator.';
+    }
+
+    if (!formDate.trim()) {
       setValidationError('Change request data is missing. Please select a valid row from the table.');
       return;
     }
@@ -409,6 +418,11 @@ export const L2Validation = ({
   const isRaisedByUser = matchedChange && userEmail &&
     matchedChange.requesterEmail?.toLowerCase().trim() === userEmail.toLowerCase().trim();
 
+  const isSameDeptUser = matchedChange && userDept &&
+    matchedChange.dept?.toLowerCase().trim() === userDept.toLowerCase().trim();
+
+  const isRequesterOrDeptMember = isRaisedByUser || isSameDeptUser;
+
   const isAdmin = userRole && (
     userRole.toLowerCase() === 'admin' ||
     userRole.toLowerCase() === 'administrator'
@@ -419,9 +433,9 @@ export const L2Validation = ({
   );
 
   const isQualityOrAdmin = isQuality || isAdmin;
-  const isRaisedByUserOrAdmin = isRaisedByUser || isAdmin;
+  const isRaisedByUserOrAdmin = isRequesterOrDeptMember || isAdmin;
 
-  const canEdit = isQualityOrAdmin || isRaisedByUser;
+  const canEdit = isQualityOrAdmin || isRequesterOrDeptMember;
 
   const matchedL2 = validationLogs.find(
     log => log.changeNo?.toLowerCase().trim() === formChangeNo.toLowerCase().trim()
@@ -441,8 +455,8 @@ export const L2Validation = ({
     // If Rejected, locked for Quality/Admin, and locked for requester unless they selected a new file to reset
     (matchedL2 && matchedL2.status === 'Rejected' && !(isRaisedByUserOrAdmin && pedFiles.length > 0)) ||
     // If Pending, locked for standard requester since they already uploaded the PED file
-    (matchedL2 && matchedL2.status === 'Pending' && isRaisedByUser && !isQualityOrAdmin && hasPedUploaded)
-  ))) || (isQuality && !isAdmin && !isRaisedByUser && !hasPedUploaded);
+    (matchedL2 && matchedL2.status === 'Pending' && isRequesterOrDeptMember && !isQualityOrAdmin && hasPedUploaded)
+  ))) || (isQuality && !isAdmin && !isRequesterOrDeptMember && !hasPedUploaded);
 
   // Filter logic
   const filteredLogs = tableLogs.filter(log => {
@@ -474,6 +488,84 @@ export const L2Validation = ({
     exportL2ValidationLogsPDF(filteredLogs, { searchQuery, decisionFilter }, setToastMsg);
   };
 
+  const getRequesterOptions = () => {
+    if (!formChangeNo) return [];
+    
+    const matchedChange = changes?.find(c => c.id.toLowerCase().trim() === formChangeNo.toLowerCase().trim());
+    if (!matchedChange) return [];
+
+    const options = [];
+    const seenNames = new Set();
+
+    // 1. Original Requester Person from the Change Request
+    const reqName = matchedChange.requestBy || matchedChange.requester || '';
+    if (reqName && !seenNames.has(reqName.toLowerCase().trim())) {
+      seenNames.add(reqName.toLowerCase().trim());
+      options.push({
+        value: reqName,
+        label: `${reqName} (Requester)`
+      });
+    }
+
+    // 2. Department HOD(s) from the same department as the Change Request
+    const changeDept = (matchedChange.dept || '').toLowerCase().trim();
+    if (changeDept && systemUsers && systemUsers.length > 0) {
+      systemUsers.forEach(u => {
+        const uDept = (u.department || '').toLowerCase().trim();
+        const uRole = (u.role || '').toLowerCase().trim();
+        const isHod = uRole.includes('hod') || uRole.includes('manager') || uRole.includes('unit head') || uRole.includes('unit_head');
+        if (uDept === changeDept && isHod) {
+          if (u.name && !seenNames.has(u.name.toLowerCase().trim())) {
+            seenNames.add(u.name.toLowerCase().trim());
+            options.push({
+              value: u.name,
+              label: `${u.name} (HOD)`
+            });
+          }
+        }
+      });
+    }
+
+    // 3. Department Users (standard users) and currently logged-in user
+    const loggedInName = userName || userEmail || '';
+    if (loggedInName && !seenNames.has(loggedInName.toLowerCase().trim())) {
+      seenNames.add(loggedInName.toLowerCase().trim());
+      options.push({
+        value: loggedInName,
+        label: `${loggedInName} (Current User)`
+      });
+    }
+
+    if (changeDept && systemUsers && systemUsers.length > 0) {
+      systemUsers.forEach(u => {
+        const uDept = (u.department || '').toLowerCase().trim();
+        const uRole = (u.role || '').toLowerCase().trim();
+        const isHod = uRole.includes('hod') || uRole.includes('manager') || uRole.includes('unit head') || uRole.includes('unit_head');
+        const isAdmin = uRole.includes('admin');
+        if (uDept === changeDept && !isHod && !isAdmin) {
+          if (u.name && !seenNames.has(u.name.toLowerCase().trim())) {
+            seenNames.add(u.name.toLowerCase().trim());
+            options.push({
+              value: u.name,
+              label: `${u.name} (User)`
+            });
+          }
+        }
+      });
+    }
+
+    // Ensure current formRequester value is present in options
+    if (formRequester && !seenNames.has(formRequester.toLowerCase().trim())) {
+      seenNames.add(formRequester.toLowerCase().trim());
+      options.push({
+        value: formRequester,
+        label: `${formRequester} (Current Val)`
+      });
+    }
+
+    return options;
+  };
+
   return (
     <div className="space-y-6 min-w-0 animate-fade-in-up">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-[24px] text-slate-800 items-start">
@@ -495,11 +587,11 @@ export const L2Validation = ({
             </div>
           ) : (
             <>
-              {formChangeNo && isRaisedByUser && !isQualityOrAdmin && (
+              {formChangeNo && isRequesterOrDeptMember && !isQualityOrAdmin && (
                 <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
                   <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold">Notice:</span> You raised this change request. You are authorized to upload the <span className="font-semibold">Requester Validation Attachment</span>. QAD department will review and complete the validation.
+                    <span className="font-bold">Notice:</span> You raised this change request or belong to the same department. You are authorized to upload the <span className="font-semibold">Requester Validation Attachment</span>. QAD department will review and complete the validation.
                   </div>
                 </div>
               )}
@@ -513,7 +605,7 @@ export const L2Validation = ({
                 </div>
               )}
 
-              {formChangeNo && !isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && hasPedUploaded && (
+              {formChangeNo && !isRequesterOrDeptMember && isQualityOrAdmin && !isL2AlreadyValidated && hasPedUploaded && (
                 <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
                   <AlertTriangle size={14} className="text-blue-500 shrink-0 mt-0.5" />
                   <div>
@@ -522,11 +614,11 @@ export const L2Validation = ({
                 </div>
               )}
 
-              {formChangeNo && isRaisedByUser && isQualityOrAdmin && !isL2AlreadyValidated && (
+              {formChangeNo && isRequesterOrDeptMember && isQualityOrAdmin && !isL2AlreadyValidated && (
                 <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
-                  <AlertTriangle size={14} className="text-blue-505 shrink-0 mt-0.5" />
+                  <AlertTriangle size={14} className="text-blue-550 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold">Notice:</span> You are the creator of this change request and {isAdmin ? 'an Admin' : 'a QAD'} member. {!hasPedUploaded ? 'Please upload the Requester Validation Attachment first. After saving, you will be authorized to update the remaining L2 validation fields.' : 'You have full permissions to update all L2 validation fields.'}
+                    <span className="font-bold">Notice:</span> You are the creator or department member of this change request and {isAdmin ? 'an Admin' : 'a QAD'} member. {!hasPedUploaded ? 'Please upload the Requester Validation Attachment first. After saving, you will be authorized to update the remaining L2 validation fields.' : 'You have full permissions to update all L2 validation fields.'}
                   </div>
                 </div>
               )}
@@ -549,7 +641,7 @@ export const L2Validation = ({
                 </div>
               )}
 
-              {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Accepted' && (
+              {formChangeNo && isRequesterOrDeptMember && matchedL2 && matchedL2.status === 'Accepted' && (
                 <div className="bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
                   <AlertTriangle size={14} className="text-emerald-500 shrink-0 mt-0.5" />
                   <div>
@@ -558,7 +650,7 @@ export const L2Validation = ({
                 </div>
               )}
 
-              {formChangeNo && isRaisedByUser && matchedL2 && matchedL2.status === 'Rejected' && (
+              {formChangeNo && isRequesterOrDeptMember && matchedL2 && matchedL2.status === 'Rejected' && (
                 <div className="bg-rose-50 border border-rose-250 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
                   <AlertTriangle size={14} className="text-rose-505 shrink-0 mt-0.5" />
                   <div>
@@ -567,11 +659,11 @@ export const L2Validation = ({
                 </div>
               )}
 
-              {formChangeNo && !isRaisedByUser && !isQualityOrAdmin && (
+              {formChangeNo && !isRequesterOrDeptMember && !isQualityOrAdmin && (
                 <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-lg p-3 text-[11px] flex items-start gap-2 animate-fade-in mb-3">
                   <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request or QAD department members / Admins.
+                    <span className="font-bold">Access Restricted:</span> L2 validation can only be submitted by the person who raised this change request, department members, or QAD department members / Admins.
                   </div>
                 </div>
               )}
@@ -606,13 +698,39 @@ export const L2Validation = ({
             {/* CHANGE REQUEST BY */}
             <div className="space-y-[4px]">
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Request By <span className="text-rose-500">*</span></label>
-              <input
-                type="text"
-                placeholder="Click a row on the right to select"
-                value={formRequester}
-                disabled
-                className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none"
-              />
+              {!formChangeNo.trim() ? (
+                <input
+                  type="text"
+                  placeholder="Click a row on the right to select"
+                  value={formRequester}
+                  disabled
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none text-slate-550 select-none cursor-not-allowed"
+                />
+              ) : (
+                <select
+                  value={formRequester}
+                  disabled={isChangeClosed || (!isAdmin && (!canEdit || (matchedL2 && matchedL2.status === 'Accepted')))}
+                  onChange={(e) => {
+                    setFormRequester(e.target.value);
+                    setFieldErrors(prev => ({ ...prev, requester: '' }));
+                  }}
+                  className={`w-full bg-slate-50 disabled:bg-slate-100 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:border-[#0066cc] focus:ring-4 focus:ring-[#0066cc]/10 transition-all duration-200 disabled:cursor-not-allowed text-slate-555 ${fieldErrors.requester ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+                    }`}
+                >
+                  <option value="">Select Requester / HOD / User</option>
+                  {getRequesterOptions().map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {fieldErrors.requester && (
+                <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5">
+                  <span className="inline-block w-[3px] h-[3px] rounded-full bg-rose-500 mt-[1px]" />
+                  {fieldErrors.requester}
+                </p>
+              )}
             </div>
 
             {/* REQUESTER VALIDATION ATTACHMENT */}
