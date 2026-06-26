@@ -1061,7 +1061,7 @@ export const AllApprovals = ({
                                 <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">Change Date Close</span>
                                 <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5 text-xs">
                                   <Calendar size={13} className="text-slate-400" />
-                                  {l1Details.date_close ? formatDateToDDMMYYYY(l1Details.date_close) : '-'}
+                                  {l1Details.date_close ? formatDateToDDMMYYYY(l1Details.date_close) : 'N/A'}
                                 </span>
                               </div>
 

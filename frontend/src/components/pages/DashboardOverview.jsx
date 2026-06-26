@@ -4529,7 +4529,7 @@ export const DashboardOverview = ({
                                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Change Date Close</span>
                                   <span className="font-semibold text-slate-750 flex items-center gap-1.5 mt-0.5">
                                     <Calendar size={13} className="text-slate-400" />
-                                    {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'}
+                                    {selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : 'N/A'}
                                   </span>
                                 </div>
 
