@@ -419,6 +419,10 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
           selectedL1Details.date_start ? formatDateToDDMMYYYY(selectedL1Details.date_start) : '-'
         ],
         [
+          { content: 'Opening Quantity', fontStyle: 'bold' },
+          selectedL1Details.opening_quantity || '-'
+        ],
+        [
           { content: 'Part Traceability Details (From Changes)', fontStyle: 'bold' },
           selectedL1Details.trace_from || '-'
         ]
@@ -435,6 +439,10 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         [
           { content: 'Change Date Close', fontStyle: 'bold' },
           selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : 'N/A'
+        ],
+        [
+          { content: 'Closed Quantity', fontStyle: 'bold' },
+          selectedL1Details.closed_quantity || '-'
         ],
         [
           { content: 'Part Traceability Details (To Changes)', fontStyle: 'bold' },
