@@ -636,7 +636,7 @@ export const Effectiveness = ({
   const isAlreadyValidated = !!matchedLog;
   const isClosed = matchedLog?.qaApproval === 'Approved';
   const isQaUpdateBlocked = !!(matchedLog && !isAdmin && isQADept && (matchedLog.qaUpdateCount >= 1));
-  const isUpdateBlocked = !isAdmin && (!canUpdate || isQaUpdateBlocked || isClosed);
+  const isUpdateBlocked = isClosed || (!isAdmin && (!canUpdate || isQaUpdateBlocked));
 
   // Derive display values for requested date, context, start date
   const displayReqDate = selectedChange ? formatDateShort(selectedChange.rawDate || selectedChange.date) : '';
