@@ -1447,9 +1447,7 @@ export const DashboardOverview = ({
   };
 
   const renderProcessChart = (dataList, height = 'h-[160px]') => {
-    const processNames = dbProcesses && dbProcesses.length > 0
-      ? dbProcesses
-      : ['Wind', 'Gold', 'EOL', 'Pott', 'Load'];
+    const processNames = dbProcesses || [];
 
     const counts = {};
     processNames.forEach(p => {

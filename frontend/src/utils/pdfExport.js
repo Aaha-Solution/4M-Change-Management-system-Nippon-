@@ -1831,9 +1831,7 @@ export const exportProcessAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
     addLogoToDoc(doc);
 
     // Calculate process counts
-    const processNames = dbProcesses && dbProcesses.length > 0
-      ? dbProcesses
-      : ['Wind', 'Gold', 'EOL', 'Pott', 'Load'];
+    const processNames = dbProcesses || [];
 
     const counts = {};
     processNames.forEach(p => {
