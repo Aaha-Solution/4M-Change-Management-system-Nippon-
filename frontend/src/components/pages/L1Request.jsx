@@ -1809,27 +1809,35 @@ export const L1Request = ({
           </div>
         </div>
 
-        {/* Centered Submit Button */}
-        <div className="flex flex-col items-center justify-center pt-[16px] gap-2">
-          <button
-            type="submit"
-            disabled={isSubmitting || isAdmin}
-            className="flex items-center justify-center gap-[8px] bg-[#0066cc] hover:bg-[#0052a3] disabled:opacity-60 disabled:cursor-not-allowed text-white px-[32px] py-[12px] rounded-[6px] text-[13px] font-bold shadow-md transition-all transform active:scale-[0.98] cursor-pointer"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="animate-spin" size={16} />
-                <span>Submitting...</span>
-              </>
-            ) : (
-              <span>Submit</span>
+        {/* Footer Area with Centered Submit Button and Left-aligned Doc No */}
+        <div className="flex flex-col sm:flex-row items-center justify-between pt-[24px] gap-4 w-full">
+          <div className="text-[11px] font-bold text-black-400 sm:flex-1 text-left w-full sm:w-auto mt-auto mb-2 sm:mb-0">
+            DOC NO : PRD/FR/156 R1
+          </div>
+          
+          <div className="flex flex-col items-center justify-center gap-2 sm:flex-1">
+            <button
+              type="submit"
+              disabled={isSubmitting || isAdmin}
+              className="flex items-center justify-center gap-[8px] bg-[#0066cc] hover:bg-[#0052a3] disabled:opacity-60 disabled:cursor-not-allowed text-white px-[32px] py-[12px] rounded-[6px] text-[13px] font-bold shadow-md transition-all transform active:scale-[0.98] cursor-pointer"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="animate-spin" size={16} />
+                  <span>Submitting...</span>
+                </>
+              ) : (
+                <span>Submit</span>
+              )}
+            </button>
+            {isAdmin && (
+              <span className="text-[11px] text-rose-500 font-semibold whitespace-nowrap text-center">
+                Admin is not allowed to submit L1 request
+              </span>
             )}
-          </button>
-          {isAdmin && (
-            <span className="text-[11px] text-rose-500 font-semibold">
-              Admin is not allowed to submit L1 request
-            </span>
-          )}
+          </div>
+
+          <div className="hidden sm:block sm:flex-1"></div>
         </div>
       </form>
 

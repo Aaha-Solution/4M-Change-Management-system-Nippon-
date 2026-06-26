@@ -2078,19 +2078,24 @@ export const AllRequests = ({
             </tbody>
           </table>
         </div>
-        <TablePagination
-          rowsPerPageOptions={[5, 10]}
-          component="div"
-          count={filteredData.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={(event, newPage) => setPage(newPage)}
-          onRowsPerPageChange={(event) => {
-            setRowsPerPage(parseInt(event.target.value, 10));
-            setPage(0);
-          }}
-          className="border-t border-slate-100"
-        />
+        <div className="flex flex-col sm:flex-row items-center justify-between border-t border-slate-100 w-full pl-[24px]">
+          <div className="text-[11px] font-bold text-black-400 sm:flex-1 text-left w-full sm:w-auto mt-2 sm:mt-0">
+            DOC NO : PRD/FR/157 R1
+          </div>
+          <TablePagination
+            rowsPerPageOptions={[5, 10]}
+            component="div"
+            count={filteredData.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(event, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(parseInt(event.target.value, 10));
+              setPage(0);
+            }}
+            className="border-none !border-t-0"
+          />
+        </div>
       </div>
 
       {/* Details Modal (L1, L2, L3 Tabs) */}
