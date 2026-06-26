@@ -51,6 +51,17 @@ export const updateChangeDetails = async (changeNo, level, updateData, attachmen
     }
 
     if (level === 'l1') {
+      // Map L1 fields from camelCase to snake_case dynamically
+      const mappedData = {};
+      for (const [k, v] of Object.entries(cleanedData)) {
+        const snakeKey = k.replace(/([A-Z])/g, '_$1').toLowerCase();
+        mappedData[snakeKey] = v;
+      }
+      for (const k of Object.keys(cleanedData)) {
+        delete cleanedData[k];
+      }
+      Object.assign(cleanedData, mappedData);
+
       // Update title/priority in change_requests
       if (updateData.title !== undefined) {
         await connection.query('UPDATE change_requests SET title = ? WHERE id = ?', [updateData.title, changeNo]);

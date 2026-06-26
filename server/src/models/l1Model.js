@@ -19,12 +19,15 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
   const {
     changeNo, unit, requestedTime, changeIn, dept, requestBy,
     processName, processLine, machineNo, context, description,
-    improvementArea, changeType, dateStart, openingQuantity, traceFrom,
-    dateClose, closedQuantity, traceTo, riskAnalysis, sopUpdate,
+    improvementArea, changeType, dateStart, traceFrom,
+    dateClose, traceTo, riskAnalysis, sopUpdate,
     hodApproval, customerApproval, effectivenessMonitoring,
     fileDesc, fileImprovement, fileTraceFrom, fileTraceTo,
     fileRisk, fileSop, fileEffectiveness, improvementTableData
   } = l1Data;
+
+  const openingQuantity = l1Data.openingQuantity !== undefined ? l1Data.openingQuantity : l1Data.opening_quantity;
+  const closedQuantity = l1Data.closedQuantity !== undefined ? l1Data.closedQuantity : l1Data.closed_quantity;
 
   const status = 'Pending';
   const priority = 'High';
@@ -81,7 +84,7 @@ export const addL1Request = async (l1Data, attachments, userEmail) => {
         hod_approval, customer_approval, effectiveness_monitoring,
         file_desc, file_improvement, file_trace_from, file_trace_to,
         file_risk, file_sop, file_effectiveness, improvement_table_data
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         resolvedChangeNo, unit, requestedTime, changeIn || '', dept, requestBy,
         processName, processLine, machineNo, description,
