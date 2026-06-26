@@ -431,7 +431,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
       detailsData.push(
         [
           { content: 'Change Date Close', fontStyle: 'bold' },
-          selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : '-'
+          selectedL1Details.date_close ? formatDateToDDMMYYYY(selectedL1Details.date_close) : 'N/A'
         ],
         [
           { content: 'Part Traceability Details (To Changes)', fontStyle: 'bold' },
