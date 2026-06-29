@@ -3919,14 +3919,36 @@ export const DashboardOverview = ({
           /* TAB VIEW (Single Chart Layout) */
           <div className="bg-white border border-slate-200/60 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 space-y-[20px]">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h4 className="text-[14px] font-bold text-slate-800">
-                {activeAnalyticsTab === 'Department' && 'Department Wise Change'}
-                {activeAnalyticsTab === 'Process' && 'Process Wise Change'}
-                {activeAnalyticsTab === '6M Category' && '6M Category Change'}
-                {activeAnalyticsTab === 'Monthly' && 'Monthly Change'}
-                {activeAnalyticsTab === 'Approval Status' && 'Overall Change Approval Status'}
-                {activeAnalyticsTab === 'Improvement Benefits' && 'Improvement Benefits'}
-              </h4>
+              <div className="flex items-center gap-[16px] flex-wrap">
+                <h4 className="text-[14px] font-bold text-slate-800">
+                  {activeAnalyticsTab === 'Department' && 'Department Wise Change'}
+                  {activeAnalyticsTab === 'Process' && 'Process Wise Change'}
+                  {activeAnalyticsTab === '6M Category' && '6M Category Change'}
+                  {activeAnalyticsTab === 'Monthly' && 'Monthly Change'}
+                  {activeAnalyticsTab === 'Approval Status' && 'Overall Change Approval Status'}
+                  {activeAnalyticsTab === 'Improvement Benefits' && 'Improvement Benefits'}
+                </h4>
+                {activeAnalyticsTab === 'Approval Status' && (
+                  <div className="flex items-center gap-[12px] text-[10px] font-bold text-slate-500 select-none flex-wrap">
+                    <div className="flex items-center gap-[4px]">
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#059669]" />
+                      <span>L3 Approved</span>
+                    </div>
+                    <div className="flex items-center gap-[4px]">
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#2563eb]" />
+                      <span>Closed</span>
+                    </div>
+                    <div className="flex items-center gap-[4px]">
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#dc2626]" />
+                      <span>Rejected</span>
+                    </div>
+                    <div className="flex items-center gap-[4px]">
+                      <span className="w-[8px] h-[8px] rounded-full bg-[#d97706]" />
+                      <span>Pending</span>
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="flex items-center gap-[8px]">
                 {isTabFilterApplied(activeAnalyticsTab) && (
                   <button
