@@ -29,6 +29,7 @@ export const L1Request = ({
   const [isDraftInitialized, setIsDraftInitialized] = useState(false);
   const draftLoadedRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
@@ -80,65 +81,68 @@ export const L1Request = ({
     }
   }
 
+  const resetFormState = () => {
+    localStorage.removeItem('cms_l1_draft');
+
+    setUnit('UNIT-2');
+
+    const now = new Date();
+    setRequestedDate(formatDateToDDMMYYYY(now));
+    const hrs = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    setRequestedTime(`${hrs}:${mins}`);
+
+    setChangeIn({
+      Man: false,
+      Machine: false,
+      Material: false,
+      Method: false,
+      Measurement: false,
+      'Mother Nature': false
+    });
+    setFileDesc('');
+    setFileImprovement('');
+    setFileTraceFrom('');
+    setFileTraceTo('');
+    setFileRisk('');
+    setFileSop('');
+    setUploadedFilesList([]);
+
+    let defaultDept = '';
+    let defaultRequestBy = '';
+    if (userEmail && systemUsers.length > 0) {
+      const currentUser = systemUsers.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
+      if (currentUser) {
+        defaultDept = currentUser.department || '';
+        defaultRequestBy = currentUser.name || currentUser.email || '';
+      }
+    }
+    setDept(defaultDept);
+    setRequestBy(defaultRequestBy);
+
+    setProcessName('');
+    setProcessLine('');
+    setMachineNo('');
+    setContext('');
+    setDescription('');
+    setImprovementArea('');
+    setChangeType('');
+    setDateStart('');
+    setTraceFrom('');
+    setDateClose('');
+    setTraceTo('');
+    setRiskAnalysis('');
+    setSopUpdate('');
+    setHodApproval('');
+    setCustomerApproval('');
+    setImprovementTableData([]);
+    setErrors({});
+  };
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      localStorage.removeItem('cms_l1_draft');
-
-      setUnit('UNIT-2');
-
-      const now = new Date();
-      setRequestedDate(formatDateToDDMMYYYY(now));
-      const hrs = String(now.getHours()).padStart(2, '0');
-      const mins = String(now.getMinutes()).padStart(2, '0');
-      setRequestedTime(`${hrs}:${mins}`);
-
-      setChangeIn({
-        Man: false,
-        Machine: false,
-        Material: false,
-        Method: false,
-        Measurement: false,
-        'Mother Nature': false
-      });
-      setFileDesc('');
-      setFileImprovement('');
-      setFileTraceFrom('');
-      setFileTraceTo('');
-      setFileRisk('');
-      setFileSop('');
-      setUploadedFilesList([]);
-
-      let defaultDept = '';
-      let defaultRequestBy = '';
-      if (userEmail && systemUsers.length > 0) {
-        const currentUser = systemUsers.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
-        if (currentUser) {
-          defaultDept = currentUser.department || '';
-          defaultRequestBy = currentUser.name || currentUser.email || '';
-        }
-      }
-      setDept(defaultDept);
-      setRequestBy(defaultRequestBy);
-
-      setProcessName('');
-      setProcessLine('');
-      setMachineNo('');
-      setContext('');
-      setDescription('');
-      setImprovementArea('');
-      setChangeType('');
-      setDateStart('');
-      setTraceFrom('');
-      setDateClose('');
-      setTraceTo('');
-      setRiskAnalysis('');
-      setSopUpdate('');
-      setHodApproval('');
-      setCustomerApproval('');
-      setImprovementTableData([]);
-      setErrors({});
-
+      resetFormState();
       await Promise.all([fetchOptions(), fetchNextChangeNo()]);
       setToastMsg('Form cleared and options refreshed successfully.');
     } catch (e) {
@@ -391,7 +395,7 @@ export const L1Request = ({
 
   // Save draft to localStorage whenever fields change, but only after initialized
   useEffect(() => {
-    if (!isDraftInitialized) return;
+    if (!isDraftInitialized || isSubmitting || isSubmitted) return;
     try {
       const draft = {
         userEmail,
@@ -433,6 +437,8 @@ export const L1Request = ({
     }
   }, [
     isDraftInitialized,
+    isSubmitting,
+    isSubmitted,
     userEmail,
     unit,
     requestedDate,
@@ -783,6 +789,7 @@ export const L1Request = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) {
@@ -798,6 +805,7 @@ export const L1Request = ({
 
     setErrors({});
     setIsSubmitting(true);
+    setIsSubmitted(false);
 
     const selectedChangesIn = Object.keys(changeIn).filter(k => changeIn[k]).join(', ');
 
@@ -840,16 +848,25 @@ export const L1Request = ({
       const response = await createL1Request(l1Data, uploadedFilesList);
       const newChange = response.data.change;
 
-      if (fetchChanges) {
-        await fetchChanges();
-      } else {
-        setChanges([newChange, ...changes]);
+      try {
+        if (fetchChanges) {
+          await fetchChanges();
+        } else {
+          setChanges([newChange, ...changes]);
+        }
+      } catch (fetchErr) {
+        console.error('Error fetching updated changes list:', fetchErr);
       }
+
       setToastMsg(`Successfully submitted L1 Change Request: ${newChange.id}`);
       logAction('L1 Request Created', `Successfully submitted L1 Change Request ${newChange.id} for department ${dept}`);
 
       // Clear L1 draft from localStorage
       localStorage.removeItem('cms_l1_draft');
+
+      // Reset form states and prevent draft save
+      resetFormState();
+      setIsSubmitted(true);
 
       // Redirect back to dashboard overview
       onTabChange('dashboard');
