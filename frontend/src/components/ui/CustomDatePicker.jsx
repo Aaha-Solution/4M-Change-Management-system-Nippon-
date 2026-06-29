@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseDDMMYYYYToDate } from '../../utils/dateUtils';
 
-export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", inputClassName = "", buttonClassName = "", containerClassName = "", id, disabled, readOnly, minDate }) => {
+export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", inputClassName = "", buttonClassName = "right-[10px] top-[50%] -translate-y-1/2", containerClassName = "", id, disabled, readOnly, minDate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
@@ -99,13 +99,13 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
 
   const handleInputChange = (e) => {
     let val = e.target.value;
-    
+
     // Clean to only digits and slashes
     val = val.replace(/[^0-9/]/g, '');
-    
+
     const prevVal = value || '';
     const cleanDigits = val.replace(/\D/g, '');
-    
+
     // Auto-format pasted block of digits
     if (cleanDigits.length === 8 && !val.includes('/')) {
       val = `${cleanDigits.substring(0, 2)}/${cleanDigits.substring(2, 4)}/${cleanDigits.substring(4, 8)}`;
@@ -119,7 +119,7 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
         val = val + '/';
       }
     }
-    
+
     onChange(val);
   };
   const monthNames = [
@@ -137,9 +137,9 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
 
   return (
     <div ref={containerRef} className={`relative w-full ${containerClassName}`}>
-      <input 
+      <input
         id={id}
-        type="text" 
+        type="text"
         placeholder={placeholder}
         maxLength={10}
         readOnly={readOnly}
@@ -174,7 +174,7 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
       {isOpen && createPortal(
         <>
           <div className="fixed inset-0 z-[95]" onClick={() => setIsOpen(false)} />
-          <div 
+          <div
             style={{
               position: 'absolute',
               top: `${coords.top + 4}px`,
@@ -183,15 +183,14 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
             className="bg-white border border-slate-200 shadow-xl rounded-[6px] p-[10px] z-[100] w-[210px] text-slate-800 font-sans select-none"
           >
             <div className="flex justify-between items-center mb-[8px]">
-              <button 
-                type="button" 
-                onClick={prevMonth} 
-                disabled={isPrevMonthDisabled() || disabled} 
-                className={`p-[2px] rounded text-slate-550 ${
-                  isPrevMonthDisabled() 
-                    ? 'opacity-30 cursor-not-allowed pointer-events-none' 
+              <button
+                type="button"
+                onClick={prevMonth}
+                disabled={isPrevMonthDisabled() || disabled}
+                className={`p-[2px] rounded text-slate-550 ${isPrevMonthDisabled()
+                    ? 'opacity-30 cursor-not-allowed pointer-events-none'
                     : 'hover:bg-slate-100 cursor-pointer'
-                }`}
+                  }`}
               >
                 <ChevronLeft size={12} />
               </button>
@@ -211,7 +210,7 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
               {days.map((day, idx) => {
                 const isCurrentMonth = day.getMonth() === month;
                 const isSelected = value && parseDDMMYYYYToDate(value)?.toDateString() === day.toDateString();
-                
+
                 const dayCopy = new Date(day);
                 dayCopy.setHours(0, 0, 0, 0);
                 const isDisabled = parsedMinDate && dayCopy < parsedMinDate;
@@ -222,15 +221,14 @@ export const CustomDatePicker = ({ value, onChange, placeholder = "dd/mm/yyyy", 
                     type="button"
                     disabled={isDisabled || disabled}
                     onClick={() => handleDayClick(day)}
-                    className={`py-[3px] rounded transition-all ${
-                      isDisabled 
-                        ? "text-slate-200 cursor-not-allowed pointer-events-none" 
-                        : isSelected 
-                        ? "bg-[#0066cc] text-white font-bold" 
-                        : isCurrentMonth
-                        ? "text-slate-700 hover:bg-slate-100 font-medium cursor-pointer"
-                        : "text-slate-300 hover:bg-slate-50 cursor-pointer"
-                    }`}
+                    className={`py-[3px] rounded transition-all ${isDisabled
+                        ? "text-slate-200 cursor-not-allowed pointer-events-none"
+                        : isSelected
+                          ? "bg-[#0066cc] text-white font-bold"
+                          : isCurrentMonth
+                            ? "text-slate-700 hover:bg-slate-100 font-medium cursor-pointer"
+                            : "text-slate-300 hover:bg-slate-50 cursor-pointer"
+                      }`}
                   >
                     {day.getDate()}
                   </button>
