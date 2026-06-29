@@ -12,8 +12,12 @@ const drawFooter = (doc, pageText, confidentialText) => {
   // Confidentiality and Page text in previous slate color
   doc.setTextColor(148, 163, 184);
   
-  // Replace Nippon Quality Assurance with India Nippon Electricals Limited
-  const updatedConfidential = confidentialText ? confidentialText.replace('NIPPON QUALITY ASSURANCE', 'INDIA NIPPON ELECTRICALS LIMITED') : '';
+  // Replace Nippon Quality Assurance and Nippon QAD with India Nippon Electricals Limited
+  const updatedConfidential = confidentialText
+    ? confidentialText
+        .replace(/NIPPON QUALITY ASSURANCE/gi, 'INDIA NIPPON ELECTRICALS LIMITED')
+        .replace(/NIPPON QAD/gi, 'INDIA NIPPON ELECTRICALS LIMITED')
+    : '';
   
   // 2nd: Confidential text centered in the middle
   const confidentialWidth = doc.getTextWidth(updatedConfidential);
@@ -194,7 +198,7 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
       didDrawPage: (data) => {
         // Footer
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL CHANGE REQUESTS');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL CHANGE REQUESTS');
       },
       didParseCell: (data) => {
         applyCellStatusColors(data, 7, 10);
@@ -789,7 +793,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      drawFooter(doc, `Page ${i} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL CHANGE REQUEST REPORT');
+      drawFooter(doc, `Page ${i} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL CHANGE REQUEST REPORT');
     }
 
     doc.save(`${docFilename}.pdf`);
@@ -898,7 +902,7 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL L2 LOGS');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL L2 LOGS');
       },
       didParseCell: (data) => {
         if (data.column.index === 6 && data.row.section === 'body') {
@@ -1043,7 +1047,7 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL L3 APPROVAL MATRIX');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL L3 APPROVAL MATRIX');
       },
       didParseCell: (data) => {
         // Highlight status cells
@@ -1186,7 +1190,7 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL APPROVAL LOGS');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL APPROVAL LOGS');
       },
       didParseCell: (data) => {
         if (data.row.section !== 'body') return;
@@ -1319,7 +1323,7 @@ export const exportUsersListPDF = (filteredUsers, filtersInfo = {}, setToastMsg)
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL USER DIRECTORY');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL USER DIRECTORY');
       },
       didParseCell: (data) => {
         if (data.column.index === 6 && data.row.index > 0) {
@@ -1467,7 +1471,7 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL DASHBOARD OVERVIEW');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL DASHBOARD OVERVIEW');
       },
       didParseCell: (data) => {
         applyCellStatusColors(data, 7, 10);
@@ -1588,7 +1592,7 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QAD - CONFIDENTIAL EFFECTIVENESS OBSERVATIONS');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL EFFECTIVENESS OBSERVATIONS');
       },
       didParseCell: (data) => {
         // Highlight Status
@@ -1801,7 +1805,7 @@ export const exportDepartmentAnalyticsPDF = (filteredChanges, filtersInfo = {}, 
       },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL');
       }
     });
 
@@ -1938,7 +1942,7 @@ export const exportProcessAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
       },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL');
       }
     });
 
@@ -2068,7 +2072,7 @@ export const exportCategoryAnalyticsPDF = (filteredChanges, filtersInfo = {}, se
       },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL');
       }
     });
 
@@ -2200,7 +2204,7 @@ export const exportMonthlyAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
       },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL');
       }
     });
 
@@ -2351,7 +2355,7 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
       },
       didDrawPage: (data) => {
         const pageCount = doc.internal.getNumberOfPages();
-        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL');
+        drawFooter(doc, `Page ${data.pageNumber} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL');
       }
     });
 
@@ -2506,7 +2510,7 @@ export const exportImprovementBenefitsPDF = (costSavingRows, productivityRows, q
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      drawFooter(doc, `Page ${i} of ${pageCount}`, 'NIPPON QUALITY ASSURANCE - CONFIDENTIAL');
+      drawFooter(doc, `Page ${i} of ${pageCount}`, 'INDIA NIPPON ELECTRICALS LIMITED - CONFIDENTIAL');
     }
 
     doc.save(`4M_Improvement_Benefits_${formatDateToDDMMYYYY(getSyncedDate()).replace(/\//g, '-')}.pdf`);
