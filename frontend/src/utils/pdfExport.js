@@ -7,7 +7,7 @@ import nipponLogoUrl from '../assets/Nippon Logo.png';
 
 const drawFooter = (doc, pageText, confidentialText) => {
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   
   // Confidentiality and Page text in previous slate color
   doc.setTextColor(148, 163, 184);
@@ -19,13 +19,12 @@ const drawFooter = (doc, pageText, confidentialText) => {
         .replace(/NIPPON QAD/gi, 'INDIA NIPPON ELECTRICALS LIMITED')
     : '';
   
-  // 2nd: Confidential text centered in the middle
-  const confidentialWidth = doc.getTextWidth(updatedConfidential);
-  const centerX = (doc.internal.pageSize.width - confidentialWidth) / 2;
-  doc.text(updatedConfidential, centerX, doc.internal.pageSize.height - 20);
+  // 2nd: Confidential text centered in the middle using alignment
+  const centerX = doc.internal.pageSize.width / 2;
+  doc.text(updatedConfidential, centerX, doc.internal.pageSize.height - 20, { align: 'center' });
   
-  // 3rd: Page text on the right (x = width - 80)
-  doc.text(pageText, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 20);
+  // 3rd: Page text on the right aligned to the right margin (x = width - 40)
+  doc.text(pageText, doc.internal.pageSize.width - 40, doc.internal.pageSize.height - 20, { align: 'right' });
   
   // DOC NO specifically in black color
   doc.setTextColor(0, 0, 0);
