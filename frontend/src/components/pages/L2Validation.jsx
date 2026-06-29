@@ -1844,63 +1844,11 @@ export const L2Validation = ({
                   />
                 )
               ) : (
-                previewFile.toLowerCase().endsWith('.pdf') ? (
-                  <div className="bg-white border border-slate-250 shadow-md p-8 w-full max-w-md aspect-[1/1.4] relative flex flex-col justify-between text-slate-800 select-none rounded animate-fade-in">
-                    <div className="absolute top-0 inset-x-0 h-1 bg-[#0066cc]" />
-                    <div className="space-y-4 flex-1">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-bold text-xs uppercase tracking-wider text-slate-400">India Nippon Electricals Limited</div>
-                          <h3 className="font-extrabold text-base text-slate-900 mt-0.5">Change Request Attachment</h3>
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-mono text-right">
-                          DOC: L1-ATT-VER<br />
-                          REV: 03 (2026)
-                        </div>
-                      </div>
-                      <div className="border-t border-slate-100 pt-3 space-y-2.5 text-xs text-slate-600">
-                        <div className="flex justify-between border-b border-slate-50 pb-1.5"><span className="font-bold">Filename:</span> <span>{previewFile}</span></div>
-                        <div className="flex justify-between border-b border-slate-50 pb-1.5"><span className="font-bold">System Status:</span> <span className="text-emerald-600 font-bold">Verified File</span></div>
-                      </div>
-                      <div className="pt-2 space-y-2">
-                        <div className="font-bold text-xs text-slate-800">Observation Summary:</div>
-                        <p className="text-[11px] leading-relaxed text-slate-500">
-                          This attachment supports the change request validation details for change no {selectedL1Details?.change_no}. The document or image content was uploaded during the Level 1 submission phase.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="border-t border-slate-150 pt-3 flex justify-between items-center text-[10px] text-slate-400 font-mono">
-                      <span>OFFICIAL ELECTRONIC ATTACHMENT</span>
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-bold">VERIFIED</span>
-                    </div>
-                  </div>
-                ) : previewFile.toLowerCase().match(/\.(jpg|jpeg|jfif|png|gif|webp|bmp|svg|tiff|tif|ico|heic|heif|avif)$/) ? (
-                  <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-md max-w-sm w-full text-center space-y-4 animate-fade-in">
-                    <div className="w-16 h-16 bg-teal-50 text-teal-650 rounded-full flex items-center justify-center mx-auto text-3xl">
-                      🖼️
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-slate-850 text-sm">{previewFile}</h4>
-                      <p className="text-xs text-slate-450 mt-1">Mock Image Evidence</p>
-                    </div>
-                    <div className="bg-slate-50 border border-slate-150 p-4 rounded-lg flex items-center justify-center h-40">
-                      <span className="text-[10px] text-slate-400 font-mono italic">[ Image Content Placeholder ]</span>
-                    </div>
-                    <p className="text-[10px] text-slate-400 italic">This is a mock placeholder showing where the image attachment will load.</p>
-                  </div>
-                ) : (
-                  <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 w-full h-[50vh] font-mono text-xs text-slate-355 overflow-auto text-left shadow-inner flex flex-col">
-                    <div className="text-[10px] text-slate-555 pb-2 border-b border-slate-800 flex justify-between">
-                      <span>{previewFile}</span>
-                      <span>UTF-8 PLAINTEXT</span>
-                    </div>
-                    <pre className="mt-2 flex-1 leading-relaxed text-slate-300">
-                      {`=== Attachment Plaintext Evidence ===\n\n[INFO] - Supporting document for Change No: ${selectedL1Details?.change_no}\n[SUCCESS] - Document content loaded successfully.\n\n==========================================`}
-                    </pre>
-                  </div>
-                )
-              )}
-            </div>
+                <div className="flex flex-col items-center justify-center space-y-3">
+                  <Loader2 className="animate-spin text-[#0066cc]" size={32} />
+                  <span className="text-xs text-slate-500 font-medium font-sans">Loading attachment...</span>
+                </div>
+              )}</div>
 
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
               <button

@@ -137,6 +137,8 @@ CREATE TABLE effectiveness_attachments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (log_id) REFERENCES effectiveness_logs(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
+
+CREATE INDEX idx_eff_attachments_lookup ON effectiveness_attachments(log_id, file_name);
  
 -- 5. Notifications Table
 CREATE TABLE notifications (
@@ -209,6 +211,8 @@ CREATE TABLE l1_attachments (
     FOREIGN KEY (change_no) REFERENCES l1_requests(change_no) ON UPDATE CASCADE ON DELETE CASCADE
 );
  
+CREATE INDEX idx_l1_attachments_lookup ON l1_attachments(change_no, file_name);
+
 -- 7. L2 Validation Logs Table
 CREATE TABLE l2_validation_logs (
     change_no VARCHAR(50) PRIMARY KEY,
@@ -233,6 +237,8 @@ CREATE TABLE l2_attachments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (change_no) REFERENCES l2_validation_logs(change_no) ON UPDATE CASCADE ON DELETE CASCADE
 );
+
+CREATE INDEX idx_l2_attachments_lookup ON l2_attachments(change_no, file_name);
  
 -- 8. L3 Approvals Table
 CREATE TABLE l3_approvals (

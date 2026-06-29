@@ -220,6 +220,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
 
 
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [autoOpenChangeNo, setAutoOpenChangeNo] = useState(null);
 
   // Helper to handle tab select
@@ -442,7 +443,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
             </button>
             {/* Logout button */}
             <button
-              onClick={handleLocalSignOut}
+              onClick={() => setShowSignOutConfirm(true)}
               className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
               title="Sign Out"
             >
@@ -501,7 +502,7 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
 
             {/* Sign Out button - always visible */}
             <button
-              onClick={handleLocalSignOut}
+              onClick={() => setShowSignOutConfirm(true)}
               title="Sign Out"
               className="flex items-center gap-[6px] bg-white border border-slate-250 hover:bg-rose-50 hover:border-rose-500 hover:text-rose-600 text-slate-600 p-[6px] sm:px-[14px] sm:py-[6px] rounded-[8px] text-[12px] font-semibold cursor-pointer transition-colors"
             >
@@ -754,6 +755,46 @@ export const Dashboard = ({ userEmail, userRole, userName, onSignOut }) => {
                 className="mt-6 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg text-xs transition-colors"
               >
                 Close Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sign Out Confirmation Modal */}
+      {showSignOutConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-[16px]">
+          <div 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" 
+            onClick={() => setShowSignOutConfirm(false)} 
+          />
+          <div className="relative bg-white w-full max-w-[340px] rounded-[16px] shadow-2xl border border-slate-200 flex flex-col z-10 p-[24px] text-center animate-fade-in-up">
+            <div className="mx-auto bg-amber-50 text-amber-600 p-[12px] rounded-full mb-[16px] w-fit">
+              <LogOut size={24} />
+            </div>
+            <h4 className="text-[16px] font-bold text-slate-800 mb-[8px]">
+              Confirm Sign Out
+            </h4>
+            <p className="text-[13px] text-slate-500 mb-[24px]">
+              Are you sure you want to sign out? You will need to log back in to access the system.
+            </p>
+            <div className="flex gap-[12px] w-full">
+              <button
+                type="button"
+                onClick={() => setShowSignOutConfirm(false)}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-[10px] rounded-[8px] text-[13px] font-bold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSignOutConfirm(false);
+                  handleLocalSignOut();
+                }}
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-[10px] rounded-[8px] text-[13px] font-bold transition-all shadow-sm cursor-pointer"
+              >
+                Sign Out
               </button>
             </div>
           </div>
