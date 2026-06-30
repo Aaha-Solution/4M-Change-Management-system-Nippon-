@@ -15,6 +15,13 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
   let details = '';
   let statusColor = 'blue';
 
+  // Clean up any previous L2 notifications for this change request
+  await connection.query(
+    `DELETE FROM notifications 
+     WHERE change_no = ? AND (id LIKE 'L2-LOG-%' OR id LIKE 'L2-VAL-ACTION-%' OR id LIKE 'L2-NOTIF-%' OR id LIKE 'L2-REQUESTER-CONFIRM-%' OR id LIKE 'L3-VAL-ACTION-REQUIRED-%')`,
+    [changeNo]
+  );
+
   if (status === 'Pending') {
     const [rows] = await connection.query(
       `SELECT email, name, department, role FROM users 

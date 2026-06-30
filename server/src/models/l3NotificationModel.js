@@ -6,6 +6,13 @@ import { broadcast } from '../config/websocket.js';
  * Creates L3 approval decision notifications in the database for all departments.
  */
 export const createL3DecisionNotifications = async (connection, changeNo, updatedDeptField, newDecision, changeIn, requestBy, requester, l1Dept) => {
+  // Delete previous decision notifications for the same change request and the same department HOD
+  await connection.query(
+    `DELETE FROM notifications 
+     WHERE change_no = ? AND title LIKE ?`,
+    [changeNo, `L3 Approval % by ${updatedDeptField} HOD – ${changeNo}`]
+  );
+
   const now = new Date();
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
   const color = (newDecision === 'Approved' || newDecision === 'Acknowledge') ? 'green' : 'red';
@@ -151,6 +158,13 @@ export const sendL3DecisionEmails = async (changeNo, updatedDeptField, newDecisi
  * Creates L3 completion notifications in the database for all department HODs, admins, and the requester.
  */
 export const createL3CompletionNotifications = async (connection, changeNo, changeIn, requestBy, requester, l1Dept) => {
+  // Delete any previous L3 completion or rejection notifications for the change request
+  await connection.query(
+    `DELETE FROM notifications 
+     WHERE change_no = ? AND (title LIKE 'L3 All Department Approvals Completed %' OR title LIKE 'L3 Request Rejected – %' OR id LIKE 'L3-COMPLETION-NOTIF-%' OR id LIKE 'L3-REJECTION-NOTIF-%')`,
+    [changeNo]
+  );
+
   const now = new Date();
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
   const notifIdsToSend = [];
@@ -288,6 +302,13 @@ export const sendL3CompletionEmails = async (changeNo, requester) => {
  * Creates L3 rejection notifications in the database for all department HODs, admins, and the requester.
  */
 export const createL3RejectionNotifications = async (connection, changeNo, changeIn, requestBy, requester, l1Dept, rejectedDepts) => {
+  // Delete any previous L3 completion or rejection notifications for the change request
+  await connection.query(
+    `DELETE FROM notifications 
+     WHERE change_no = ? AND (title LIKE 'L3 All Department Approvals Completed %' OR title LIKE 'L3 Request Rejected – %' OR id LIKE 'L3-COMPLETION-NOTIF-%' OR id LIKE 'L3-REJECTION-NOTIF-%')`,
+    [changeNo]
+  );
+
   const now = new Date();
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
   const notifIdsToSend = [];

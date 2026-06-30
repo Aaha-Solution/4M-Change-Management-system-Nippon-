@@ -49,6 +49,13 @@ export const triggerEffectivenessQADAlert = async (changeNo, qaApproval, remarks
     const remarksTextColor = isApproved ? '#15803d' : '#991b1b';
     const remarksBg = isApproved ? '#f0fdf4' : '#fef2f2';
 
+    // First, clean up any previous QAD effectiveness notifications for this change request
+    await pool.query(
+      `DELETE FROM notifications 
+       WHERE change_no = ? AND dept = 'QAD' AND (title LIKE 'Effectiveness QAD %' OR id LIKE 'EFF-QAD-%')`,
+      [changeNo]
+    );
+
     // 3. Create a notification in the DB for each target user specifically (no department broadcast)
     const title = `Effectiveness QAD ${qaApproval} – ${changeNo}`;
     const details = `The effectiveness monitoring observations for Change Request ${changeNo} have been ${qaApproval} by QAD. Remarks: ${remarks}`;

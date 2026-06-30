@@ -429,7 +429,8 @@ export const Effectiveness = ({
         remarks: effRemarks,
         attachment: effAttachment,
         status: effStatus,
-        qaApproval: effQaApproval
+        qaApproval: effQaApproval,
+        qaUpdateCount: savedLog.qaUpdateCount
       };
       try {
         const response = await updateEffectivenessLog(savedLog.id, logData, uploadedFilesList);

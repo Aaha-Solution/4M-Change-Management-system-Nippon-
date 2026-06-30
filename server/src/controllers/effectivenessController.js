@@ -90,9 +90,19 @@ export const updateLog = async (req, res) => {
   }
 
   try {
-    const [logRows] = await pool.query('SELECT qa_approval FROM effectiveness_logs WHERE id = ?', [id]);
-    if (logRows.length > 0 && logRows[0].qa_approval === 'Approved') {
+    const [logRows] = await pool.query('SELECT qa_approval, qa_update_count FROM effectiveness_logs WHERE id = ?', [id]);
+    if (logRows.length === 0) {
+      return res.status(404).json({ error: 'Effectiveness log not found.' });
+    }
+    if (logRows[0].qa_approval === 'Approved') {
       return res.status(403).json({ error: 'Access Denied: This effectiveness log is Closed and cannot be updated.' });
+    }
+
+    // Optimistic concurrency check (conflict check)
+    if (logData.qaUpdateCount !== undefined && logRows[0].qa_update_count !== logData.qaUpdateCount) {
+      return res.status(409).json({ 
+        error: 'Conflict: This record has been updated by another user in another session. Please refresh the page and try again.' 
+      });
     }
 
     const [userRows] = await pool.query('SELECT department, role FROM users WHERE email = ?', [req.user?.email]);

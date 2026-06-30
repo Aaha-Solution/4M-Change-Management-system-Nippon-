@@ -248,6 +248,13 @@ export const createL1DecisionNotifications = async (connection, changeNo, hodDep
   const notifIds = [];
 
   if (crRows.length > 0) {
+    // Clean up previous L1 decision/action notifications for this change request
+    await connection.query(
+      `DELETE FROM notifications 
+       WHERE change_no = ? AND (id LIKE 'HOD-DECISION-%' OR id LIKE 'L2-ACTION-%' OR id LIKE 'L1-REJECT-ACTION-%')`,
+      [changeNo]
+    );
+
     const { requester, raisedDept, userDept, changeIn } = crRows[0];
     const now = new Date();
     const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} Today`;
