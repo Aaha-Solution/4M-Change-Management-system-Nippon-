@@ -1476,24 +1476,29 @@ export const DashboardOverview = ({
     const maxVal = Math.max(...data.map(item => item.value), 5);
 
     return (
-      <div className={`flex justify-around items-end ${height} px-[10px] mt-[10px]`}>
-        {data.map((item, idx) => {
-          const barHeight = (item.value / maxVal) * 100;
-          return (
-            <div key={idx} className="flex flex-col items-center min-w-[50px] max-w-[80px] w-full h-full justify-end group">
-              <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
-              <div className="w-full h-[65%] flex items-end justify-center">
-                <div
-                  className="w-full bg-[#2e7d32] hover:bg-[#1b5e20] transition-all rounded-t-[2px]"
-                  style={{ height: `${barHeight}%`, minHeight: '4px' }}
-                />
+      <div className="w-full overflow-x-auto pb-[8px] scrollbar-thin">
+        <div 
+          className={`flex justify-around items-end ${height} px-[10px] mt-[10px]`}
+          style={{ minWidth: `${Math.max(500, data.length * 75)}px` }}
+        >
+          {data.map((item, idx) => {
+            const barHeight = (item.value / maxVal) * 100;
+            return (
+              <div key={idx} className="flex flex-col items-center min-w-[50px] max-w-[80px] w-full h-full justify-end group">
+                <span className="text-[10px] font-bold text-slate-600 mb-[4px]">{item.value}</span>
+                <div className="w-full h-[65%] flex items-end justify-center">
+                  <div
+                    className="w-full bg-[#2e7d32] hover:bg-[#1b5e20] transition-all rounded-t-[2px]"
+                    style={{ height: `${barHeight}%`, minHeight: '4px' }}
+                  />
+                </div>
+                <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
+                  {item.label}
+                </span>
               </div>
-              <span className="text-[8px] font-bold text-slate-400 mt-[6px] whitespace-nowrap uppercase tracking-wider text-center">
-                {item.label}
-              </span>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     );
   };
