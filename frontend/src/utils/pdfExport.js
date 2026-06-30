@@ -1603,6 +1603,9 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
           } else if (val === 'Effectiveness Not Ok') {
             data.cell.styles.textColor = [220, 38, 38]; // Red
             data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Pending') {
+            data.cell.styles.textColor = [217, 119, 6]; // Amber
+            data.cell.styles.fontStyle = 'bold';
           }
         }
         // Highlight QAD Approval Decision
@@ -1613,6 +1616,9 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Rejected') {
             data.cell.styles.textColor = [220, 38, 38]; // Red
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'Pending') {
+            data.cell.styles.textColor = [217, 119, 6]; // Amber
             data.cell.styles.fontStyle = 'bold';
           }
         }
