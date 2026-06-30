@@ -2100,38 +2100,43 @@ export const Effectiveness = ({
                   />
                 ) : (previewFile.toLowerCase().endsWith('.pdf') || (fileTypes[previewFile] && fileTypes[previewFile] === 'application/pdf')) ? (
                   <div className="w-full h-full flex flex-col items-center justify-center space-y-4">
-                    <iframe
-                      src={`${fileUrls[previewFile]}#navpanes=0`}
-                      title={previewFile}
-                      className="hidden sm:block w-full h-[60vh] rounded border border-slate-200 bg-white"
-                    />
-                    <div className="sm:hidden text-center p-6 bg-white rounded-lg border border-slate-200 shadow-sm max-w-md w-full animate-fade-in-up">
-                      <FileText size={48} className="mx-auto text-slate-400 mb-3" />
-                      <h5 className="font-bold text-slate-800 text-sm mb-1">PDF Preview</h5>
-                      <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-                        To view this PDF on your mobile or tablet device, please open it in a new window.
-                      </p>
-                      <a
-                        href={fileUrls[previewFile]}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer w-full"
-                      >
-                        <Eye size={14} />
-                        <span>Open PDF</span>
-                      </a>
-                    </div>
-                    <div className="hidden sm:block w-full flex justify-end">
-                      <a
-                        href={fileUrls[previewFile]}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-[#0066cc] hover:underline font-semibold flex items-center gap-1"
-                      >
-                        <Eye size={12} />
-                        <span>Open PDF in new window</span>
-                      </a>
-                    </div>
+                    {!(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1)) ? (
+                      <iframe
+                        src={`${fileUrls[previewFile]}#navpanes=0`}
+                        title={previewFile}
+                        className="w-full h-[60vh] rounded border border-slate-200 bg-white"
+                      />
+                    ) : (
+                      <div className="text-center p-6 bg-white rounded-lg border border-slate-200 shadow-sm max-w-md w-full animate-fade-in-up">
+                        <FileText size={48} className="mx-auto text-slate-400 mb-3" />
+                        <h5 className="font-bold text-slate-800 text-sm mb-1">PDF Preview</h5>
+                        <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                          To view this PDF on your mobile or tablet device, please open it in a new window.
+                        </p>
+                        <a
+                          href={fileUrls[previewFile]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0066cc] hover:bg-[#0052a3] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer w-full"
+                        >
+                          <Eye size={14} />
+                          <span>Open PDF</span>
+                        </a>
+                      </div>
+                    )}
+                    {!(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1)) && (
+                      <div className="w-full flex justify-end">
+                        <a
+                          href={fileUrls[previewFile]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-[#0066cc] hover:underline font-semibold flex items-center gap-1"
+                        >
+                          <Eye size={12} />
+                          <span>Open PDF in new window</span>
+                        </a>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <iframe
