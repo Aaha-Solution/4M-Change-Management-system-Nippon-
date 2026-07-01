@@ -724,6 +724,10 @@ export const L1Request = ({
       }
     }
 
+    if (openingQuantity === undefined || openingQuantity === null || openingQuantity === '') {
+      newErrors.openingQuantity = 'Opening Quantity is required.';
+    }
+
     if (!traceFrom || !traceFrom.trim()) {
       newErrors.traceFrom = 'Part Traceability Details (From) is required.';
     }
@@ -742,6 +746,10 @@ export const L1Request = ({
           newErrors.dateClose = 'Close Date should be >= Start Date.';
         }
       }
+    }
+
+    if (dateClose !== 'N/A' && (closedQuantity === undefined || closedQuantity === null || closedQuantity === '')) {
+      newErrors.closedQuantity = 'Closed Quantity is required.';
     }
 
     if (!traceTo || (!traceTo.trim() && traceTo !== 'N/A')) {
@@ -1507,15 +1515,22 @@ export const L1Request = ({
 
             {/* OPENING QUANTITY */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Opening Quantity</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Opening Quantity <span className="text-rose-500">*</span></label>
               <input
                 type="number"
                 id="openingQuantity"
                 placeholder="Enter Quantity"
                 value={openingQuantity}
-                onChange={(e) => setOpeningQuantity(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200"
+                onChange={(e) => {
+                  setOpeningQuantity(e.target.value);
+                  if (errors.openingQuantity) setErrors(prev => ({ ...prev, openingQuantity: '' }));
+                }}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 ${errors.openingQuantity
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10'
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                  }`}
               />
+              {errors.openingQuantity && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.openingQuantity}</span>}
             </div>
 
             {/* PART TRACEABILITY DETAILS (FROM CHANGES) */}
@@ -1599,16 +1614,23 @@ export const L1Request = ({
 
             {/* CLOSED QUANTITY */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Closed Quantity</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Closed Quantity {dateClose !== 'N/A' && <span className="text-rose-500">*</span>}</label>
               <input
                 type="number"
                 id="closedQuantity"
                 placeholder="Enter Quantity"
                 value={closedQuantity}
                 disabled={changeType === 'Temporary' && dateClose === 'N/A'}
-                onChange={(e) => setClosedQuantity(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 focus:ring-[#0066cc]/10 focus:border-[#0066cc] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                onChange={(e) => {
+                  setClosedQuantity(e.target.value);
+                  if (errors.closedQuantity) setErrors(prev => ({ ...prev, closedQuantity: '' }));
+                }}
+                className={`w-full bg-slate-50 border rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none focus:ring-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${errors.closedQuantity && dateClose !== 'N/A'
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10'
+                    : 'border-slate-200 focus:border-[#0066cc] focus:ring-[#0066cc]/10'
+                  }`}
               />
+              {errors.closedQuantity && dateClose !== 'N/A' && <span className="text-rose-500 text-[10px] block mt-[2px]">{errors.closedQuantity}</span>}
             </div>
 
             {/* PART TRACEABILITY DETAILS (TO CHANGES) */}

@@ -14,6 +14,18 @@ export const createL1Request = async (req, res) => {
     return res.status(400).json({ error: 'Required L1 change request data fields are missing.' });
   }
 
+  const opQty = l1Data.openingQuantity !== undefined ? l1Data.openingQuantity : l1Data.opening_quantity;
+  if (opQty === undefined || opQty === null || String(opQty).trim() === '') {
+    return res.status(400).json({ error: 'Opening Quantity is required.' });
+  }
+
+  if (l1Data.dateClose !== 'N/A') {
+    const clQty = l1Data.closedQuantity !== undefined ? l1Data.closedQuantity : l1Data.closed_quantity;
+    if (clQty === undefined || clQty === null || String(clQty).trim() === '') {
+      return res.status(400).json({ error: 'Closed Quantity is required.' });
+    }
+  }
+
   const changeIn = l1Data.changeIn || 'General';
   const constructedTitle = `[L1 Request - ${changeIn}] ${l1Data.context}`;
   if (constructedTitle.length > 255) {
