@@ -1565,7 +1565,7 @@ export const L1Request = ({
 
             {/* UPLOAD SUPPORTING FILES */}
             <div className="space-y-[4px]">
-              {renderAttachmentInput("Upload Supporting Files", fileTraceFrom, setFileTraceFrom, "file-tracefrom-input", "fileTraceFrom")}
+              {renderAttachmentInput("Upload Supporting Files", fileTraceFrom, setFileTraceFrom, "file-tracefrom-input", "fileTraceFrom", true)}
             </div>
 
             {/* CHANGE DATE CLOSE */}
@@ -1614,7 +1614,7 @@ export const L1Request = ({
 
             {/* CLOSED QUANTITY */}
             <div className="space-y-[4px]">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Closed Quantity {dateClose !== 'N/A' && <span className="text-rose-500">*</span>}</label>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Closed Quantity <span className="text-rose-500">*</span></label>
               <input
                 type="number"
                 id="closedQuantity"

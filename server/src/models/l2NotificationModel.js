@@ -178,7 +178,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'System Logs', ?, ?)`,
-        [notifId, title, details, changeNo, changeIn || 'GENERAL', 'QAD', timeStr, statusColor, email]
+        [notifId, title, details, changeNo, changeIn || 'GENERAL', notifDept, timeStr, statusColor, email]
       );
     }
 
@@ -195,7 +195,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', ?, ?)`,
-        [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', 'QAD', timeStr, actionColor, email]
+        [actionNotifId, actionTitle, actionDetails, changeNo, changeIn || 'GENERAL', notifDept, timeStr, actionColor, email]
       );
     }
 
@@ -233,7 +233,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, 'Action Required', ?, ?)`,
-        [notifId, title, details, changeNo, changeIn || 'GENERAL', 'QAD', timeStr, statusColor, email]
+        [notifId, title, details, changeNo, changeIn || 'GENERAL', notifDept, timeStr, statusColor, email]
       );
     }
   }
@@ -253,7 +253,7 @@ export const createL2Notifications = async (connection, changeNo, status, logDat
       await connection.query(
         `INSERT INTO notifications (id, title, details, change_no, category, dept, time_str, is_read, type, color, recipient_email)
          VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)`,
-        [requesterNotifId, requesterNotifTitle, requesterNotifDetails, changeNo, changeIn || 'GENERAL', 'QAD', timeStr, 'Info', 'blue', crRequesterEmail]
+        [requesterNotifId, requesterNotifTitle, requesterNotifDetails, changeNo, changeIn || 'GENERAL', notifDept, timeStr, 'Info', 'blue', crRequesterEmail]
       );
     }
   }
