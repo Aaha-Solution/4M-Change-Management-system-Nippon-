@@ -105,33 +105,57 @@ export const createL3Approval = async (req, res) => {
 
       // Fetch existing L3 approval
       const [existingL3] = await pool.query(
-        `SELECT ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead
+        `SELECT ped, ped_remarks as pedRemarks,
+                qad, qad_remarks as qadRemarks,
+                production, production_remarks as productionRemarks,
+                maintenance, maintenance_remarks as maintenanceRemarks,
+                pcl, pcl_remarks as pclRemarks,
+                materials, materials_remarks as materialsRemarks,
+                marketing, marketing_remarks as marketingRemarks,
+                hr, hr_remarks as hrRemarks,
+                safety, safety_remarks as safetyRemarks,
+                unit_head as unitHead, unit_head_remarks as unitHeadRemarks
          FROM l3_approvals WHERE change_no = ?`,
         [logData.changeNo]
       );
 
       const dbValues = existingL3.length > 0 ? existingL3[0] : {
-        ped: 'Pending',
-        qad: 'Pending',
-        production: 'Pending',
-        maintenance: 'Pending',
-        pcl: 'Pending',
-        materials: 'Pending',
-        marketing: 'Pending',
-        hr: 'Pending',
-        safety: 'Pending',
-        unitHead: 'Pending'
+        ped: 'Pending', pedRemarks: '',
+        qad: 'Pending', qadRemarks: '',
+        production: 'Pending', productionRemarks: '',
+        maintenance: 'Pending', maintenanceRemarks: '',
+        pcl: 'Pending', pclRemarks: '',
+        materials: 'Pending', materialsRemarks: '',
+        marketing: 'Pending', marketingRemarks: '',
+        hr: 'Pending', hrRemarks: '',
+        safety: 'Pending', safetyRemarks: '',
+        unitHead: 'Pending', unitHeadRemarks: ''
       };
 
-      // Check all fields to see if any unauthorized field was modified
-      const fieldsToCheck = ['ped', 'qad', 'production', 'maintenance', 'pcl', 'materials', 'marketing', 'hr', 'safety', 'unitHead'];
-      for (const field of fieldsToCheck) {
-        const incomingVal = logData[field] || 'Pending';
-        const dbVal = dbValues[field] || 'Pending';
-        if (incomingVal !== dbVal) {
-          if (field !== allowedField) {
+      // Check all fields to see if any unauthorized status or remarks were modified
+      const fieldsToCheck = [
+        { statusField: 'ped', remarksField: 'pedRemarks' },
+        { statusField: 'qad', remarksField: 'qadRemarks' },
+        { statusField: 'production', remarksField: 'productionRemarks' },
+        { statusField: 'maintenance', remarksField: 'maintenanceRemarks' },
+        { statusField: 'pcl', remarksField: 'pclRemarks' },
+        { statusField: 'materials', remarksField: 'materialsRemarks' },
+        { statusField: 'marketing', remarksField: 'marketingRemarks' },
+        { statusField: 'hr', remarksField: 'hrRemarks' },
+        { statusField: 'safety', remarksField: 'safetyRemarks' },
+        { statusField: 'unitHead', remarksField: 'unitHeadRemarks' }
+      ];
+
+      for (const pair of fieldsToCheck) {
+        const incomingStatus = logData[pair.statusField] || 'Pending';
+        const dbStatus = dbValues[pair.statusField] || 'Pending';
+        const incomingRemarks = logData[pair.remarksField] || '';
+        const dbRemarks = dbValues[pair.remarksField] || '';
+
+        if (incomingStatus !== dbStatus || incomingRemarks !== dbRemarks) {
+          if (pair.statusField !== allowedField) {
             return res.status(403).json({ 
-              error: `Access denied. You are only authorized to sign off for the '${userMappedDept}' department (field: '${allowedField}').` 
+              error: `Access denied. You are only authorized to sign off or modify remarks for the '${userMappedDept}' department (field: '${allowedField}').` 
             });
           }
         }

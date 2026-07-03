@@ -19,15 +19,25 @@ export const getL3Approvals = async () => {
             v.status as l2Decision,
             v.remarks as l2Remarks,
             COALESCE(l.ped, 'Pending') as ped,
+            COALESCE(l.ped_remarks, '') as pedRemarks,
             COALESCE(l.qad, 'Pending') as qad,
+            COALESCE(l.qad_remarks, '') as qadRemarks,
             COALESCE(l.production, 'Pending') as production,
+            COALESCE(l.production_remarks, '') as productionRemarks,
             COALESCE(l.maintenance, 'Pending') as maintenance,
+            COALESCE(l.maintenance_remarks, '') as maintenanceRemarks,
             COALESCE(l.pcl, 'Pending') as pcl,
+            COALESCE(l.pcl_remarks, '') as pclRemarks,
             COALESCE(l.materials, 'Pending') as materials,
+            COALESCE(l.materials_remarks, '') as materialsRemarks,
             COALESCE(l.marketing, 'Pending') as marketing,
+            COALESCE(l.marketing_remarks, '') as marketingRemarks,
             COALESCE(l.hr, 'Pending') as hr,
+            COALESCE(l.hr_remarks, '') as hrRemarks,
             COALESCE(l.safety, 'Pending') as safety,
+            COALESCE(l.safety_remarks, '') as safetyRemarks,
             COALESCE(l.unit_head, 'Pending') as unitHead,
+            COALESCE(l.unit_head_remarks, '') as unitHeadRemarks,
             e.qa_approval as qaApproval
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
@@ -43,7 +53,18 @@ export const getL3Approvals = async () => {
 
 export const getL3DetailsByChangeNo = async (changeNo) => {
   const [rows] = await pool.query(
-    `SELECT change_no as changeNo, ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead, date, requester
+    `SELECT change_no as changeNo, 
+            ped, ped_remarks as pedRemarks,
+            qad, qad_remarks as qadRemarks,
+            production, production_remarks as productionRemarks,
+            maintenance, maintenance_remarks as maintenanceRemarks,
+            pcl, pcl_remarks as pclRemarks,
+            materials, materials_remarks as materialsRemarks,
+            marketing, marketing_remarks as marketingRemarks,
+            hr, hr_remarks as hrRemarks,
+            safety, safety_remarks as safetyRemarks,
+            unit_head as unitHead, unit_head_remarks as unitHeadRemarks,
+            date, requester
      FROM l3_approvals
      WHERE change_no = ?`,
     [changeNo]
@@ -54,7 +75,16 @@ export const getL3DetailsByChangeNo = async (changeNo) => {
 export const addL3ApprovalLog = async (logData) => {
   const {
     changeNo, date, requester,
-    ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unitHead
+    ped, pedRemarks,
+    qad, qadRemarks,
+    production, productionRemarks,
+    maintenance, maintenanceRemarks,
+    pcl, pclRemarks,
+    materials, materialsRemarks,
+    marketing, marketingRemarks,
+    hr, hrRemarks,
+    safety, safetyRemarks,
+    unitHead, unitHeadRemarks
   } = logData;
 
   const connection = await pool.getConnection();
@@ -81,7 +111,16 @@ export const addL3ApprovalLog = async (logData) => {
 
     // Fetch existing L3 approval before update to detect HOD decision changes
     const [existingL3Rows] = await connection.query(
-      `SELECT ped, qad, production, maintenance, pcl, materials, marketing, hr, safety, unit_head as unitHead
+      `SELECT ped, ped_remarks as pedRemarks,
+              qad, qad_remarks as qadRemarks,
+              production, production_remarks as productionRemarks,
+              maintenance, maintenance_remarks as maintenanceRemarks,
+              pcl, pcl_remarks as pclRemarks,
+              materials, materials_remarks as materialsRemarks,
+              marketing, marketing_remarks as marketingRemarks,
+              hr, hr_remarks as hrRemarks,
+              safety, safety_remarks as safetyRemarks,
+              unit_head as unitHead, unit_head_remarks as unitHeadRemarks
        FROM l3_approvals WHERE change_no = ?`,
       [changeNo]
     );
@@ -102,56 +141,120 @@ export const addL3ApprovalLog = async (logData) => {
         dbL3.unitHead && dbL3.unitHead !== 'Pending';
     }
 
-
-
     let finalPed = ped;
+    let finalPedRemarks = pedRemarks;
     let finalQad = qad;
+    let finalQadRemarks = qadRemarks;
     let finalProduction = production;
+    let finalProductionRemarks = productionRemarks;
     let finalMaintenance = maintenance;
+    let finalMaintenanceRemarks = maintenanceRemarks;
     let finalPcl = pcl;
+    let finalPclRemarks = pclRemarks;
     let finalMaterials = materials;
+    let finalMaterialsRemarks = materialsRemarks;
     let finalMarketing = marketing;
+    let finalMarketingRemarks = marketingRemarks;
     let finalHr = hr;
+    let finalHrRemarks = hrRemarks;
     let finalSafety = safety;
+    let finalSafetyRemarks = safetyRemarks;
     let finalUnitHead = unitHead;
+    let finalUnitHeadRemarks = unitHeadRemarks;
 
     if (existingL3Rows.length > 0) {
       const dbL3 = existingL3Rows[0];
-      if ((ped === 'Pending' || !ped) && dbL3.ped && dbL3.ped !== 'Pending') finalPed = dbL3.ped;
-      if ((qad === 'Pending' || !qad) && dbL3.qad && dbL3.qad !== 'Pending') finalQad = dbL3.qad;
-      if ((production === 'Pending' || !production) && dbL3.production && dbL3.production !== 'Pending') finalProduction = dbL3.production;
-      if ((maintenance === 'Pending' || !maintenance) && dbL3.maintenance && dbL3.maintenance !== 'Pending') finalMaintenance = dbL3.maintenance;
-      if ((pcl === 'Pending' || !pcl) && dbL3.pcl && dbL3.pcl !== 'Pending') finalPcl = dbL3.pcl;
-      if ((materials === 'Pending' || !materials) && dbL3.materials && dbL3.materials !== 'Pending') finalMaterials = dbL3.materials;
-      if ((marketing === 'Pending' || !marketing) && dbL3.marketing && dbL3.marketing !== 'Pending') finalMarketing = dbL3.marketing;
-      if ((hr === 'Pending' || !hr) && dbL3.hr && dbL3.hr !== 'Pending') finalHr = dbL3.hr;
-      if ((safety === 'Pending' || !safety) && dbL3.safety && dbL3.safety !== 'Pending') finalSafety = dbL3.safety;
-      if ((unitHead === 'Pending' || !unitHead) && dbL3.unitHead && dbL3.unitHead !== 'Pending') finalUnitHead = dbL3.unitHead;
+      if ((ped === 'Pending' || !ped) && dbL3.ped && dbL3.ped !== 'Pending') {
+        finalPed = dbL3.ped;
+        finalPedRemarks = dbL3.pedRemarks;
+      }
+      if ((qad === 'Pending' || !qad) && dbL3.qad && dbL3.qad !== 'Pending') {
+        finalQad = dbL3.qad;
+        finalQadRemarks = dbL3.qadRemarks;
+      }
+      if ((production === 'Pending' || !production) && dbL3.production && dbL3.production !== 'Pending') {
+        finalProduction = dbL3.production;
+        finalProductionRemarks = dbL3.productionRemarks;
+      }
+      if ((maintenance === 'Pending' || !maintenance) && dbL3.maintenance && dbL3.maintenance !== 'Pending') {
+        finalMaintenance = dbL3.maintenance;
+        finalMaintenanceRemarks = dbL3.maintenanceRemarks;
+      }
+      if ((pcl === 'Pending' || !pcl) && dbL3.pcl && dbL3.pcl !== 'Pending') {
+        finalPcl = dbL3.pcl;
+        finalPclRemarks = dbL3.pclRemarks;
+      }
+      if ((materials === 'Pending' || !materials) && dbL3.materials && dbL3.materials !== 'Pending') {
+        finalMaterials = dbL3.materials;
+        finalMaterialsRemarks = dbL3.materialsRemarks;
+      }
+      if ((marketing === 'Pending' || !marketing) && dbL3.marketing && dbL3.marketing !== 'Pending') {
+        finalMarketing = dbL3.marketing;
+        finalMarketingRemarks = dbL3.marketingRemarks;
+      }
+      if ((hr === 'Pending' || !hr) && dbL3.hr && dbL3.hr !== 'Pending') {
+        finalHr = dbL3.hr;
+        finalHrRemarks = dbL3.hrRemarks;
+      }
+      if ((safety === 'Pending' || !safety) && dbL3.safety && dbL3.safety !== 'Pending') {
+        finalSafety = dbL3.safety;
+        finalSafetyRemarks = dbL3.safetyRemarks;
+      }
+      if ((unitHead === 'Pending' || !unitHead) && dbL3.unitHead && dbL3.unitHead !== 'Pending') {
+        finalUnitHead = dbL3.unitHead;
+        finalUnitHeadRemarks = dbL3.unitHeadRemarks;
+      }
     }
 
     await connection.query(
       `INSERT INTO l3_approvals (
-        change_no, date, requester, ped, qad, production, 
-        maintenance, pcl, materials, marketing, hr, safety, unit_head
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        change_no, date, requester, 
+        ped, ped_remarks, 
+        qad, qad_remarks, 
+        production, production_remarks, 
+        maintenance, maintenance_remarks, 
+        pcl, pcl_remarks, 
+        materials, materials_remarks, 
+        marketing, marketing_remarks, 
+        hr, hr_remarks, 
+        safety, safety_remarks, 
+        unit_head, unit_head_remarks
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         date = VALUES(date),
         requester = VALUES(requester),
         ped = VALUES(ped),
+        ped_remarks = VALUES(ped_remarks),
         qad = VALUES(qad),
+        qad_remarks = VALUES(qad_remarks),
         production = VALUES(production),
+        production_remarks = VALUES(production_remarks),
         maintenance = VALUES(maintenance),
+        maintenance_remarks = VALUES(maintenance_remarks),
         pcl = VALUES(pcl),
+        pcl_remarks = VALUES(pcl_remarks),
         materials = VALUES(materials),
+        materials_remarks = VALUES(materials_remarks),
         marketing = VALUES(marketing),
+        marketing_remarks = VALUES(marketing_remarks),
         hr = VALUES(hr),
+        hr_remarks = VALUES(hr_remarks),
         safety = VALUES(safety),
-        unit_head = VALUES(unit_head)`,
+        safety_remarks = VALUES(safety_remarks),
+        unit_head = VALUES(unit_head),
+        unit_head_remarks = VALUES(unit_head_remarks)`,
       [
         changeNo, date, requester,
-        finalPed || 'Pending', finalQad || 'Pending', finalProduction || 'Pending',
-        finalMaintenance || 'Pending', finalPcl || 'Pending', finalMaterials || 'Pending',
-        finalMarketing || 'Pending', finalHr || 'Pending', finalSafety || 'Pending', finalUnitHead || 'Pending'
+        finalPed || 'Pending', finalPedRemarks || '',
+        finalQad || 'Pending', finalQadRemarks || '',
+        finalProduction || 'Pending', finalProductionRemarks || '',
+        finalMaintenance || 'Pending', finalMaintenanceRemarks || '',
+        finalPcl || 'Pending', finalPclRemarks || '',
+        finalMaterials || 'Pending', finalMaterialsRemarks || '',
+        finalMarketing || 'Pending', finalMarketingRemarks || '',
+        finalHr || 'Pending', finalHrRemarks || '',
+        finalSafety || 'Pending', finalSafetyRemarks || '',
+        finalUnitHead || 'Pending', finalUnitHeadRemarks || ''
       ]
     );
 

@@ -49,6 +49,7 @@ export const L3RequestTracker = ({
   const [formDate, setFormDate] = useState('');
   const [formRequester, setFormRequester] = useState('');
   const [formStatus, setFormStatus] = useState('');
+  const [formRemarks, setFormRemarks] = useState('');
 
   // Inline field validation errors
   const [fieldErrors, setFieldErrors] = useState({});
@@ -140,24 +141,47 @@ export const L3RequestTracker = ({
     }
   }, [userEmail, userDept]);
 
-  // Dynamic form status prefill based on selected change request and acting department
+  // Dynamic form status and remarks prefill based on selected change request and acting department
   useEffect(() => {
     if (selectedChangeId) {
       const currentLog = approvalLogs.find(log => log.changeNo === selectedChangeId);
       if (currentLog) {
         let currentStatus = 'Pending';
-        if (actingDept === 'PED') currentStatus = currentLog.ped;
-        else if (actingDept === 'QAD') currentStatus = currentLog.qad;
-        else if (actingDept === 'Production') currentStatus = currentLog.production;
-        else if (actingDept === 'Maintenance') currentStatus = currentLog.maintenance;
-        else if (actingDept === 'PC & L') currentStatus = currentLog.pcl;
-        else if (actingDept === 'Materials') currentStatus = currentLog.materials;
-        else if (actingDept === 'Marketing') currentStatus = currentLog.marketing;
-        else if (actingDept === 'HR') currentStatus = currentLog.hr;
-        else if (actingDept === 'Safety') currentStatus = currentLog.safety;
-        else if (actingDept === 'Unit Head') currentStatus = currentLog.unitHead;
+        let currentRemarks = '';
+        if (actingDept === 'PED') {
+          currentStatus = currentLog.ped;
+          currentRemarks = currentLog.pedRemarks;
+        } else if (actingDept === 'QAD') {
+          currentStatus = currentLog.qad;
+          currentRemarks = currentLog.qadRemarks;
+        } else if (actingDept === 'Production') {
+          currentStatus = currentLog.production;
+          currentRemarks = currentLog.productionRemarks;
+        } else if (actingDept === 'Maintenance') {
+          currentStatus = currentLog.maintenance;
+          currentRemarks = currentLog.maintenanceRemarks;
+        } else if (actingDept === 'PC & L') {
+          currentStatus = currentLog.pcl;
+          currentRemarks = currentLog.pclRemarks;
+        } else if (actingDept === 'Materials') {
+          currentStatus = currentLog.materials;
+          currentRemarks = currentLog.materialsRemarks;
+        } else if (actingDept === 'Marketing') {
+          currentStatus = currentLog.marketing;
+          currentRemarks = currentLog.marketingRemarks;
+        } else if (actingDept === 'HR') {
+          currentStatus = currentLog.hr;
+          currentRemarks = currentLog.hrRemarks;
+        } else if (actingDept === 'Safety') {
+          currentStatus = currentLog.safety;
+          currentRemarks = currentLog.safetyRemarks;
+        } else if (actingDept === 'Unit Head') {
+          currentStatus = currentLog.unitHead;
+          currentRemarks = currentLog.unitHeadRemarks;
+        }
 
         setFormStatus(currentStatus === 'Pending' ? '' : (currentStatus || ''));
+        setFormRemarks(currentRemarks || '');
       }
     }
   }, [actingDept, selectedChangeId, approvalLogs]);
@@ -186,6 +210,7 @@ export const L3RequestTracker = ({
     setFormDate('');
     setFormRequester('');
     setFormStatus('');
+    setFormRemarks('');
     setFieldErrors({});
   };
 
@@ -224,15 +249,25 @@ export const L3RequestTracker = ({
       date: currentLog.date,
       requester: currentLog.requester,
       ped: actingDept === 'PED' ? formStatus : currentLog.ped,
+      pedRemarks: actingDept === 'PED' ? formRemarks : currentLog.pedRemarks,
       qad: actingDept === 'QAD' ? formStatus : currentLog.qad,
+      qadRemarks: actingDept === 'QAD' ? formRemarks : currentLog.qadRemarks,
       production: actingDept === 'Production' ? formStatus : currentLog.production,
+      productionRemarks: actingDept === 'Production' ? formRemarks : currentLog.productionRemarks,
       maintenance: actingDept === 'Maintenance' ? formStatus : currentLog.maintenance,
+      maintenanceRemarks: actingDept === 'Maintenance' ? formRemarks : currentLog.maintenanceRemarks,
       pcl: actingDept === 'PC & L' ? formStatus : currentLog.pcl,
+      pclRemarks: actingDept === 'PC & L' ? formRemarks : currentLog.pclRemarks,
       materials: actingDept === 'Materials' ? formStatus : currentLog.materials,
+      materialsRemarks: actingDept === 'Materials' ? formRemarks : currentLog.materialsRemarks,
       marketing: actingDept === 'Marketing' ? formStatus : currentLog.marketing,
+      marketingRemarks: actingDept === 'Marketing' ? formRemarks : currentLog.marketingRemarks,
       hr: actingDept === 'HR' ? formStatus : currentLog.hr,
+      hrRemarks: actingDept === 'HR' ? formRemarks : currentLog.hrRemarks,
       safety: actingDept === 'Safety' ? formStatus : currentLog.safety,
-      unitHead: actingDept === 'Unit Head' ? formStatus : currentLog.unitHead
+      safetyRemarks: actingDept === 'Safety' ? formRemarks : currentLog.safetyRemarks,
+      unitHead: actingDept === 'Unit Head' ? formStatus : currentLog.unitHead,
+      unitHeadRemarks: actingDept === 'Unit Head' ? formRemarks : currentLog.unitHeadRemarks
     };
 
     try {
@@ -657,6 +692,19 @@ export const L3RequestTracker = ({
             )}
           </div>
 
+          {/* REMARKS */}
+          <div className="space-y-[4px]">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remarks</label>
+            <textarea
+              placeholder="Enter sign-off comments / remarks..."
+              value={formRemarks}
+              disabled={!selectedChangeId || showAsValidated || !isL2Accepted || !canEdit || isChangeClosed}
+              onChange={(e) => setFormRemarks(e.target.value)}
+              rows={3}
+              className="w-full bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed border border-slate-200 focus:border-[#0066cc] rounded-[6px] py-[8px] px-[12px] text-[12px] outline-none resize-y"
+            />
+          </div>
+
           {/* Submit / Cancel row */}
           <div className="space-y-[8px] pt-[4px]">
             <button
@@ -801,23 +849,25 @@ export const L3RequestTracker = ({
 
                           {/* Department Badges */}
                           {[
-                            { val: log.ped, type: 'ped' },
-                            { val: log.qad, type: 'qad' },
-                            { val: log.production, type: 'production' },
-                            { val: log.maintenance, type: 'maintenance' },
-                            { val: log.pcl, type: 'pcl' },
-                            { val: log.materials, type: 'materials' },
-                            { val: log.marketing, type: 'marketing' },
-                            { val: log.hr, type: 'hr' },
-                            { val: log.safety, type: 'safety' },
-                            { val: log.unitHead, type: 'unitHead' }
+                            { val: log.ped, type: 'ped', remarks: log.pedRemarks },
+                            { val: log.qad, type: 'qad', remarks: log.qadRemarks },
+                            { val: log.production, type: 'production', remarks: log.productionRemarks },
+                            { val: log.maintenance, type: 'maintenance', remarks: log.maintenanceRemarks },
+                            { val: log.pcl, type: 'pcl', remarks: log.pclRemarks },
+                            { val: log.materials, type: 'materials', remarks: log.materialsRemarks },
+                            { val: log.marketing, type: 'marketing', remarks: log.marketingRemarks },
+                            { val: log.hr, type: 'hr', remarks: log.hrRemarks },
+                            { val: log.safety, type: 'safety', remarks: log.safetyRemarks },
+                            { val: log.unitHead, type: 'unitHead', remarks: log.unitHeadRemarks }
                           ].map((cell, cIdx) => {
                             const status = cell.val;
                             const isAccepted = status === 'Accepted' || status === 'Approved' || status === 'Acknowledge';
                             const isRejected = status === 'Rejected';
                             return (
                               <td key={cIdx} className="py-[8px] px-[2px] text-center">
-                                <span className={`inline-block w-full text-center py-[2px] rounded-[4px] border font-bold ${
+                                <span 
+                                  title={cell.remarks ? `Remarks: ${cell.remarks}` : 'No remarks'}
+                                  className={`inline-block w-full text-center py-[2px] rounded-[4px] border font-bold cursor-help ${
                                   status === 'Acknowledge' ? 'text-[7.5px] px-[1px]' : 'text-[9px] px-[4px]'
                                 } ${isAccepted
                                     ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
@@ -1522,20 +1572,21 @@ export const L3RequestTracker = ({
                       </div>
 
                       {/* Matrix Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px]">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
                         {[
-                          { label: 'PED', prop: 'ped' },
-                          { label: 'QAD', prop: 'qad' },
-                          { label: 'Production', prop: 'production' },
-                          { label: 'Maintenance', prop: 'maintenance' },
-                          { label: 'PC & L', prop: 'pcl' },
-                          { label: 'Materials', prop: 'materials' },
-                          { label: 'Marketing', prop: 'marketing' },
-                          { label: 'HR', prop: 'hr' },
-                          { label: 'Safety', prop: 'safety' },
-                          { label: 'Unit Head', prop: 'unitHead' }
+                          { label: 'PED', prop: 'ped', remarksProp: 'pedRemarks' },
+                          { label: 'QAD', prop: 'qad', remarksProp: 'qadRemarks' },
+                          { label: 'Production', prop: 'production', remarksProp: 'productionRemarks' },
+                          { label: 'Maintenance', prop: 'maintenance', remarksProp: 'maintenanceRemarks' },
+                          { label: 'PC & L', prop: 'pcl', remarksProp: 'pclRemarks' },
+                          { label: 'Materials', prop: 'materials', remarksProp: 'materialsRemarks' },
+                          { label: 'Marketing', prop: 'marketing', remarksProp: 'marketingRemarks' },
+                          { label: 'HR', prop: 'hr', remarksProp: 'hrRemarks' },
+                          { label: 'Safety', prop: 'safety', remarksProp: 'safetyRemarks' },
+                          { label: 'Unit Head', prop: 'unitHead', remarksProp: 'unitHeadRemarks' }
                         ].map((dept, index) => {
                           const status = selectedLog[dept.prop] || 'Pending';
+                          const remarks = selectedLog[dept.remarksProp] || '';
                           const isAccepted = status === 'Accepted' || status === 'Approved' || status === 'Acknowledge';
                           const isRejected = status === 'Rejected';
                           const badgeClass = isAccepted
@@ -1547,12 +1598,20 @@ export const L3RequestTracker = ({
                           return (
                             <div
                               key={index}
-                              className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
+                              className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-start text-left gap-[6px] shadow-sm hover:shadow transition-shadow"
                             >
-                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
-                              <span className={`inline-block px-[10px] py-[3px] rounded-full border text-[10px] font-bold shadow-sm ${badgeClass}`}>
-                                L3 {status}
-                              </span>
+                              <div className="flex justify-between items-center w-full">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
+                                <span className={`inline-block px-[8px] py-[2px] rounded-full border text-[9px] font-bold shadow-sm ${badgeClass}`}>
+                                  L3 {status}
+                                </span>
+                              </div>
+                              {status !== 'Pending' && (
+                                <div className="text-[11px] text-slate-600 bg-white border border-slate-100 rounded-md p-2 w-full min-h-[32px] break-words">
+                                  <span className="font-bold text-[9px] text-slate-400 block uppercase tracking-wider mb-0.5">Remarks</span>
+                                  {remarks || <span className="text-slate-400 italic">No remarks provided.</span>}
+                                </div>
+                              )}
                             </div>
                           );
                         })}
