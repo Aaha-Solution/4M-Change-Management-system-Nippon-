@@ -696,7 +696,7 @@ export const L3RequestTracker = ({
           <div className="space-y-[4px]">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remarks</label>
             <textarea
-              placeholder="Enter sign-off comments / remarks..."
+              placeholder="Enter remarks..."
               value={formRemarks}
               disabled={!selectedChangeId || showAsValidated || !isL2Accepted || !canEdit || isChangeClosed}
               onChange={(e) => setFormRemarks(e.target.value)}
