@@ -663,16 +663,16 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
     if ((targetTab === 'l3' || targetTab === 'all') && selectedLog) {
       const l3Headers = [['DEPARTMENT', 'APPROVAL STATUS', 'REMARKS']];
       const l3Rows = [
-        ['PED', selectedLog.ped || 'Pending', selectedLog.pedRemarks || ''],
-        ['QAD', selectedLog.qad || 'Pending', selectedLog.qadRemarks || ''],
-        ['Production', selectedLog.production || 'Pending', selectedLog.productionRemarks || ''],
-        ['Maintenance', selectedLog.maintenance || 'Pending', selectedLog.maintenanceRemarks || ''],
-        ['PC & L', selectedLog.pcl || 'Pending', selectedLog.pclRemarks || ''],
-        ['Materials', selectedLog.materials || 'Pending', selectedLog.materialsRemarks || ''],
-        ['Marketing', selectedLog.marketing || 'Pending', selectedLog.marketingRemarks || ''],
-        ['HR', selectedLog.hr || 'Pending', selectedLog.hrRemarks || ''],
-        ['Safety', selectedLog.safety || 'Pending', selectedLog.safetyRemarks || ''],
-        ['Unit Head', selectedLog.unitHead || selectedLog.unit_head || 'Pending', selectedLog.unitHeadRemarks || selectedLog.unit_head_remarks || '']
+        ['PED', selectedLog.ped || 'Pending', selectedLog.pedRemarks || '-'],
+        ['QAD', selectedLog.qad || 'Pending', selectedLog.qadRemarks || '-'],
+        ['Production', selectedLog.production || 'Pending', selectedLog.productionRemarks || '-'],
+        ['Maintenance', selectedLog.maintenance || 'Pending', selectedLog.maintenanceRemarks || '-'],
+        ['PC & L', selectedLog.pcl || 'Pending', selectedLog.pclRemarks || '-'],
+        ['Materials', selectedLog.materials || 'Pending', selectedLog.materialsRemarks || '-'],
+        ['Marketing', selectedLog.marketing || 'Pending', selectedLog.marketingRemarks || '-'],
+        ['HR', selectedLog.hr || 'Pending', selectedLog.hrRemarks || '-'],
+        ['Safety', selectedLog.safety || 'Pending', selectedLog.safetyRemarks || '-'],
+        ['Unit Head', selectedLog.unitHead || selectedLog.unit_head || 'Pending', selectedLog.unitHeadRemarks || selectedLog.unit_head_remarks || '-']
       ];
 
       autoTable(doc, {
