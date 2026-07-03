@@ -1447,18 +1447,18 @@ export const AllApprovals = ({
                       </div>
 
                       {/* Matrix Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-[12px]">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
                         {[
-                          { label: 'PED', value: selectedLog.ped },
-                          { label: 'QAD', value: selectedLog.qad },
-                          { label: 'Production', value: selectedLog.production },
-                          { label: 'Maintenance', value: selectedLog.maintenance },
-                          { label: 'PC & L', value: selectedLog.pcl },
-                          { label: 'Materials', value: selectedLog.materials },
-                          { label: 'Marketing', value: selectedLog.marketing },
-                          { label: 'HR', value: selectedLog.hr },
-                          { label: 'Safety', value: selectedLog.safety },
-                          { label: 'Unit Head', value: selectedLog.unitHead }
+                          { label: 'PED', prop: 'ped', remarksProp: 'pedRemarks' },
+                          { label: 'QAD', prop: 'qad', remarksProp: 'qadRemarks' },
+                          { label: 'Production', prop: 'production', remarksProp: 'productionRemarks' },
+                          { label: 'Maintenance', prop: 'maintenance', remarksProp: 'maintenanceRemarks' },
+                          { label: 'PC & L', prop: 'pcl', remarksProp: 'pclRemarks' },
+                          { label: 'Materials', prop: 'materials', remarksProp: 'materialsRemarks' },
+                          { label: 'Marketing', prop: 'marketing', remarksProp: 'marketingRemarks' },
+                          { label: 'HR', prop: 'hr', remarksProp: 'hrRemarks' },
+                          { label: 'Safety', prop: 'safety', remarksProp: 'safetyRemarks' },
+                          { label: 'Unit Head', prop: 'unitHead', remarksProp: 'unitHeadRemarks' }
                         ].map((dept, index) => {
                           const propMap = {
                             'PED': selectedLog.ped,
@@ -1472,7 +1472,20 @@ export const AllApprovals = ({
                             'Safety': selectedLog.safety,
                             'Unit Head': selectedLog.unitHead || selectedLog.unit_head
                           };
+                          const remarksMap = {
+                            'PED': selectedLog.pedRemarks,
+                            'QAD': selectedLog.qadRemarks,
+                            'Production': selectedLog.productionRemarks,
+                            'Maintenance': selectedLog.maintenanceRemarks,
+                            'PC & L': selectedLog.pclRemarks,
+                            'Materials': selectedLog.materialsRemarks,
+                            'Marketing': selectedLog.marketingRemarks,
+                            'HR': selectedLog.hrRemarks,
+                            'Safety': selectedLog.safetyRemarks,
+                            'Unit Head': selectedLog.unitHeadRemarks || selectedLog.unit_head_remarks
+                          };
                           const status = propMap[dept.label] || 'Pending';
+                          const remarks = remarksMap[dept.label] || '';
                           const isAccepted = status === 'Accepted' || status === 'Approved' || status === 'Acknowledge';
                           const isRejected = status === 'Rejected';
                           const badgeClass = isAccepted
@@ -1484,12 +1497,20 @@ export const AllApprovals = ({
                           return (
                             <div
                               key={index}
-                              className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-center justify-center text-center gap-[6px] shadow-sm hover:shadow transition-shadow"
+                              className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-start text-left gap-[6px] shadow-sm hover:shadow transition-shadow"
                             >
-                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
-                              <span className={`inline-block px-[10px] py-[3px] rounded-full border text-[10px] font-bold shadow-sm ${badgeClass}`}>
-                                L3 {status}
-                              </span>
+                              <div className="flex justify-between items-center w-full">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
+                                <span className={`inline-block px-[8px] py-[2px] rounded-full border text-[9px] font-bold shadow-sm ${badgeClass}`}>
+                                  L3 {status}
+                                </span>
+                              </div>
+                              {status !== 'Pending' && (
+                                <div className="text-[11px] text-slate-600 bg-white border border-slate-100 rounded-md p-2 w-full min-h-[32px] break-words">
+                                  <span className="font-bold text-[9px] text-slate-400 block uppercase tracking-wider mb-0.5">Remarks</span>
+                                  {remarks || <span className="text-slate-400 italic">No remarks provided.</span>}
+                                </div>
+                              )}
                             </div>
                           );
                         })}

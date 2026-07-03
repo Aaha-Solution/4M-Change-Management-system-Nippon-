@@ -661,23 +661,23 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
 
     // Section 4: Level 3 Approval Matrix (short dept labels from modal)
     if ((targetTab === 'l3' || targetTab === 'all') && selectedLog) {
-      const l3Headers = [['DEPARTMENT', 'APPROVAL STATUS']];
+      const l3Headers = [['DEPARTMENT', 'APPROVAL STATUS', 'REMARKS']];
       const l3Rows = [
-        ['PED', selectedLog.ped || 'Pending'],
-        ['QAD', selectedLog.qad || 'Pending'],
-        ['Production', selectedLog.production || 'Pending'],
-        ['Maintenance', selectedLog.maintenance || 'Pending'],
-        ['PC & L', selectedLog.pcl || 'Pending'],
-        ['Materials', selectedLog.materials || 'Pending'],
-        ['Marketing', selectedLog.marketing || 'Pending'],
-        ['HR', selectedLog.hr || 'Pending'],
-        ['Safety', selectedLog.safety || 'Pending'],
-        ['Unit Head', selectedLog.unitHead || selectedLog.unit_head || 'Pending']
+        ['PED', selectedLog.ped || 'Pending', selectedLog.pedRemarks || ''],
+        ['QAD', selectedLog.qad || 'Pending', selectedLog.qadRemarks || ''],
+        ['Production', selectedLog.production || 'Pending', selectedLog.productionRemarks || ''],
+        ['Maintenance', selectedLog.maintenance || 'Pending', selectedLog.maintenanceRemarks || ''],
+        ['PC & L', selectedLog.pcl || 'Pending', selectedLog.pclRemarks || ''],
+        ['Materials', selectedLog.materials || 'Pending', selectedLog.materialsRemarks || ''],
+        ['Marketing', selectedLog.marketing || 'Pending', selectedLog.marketingRemarks || ''],
+        ['HR', selectedLog.hr || 'Pending', selectedLog.hrRemarks || ''],
+        ['Safety', selectedLog.safety || 'Pending', selectedLog.safetyRemarks || ''],
+        ['Unit Head', selectedLog.unitHead || selectedLog.unit_head || 'Pending', selectedLog.unitHeadRemarks || selectedLog.unit_head_remarks || '']
       ];
 
       autoTable(doc, {
         startY: doc.lastAutoTable.finalY + 15,
-        head: [[{ content: '4. LEVEL 3 FINAL APPROVAL MATRIX', colSpan: 2 }]],
+        head: [[{ content: '4. LEVEL 3 FINAL APPROVAL MATRIX', colSpan: 3 }]],
         body: [
           ...l3Headers,
           ...l3Rows
@@ -694,8 +694,9 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
           textColor: textColor
         },
         columnStyles: {
-          0: { cellWidth: 255, fillColor: lightBg, fontStyle: 'bold' },
-          1: { cellWidth: 260 }
+          0: { cellWidth: 100, fillColor: lightBg, fontStyle: 'bold' },
+          1: { cellWidth: 110, halign: 'center' },
+          2: { cellWidth: 305 }
         },
         margin: { left: 40, right: 40 },
         didParseCell: (data) => {
@@ -703,6 +704,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
             data.cell.styles.fillColor = [226, 232, 240]; // Slate-200
             data.cell.styles.textColor = [15, 23, 42];    // Slate-900
             data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.halign = 'left';
           } else if (data.column.index === 1 && data.row.index > 0) {
             const val = data.cell.text[0];
             const cleanVal = val ? val.trim().toLowerCase() : '';
@@ -977,16 +979,16 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       item.changeNo,
       item.date ? formatDateToDDMMYYYY(item.date) : '-',
       item.requester ? item.requester.split('@')[0] : '-',
-      item.ped || 'Pending',
-      item.qad || 'Pending',
-      item.production || 'Pending',
-      item.maintenance || 'Pending',
-      item.pcl || 'Pending',
-      item.materials || 'Pending',
-      item.marketing || 'Pending',
-      item.hr || 'Pending',
-      item.safety || 'Pending',
-      item.unitHead || 'Pending'
+      item.ped ? `${item.ped}${item.pedRemarks ? `\n(${item.pedRemarks})` : ''}` : 'Pending',
+      item.qad ? `${item.qad}${item.qadRemarks ? `\n(${item.qadRemarks})` : ''}` : 'Pending',
+      item.production ? `${item.production}${item.productionRemarks ? `\n(${item.productionRemarks})` : ''}` : 'Pending',
+      item.maintenance ? `${item.maintenance}${item.maintenanceRemarks ? `\n(${item.maintenanceRemarks})` : ''}` : 'Pending',
+      item.pcl ? `${item.pcl}${item.pclRemarks ? `\n(${item.pclRemarks})` : ''}` : 'Pending',
+      item.materials ? `${item.materials}${item.materialsRemarks ? `\n(${item.materialsRemarks})` : ''}` : 'Pending',
+      item.marketing ? `${item.marketing}${item.marketingRemarks ? `\n(${item.marketingRemarks})` : ''}` : 'Pending',
+      item.hr ? `${item.hr}${item.hrRemarks ? `\n(${item.hrRemarks})` : ''}` : 'Pending',
+      item.safety ? `${item.safety}${item.safetyRemarks ? `\n(${item.safetyRemarks})` : ''}` : 'Pending',
+      item.unitHead ? `${item.unitHead}${item.unitHeadRemarks ? `\n(${item.unitHeadRemarks})` : ''}` : 'Pending'
     ]);
 
     // Branding & Title (Purple theme)
