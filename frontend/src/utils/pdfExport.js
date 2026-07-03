@@ -979,16 +979,16 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
       item.changeNo,
       item.date ? formatDateToDDMMYYYY(item.date) : '-',
       item.requester ? item.requester.split('@')[0] : '-',
-      item.ped ? `${item.ped}${item.pedRemarks ? `\n(${item.pedRemarks})` : ''}` : 'Pending',
-      item.qad ? `${item.qad}${item.qadRemarks ? `\n(${item.qadRemarks})` : ''}` : 'Pending',
-      item.production ? `${item.production}${item.productionRemarks ? `\n(${item.productionRemarks})` : ''}` : 'Pending',
-      item.maintenance ? `${item.maintenance}${item.maintenanceRemarks ? `\n(${item.maintenanceRemarks})` : ''}` : 'Pending',
-      item.pcl ? `${item.pcl}${item.pclRemarks ? `\n(${item.pclRemarks})` : ''}` : 'Pending',
-      item.materials ? `${item.materials}${item.materialsRemarks ? `\n(${item.materialsRemarks})` : ''}` : 'Pending',
-      item.marketing ? `${item.marketing}${item.marketingRemarks ? `\n(${item.marketingRemarks})` : ''}` : 'Pending',
-      item.hr ? `${item.hr}${item.hrRemarks ? `\n(${item.hrRemarks})` : ''}` : 'Pending',
-      item.safety ? `${item.safety}${item.safetyRemarks ? `\n(${item.safetyRemarks})` : ''}` : 'Pending',
-      item.unitHead ? `${item.unitHead}${item.unitHeadRemarks ? `\n(${item.unitHeadRemarks})` : ''}` : 'Pending'
+      item.ped || 'Pending',
+      item.qad || 'Pending',
+      item.production || 'Pending',
+      item.maintenance || 'Pending',
+      item.pcl || 'Pending',
+      item.materials || 'Pending',
+      item.marketing || 'Pending',
+      item.hr || 'Pending',
+      item.safety || 'Pending',
+      item.unitHead || 'Pending'
     ]);
 
     // Branding & Title (Purple theme)
