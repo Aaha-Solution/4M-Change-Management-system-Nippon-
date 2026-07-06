@@ -55,6 +55,9 @@ const applyCellStatusColors = (data, minColIndex, maxColIndex = minColIndex) => 
     } else if (cleanVal.includes('need') || cleanVal.includes('qa')) {
       data.cell.styles.textColor = [79, 70, 229]; // Indigo/Blue
       data.cell.styles.fontStyle = 'bold';
+    } else if (cleanVal.includes('acknow')) {
+      data.cell.styles.textColor = [0, 0, 0]; // Black
+      data.cell.styles.fontStyle = 'bold';
     }
   }
 };
@@ -178,15 +181,16 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
       bodyStyles: {
         fontSize: 8,
         textColor: [51, 65, 85],
+        valign: 'middle',
         cellPadding: { top: 3, right: 4, bottom: 3, left: 4 }
       },
       columnStyles: {
         0: { cellWidth: 25, halign: 'center' },          // SL. NO.
-        1: { cellWidth: 70, fontStyle: 'bold' },          // 4M CHANGE NO
+        1: { cellWidth: 70, fontStyle: 'bold', halign: 'center' },          // 4M CHANGE NO
         2: { cellWidth: 65, halign: 'center' },           // MACHINE NO.
-        3: { cellWidth: 85 },                             // DEPARTMENT
-        4: { cellWidth: 90 },                             // PROCESS NAME
-        5: { cellWidth: 85 },                             // REQUESTED BY
+        3: { cellWidth: 85, halign: 'center' },                             // DEPARTMENT
+        4: { cellWidth: 90, halign: 'center' },                             // PROCESS NAME
+        5: { cellWidth: 85, halign: 'center' },                             // REQUESTED BY
         6: { cellWidth: 60, halign: 'center' },           // REQUEST DATE
         7: { cellWidth: 62, halign: 'center' },           // HOD APPROVAL
         8: { cellWidth: 55, halign: 'center' },           // L2 STATUS
@@ -366,7 +370,8 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
       },
       bodyStyles: {
         fontSize: 8.5,
-        textColor: textColor
+        textColor: textColor,
+        valign: 'middle'
       },
       columnStyles: {
         0: { cellWidth: 90, fillColor: lightBg, fontStyle: 'bold' },
@@ -519,7 +524,8 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         },
         bodyStyles: {
           fontSize: 8.5,
-          textColor: textColor
+          textColor: textColor,
+          valign: 'middle'
         },
         columnStyles: {
           0: { cellWidth: 140, fillColor: lightBg, fontStyle: 'bold' },
@@ -592,7 +598,8 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
                 },
                 bodyStyles: {
                   fontSize: 8,
-                  textColor: textColor
+                  textColor: textColor,
+                  valign: 'middle'
                 },
                 margin: { left: 40, right: 40 }
               });
@@ -647,7 +654,8 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         },
         bodyStyles: {
           fontSize: 8.5,
-          textColor: textColor
+          textColor: textColor,
+          valign: 'middle'
         },
         columnStyles: {
           0: { cellWidth: 100, fillColor: lightBg, fontStyle: 'bold' },
@@ -691,7 +699,8 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         },
         bodyStyles: {
           fontSize: 8.5,
-          textColor: textColor
+          textColor: textColor,
+          valign: 'middle'
         },
         columnStyles: {
           0: { cellWidth: 100, fillColor: lightBg, fontStyle: 'bold' },
@@ -716,6 +725,9 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
               data.cell.styles.fontStyle = 'bold';
             } else if (cleanVal.includes('pending')) {
               data.cell.styles.textColor = [217, 119, 6]; // Yellow text
+              data.cell.styles.fontStyle = 'bold';
+            } else if (cleanVal.includes('acknow')) {
+              data.cell.styles.textColor = [0, 0, 0]; // Black text
               data.cell.styles.fontStyle = 'bold';
             }
           }
@@ -759,7 +771,8 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         },
         bodyStyles: {
           fontSize: 8.5,
-          textColor: textColor
+          textColor: textColor,
+          valign: 'middle'
         },
         columnStyles: {
           0: { cellWidth: 110, fillColor: lightBg, fontStyle: 'bold' },
@@ -888,17 +901,18 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
       bodyStyles: {
         fontSize: 8,
         textColor: [51, 65, 85],
+        valign: 'middle',
         cellPadding: { top: 3, right: 4, bottom: 3, left: 4 }
       },
       columnStyles: {
         0: { cellWidth: 28, halign: 'center' },          // SL. NO.
-        1: { cellWidth: 75, fontStyle: 'bold' },          // 4M CHANGE NO
+        1: { cellWidth: 75, fontStyle: 'bold', halign: 'center' },          // 4M CHANGE NO
         2: { cellWidth: 65, halign: 'center' },           // REQUESTED DATE
-        3: { cellWidth: 105 },                            // CHANGE REQUEST BY
-        4: { cellWidth: 110 },                            // REQUESTER VALIDATION
-        5: { cellWidth: 138 },                            // APPROVER SET UP VERIFICATION (QA)
+        3: { cellWidth: 105, halign: 'center' },                            // CHANGE REQUEST BY
+        4: { cellWidth: 110, halign: 'center' },                            // REQUESTER VALIDATION
+        5: { cellWidth: 138, halign: 'center' },                            // APPROVER SET UP VERIFICATION (QA)
         6: { cellWidth: 110, halign: 'center' },          // APPROVER VALIDATION STATUS
-        7: { cellWidth: 131 }                             // REMARKS
+        7: { cellWidth: 131, halign: 'center' }                             // REMARKS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
@@ -920,6 +934,9 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('pending')) {
             data.cell.styles.textColor = [217, 119, 6]; // Yellow
+            data.cell.styles.fontStyle = 'bold';
+          } else if (cleanVal.includes('acknow')) {
+            data.cell.styles.textColor = [0, 0, 0]; // Black
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -1027,13 +1044,14 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
         fontSize: 7,
         textColor: [51, 65, 85],
         halign: 'center',
+        valign: 'middle',
         cellPadding: { top: 3, right: 3, bottom: 3, left: 3 }
       },
       columnStyles: {
         0: { cellWidth: 25, halign: 'center' },         // SL. NO.
-        1: { cellWidth: 62, fontStyle: 'bold', halign: 'left' },  // 4M CHANGE NO
+        1: { cellWidth: 62, fontStyle: 'bold', halign: 'center' },  // 4M CHANGE NO
         2: { cellWidth: 58, halign: 'center' },          // REQUESTED DATE
-        3: { cellWidth: 70, halign: 'left' },            // CHANGE REQUEST BY
+        3: { cellWidth: 70, halign: 'center' },            // CHANGE REQUEST BY
         4: { cellWidth: 52, halign: 'center' },          // PED
         5: { cellWidth: 45, halign: 'center' },          // QAD
         6: { cellWidth: 62, halign: 'center' },          // PRODUCTION
@@ -1063,6 +1081,9 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('pending')) {
             data.cell.styles.textColor = [217, 119, 6]; // Yellow
+            data.cell.styles.fontStyle = 'bold';
+          } else if (cleanVal.includes('acknow')) {
+            data.cell.styles.textColor = [0, 0, 0]; // Black
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -1176,17 +1197,18 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
       bodyStyles: {
         fontSize: 8,
         textColor: [51, 65, 85],
+        valign: 'middle',
         cellPadding: { top: 3, right: 4, bottom: 3, left: 4 }
       },
       columnStyles: {
         0: { cellWidth: 28, halign: 'center' },   // SL. NO.
-        1: { cellWidth: 75, fontStyle: 'bold' },   // 4M CHANGE NO
+        1: { cellWidth: 75, fontStyle: 'bold', halign: 'center' },   // 4M CHANGE NO
         2: { cellWidth: 65, halign: 'center' },    // REQUEST DATE
-        3: { cellWidth: 140 },                     // REQUESTED BY
-        4: { cellWidth: 95 },                      // DEPARTMENT
+        3: { cellWidth: 140, halign: 'center' },                     // REQUESTED BY
+        4: { cellWidth: 95, halign: 'center' },                      // DEPARTMENT
         5: { cellWidth: 100, halign: 'center' },   // WORKFLOW STAGE
         6: { cellWidth: 78, halign: 'center' },    // HOD DECISION
-        7: { cellWidth: 181 }                      // HOD REMARKS
+        7: { cellWidth: 181, halign: 'center' }                      // HOD REMARKS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
@@ -1207,6 +1229,9 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('pending')) {
             data.cell.styles.textColor = [217, 119, 6]; // Amber
+            data.cell.styles.fontStyle = 'bold';
+          } else if (cleanVal.includes('acknow')) {
+            data.cell.styles.textColor = [0, 0, 0]; // Black
             data.cell.styles.fontStyle = 'bold';
           }
         }
@@ -1310,16 +1335,17 @@ export const exportUsersListPDF = (filteredUsers, filtersInfo = {}, setToastMsg)
       },
       bodyStyles: {
         fontSize: 9,
-        textColor: [51, 65, 85] // Slate-700
+        textColor: [51, 65, 85],
+        valign: 'middle'
       },
       columnStyles: {
-        0: { cellWidth: 50 },  // SL. NO.
-        1: { cellWidth: 80, fontStyle: 'bold' },  // USER ID
-        2: { cellWidth: 130 }, // NAME
-        3: { cellWidth: 180 }, // EMAIL
-        4: { cellWidth: 100 }, // ROLE
-        5: { cellWidth: 120 }, // DEPARTMENT
-        6: { cellWidth: 100 }  // STATUS
+        0: { cellWidth: 50, halign: 'center' },  // SL. NO.
+        1: { cellWidth: 80, fontStyle: 'bold', halign: 'center' },  // USER ID
+        2: { cellWidth: 130, halign: 'center' }, // NAME
+        3: { cellWidth: 180, halign: 'center' }, // EMAIL
+        4: { cellWidth: 100, halign: 'center' }, // ROLE
+        5: { cellWidth: 120, halign: 'center' }, // DEPARTMENT
+        6: { cellWidth: 100, halign: 'center' }  // STATUS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
@@ -1454,15 +1480,16 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
       bodyStyles: {
         fontSize: 7.5,
         textColor: [51, 65, 85],
+        valign: 'middle',
         cellPadding: { top: 3, right: 3, bottom: 3, left: 3 }
       },
       columnStyles: {
         0: { cellWidth: 25, halign: 'center' },          // SL. NO.
-        1: { cellWidth: 68, fontStyle: 'bold' },          // 4M CHANGE NO
+        1: { cellWidth: 68, fontStyle: 'bold', halign: 'center' },          // 4M CHANGE NO
         2: { cellWidth: 62, halign: 'center' },           // MACHINE NO.
-        3: { cellWidth: 85 },                             // DEPARTMENT
-        4: { cellWidth: 88 },                             // PROCESS NAME
-        5: { cellWidth: 80 },                             // REQUESTED BY
+        3: { cellWidth: 85, halign: 'center' },                             // DEPARTMENT
+        4: { cellWidth: 88, halign: 'center' },                             // PROCESS NAME
+        5: { cellWidth: 80, halign: 'center' },                             // REQUESTED BY
         6: { cellWidth: 58, halign: 'center' },           // REQUEST DATE
         7: { cellWidth: 60, halign: 'center' },           // HOD APPROVAL
         8: { cellWidth: 52, halign: 'center' },           // L2 STATUS
@@ -1577,18 +1604,19 @@ export const exportEffectivenessLogsPDF = (filteredLogs, filtersInfo = {}, setTo
       bodyStyles: {
         fontSize: 8,
         textColor: [51, 65, 85],
+        valign: 'middle',
         cellPadding: { top: 3, right: 4, bottom: 3, left: 4 }
       },
       columnStyles: {
         0: { cellWidth: 28, halign: 'center' },   // SL. NO.
-        1: { cellWidth: 75, fontStyle: 'bold' },   // 4M CHANGE NO
+        1: { cellWidth: 75, fontStyle: 'bold', halign: 'center' },   // 4M CHANGE NO
         2: { cellWidth: 65, halign: 'center' },    // REQUESTED DATE
-        3: { cellWidth: 118 },                     // CONTEXT OF CHANGE
+        3: { cellWidth: 118, halign: 'center' },                     // CONTEXT OF CHANGE
         4: { cellWidth: 65, halign: 'center' },    // CHANGE DATE START
         5: { cellWidth: 55, halign: 'center' },    // MONTH WISE
-        6: { cellWidth: 110 },                     // EFFECTIVENESS STATUS
+        6: { cellWidth: 110, halign: 'center' },                     // EFFECTIVENESS STATUS
         7: { cellWidth: 72, halign: 'center' },    // QAD APPROVAL
-        8: { cellWidth: 118 }                      // REMARKS
+        8: { cellWidth: 118, halign: 'center' }                      // REMARKS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
@@ -1761,7 +1789,7 @@ export const exportDepartmentAnalyticsPDF = (filteredChanges, filtersInfo = {}, 
       body: summaryRows,
       theme: 'grid',
       headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      bodyStyles: { textColor: [51, 65, 85] },
+      bodyStyles: { textColor: [51, 65, 85], valign: 'middle' },
       columnStyles: {
         0: { cellWidth: 220 },
         1: { cellWidth: 160, halign: 'center' },
@@ -1797,14 +1825,14 @@ export const exportDepartmentAnalyticsPDF = (filteredChanges, filtersInfo = {}, 
       body: detailedRows,
       theme: 'striped',
       headStyles: { fillColor: SECONDARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      bodyStyles: { textColor: [51, 65, 85] },
+      bodyStyles: { textColor: [51, 65, 85], valign: 'middle' },
       columnStyles: {
-        0: { cellWidth: 50 },
-        1: { cellWidth: 100, fontStyle: 'bold' },
-        2: { cellWidth: 110 },
-        3: { cellWidth: 90 },
-        4: { cellWidth: 80 },
-        5: { cellWidth: 85 }
+        0: { cellWidth: 50, halign: 'center' },
+        1: { cellWidth: 100, fontStyle: 'bold', halign: 'center' },
+        2: { cellWidth: 110, halign: 'center' },
+        3: { cellWidth: 90, halign: 'center' },
+        4: { cellWidth: 80, halign: 'center' },
+        5: { cellWidth: 85, halign: 'center' }
       },
       margin: { left: 40, right: 40, bottom: 40 },
       didParseCell: (data) => {
@@ -1898,7 +1926,7 @@ export const exportProcessAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
       body: summaryRows,
       theme: 'grid',
       headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      bodyStyles: { textColor: [51, 65, 85] },
+      bodyStyles: { textColor: [51, 65, 85], valign: 'middle' },
       columnStyles: {
         0: { cellWidth: 220 },
         1: { cellWidth: 160, halign: 'center' },
@@ -1934,14 +1962,14 @@ export const exportProcessAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
       body: detailedRows,
       theme: 'striped',
       headStyles: { fillColor: SECONDARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      bodyStyles: { textColor: [51, 65, 85] },
+      bodyStyles: { textColor: [51, 65, 85], valign: 'middle' },
       columnStyles: {
-        0: { cellWidth: 50 },
-        1: { cellWidth: 100, fontStyle: 'bold' },
-        2: { cellWidth: 110 },
-        3: { cellWidth: 90 },
-        4: { cellWidth: 80 },
-        5: { cellWidth: 85 }
+        0: { cellWidth: 50, halign: 'center' },
+        1: { cellWidth: 100, fontStyle: 'bold', halign: 'center' },
+        2: { cellWidth: 110, halign: 'center' },
+        3: { cellWidth: 90, halign: 'center' },
+        4: { cellWidth: 80, halign: 'center' },
+        5: { cellWidth: 85, halign: 'center' }
       },
       margin: { left: 40, right: 40, bottom: 40 },
       didParseCell: (data) => {
@@ -2028,7 +2056,7 @@ export const exportCategoryAnalyticsPDF = (filteredChanges, filtersInfo = {}, se
       body: summaryRows,
       theme: 'grid',
       headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      bodyStyles: { textColor: [51, 65, 85] },
+      bodyStyles: { textColor: [51, 65, 85], valign: 'middle' },
       columnStyles: {
         0: { cellWidth: 220 },
         1: { cellWidth: 160, halign: 'center' },
@@ -2064,14 +2092,14 @@ export const exportCategoryAnalyticsPDF = (filteredChanges, filtersInfo = {}, se
       body: detailedRows,
       theme: 'striped',
       headStyles: { fillColor: SECONDARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      bodyStyles: { textColor: [51, 65, 85] },
+      bodyStyles: { textColor: [51, 65, 85], valign: 'middle' },
       columnStyles: {
-        0: { cellWidth: 40 },
-        1: { cellWidth: 90, fontStyle: 'bold' },
-        2: { cellWidth: 155 },
-        3: { cellWidth: 80 },
-        4: { cellWidth: 75 },
-        5: { cellWidth: 75 }
+        0: { cellWidth: 40, halign: 'center' },
+        1: { cellWidth: 90, fontStyle: 'bold', halign: 'center' },
+        2: { cellWidth: 155, halign: 'center' },
+        3: { cellWidth: 80, halign: 'center' },
+        4: { cellWidth: 75, halign: 'center' },
+        5: { cellWidth: 75, halign: 'center' }
       },
       margin: { left: 40, right: 40, bottom: 40 },
       didParseCell: (data) => {
@@ -2160,7 +2188,7 @@ export const exportMonthlyAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
       body: summaryRows,
       theme: 'grid',
       headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      bodyStyles: { textColor: [51, 65, 85] },
+      bodyStyles: { textColor: [51, 65, 85], valign: 'middle' },
       columnStyles: {
         0: { cellWidth: 220 },
         1: { cellWidth: 160, halign: 'center' },
@@ -2196,14 +2224,14 @@ export const exportMonthlyAnalyticsPDF = (filteredChanges, filtersInfo = {}, set
       body: detailedRows,
       theme: 'striped',
       headStyles: { fillColor: SECONDARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      bodyStyles: { textColor: [51, 65, 85] },
+      bodyStyles: { textColor: [51, 65, 85], valign: 'middle' },
       columnStyles: {
-        0: { cellWidth: 50 },
-        1: { cellWidth: 100, fontStyle: 'bold' },
-        2: { cellWidth: 110 },
-        3: { cellWidth: 90 },
-        4: { cellWidth: 80 },
-        5: { cellWidth: 85 }
+        0: { cellWidth: 50, halign: 'center' },
+        1: { cellWidth: 100, fontStyle: 'bold', halign: 'center' },
+        2: { cellWidth: 110, halign: 'center' },
+        3: { cellWidth: 90, halign: 'center' },
+        4: { cellWidth: 80, halign: 'center' },
+        5: { cellWidth: 85, halign: 'center' }
       },
       margin: { left: 40, right: 40, bottom: 40 },
       didParseCell: (data) => {
@@ -2308,7 +2336,7 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
       body: summaryRows,
       theme: 'grid',
       headStyles: { fillColor: PRIMARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      bodyStyles: { textColor: [51, 65, 85] },
+      bodyStyles: { textColor: [51, 65, 85], valign: 'middle' },
       columnStyles: {
         0: { cellWidth: 115 },
         1: { cellWidth: 80, halign: 'center' },
@@ -2347,14 +2375,14 @@ export const exportApprovalStatusAnalyticsPDF = (filteredChanges, filtersInfo = 
       body: detailedRows,
       theme: 'striped',
       headStyles: { fillColor: SECONDARY_COLOR, textColor: [255, 255, 255], fontStyle: 'bold' },
-      bodyStyles: { textColor: [51, 65, 85] },
+      bodyStyles: { textColor: [51, 65, 85], valign: 'middle' },
       columnStyles: {
-        0: { cellWidth: 50 },
-        1: { cellWidth: 100, fontStyle: 'bold' },
-        2: { cellWidth: 110 },
-        3: { cellWidth: 90 },
-        4: { cellWidth: 80 },
-        5: { cellWidth: 85 }
+        0: { cellWidth: 50, halign: 'center' },
+        1: { cellWidth: 100, fontStyle: 'bold', halign: 'center' },
+        2: { cellWidth: 110, halign: 'center' },
+        3: { cellWidth: 90, halign: 'center' },
+        4: { cellWidth: 80, halign: 'center' },
+        5: { cellWidth: 85, halign: 'center' }
       },
       margin: { left: 40, right: 40, bottom: 40 },
       didParseCell: (data) => {
@@ -2439,7 +2467,7 @@ export const exportImprovementBenefitsPDF = (costSavingRows, productivityRows, q
         body: costTableData.length > 0 ? costTableData : [['-', '-', '-', '-', '-']],
         theme: 'grid',
         headStyles: { fillColor: [30, 96, 170], textColor: [255, 255, 255] },
-        bodyStyles: { textColor: [51, 65, 85], fontSize: 8.5 },
+        bodyStyles: { textColor: [51, 65, 85], fontSize: 8.5, valign: 'middle' },
         margin: { left: 40, right: 40 }
       });
 
@@ -2472,7 +2500,7 @@ export const exportImprovementBenefitsPDF = (costSavingRows, productivityRows, q
         body: prodTableData.length > 0 ? prodTableData : [['-', '-', '-', '-']],
         theme: 'grid',
         headStyles: { fillColor: [30, 96, 170], textColor: [255, 255, 255] },
-        bodyStyles: { textColor: [51, 65, 85], fontSize: 8.5 },
+        bodyStyles: { textColor: [51, 65, 85], fontSize: 8.5, valign: 'middle' },
         margin: { left: 40, right: 40 }
       });
 
@@ -2508,7 +2536,7 @@ export const exportImprovementBenefitsPDF = (costSavingRows, productivityRows, q
         body: qualityTableData.length > 0 ? qualityTableData : [['-', '-', '-', '-']],
         theme: 'grid',
         headStyles: { fillColor: [30, 96, 170], textColor: [255, 255, 255] },
-        bodyStyles: { textColor: [51, 65, 85], fontSize: 8.5 },
+        bodyStyles: { textColor: [51, 65, 85], fontSize: 8.5, valign: 'middle' },
         margin: { left: 40, right: 40 }
       });
     }
