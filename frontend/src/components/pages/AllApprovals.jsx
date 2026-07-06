@@ -1256,7 +1256,7 @@ export const AllApprovals = ({
                             </span>
                           </div>
 
-                          {l1Details.hodStatus && (
+                          {l1Details.hodStatus && !alreadyDecided && (
                             <div className="space-y-[4px] mt-4 border-t border-slate-100 pt-4">
                               <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">HOD {l1Details.hodStatus} Remarks / Comments ({l1Details.hodDept || 'HOD'})</span>
                               <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-[16px] text-slate-700 leading-relaxed min-h-[80px] max-h-[150px] overflow-y-auto break-words text-[12px]">
@@ -1266,11 +1266,11 @@ export const AllApprovals = ({
                           )}
                         </div>
 
-                        {/* If already decided — show previous decision */}
+                        {/* If already decided — show HOD decision */}
                         {alreadyDecided && (
                           <section className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
                             <h5 className="text-[11px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-1.5">
-                              <ShieldCheck size={13} /> Previous HOD Decision
+                              <ShieldCheck size={13} /> HOD Decision
                             </h5>
                             <div className="flex items-center gap-3">
                               <StatusBadge status={selectedReq.hodStatus} />
