@@ -787,7 +787,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
             if (data.column.index === 1 || data.column.index === 3) {
               const val = data.cell.text[0];
               const cleanVal = val ? val.trim().toLowerCase() : '';
-              if (cleanVal.includes('ok') || cleanVal.includes('approve')) {
+              if ((cleanVal.includes('ok') && !cleanVal.includes('not ok')) || cleanVal.includes('approve')) {
                 data.cell.styles.textColor = [16, 124, 65]; // Green
                 data.cell.styles.fontStyle = 'bold';
               } else if (cleanVal.includes('not ok') || cleanVal.includes('reject')) {
