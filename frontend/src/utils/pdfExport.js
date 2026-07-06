@@ -57,7 +57,7 @@ const applyCellStatusColors = (data, minColIndex, maxColIndex = minColIndex) => 
       data.cell.styles.fontStyle = 'bold';
     } else if (cleanVal.includes('acknow')) {
       data.cell.styles.textColor = [0, 0, 0]; // Black
-      data.cell.styles.fontStyle = 'bold';
+      data.cell.styles.fontStyle = 'normal';
     }
   }
 };
@@ -728,7 +728,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
               data.cell.styles.fontStyle = 'bold';
             } else if (cleanVal.includes('acknow')) {
               data.cell.styles.textColor = [0, 0, 0]; // Black text
-              data.cell.styles.fontStyle = 'bold';
+              data.cell.styles.fontStyle = 'normal';
             }
           }
         }
@@ -937,7 +937,7 @@ export const exportL2ValidationLogsPDF = (filteredLogs, filtersInfo = {}, setToa
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('acknow')) {
             data.cell.styles.textColor = [0, 0, 0]; // Black
-            data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.fontStyle = 'normal';
           }
         }
       }
@@ -1084,7 +1084,7 @@ export const exportL3ApprovalsPDF = (filteredLogs, filtersInfo = {}, setToastMsg
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('acknow')) {
             data.cell.styles.textColor = [0, 0, 0]; // Black
-            data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.fontStyle = 'normal';
           }
         }
       }
@@ -1232,7 +1232,7 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
             data.cell.styles.fontStyle = 'bold';
           } else if (cleanVal.includes('acknow')) {
             data.cell.styles.textColor = [0, 0, 0]; // Black
-            data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.fontStyle = 'normal';
           }
         }
         if (data.column.index === 5) {
