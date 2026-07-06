@@ -1897,7 +1897,9 @@ export const Effectiveness = ({
                           <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested Date</span>
                           <span className="font-medium text-slate-700">{selectedLog.date ? formatDateToDDMMYYYY(selectedLog.date) : '-'}</span>
                         </div>
-                                      {/* Matrix Grid */}
+                      </div>
+
+                      {/* Matrix Grid */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
                         {[
                           { label: 'PED', prop: 'ped', remarksProp: 'pedRemarks' },
@@ -1941,7 +1943,7 @@ export const Effectiveness = ({
                             </div>
                           );
                         })}
-                      </div>          </div>
+                      </div>
                     </div>
                   )}
 
