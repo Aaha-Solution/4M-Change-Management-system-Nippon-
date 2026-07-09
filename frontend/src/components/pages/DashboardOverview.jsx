@@ -1477,7 +1477,7 @@ export const DashboardOverview = ({
 
     return (
       <div className="w-full overflow-x-auto pb-[8px] scrollbar-thin">
-        <div 
+        <div
           className={`flex justify-around items-end ${height} px-[10px] mt-[10px]`}
           style={{ minWidth: `${Math.max(500, data.length * 75)}px` }}
         >
@@ -3727,7 +3727,7 @@ export const DashboardOverview = ({
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
             {renderFieldInput('Validation Date', 'date')}
-            {renderFieldInput('Validated By', 'requester')}
+            {renderFieldInput('Requested By', 'requester')}
             {renderFieldInput('Validation Status', 'status')}
             {renderFieldInput('Change No', 'changeNo', { disabled: true })}
           </div>
@@ -4815,7 +4815,7 @@ export const DashboardOverview = ({
                             <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">
-                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                             <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">

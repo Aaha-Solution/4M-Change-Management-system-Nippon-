@@ -767,9 +767,9 @@ export const L3RequestTracker = ({
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className={`px-[12px] py-[8px] border rounded-[6px] outline-none text-[12px] min-w-[150px] transition-all duration-200 ${statusFilter === 'Approved' ? 'text-emerald-600 border-emerald-300 bg-emerald-50/10 font-bold' :
-                statusFilter === 'Rejected' ? 'text-rose-600 border-rose-300 bg-rose-50/10 font-bold' :
-                  statusFilter === 'Pending' ? 'text-amber-600 border-amber-300 bg-amber-50/10 font-bold' :
-                    'text-slate-500 border-slate-200 bg-white font-medium'
+              statusFilter === 'Rejected' ? 'text-rose-600 border-rose-300 bg-rose-50/10 font-bold' :
+                statusFilter === 'Pending' ? 'text-amber-600 border-amber-300 bg-amber-50/10 font-bold' :
+                  'text-slate-500 border-slate-200 bg-white font-medium'
               }`}
           >
             <option value="All" className="text-slate-500 bg-white font-medium" style={{ color: '#64748b' }}>All Approval Status</option>
@@ -865,16 +865,15 @@ export const L3RequestTracker = ({
                             const isRejected = status === 'Rejected';
                             return (
                               <td key={cIdx} className="py-[8px] px-[2px] text-center">
-                                <span 
+                                <span
                                   title={cell.remarks ? `Remarks: ${cell.remarks}` : 'No remarks'}
-                                  className={`inline-block w-full text-center py-[2px] rounded-[4px] border font-bold cursor-help ${
-                                  status === 'Acknowledge' ? 'text-[7.5px] px-[1px]' : 'text-[9px] px-[4px]'
-                                } ${isAccepted
-                                    ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                                    : isRejected
-                                      ? 'bg-rose-50 border-rose-250 text-rose-700'
-                                      : 'bg-amber-50 border-amber-250 text-amber-700'
-                                  }`}>
+                                  className={`inline-block w-full text-center py-[2px] rounded-[4px] border font-bold cursor-help ${status === 'Acknowledge' ? 'text-[7.5px] px-[1px]' : 'text-[9px] px-[4px]'
+                                    } ${isAccepted
+                                      ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                                      : isRejected
+                                        ? 'bg-rose-50 border-rose-250 text-rose-700'
+                                        : 'bg-amber-50 border-amber-250 text-amber-700'
+                                    }`}>
                                   {status}
                                 </span>
                               </td>
@@ -953,10 +952,10 @@ export const L3RequestTracker = ({
                             <div key={dIdx} className="flex justify-between items-center bg-slate-50 border border-slate-100 rounded px-2 py-1 text-[10px]">
                               <span className="font-bold text-slate-550">{dept.label}</span>
                               <span className={`inline-block px-[5px] py-[0.5px] rounded-[3px] border text-[8px] font-bold ${isAccepted
-                                  ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
-                                  : isRejected
-                                    ? 'bg-rose-50 border-rose-250 text-rose-700'
-                                    : 'bg-amber-50 border-amber-250 text-amber-700'
+                                ? 'bg-emerald-50 border-emerald-250 text-emerald-700'
+                                : isRejected
+                                  ? 'bg-rose-50 border-rose-250 text-rose-700'
+                                  : 'bg-amber-50 border-amber-250 text-amber-700'
                                 }`}>
                                 {status}
                               </span>
@@ -1472,7 +1471,7 @@ export const L3RequestTracker = ({
                             <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">
-                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                             <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">
@@ -1732,8 +1731,8 @@ export const L3RequestTracker = ({
                 {activeTab === 'l1' ? (
                   selectedL1Details ? (
                     <span className={`inline-flex items-center gap-2 text-[11px] font-bold px-3 py-1.5 rounded-xl border ${selectedL1Details.crStatus !== 'Pending'
-                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                        : 'text-amber-700 bg-amber-50 border-amber-200'
+                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      : 'text-amber-700 bg-amber-50 border-amber-200'
                       }`}>
                       {selectedL1Details.crStatus !== 'Pending' ? <CheckCircle2 size={14} /> : <Clock size={14} />}
                       L1 HOD Approval {selectedL1Details.crStatus === 'Pending' ? 'Pending' : 'Completed'}
@@ -1746,10 +1745,10 @@ export const L3RequestTracker = ({
                 ) : activeTab === 'l2' ? (
                   selectedL2Details ? (
                     <span className={`inline-flex items-center gap-2 text-[11px] font-bold px-3 py-1.5 rounded-xl border ${selectedL2Details.status === 'Accepted'
-                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                        : selectedL2Details.status === 'Rejected'
-                          ? 'text-rose-700 bg-rose-50 border-rose-200'
-                          : 'text-amber-700 bg-amber-50 border-amber-200'
+                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      : selectedL2Details.status === 'Rejected'
+                        ? 'text-rose-700 bg-rose-50 border-rose-200'
+                        : 'text-amber-700 bg-amber-50 border-amber-200'
                       }`}>
                       {selectedL2Details.status === 'Accepted' ? (
                         <CheckCircle2 size={14} />
@@ -1768,10 +1767,10 @@ export const L3RequestTracker = ({
                 ) : activeTab === 'l3' ? (
                   selectedLog && (
                     <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl border ${getSelectedLogUserStatus() === 'Approved' || getSelectedLogUserStatus() === 'Accepted'
-                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                        : getSelectedLogUserStatus() === 'Rejected'
-                          ? 'text-rose-700 bg-rose-50 border-rose-200'
-                          : 'text-amber-700 bg-amber-50 border-amber-200'
+                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      : getSelectedLogUserStatus() === 'Rejected'
+                        ? 'text-rose-700 bg-rose-50 border-rose-200'
+                        : 'text-amber-700 bg-amber-50 border-amber-200'
                       }`}>
                       {getSelectedLogUserStatus() === 'Approved' || getSelectedLogUserStatus() === 'Accepted' ? (
                         <CheckCircle2 size={13} />
@@ -1796,10 +1795,10 @@ export const L3RequestTracker = ({
                     const isEffRejected = currentEffLog.qaApproval === 'Rejected' || currentEffLog.status === 'Effectiveness Not Ok' || currentEffLog.status === 'Rejected';
                     return (
                       <span className={`inline-flex items-center gap-2 text-[11px] font-bold px-3 py-1.5 rounded-xl border font-sans ${currentEffLog.qaApproval === 'Approved' || currentEffLog.status === 'Effectiveness Ok'
-                          ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                          : isEffRejected
-                            ? 'text-rose-700 bg-rose-50 border-rose-200'
-                            : 'text-amber-700 bg-amber-50 border-amber-200'
+                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                        : isEffRejected
+                          ? 'text-rose-700 bg-rose-50 border-rose-200'
+                          : 'text-amber-700 bg-amber-50 border-amber-200'
                         }`}>
                         {currentEffLog.qaApproval === 'Approved' || currentEffLog.status === 'Effectiveness Ok' ? (
                           <CheckCircle2 size={14} />

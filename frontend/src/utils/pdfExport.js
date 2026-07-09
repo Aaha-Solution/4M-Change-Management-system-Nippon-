@@ -8,27 +8,27 @@ import nipponLogoUrl from '../assets/Nippon Logo.png';
 const drawFooter = (doc, pageText, confidentialText) => {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
-  
+
   // Confidentiality and Page text in previous slate color
   doc.setTextColor(148, 163, 184);
-  
+
   // Replace Nippon Quality Assurance and Nippon QAD with India Nippon Electricals Limited
   const updatedConfidential = confidentialText
     ? confidentialText
-        .replace(/NIPPON QUALITY ASSURANCE/gi, 'INDIA NIPPON ELECTRICALS LIMITED')
-        .replace(/NIPPON QAD/gi, 'INDIA NIPPON ELECTRICALS LIMITED')
+      .replace(/NIPPON QUALITY ASSURANCE/gi, 'INDIA NIPPON ELECTRICALS LIMITED')
+      .replace(/NIPPON QAD/gi, 'INDIA NIPPON ELECTRICALS LIMITED')
     : '';
-  
+
   // 2nd: Confidential text centered in the middle using alignment
   const centerX = doc.internal.pageSize.width / 2;
   doc.text(updatedConfidential, centerX, doc.internal.pageSize.height - 20, { align: 'center' });
-  
+
   // 3rd: Page text on the right aligned to the right margin (x = width - 40)
   doc.text(pageText, doc.internal.pageSize.width - 40, doc.internal.pageSize.height - 20, { align: 'right' });
-  
+
   // DOC NO specifically in black color
   doc.setTextColor(0, 0, 0);
-  
+
   // 1st: DOC NO on the left (x = 40)
   doc.text('DOC NO: PRD/FR/156 R1', 40, doc.internal.pageSize.height - 20);
 };
@@ -624,7 +624,7 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
         l2Data.push(
           [
             { content: 'Validation Date', fontStyle: 'bold' }, selectedL2Details.date || '-',
-            { content: 'Validated By', fontStyle: 'bold' }, selectedL2Details.requester || '-'
+            { content: 'Requested By', fontStyle: 'bold' }, selectedL2Details.requester || '-'
           ],
           [
             { content: 'Validation Status', fontStyle: 'bold' }, l2Status,

@@ -416,10 +416,10 @@ export const AllApprovals = ({
     if (!selectedReq) return;
     setIsSubmitting(true);
     try {
-      const targetDept = isAdmin 
-        ? (selectedReq.hodApprovalNote && selectedReq.hodApprovalNote !== '-' 
-            ? selectedReq.hodApprovalNote 
-            : selectedReq.dept)
+      const targetDept = isAdmin
+        ? (selectedReq.hodApprovalNote && selectedReq.hodApprovalNote !== '-'
+          ? selectedReq.hodApprovalNote
+          : selectedReq.dept)
         : actingDept;
 
       await submitHodApproval(selectedReq.changeNo, targetDept, status, remarks);
@@ -556,10 +556,10 @@ export const AllApprovals = ({
 
   const selectedStage = selectedReq ? workflowStageConfig(selectedReq.crStatus) : null;
 
-  const requiredDept = selectedReq 
-    ? (selectedReq.hodApprovalNote && selectedReq.hodApprovalNote !== '-' 
-        ? selectedReq.hodApprovalNote 
-        : selectedReq.dept)
+  const requiredDept = selectedReq
+    ? (selectedReq.hodApprovalNote && selectedReq.hodApprovalNote !== '-'
+      ? selectedReq.hodApprovalNote
+      : selectedReq.dept)
     : '';
 
   return (
@@ -1339,7 +1339,7 @@ export const AllApprovals = ({
                             <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">
-                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                             <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">

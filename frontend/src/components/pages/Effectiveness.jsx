@@ -1800,7 +1800,7 @@ export const Effectiveness = ({
                             <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">
-                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                             <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">

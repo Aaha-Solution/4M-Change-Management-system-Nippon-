@@ -6,7 +6,7 @@ export const getL2ValidationLogs = async () => {
   const [rows] = await pool.query(
     `SELECT c.id as changeNo, 
             COALESCE(v.validation_date, DATE_FORMAT(c.date, '%Y-%m-%d')) as date, 
-            COALESCE(NULLIF(u.name, ''), l1.request_by, v.requester) as requester, 
+            COALESCE(NULLIF(v.requester, ''), u.name, l1.request_by) as requester, 
             COALESCE(v.weld_test, '-') as weldTest, 
             COALESCE(v.qa_test, '-') as qaTest, 
             COALESCE(v.status, 'Pending') as status, 
@@ -214,7 +214,7 @@ export const addL2ValidationLog = async (logData, attachments) => {
 export const getL2Details = async (changeNo) => {
   const [rows] = await pool.query(
     `SELECT v.change_no as changeNo, v.validation_date as date, 
-            COALESCE(NULLIF(u.name, ''), l1.request_by, v.requester) as requester, 
+            COALESCE(NULLIF(v.requester, ''), u.name, l1.request_by) as requester, 
             v.weld_test as weldTest, v.qa_test as qaTest, v.status, v.remarks,
             v.qad_approved_by as qadApprovedBy 
      FROM l2_validation_logs v

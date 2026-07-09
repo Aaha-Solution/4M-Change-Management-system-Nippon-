@@ -1744,7 +1744,7 @@ export const AllRequests = ({
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
             {renderFieldInput('Validation Date', 'date')}
-            {renderFieldInput('Validated By', 'requester')}
+            {renderFieldInput('Requested By', 'requester')}
             {renderFieldInput('Validation Status', 'status')}
             {renderFieldInput('Change No', 'changeNo', { disabled: true })}
           </div>
@@ -2649,7 +2649,7 @@ export const AllRequests = ({
                             <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">
-                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Requested By</span>
                             <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">
