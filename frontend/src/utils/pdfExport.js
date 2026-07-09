@@ -672,23 +672,23 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
 
     // Section 4: Level 3 Approval Matrix (short dept labels from modal)
     if ((targetTab === 'l3' || targetTab === 'all') && selectedLog) {
-      const l3Headers = [['DEPARTMENT', 'APPROVAL STATUS', 'REMARKS']];
+      const l3Headers = [['DEPARTMENT', 'APPROVAL STATUS', 'APPROVED/REJECTED BY', 'REMARKS']];
       const l3Rows = [
-        ['PED', selectedLog.ped || 'Pending', selectedLog.pedRemarks || '-'],
-        ['QAD', selectedLog.qad || 'Pending', selectedLog.qadRemarks || '-'],
-        ['Production', selectedLog.production || 'Pending', selectedLog.productionRemarks || '-'],
-        ['Maintenance', selectedLog.maintenance || 'Pending', selectedLog.maintenanceRemarks || '-'],
-        ['PC & L', selectedLog.pcl || 'Pending', selectedLog.pclRemarks || '-'],
-        ['Materials', selectedLog.materials || 'Pending', selectedLog.materialsRemarks || '-'],
-        ['Marketing', selectedLog.marketing || 'Pending', selectedLog.marketingRemarks || '-'],
-        ['HR', selectedLog.hr || 'Pending', selectedLog.hrRemarks || '-'],
-        ['Safety', selectedLog.safety || 'Pending', selectedLog.safetyRemarks || '-'],
-        ['Unit Head', selectedLog.unitHead || selectedLog.unit_head || 'Pending', selectedLog.unitHeadRemarks || selectedLog.unit_head_remarks || '-']
+        ['PED', selectedLog.ped || 'Pending', selectedLog.pedApprovedBy || '-', selectedLog.pedRemarks || '-'],
+        ['QAD', selectedLog.qad || 'Pending', selectedLog.qadApprovedBy || '-', selectedLog.qadRemarks || '-'],
+        ['Production', selectedLog.production || 'Pending', selectedLog.productionApprovedBy || '-', selectedLog.productionRemarks || '-'],
+        ['Maintenance', selectedLog.maintenance || 'Pending', selectedLog.maintenanceApprovedBy || '-', selectedLog.maintenanceRemarks || '-'],
+        ['PC & L', selectedLog.pcl || 'Pending', selectedLog.pclApprovedBy || '-', selectedLog.pclRemarks || '-'],
+        ['Materials', selectedLog.materials || 'Pending', selectedLog.materialsApprovedBy || '-', selectedLog.materialsRemarks || '-'],
+        ['Marketing', selectedLog.marketing || 'Pending', selectedLog.marketingApprovedBy || '-', selectedLog.marketingRemarks || '-'],
+        ['HR', selectedLog.hr || 'Pending', selectedLog.hrApprovedBy || '-', selectedLog.hrRemarks || '-'],
+        ['Safety', selectedLog.safety || 'Pending', selectedLog.safetyApprovedBy || '-', selectedLog.safetyRemarks || '-'],
+        ['Unit Head', selectedLog.unitHead || selectedLog.unit_head || 'Pending', selectedLog.unitHeadApprovedBy || selectedLog.unit_head_approved_by || '-', selectedLog.unitHeadRemarks || selectedLog.unit_head_remarks || '-']
       ];
 
       autoTable(doc, {
         startY: doc.lastAutoTable.finalY + 15,
-        head: [[{ content: '4. LEVEL 3 FINAL APPROVAL MATRIX', colSpan: 3 }]],
+        head: [[{ content: '4. LEVEL 3 FINAL APPROVAL MATRIX', colSpan: 4 }]],
         body: [
           ...l3Headers,
           ...l3Rows
@@ -706,9 +706,10 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
           valign: 'middle'
         },
         columnStyles: {
-          0: { cellWidth: 100, fillColor: lightBg, fontStyle: 'bold' },
-          1: { cellWidth: 110, halign: 'center' },
-          2: { cellWidth: 305 }
+          0: { cellWidth: 90, fillColor: lightBg, fontStyle: 'bold' },
+          1: { cellWidth: 100, halign: 'center' },
+          2: { cellWidth: 120 },
+          3: { cellWidth: 205 }
         },
         margin: { left: 40, right: 40 },
         didParseCell: (data) => {

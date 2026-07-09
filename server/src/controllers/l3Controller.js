@@ -76,7 +76,7 @@ export const createL3Approval = async (req, res) => {
 
     // Look up logged-in user details to enforce security
     const [userRows] = await pool.query(
-      'SELECT role, department FROM users WHERE email = ?',
+      'SELECT name, role, department FROM users WHERE email = ?',
       [req.user.email]
     );
 
@@ -85,6 +85,7 @@ export const createL3Approval = async (req, res) => {
     }
 
     const user = userRows[0];
+    const userName = user.name || 'HOD';
     const roleLower = (user.role || '').toLowerCase();
     const isAdmin = roleLower === 'admin' || roleLower === 'administrator';
 
@@ -97,67 +98,76 @@ export const createL3Approval = async (req, res) => {
       if (!isHOD) {
         return res.status(403).json({ error: 'Access denied. Only department HODs or Administrators can sign off at L3.' });
       }
+    }
 
-      const userMappedDept = mapDbDeptToL3Dept(user.department);
+    const userMappedDept = mapDbDeptToL3Dept(user.department);
 
-      // Map user department to L3 department key
-      const allowedField = deptFields[userMappedDept];
+    // Map user department to L3 department key
+    const allowedField = deptFields[userMappedDept];
 
-      // Fetch existing L3 approval
-      const [existingL3] = await pool.query(
-        `SELECT ped, ped_remarks as pedRemarks,
-                qad, qad_remarks as qadRemarks,
-                production, production_remarks as productionRemarks,
-                maintenance, maintenance_remarks as maintenanceRemarks,
-                pcl, pcl_remarks as pclRemarks,
-                materials, materials_remarks as materialsRemarks,
-                marketing, marketing_remarks as marketingRemarks,
-                hr, hr_remarks as hrRemarks,
-                safety, safety_remarks as safetyRemarks,
-                unit_head as unitHead, unit_head_remarks as unitHeadRemarks
-         FROM l3_approvals WHERE change_no = ?`,
-        [logData.changeNo]
-      );
+    // Fetch existing L3 approval
+    const [existingL3] = await pool.query(
+      `SELECT ped, ped_remarks as pedRemarks, ped_approved_by as pedApprovedBy,
+              qad, qad_remarks as qadRemarks, qad_approved_by as qadApprovedBy,
+              production, production_remarks as productionRemarks, production_approved_by as productionApprovedBy,
+              maintenance, maintenance_remarks as maintenanceRemarks, maintenance_approved_by as maintenanceApprovedBy,
+              pcl, pcl_remarks as pclRemarks, pcl_approved_by as pclApprovedBy,
+              materials, materials_remarks as materialsRemarks, materials_approved_by as materialsApprovedBy,
+              marketing, marketing_remarks as marketingRemarks, marketing_approved_by as marketingApprovedBy,
+              hr, hr_remarks as hrRemarks, hr_approved_by as hrApprovedBy,
+              safety, safety_remarks as safetyRemarks, safety_approved_by as safetyApprovedBy,
+              unit_head as unitHead, unit_head_remarks as unitHeadRemarks, unit_head_approved_by as unitHeadApprovedBy
+       FROM l3_approvals WHERE change_no = ?`,
+      [logData.changeNo]
+    );
 
-      const dbValues = existingL3.length > 0 ? existingL3[0] : {
-        ped: 'Pending', pedRemarks: '',
-        qad: 'Pending', qadRemarks: '',
-        production: 'Pending', productionRemarks: '',
-        maintenance: 'Pending', maintenanceRemarks: '',
-        pcl: 'Pending', pclRemarks: '',
-        materials: 'Pending', materialsRemarks: '',
-        marketing: 'Pending', marketingRemarks: '',
-        hr: 'Pending', hrRemarks: '',
-        safety: 'Pending', safetyRemarks: '',
-        unitHead: 'Pending', unitHeadRemarks: ''
-      };
+    const dbValues = existingL3.length > 0 ? existingL3[0] : {
+      ped: 'Pending', pedRemarks: '', pedApprovedBy: null,
+      qad: 'Pending', qadRemarks: '', qadApprovedBy: null,
+      production: 'Pending', productionRemarks: '', productionApprovedBy: null,
+      maintenance: 'Pending', maintenanceRemarks: '', maintenanceApprovedBy: null,
+      pcl: 'Pending', pclRemarks: '', pclApprovedBy: null,
+      materials: 'Pending', materialsRemarks: '', materialsApprovedBy: null,
+      marketing: 'Pending', marketingRemarks: '', marketingApprovedBy: null,
+      hr: 'Pending', hrRemarks: '', hrApprovedBy: null,
+      safety: 'Pending', safetyRemarks: '', safetyApprovedBy: null,
+      unitHead: 'Pending', unitHeadRemarks: '', unitHeadApprovedBy: null
+    };
 
-      // Check all fields to see if any unauthorized status or remarks were modified
-      const fieldsToCheck = [
-        { statusField: 'ped', remarksField: 'pedRemarks' },
-        { statusField: 'qad', remarksField: 'qadRemarks' },
-        { statusField: 'production', remarksField: 'productionRemarks' },
-        { statusField: 'maintenance', remarksField: 'maintenanceRemarks' },
-        { statusField: 'pcl', remarksField: 'pclRemarks' },
-        { statusField: 'materials', remarksField: 'materialsRemarks' },
-        { statusField: 'marketing', remarksField: 'marketingRemarks' },
-        { statusField: 'hr', remarksField: 'hrRemarks' },
-        { statusField: 'safety', remarksField: 'safetyRemarks' },
-        { statusField: 'unitHead', remarksField: 'unitHeadRemarks' }
-      ];
+    // Check all fields to see if any unauthorized status or remarks were modified
+    const fieldsToCheck = [
+      { statusField: 'ped', remarksField: 'pedRemarks', approvedByField: 'pedApprovedBy' },
+      { statusField: 'qad', remarksField: 'qadRemarks', approvedByField: 'qadApprovedBy' },
+      { statusField: 'production', remarksField: 'productionRemarks', approvedByField: 'productionApprovedBy' },
+      { statusField: 'maintenance', remarksField: 'maintenanceRemarks', approvedByField: 'maintenanceApprovedBy' },
+      { statusField: 'pcl', remarksField: 'pclRemarks', approvedByField: 'pclApprovedBy' },
+      { statusField: 'materials', remarksField: 'materialsRemarks', approvedByField: 'materialsApprovedBy' },
+      { statusField: 'marketing', remarksField: 'marketingRemarks', approvedByField: 'marketingApprovedBy' },
+      { statusField: 'hr', remarksField: 'hrRemarks', approvedByField: 'hrApprovedBy' },
+      { statusField: 'safety', remarksField: 'safetyRemarks', approvedByField: 'safetyApprovedBy' },
+      { statusField: 'unitHead', remarksField: 'unitHeadRemarks', approvedByField: 'unitHeadApprovedBy' }
+    ];
 
-      for (const pair of fieldsToCheck) {
-        const incomingStatus = logData[pair.statusField] || 'Pending';
-        const dbStatus = dbValues[pair.statusField] || 'Pending';
-        const incomingRemarks = logData[pair.remarksField] || '';
-        const dbRemarks = dbValues[pair.remarksField] || '';
+    for (const pair of fieldsToCheck) {
+      const incomingStatus = logData[pair.statusField] || 'Pending';
+      const dbStatus = dbValues[pair.statusField] || 'Pending';
+      const incomingRemarks = logData[pair.remarksField] || '';
+      const dbRemarks = dbValues[pair.remarksField] || '';
 
-        if (incomingStatus !== dbStatus || incomingRemarks !== dbRemarks) {
-          if (pair.statusField !== allowedField) {
-            return res.status(403).json({ 
-              error: `Access denied. You are only authorized to sign off or modify remarks for the '${userMappedDept}' department (field: '${allowedField}').` 
-            });
-          }
+      // Retain current db approved by by default
+      logData[pair.approvedByField] = dbValues[pair.approvedByField];
+
+      if (incomingStatus !== dbStatus || incomingRemarks !== dbRemarks) {
+        if (!isAdmin && pair.statusField !== allowedField) {
+          return res.status(403).json({ 
+            error: `Access denied. You are only authorized to sign off or modify remarks for the '${userMappedDept}' department (field: '${allowedField}').` 
+          });
+        }
+
+        if (incomingStatus !== 'Pending') {
+          logData[pair.approvedByField] = userName;
+        } else {
+          logData[pair.approvedByField] = null;
         }
       }
     }

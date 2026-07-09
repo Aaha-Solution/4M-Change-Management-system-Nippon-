@@ -9,6 +9,29 @@ import {
   sendL3RejectionEmails
 } from './l3NotificationModel.js';
 
+export const ensureL3ApprovalsColumns = async () => {
+  try {
+    const [columns] = await pool.query(`SHOW COLUMNS FROM l3_approvals`);
+    const columnNames = columns.map(col => col.Field.toLowerCase());
+    
+    const depts = ['ped', 'qad', 'production', 'maintenance', 'pcl', 'materials', 'marketing', 'hr', 'safety', 'unit_head'];
+    for (const dept of depts) {
+      const colName = dept === 'unit_head' ? 'unit_head_approved_by' : `${dept}_approved_by`;
+      if (!columnNames.includes(colName.toLowerCase())) {
+        console.log(`Adding column ${colName} to l3_approvals table`);
+        await pool.query(`ALTER TABLE l3_approvals ADD COLUMN ${colName} VARCHAR(255) NULL`);
+      }
+    }
+  } catch (error) {
+    console.error('Error ensuring L3 Approvals columns:', error);
+  }
+};
+
+// Run table column verification immediately
+ensureL3ApprovalsColumns().catch(err => {
+  console.error("Error initializing L3 approvals table columns:", err);
+});
+
 export const getL3Approvals = async () => {
   const [rows] = await pool.query(
     `SELECT c.id as changeNo, 
@@ -20,24 +43,34 @@ export const getL3Approvals = async () => {
             v.remarks as l2Remarks,
             COALESCE(l.ped, 'Pending') as ped,
             COALESCE(l.ped_remarks, '') as pedRemarks,
+            l.ped_approved_by as pedApprovedBy,
             COALESCE(l.qad, 'Pending') as qad,
             COALESCE(l.qad_remarks, '') as qadRemarks,
+            l.qad_approved_by as qadApprovedBy,
             COALESCE(l.production, 'Pending') as production,
             COALESCE(l.production_remarks, '') as productionRemarks,
+            l.production_approved_by as productionApprovedBy,
             COALESCE(l.maintenance, 'Pending') as maintenance,
             COALESCE(l.maintenance_remarks, '') as maintenanceRemarks,
+            l.maintenance_approved_by as maintenanceApprovedBy,
             COALESCE(l.pcl, 'Pending') as pcl,
             COALESCE(l.pcl_remarks, '') as pclRemarks,
+            l.pcl_approved_by as pclApprovedBy,
             COALESCE(l.materials, 'Pending') as materials,
             COALESCE(l.materials_remarks, '') as materialsRemarks,
+            l.materials_approved_by as materialsApprovedBy,
             COALESCE(l.marketing, 'Pending') as marketing,
             COALESCE(l.marketing_remarks, '') as marketingRemarks,
+            l.marketing_approved_by as marketingApprovedBy,
             COALESCE(l.hr, 'Pending') as hr,
             COALESCE(l.hr_remarks, '') as hrRemarks,
+            l.hr_approved_by as hrApprovedBy,
             COALESCE(l.safety, 'Pending') as safety,
             COALESCE(l.safety_remarks, '') as safetyRemarks,
+            l.safety_approved_by as safetyApprovedBy,
             COALESCE(l.unit_head, 'Pending') as unitHead,
             COALESCE(l.unit_head_remarks, '') as unitHeadRemarks,
+            l.unit_head_approved_by as unitHeadApprovedBy,
             e.qa_approval as qaApproval
      FROM change_requests c
      LEFT JOIN l1_requests l1 ON c.id = l1.change_no
@@ -54,16 +87,16 @@ export const getL3Approvals = async () => {
 export const getL3DetailsByChangeNo = async (changeNo) => {
   const [rows] = await pool.query(
     `SELECT change_no as changeNo, 
-            ped, ped_remarks as pedRemarks,
-            qad, qad_remarks as qadRemarks,
-            production, production_remarks as productionRemarks,
-            maintenance, maintenance_remarks as maintenanceRemarks,
-            pcl, pcl_remarks as pclRemarks,
-            materials, materials_remarks as materialsRemarks,
-            marketing, marketing_remarks as marketingRemarks,
-            hr, hr_remarks as hrRemarks,
-            safety, safety_remarks as safetyRemarks,
-            unit_head as unitHead, unit_head_remarks as unitHeadRemarks,
+            ped, ped_remarks as pedRemarks, ped_approved_by as pedApprovedBy,
+            qad, qad_remarks as qadRemarks, qad_approved_by as qadApprovedBy,
+            production, production_remarks as productionRemarks, production_approved_by as productionApprovedBy,
+            maintenance, maintenance_remarks as maintenanceRemarks, maintenance_approved_by as maintenanceApprovedBy,
+            pcl, pcl_remarks as pclRemarks, pcl_approved_by as pclApprovedBy,
+            materials, materials_remarks as materialsRemarks, materials_approved_by as materialsApprovedBy,
+            marketing, marketing_remarks as marketingRemarks, marketing_approved_by as marketingApprovedBy,
+            hr, hr_remarks as hrRemarks, hr_approved_by as hrApprovedBy,
+            safety, safety_remarks as safetyRemarks, safety_approved_by as safetyApprovedBy,
+            unit_head as unitHead, unit_head_remarks as unitHeadRemarks, unit_head_approved_by as unitHeadApprovedBy,
             date, requester
      FROM l3_approvals
      WHERE change_no = ?`,
@@ -75,16 +108,16 @@ export const getL3DetailsByChangeNo = async (changeNo) => {
 export const addL3ApprovalLog = async (logData) => {
   const {
     changeNo, date, requester,
-    ped, pedRemarks,
-    qad, qadRemarks,
-    production, productionRemarks,
-    maintenance, maintenanceRemarks,
-    pcl, pclRemarks,
-    materials, materialsRemarks,
-    marketing, marketingRemarks,
-    hr, hrRemarks,
-    safety, safetyRemarks,
-    unitHead, unitHeadRemarks
+    ped, pedRemarks, pedApprovedBy,
+    qad, qadRemarks, qadApprovedBy,
+    production, productionRemarks, productionApprovedBy,
+    maintenance, maintenanceRemarks, maintenanceApprovedBy,
+    pcl, pclRemarks, pclApprovedBy,
+    materials, materialsRemarks, materialsApprovedBy,
+    marketing, marketingRemarks, marketingApprovedBy,
+    hr, hrRemarks, hrApprovedBy,
+    safety, safetyRemarks, safetyApprovedBy,
+    unitHead, unitHeadRemarks, unitHeadApprovedBy
   } = logData;
 
   const connection = await pool.getConnection();
@@ -111,16 +144,16 @@ export const addL3ApprovalLog = async (logData) => {
 
     // Fetch existing L3 approval before update to detect HOD decision changes
     const [existingL3Rows] = await connection.query(
-      `SELECT ped, ped_remarks as pedRemarks,
-              qad, qad_remarks as qadRemarks,
-              production, production_remarks as productionRemarks,
-              maintenance, maintenance_remarks as maintenanceRemarks,
-              pcl, pcl_remarks as pclRemarks,
-              materials, materials_remarks as materialsRemarks,
-              marketing, marketing_remarks as marketingRemarks,
-              hr, hr_remarks as hrRemarks,
-              safety, safety_remarks as safetyRemarks,
-              unit_head as unitHead, unit_head_remarks as unitHeadRemarks
+      `SELECT ped, ped_remarks as pedRemarks, ped_approved_by as pedApprovedBy,
+              qad, qad_remarks as qadRemarks, qad_approved_by as qadApprovedBy,
+              production, production_remarks as productionRemarks, production_approved_by as productionApprovedBy,
+              maintenance, maintenance_remarks as maintenanceRemarks, maintenance_approved_by as maintenanceApprovedBy,
+              pcl, pcl_remarks as pclRemarks, pcl_approved_by as pclApprovedBy,
+              materials, materials_remarks as materialsRemarks, materials_approved_by as materialsApprovedBy,
+              marketing, marketing_remarks as marketingRemarks, marketing_approved_by as marketingApprovedBy,
+              hr, hr_remarks as hrRemarks, hr_approved_by as hrApprovedBy,
+              safety, safety_remarks as safetyRemarks, safety_approved_by as safetyApprovedBy,
+              unit_head as unitHead, unit_head_remarks as unitHeadRemarks, unit_head_approved_by as unitHeadApprovedBy
        FROM l3_approvals WHERE change_no = ?`,
       [changeNo]
     );
@@ -143,118 +176,148 @@ export const addL3ApprovalLog = async (logData) => {
 
     let finalPed = ped;
     let finalPedRemarks = pedRemarks;
+    let finalPedApprovedBy = pedApprovedBy;
     let finalQad = qad;
     let finalQadRemarks = qadRemarks;
+    let finalQadApprovedBy = qadApprovedBy;
     let finalProduction = production;
     let finalProductionRemarks = productionRemarks;
+    let finalProductionApprovedBy = productionApprovedBy;
     let finalMaintenance = maintenance;
     let finalMaintenanceRemarks = maintenanceRemarks;
+    let finalMaintenanceApprovedBy = maintenanceApprovedBy;
     let finalPcl = pcl;
     let finalPclRemarks = pclRemarks;
+    let finalPclApprovedBy = pclApprovedBy;
     let finalMaterials = materials;
     let finalMaterialsRemarks = materialsRemarks;
+    let finalMaterialsApprovedBy = materialsApprovedBy;
     let finalMarketing = marketing;
     let finalMarketingRemarks = marketingRemarks;
+    let finalMarketingApprovedBy = marketingApprovedBy;
     let finalHr = hr;
     let finalHrRemarks = hrRemarks;
+    let finalHrApprovedBy = hrApprovedBy;
     let finalSafety = safety;
     let finalSafetyRemarks = safetyRemarks;
+    let finalSafetyApprovedBy = safetyApprovedBy;
     let finalUnitHead = unitHead;
     let finalUnitHeadRemarks = unitHeadRemarks;
+    let finalUnitHeadApprovedBy = unitHeadApprovedBy;
 
     if (existingL3Rows.length > 0) {
       const dbL3 = existingL3Rows[0];
       if ((ped === 'Pending' || !ped) && dbL3.ped && dbL3.ped !== 'Pending') {
         finalPed = dbL3.ped;
         finalPedRemarks = dbL3.pedRemarks;
+        finalPedApprovedBy = dbL3.pedApprovedBy;
       }
       if ((qad === 'Pending' || !qad) && dbL3.qad && dbL3.qad !== 'Pending') {
         finalQad = dbL3.qad;
         finalQadRemarks = dbL3.qadRemarks;
+        finalQadApprovedBy = dbL3.qadApprovedBy;
       }
       if ((production === 'Pending' || !production) && dbL3.production && dbL3.production !== 'Pending') {
         finalProduction = dbL3.production;
         finalProductionRemarks = dbL3.productionRemarks;
+        finalProductionApprovedBy = dbL3.productionApprovedBy;
       }
       if ((maintenance === 'Pending' || !maintenance) && dbL3.maintenance && dbL3.maintenance !== 'Pending') {
         finalMaintenance = dbL3.maintenance;
         finalMaintenanceRemarks = dbL3.maintenanceRemarks;
+        finalMaintenanceApprovedBy = dbL3.maintenanceApprovedBy;
       }
       if ((pcl === 'Pending' || !pcl) && dbL3.pcl && dbL3.pcl !== 'Pending') {
         finalPcl = dbL3.pcl;
         finalPclRemarks = dbL3.pclRemarks;
+        finalPclApprovedBy = dbL3.pclApprovedBy;
       }
       if ((materials === 'Pending' || !materials) && dbL3.materials && dbL3.materials !== 'Pending') {
         finalMaterials = dbL3.materials;
         finalMaterialsRemarks = dbL3.materialsRemarks;
+        finalMaterialsApprovedBy = dbL3.materialsApprovedBy;
       }
       if ((marketing === 'Pending' || !marketing) && dbL3.marketing && dbL3.marketing !== 'Pending') {
         finalMarketing = dbL3.marketing;
         finalMarketingRemarks = dbL3.marketingRemarks;
+        finalMarketingApprovedBy = dbL3.marketingApprovedBy;
       }
       if ((hr === 'Pending' || !hr) && dbL3.hr && dbL3.hr !== 'Pending') {
         finalHr = dbL3.hr;
         finalHrRemarks = dbL3.hrRemarks;
+        finalHrApprovedBy = dbL3.hrApprovedBy;
       }
       if ((safety === 'Pending' || !safety) && dbL3.safety && dbL3.safety !== 'Pending') {
         finalSafety = dbL3.safety;
         finalSafetyRemarks = dbL3.safetyRemarks;
+        finalSafetyApprovedBy = dbL3.safetyApprovedBy;
       }
       if ((unitHead === 'Pending' || !unitHead) && dbL3.unitHead && dbL3.unitHead !== 'Pending') {
         finalUnitHead = dbL3.unitHead;
         finalUnitHeadRemarks = dbL3.unitHeadRemarks;
+        finalUnitHeadApprovedBy = dbL3.unitHeadApprovedBy;
       }
     }
 
     await connection.query(
       `INSERT INTO l3_approvals (
         change_no, date, requester, 
-        ped, ped_remarks, 
-        qad, qad_remarks, 
-        production, production_remarks, 
-        maintenance, maintenance_remarks, 
-        pcl, pcl_remarks, 
-        materials, materials_remarks, 
-        marketing, marketing_remarks, 
-        hr, hr_remarks, 
-        safety, safety_remarks, 
-        unit_head, unit_head_remarks
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ped, ped_remarks, ped_approved_by,
+        qad, qad_remarks, qad_approved_by,
+        production, production_remarks, production_approved_by,
+        maintenance, maintenance_remarks, maintenance_approved_by,
+        pcl, pcl_remarks, pcl_approved_by,
+        materials, materials_remarks, materials_approved_by,
+        marketing, marketing_remarks, marketing_approved_by,
+        hr, hr_remarks, hr_approved_by,
+        safety, safety_remarks, safety_approved_by,
+        unit_head, unit_head_remarks, unit_head_approved_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         date = VALUES(date),
         requester = VALUES(requester),
         ped = VALUES(ped),
         ped_remarks = VALUES(ped_remarks),
+        ped_approved_by = VALUES(ped_approved_by),
         qad = VALUES(qad),
         qad_remarks = VALUES(qad_remarks),
+        qad_approved_by = VALUES(qad_approved_by),
         production = VALUES(production),
         production_remarks = VALUES(production_remarks),
+        production_approved_by = VALUES(production_approved_by),
         maintenance = VALUES(maintenance),
         maintenance_remarks = VALUES(maintenance_remarks),
+        maintenance_approved_by = VALUES(maintenance_approved_by),
         pcl = VALUES(pcl),
         pcl_remarks = VALUES(pcl_remarks),
+        pcl_approved_by = VALUES(pcl_approved_by),
         materials = VALUES(materials),
         materials_remarks = VALUES(materials_remarks),
+        materials_approved_by = VALUES(materials_approved_by),
         marketing = VALUES(marketing),
         marketing_remarks = VALUES(marketing_remarks),
+        marketing_approved_by = VALUES(marketing_approved_by),
         hr = VALUES(hr),
         hr_remarks = VALUES(hr_remarks),
+        hr_approved_by = VALUES(hr_approved_by),
         safety = VALUES(safety),
         safety_remarks = VALUES(safety_remarks),
+        safety_approved_by = VALUES(safety_approved_by),
         unit_head = VALUES(unit_head),
-        unit_head_remarks = VALUES(unit_head_remarks)`,
+        unit_head_remarks = VALUES(unit_head_remarks),
+        unit_head_approved_by = VALUES(unit_head_approved_by)`,
       [
         changeNo, date, requester,
-        finalPed || 'Pending', finalPedRemarks || '',
-        finalQad || 'Pending', finalQadRemarks || '',
-        finalProduction || 'Pending', finalProductionRemarks || '',
-        finalMaintenance || 'Pending', finalMaintenanceRemarks || '',
-        finalPcl || 'Pending', finalPclRemarks || '',
-        finalMaterials || 'Pending', finalMaterialsRemarks || '',
-        finalMarketing || 'Pending', finalMarketingRemarks || '',
-        finalHr || 'Pending', finalHrRemarks || '',
-        finalSafety || 'Pending', finalSafetyRemarks || '',
-        finalUnitHead || 'Pending', finalUnitHeadRemarks || ''
+        finalPed || 'Pending', finalPedRemarks || '', finalPedApprovedBy || null,
+        finalQad || 'Pending', finalQadRemarks || '', finalQadApprovedBy || null,
+        finalProduction || 'Pending', finalProductionRemarks || '', finalProductionApprovedBy || null,
+        finalMaintenance || 'Pending', finalMaintenanceRemarks || '', finalMaintenanceApprovedBy || null,
+        finalPcl || 'Pending', finalPclRemarks || '', finalPclApprovedBy || null,
+        finalMaterials || 'Pending', finalMaterialsRemarks || '', finalMaterialsApprovedBy || null,
+        finalMarketing || 'Pending', finalMarketingRemarks || '', finalMarketingApprovedBy || null,
+        finalHr || 'Pending', finalHrRemarks || '', finalHrApprovedBy || null,
+        finalSafety || 'Pending', finalSafetyRemarks || '', finalSafetyApprovedBy || null,
+        finalUnitHead || 'Pending', finalUnitHeadRemarks || '', finalUnitHeadApprovedBy || null
       ]
     );
 

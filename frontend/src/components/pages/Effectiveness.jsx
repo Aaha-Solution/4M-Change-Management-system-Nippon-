@@ -1932,16 +1932,23 @@ export const Effectiveness = ({
                               key={index}
                               className="bg-slate-50 border border-slate-150 rounded-[10px] p-[12px] flex flex-col items-start text-left gap-[6px] shadow-sm hover:shadow transition-shadow"
                             >
-                              <div className="flex justify-between items-center w-full">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{dept.label}</span>
-                                <span className={`inline-block px-[8px] py-[2px] rounded-full border text-[9px] font-bold shadow-sm ${badgeClass}`}>
-                                  L3 {status}
-                                </span>
+                              <div className="flex justify-between items-start w-full">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">{dept.label}</span>
+                                <div className="flex flex-col items-end gap-0.5">
+                                  <span className={`inline-block px-[8px] py-[2px] rounded-full border text-[9px] font-bold shadow-sm ${badgeClass}`}>
+                                    L3 {status}
+                                  </span>
+                                  {status !== 'Pending' && (
+                                    <span className="text-[9.5px] text-slate-500 font-medium">
+                                      By: <span className="font-semibold text-slate-700">{selectedLog[`${dept.prop}ApprovedBy`] || '-'}</span>
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               {status !== 'Pending' && (
                                 <div className="text-[11px] text-slate-600 bg-white border border-slate-100 rounded-md p-2 w-full min-h-[32px] break-words">
                                   <span className="font-bold text-[9px] text-slate-400 block uppercase tracking-wider mb-0.5">Remarks</span>
-                                  {remarks || <span className="text-slate-400 italic">No remarks provided.</span>}
+                                  {remarks || <span className="text-slate-400 italic font-sans">No remarks provided.</span>}
                                 </div>
                               )}
                             </div>
