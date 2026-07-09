@@ -422,6 +422,13 @@ export const Effectiveness = ({
       log => log.changeNo?.toLowerCase().trim() === effChangeNo.toLowerCase().trim()
     );
 
+    // Determine which tab this record belongs to after save
+    const resolveTargetTab = (qaApproval) => {
+      if (qaApproval === 'Approved') return 'closed';
+      if (qaApproval === 'Rejected') return 'rejected';
+      return 'ongoing';
+    };
+
     if (savedLog) {
       // Edit mode
       const logData = {
@@ -433,12 +440,20 @@ export const Effectiveness = ({
         qaUpdateCount: savedLog.qaUpdateCount
       };
       try {
-        const response = await updateEffectivenessLog(savedLog.id, logData, uploadedFilesList);
+        await updateEffectivenessLog(savedLog.id, logData, uploadedFilesList);
         logAction('Effectiveness Log Updated', `Updated monitoring observations for change ${effChangeNo}.`);
         setToastMsg(`Log entry updated for ${effChangeNo}`);
-        fetchLogs();
         if (fetchChanges) fetchChanges();
         handleCancelEditing();
+        // Switch to the tab that now contains this record.
+        // If the tab changes, useEffect on activeMainTab will auto-fetch the correct list.
+        // If it stays the same, call fetchLogs() explicitly.
+        const newTab = resolveTargetTab(effQaApproval);
+        if (newTab !== activeMainTab) {
+          setActiveMainTab(newTab);
+        } else {
+          fetchLogs();
+        }
       } catch (err) {
         console.error("Error updating log:", err);
         const errMsg = err.response?.data?.error || 'Failed to update effectiveness log.';
@@ -460,12 +475,17 @@ export const Effectiveness = ({
         qaApproval: effQaApproval
       };
       try {
-        const response = await createEffectivenessLog(logData, uploadedFilesList);
+        await createEffectivenessLog(logData, uploadedFilesList);
         logAction('Effectiveness Log Created', `Created monitoring observations for change ${effChangeNo}.`);
         setToastMsg(`Log entry added for ${effChangeNo}`);
-        fetchLogs();
         if (fetchChanges) fetchChanges();
         handleCancelEditing();
+        const newTab = resolveTargetTab(effQaApproval);
+        if (newTab !== activeMainTab) {
+          setActiveMainTab(newTab);
+        } else {
+          fetchLogs();
+        }
       } catch (err) {
         console.error("Error creating log:", err);
         const errMsg = err.response?.data?.error || 'Failed to create effectiveness log.';
