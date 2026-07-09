@@ -115,7 +115,7 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
       'PROCESS\nNAME',
       'REQUESTED\nBY',
       'REQUEST\nDATE',
-      'HOD\nAPPROVAL',
+      'L1\nAPPROVAL',
       'L2\nSTATUS',
       'L3\nSTATUS',
       'OVERALL STATUS'
@@ -192,7 +192,7 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
         4: { cellWidth: 90, halign: 'center' },                             // PROCESS NAME
         5: { cellWidth: 85, halign: 'center' },                             // REQUESTED BY
         6: { cellWidth: 60, halign: 'center' },           // REQUEST DATE
-        7: { cellWidth: 62, halign: 'center' },           // HOD APPROVAL
+        7: { cellWidth: 62, halign: 'center' },           // L1 APPROVAL
         8: { cellWidth: 55, halign: 'center' },           // L2 STATUS
         9: { cellWidth: 55, halign: 'center' },           // L3 STATUS
         10: { cellWidth: 90, halign: 'center' }            // OVERALL STATUS
@@ -1416,7 +1416,7 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
       'PROCESS\nNAME',
       'REQUESTED\nBY',
       'REQUEST\nDATE',
-      'HOD\nAPPROVAL',
+      'L1\nAPPROVAL',
       'L2\nSTATUS',
       'L3\nSTATUS',
       'OVERALL\nSTATUS'
@@ -1495,7 +1495,7 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
         4: { cellWidth: 88, halign: 'center' },                             // PROCESS NAME
         5: { cellWidth: 80, halign: 'center' },                             // REQUESTED BY
         6: { cellWidth: 58, halign: 'center' },           // REQUEST DATE
-        7: { cellWidth: 60, halign: 'center' },           // HOD APPROVAL
+        7: { cellWidth: 60, halign: 'center' },           // L1 APPROVAL
         8: { cellWidth: 52, halign: 'center' },           // L2 STATUS
         9: { cellWidth: 52, halign: 'center' },           // L3 STATUS
         10: { cellWidth: 82, halign: 'center' }            // OVERALL STATUS
