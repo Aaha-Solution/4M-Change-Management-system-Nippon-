@@ -1134,27 +1134,17 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
       'REQUEST\nDATE',
       'REQUESTED BY',
       'DEPARTMENT',
-      'WORKFLOW\nSTAGE',
       'HOD\nDECISION',
       'HOD REMARKS'
     ]];
 
     const tableData = filteredApprovals.map((item, idx) => {
-      const crStatus = item.crStatus || '';
-      const stageLabel =
-        crStatus.toLowerCase() === 'pending' ? 'L1 - HOD Review' :
-          crStatus.toLowerCase() === 'evaluating' ? 'L2 - Validation' :
-            crStatus.toLowerCase() === 'approved' ? 'L3 - Approval' :
-              crStatus.toLowerCase() === 'completed' ? 'Completed' :
-                crStatus || 'Pending';
-
       return [
         idx + 1,
         item.changeNo,
         item.date || '-',
         item.requestBy || item.requesterEmail || '-',
         item.dept || '-',
-        stageLabel,
         item.hodStatus || 'Pending',
         item.hodRemarks || '-'
       ];
@@ -1205,14 +1195,13 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
         cellPadding: { top: 3, right: 4, bottom: 3, left: 4 }
       },
       columnStyles: {
-        0: { cellWidth: 28, halign: 'center' },   // SL. NO.
-        1: { cellWidth: 75, fontStyle: 'bold', halign: 'center' },   // 4M CHANGE NO
-        2: { cellWidth: 65, halign: 'center' },    // REQUEST DATE
-        3: { cellWidth: 140, halign: 'center' },                     // REQUESTED BY
-        4: { cellWidth: 95, halign: 'center' },                      // DEPARTMENT
-        5: { cellWidth: 100, halign: 'center' },   // WORKFLOW STAGE
-        6: { cellWidth: 78, halign: 'center' },    // HOD DECISION
-        7: { cellWidth: 181, halign: 'center' }                      // HOD REMARKS
+        0: { cellWidth: 30, halign: 'center' },   // SL. NO.
+        1: { cellWidth: 85, fontStyle: 'bold', halign: 'center' },   // 4M CHANGE NO
+        2: { cellWidth: 80, halign: 'center' },    // REQUEST DATE
+        3: { cellWidth: 160, halign: 'center' },                     // REQUESTED BY
+        4: { cellWidth: 110, halign: 'center' },                      // DEPARTMENT
+        5: { cellWidth: 90, halign: 'center' },    // HOD DECISION
+        6: { cellWidth: 207, halign: 'center' }                      // HOD REMARKS
       },
       margin: { top: 40, bottom: 40, left: 40, right: 40 },
       didDrawPage: (data) => {
@@ -1223,8 +1212,8 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
         if (data.row.section !== 'body') return;
         const val = data.cell.text[0];
         const cleanVal = val ? val.trim().toLowerCase() : '';
-        // HOD DECISION (col 6) and WORKFLOW STAGE (col 5)
-        if (data.column.index === 6) {
+        // HOD DECISION (col 5)
+        if (data.column.index === 5) {
           if (cleanVal.includes('approve') || cleanVal.includes('accept')) {
             data.cell.styles.textColor = [16, 124, 65]; // Green
             data.cell.styles.fontStyle = 'bold';
@@ -1237,21 +1226,6 @@ export const exportApprovalsListPDF = (filteredApprovals, filtersInfo = {}, setT
           } else if (cleanVal.includes('acknow')) {
             data.cell.styles.textColor = [0, 0, 0]; // Black
             data.cell.styles.fontStyle = 'normal';
-          }
-        }
-        if (data.column.index === 5) {
-          if (cleanVal.includes('completed')) {
-            data.cell.styles.textColor = [16, 124, 65]; // Green
-            data.cell.styles.fontStyle = 'bold';
-          } else if (cleanVal.includes('l3')) {
-            data.cell.styles.textColor = [37, 99, 235]; // Blue
-            data.cell.styles.fontStyle = 'bold';
-          } else if (cleanVal.includes('l2')) {
-            data.cell.styles.textColor = [124, 58, 237]; // Purple
-            data.cell.styles.fontStyle = 'bold';
-          } else if (cleanVal.includes('l1')) {
-            data.cell.styles.textColor = [217, 119, 6]; // Amber
-            data.cell.styles.fontStyle = 'bold';
           }
         }
       }
