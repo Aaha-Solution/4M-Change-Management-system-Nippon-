@@ -115,7 +115,7 @@ export const exportRequestsListPDF = (filteredData, filtersInfo = {}, setToastMs
       'PROCESS\nNAME',
       'REQUESTED\nBY',
       'REQUEST\nDATE',
-      'L1\nAPPROVAL',
+      'L1\nSTATUS',
       'L2\nSTATUS',
       'L3\nSTATUS',
       'OVERALL STATUS'
@@ -1416,7 +1416,7 @@ export const exportDashboardRequestsPDF = (filteredChanges, filtersInfo = {}, se
       'PROCESS\nNAME',
       'REQUESTED\nBY',
       'REQUEST\nDATE',
-      'L1\nAPPROVAL',
+      'L1\nSTATUS',
       'L2\nSTATUS',
       'L3\nSTATUS',
       'OVERALL\nSTATUS'
