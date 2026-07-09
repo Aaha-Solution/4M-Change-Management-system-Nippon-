@@ -469,7 +469,9 @@ export const L3RequestTracker = ({
     ].map(s => (s || '').trim().toLowerCase());
 
     // Step 1: If ANY department has not yet voted (blank or 'pending') → Pending (highest priority)
-    const allVoted = statuses.every(s => s === 'approved' || s === 'accepted' || s === 'rejected');
+    const allVoted = statuses.every(
+      s => s === 'approved' || s === 'accepted' || s === 'rejected' || s === 'acknowledge'
+    );
     if (!allVoted) {
       return 'Pending';
     }
@@ -479,7 +481,7 @@ export const L3RequestTracker = ({
       return 'Rejected';
     }
 
-    // Step 3: All 10 voted and all Approved/Accepted → Approved
+    // Step 3: All 10 voted and all Approved/Accepted/Acknowledged → Approved
     return 'Approved';
   };
 
