@@ -41,13 +41,15 @@ export const createL2ValidationLog = async (req, res) => {
     let isSameDepartment = false;
     let isRequesterOrDeptMember = false;
     let isAdmin = false;
+    let userName = '';
+    let userDept = '';
 
     if (userEmail) {
-      const [userRows] = await pool.query('SELECT department, role FROM users WHERE email = ?', [userEmail]);
-      let userDept = '';
+      const [userRows] = await pool.query('SELECT name, department, role FROM users WHERE email = ?', [userEmail]);
       if (userRows.length > 0) {
         const user = userRows[0];
         userDept = user.department || '';
+        userName = user.name || '';
         const dept = (user.department || '').toLowerCase();
         const role = (user.role || '').toLowerCase();
         isQuality = dept === 'qad';
@@ -119,6 +121,8 @@ export const createL2ValidationLog = async (req, res) => {
       if (!hasPedFile) {
         return res.status(400).json({ error: 'Requester Validation Attachment is required.' });
       }
+
+      logData.qadApprovedBy = userName || userEmail;
     } else if (isRequesterOrDeptMember || (isQualityOrAdmin && isActingAsRequester)) {
       const hasPedFile = (attachments && attachments.some(a => a.fieldName === 'weld_test')) || 
                          (existingL2.length > 0 && existingL2[0].weld_test && existingL2[0].weld_test !== '-');
@@ -154,6 +158,7 @@ export const createL2ValidationLog = async (req, res) => {
         if (hasNewPedAttachment) {
           logData.status = 'Pending';
           logData.remarks = '';
+          logData.qadApprovedBy = null;
         }
 
         const allowedStatus = hasNewPedAttachment ? 'Pending' : current.status;

@@ -1794,7 +1794,7 @@ export const Effectiveness = ({
                           <span>L2 Validation Details</span>
                         </h5>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-[16px] bg-slate-50 border border-slate-150 rounded-[10px] p-[16px]">
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Date</span>
                             <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
@@ -1802,6 +1802,10 @@ export const Effectiveness = ({
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
                             <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QAD Approved By</span>
+                            <span className="font-semibold text-slate-800">{selectedL2Details.qadApprovedBy || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>

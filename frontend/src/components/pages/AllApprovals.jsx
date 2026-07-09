@@ -1333,7 +1333,7 @@ export const AllApprovals = ({
                           <span>L2 Validation Details</span>
                         </h5>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[16px] bg-slate-50 border border-slate-200 rounded-[10px] p-[16px]">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-[16px] bg-slate-50 border border-slate-200 rounded-[10px] p-[16px]">
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Date</span>
                             <span className="font-medium text-slate-700">{selectedL2Details.date || '-'}</span>
@@ -1341,6 +1341,10 @@ export const AllApprovals = ({
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validated By</span>
                             <span className="font-semibold text-slate-800">{selectedL2Details.requester || '-'}</span>
+                          </div>
+                          <div className="space-y-[4px]">
+                            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">QAD Approved By</span>
+                            <span className="font-semibold text-slate-800">{selectedL2Details.qadApprovedBy || '-'}</span>
                           </div>
                           <div className="space-y-[4px]">
                             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validation Status</span>
@@ -1351,7 +1355,7 @@ export const AllApprovals = ({
                                   ? 'bg-rose-50 border-rose-220 text-rose-700'
                                   : 'bg-amber-50 border-amber-220 text-amber-700'
                                 }`}>
-                                L2 {selectedL2Details.status || 'Pending'}
+                                L2 {selectedL2Details.status === 'Accepted' ? 'Approved' : (selectedL2Details.status || 'Pending')}
                               </span>
                             </div>
                           </div>

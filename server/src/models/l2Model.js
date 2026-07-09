@@ -11,6 +11,7 @@ export const getL2ValidationLogs = async () => {
             COALESCE(v.qa_test, '-') as qaTest, 
             COALESCE(v.status, 'Pending') as status, 
             COALESCE(v.remarks, '-') as remarks,
+            v.qad_approved_by as qadApprovedBy,
             c.requester as requesterEmail,
             CASE WHEN v.status IS NULL THEN 1 ELSE 0 END as isPending
      FROM change_requests c
@@ -38,15 +39,20 @@ export const getL2ValidationLogs = async () => {
 };
 
 export const addL2ValidationLog = async (logData, attachments) => {
-  const { changeNo, date, requester, weldTest, qaTest, status, remarks } = logData;
+  const { changeNo, date, requester, weldTest, qaTest, status, remarks, qadApprovedBy } = logData;
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
     const [existingL2] = await connection.query(
-      `SELECT status FROM l2_validation_logs WHERE change_no = ?`,
+      `SELECT status, qad_approved_by as qadApprovedBy FROM l2_validation_logs WHERE change_no = ?`,
       [changeNo]
     );
+
+    const newStatus = status || (existingL2.length > 0 ? existingL2[0].status : 'Pending');
+    const finalQadApprovedBy = (newStatus === 'Accepted' || newStatus === 'Rejected')
+      ? (qadApprovedBy || (existingL2.length > 0 ? existingL2[0].qadApprovedBy : null))
+      : null;
 
     if (existingL2.length > 0) {
       if (status === 'Accepted') {
@@ -68,9 +74,10 @@ export const addL2ValidationLog = async (logData, attachments) => {
              weld_test = ?, 
              qa_test = ?, 
              status = COALESCE(NULLIF(?, ''), status), 
-             remarks = COALESCE(NULLIF(?, ''), remarks)
+             remarks = COALESCE(NULLIF(?, ''), remarks),
+             qad_approved_by = ?
          WHERE change_no = ?`,
-        [date, requester, weldTest || '', qaTest || '', status || '', remarks || '', changeNo]
+        [date, requester, weldTest || '', qaTest || '', status || '', remarks || '', finalQadApprovedBy, changeNo]
       );
     } else {
       const [existing] = await connection.query(
@@ -101,9 +108,9 @@ export const addL2ValidationLog = async (logData, attachments) => {
       }
 
       await connection.query(
-        `INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [changeNo, date, requester, weldTest || '', qaTest || '', status || 'Pending', remarks || '']
+        `INSERT INTO l2_validation_logs (change_no, validation_date, requester, weld_test, qa_test, status, remarks, qad_approved_by) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [changeNo, date, requester, weldTest || '', qaTest || '', status || 'Pending', remarks || '', finalQadApprovedBy]
       );
     }
 
@@ -208,7 +215,8 @@ export const getL2Details = async (changeNo) => {
   const [rows] = await pool.query(
     `SELECT v.change_no as changeNo, v.validation_date as date, 
             COALESCE(NULLIF(u.name, ''), l1.request_by, v.requester) as requester, 
-            v.weld_test as weldTest, v.qa_test as qaTest, v.status, v.remarks 
+            v.weld_test as weldTest, v.qa_test as qaTest, v.status, v.remarks,
+            v.qad_approved_by as qadApprovedBy 
      FROM l2_validation_logs v
      LEFT JOIN l1_requests l1 ON v.change_no = l1.change_no
      LEFT JOIN change_requests c ON v.change_no = c.id

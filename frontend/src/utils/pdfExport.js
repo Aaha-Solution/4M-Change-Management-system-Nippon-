@@ -628,11 +628,14 @@ export const exportRequestDetailsPDF = (selectedL1Details, selectedL2Details, se
           ],
           [
             { content: 'Validation Status', fontStyle: 'bold' }, l2Status,
-            { content: 'PED Validation Attachment', fontStyle: 'bold' }, selectedL2Details.weldTest || '-'
+            { content: 'QAD Approved By', fontStyle: 'bold' }, selectedL2Details.qadApprovedBy || '-'
           ],
           [
-            { content: 'QAD Setup Verification Attachment', fontStyle: 'bold' }, selectedL2Details.qaTest || '-',
-            { content: 'Validator Remarks / Comments', fontStyle: 'bold' }, selectedL2Details.remarks || '-'
+            { content: 'PED Validation Attachment', fontStyle: 'bold' }, selectedL2Details.weldTest || '-',
+            { content: 'QAD Setup Verification Attachment', fontStyle: 'bold' }, selectedL2Details.qaTest || '-'
+          ],
+          [
+            { content: 'Validator Remarks / Comments', fontStyle: 'bold' }, { content: selectedL2Details.remarks || '-', colSpan: 3 }
           ]
         );
       } else {

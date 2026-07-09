@@ -69,6 +69,8 @@ const COLUMN_LIMITS = {
   qaTest: 65535,
   qa_test: 65535,
   remarks: 65535,
+  qadApprovedBy: 255,
+  qad_approved_by: 255,
   fileName: 255,
   file_name: 255,
   name: 255,

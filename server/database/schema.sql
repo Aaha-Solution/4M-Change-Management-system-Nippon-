@@ -222,6 +222,7 @@ CREATE TABLE l2_validation_logs (
     qa_test TEXT NOT NULL,
     status VARCHAR(50) NOT NULL,
     remarks TEXT NOT NULL,
+    qad_approved_by VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (change_no) REFERENCES change_requests(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
