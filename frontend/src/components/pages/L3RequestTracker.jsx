@@ -280,11 +280,11 @@ export const L3RequestTracker = ({
         logAction('L3 Log Saved', `Successfully logged L3 approval status: "${formStatus}" for department: ${actingDept} and Change No: ${formChangeNo}`);
       }
 
+      handleCancelEdit(); // Clear form FIRST so the approvalLogs useEffect can't repopulate fields
       await fetchLogs();
       if (fetchChanges) {
         await fetchChanges();
       }
-      handleCancelEdit();
     } catch (err) {
       console.error(err);
       const errMsg = err.response?.data?.error || 'Error saving L3 approval log to database.';
