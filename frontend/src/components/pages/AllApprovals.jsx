@@ -43,7 +43,7 @@ import { formatDateToDDMMYYYY } from '../../utils/dateUtils';
 import { exportApprovalsListPDF } from '../../utils/pdfExport';
 import { useWebSocket } from '../../hooks/useWebSocket';
 
-// Map raw DB dept string to display name
+// Map raw DB dept string to display name//
 const mapDept = (raw) => {
   if (!raw) return '';
   const d = raw.trim().toLowerCase();
